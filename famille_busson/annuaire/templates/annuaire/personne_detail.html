@@ -1,0 +1,17 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <div style="display: inline-block">
+        <a href="{{ personne.photo_profil.url }}">
+            <img class="expandable-image" src="{{ personne.photo_profil.url }}"
+            alt="Photo de profil de {{ personne.prenom }} {{ personne.nom }}" />
+        </a>
+        <h1>{{ personne.prenom }} {{ personne.nom }}</h1>
+    </div>
+    <p>📧 <a href="mailto:{{ personne.prenom }} {{ personne.nom }}<{{ personne.email }}>">{{ personne.email }}</a></p>
+    <p>☎️ <a href="sip:{{ personne.numero_telephone }}">{{ personne.numero_telephone }}</a></p>
+    <p>🎂 {{ personne.date_naissance|date:"j F Y" }}</p>
+    <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ personne.adresse_postale|urlencode }}">
+        {{ personne.adresse_postale}}
+        </a>
+    </p>
+{% endblock content %}

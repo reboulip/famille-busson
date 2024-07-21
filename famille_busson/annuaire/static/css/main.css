@@ -1,0 +1,42 @@
+body {
+    display: flex;
+    font-family: 'Helvetica';
+}
+
+.sidebar {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 15px;
+}
+
+.sidebar ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.sidebar ul li {
+    margin: 10px 0;
+}
+
+.sidebar ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.content {
+    flex-grow: 1;
+    padding: 20px;
+}
+
+.expandable-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 100px;
+    transition: 1s;
+}
+
+.expandable-image:hover {
+    width: 200px;
+    height: 200px;
+    border-radius: 0;
+}
