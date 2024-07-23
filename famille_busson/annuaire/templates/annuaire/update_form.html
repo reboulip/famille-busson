@@ -1,0 +1,36 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="form">
+        <form method="POST">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend>
+                    {% if form_title %}
+                        {{ form_title }}
+                    {% else %}
+                        Modification de {{ form.instance }}
+                    {% endif %}
+                </legend>
+                {{ form.media }}
+                {{ form|crispy }}
+            </fieldset>
+            {{ formsets|length }}
+            {% for subform in formsets %}
+                <fieldset class="form-group">
+                    {{ subform.management_form }}
+                    <legend class="formset-legend">{{ subform.legend }}</legend>
+                    {% for inline_form in subform.forms %}
+                        <div class="formset-entry">
+                            {{ inline_form.media }}
+                            {{ inline_form }}
+                        </div>
+                    {% endfor %}
+                </fieldset>
+            {% endfor %}
+            <div class="form-group">
+                <button class='btn btn-outline-primary' type="submit">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

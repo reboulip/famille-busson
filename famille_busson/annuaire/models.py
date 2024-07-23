@@ -36,14 +36,15 @@ class Compte(AbstractBaseUser, PermissionsMixin):
 
 # Profil de personne
 class Personne(models.Model):
-    nom = models.CharField(max_length=100)
+    nom = models.CharField(max_length=100, verbose_name='Nom')
     compte = models.OneToOneField(Compte, related_name='profil', on_delete=models.DO_NOTHING, blank=True, null=True)
-    prenom = models.CharField(max_length=100)
-    email = models.EmailField(blank=True, null=True)
-    photo_profil = models.ImageField(upload_to='photos/', blank=True, null=True)
-    adresse_postale = models.CharField(max_length=255, blank=True, null=True)
-    numero_telephone = models.CharField(max_length=25, blank=True, null=True)
-    date_naissance = models.DateField(blank=True, null=True)
+    prenom = models.CharField(max_length=100, verbose_name='Prénom')
+    email = models.EmailField(blank=True, null=True, verbose_name='Adresse électronique')
+    photo_profil = models.ImageField(upload_to='photos/', blank=True, null=True, verbose_name='Photo de profil')
+    adresse_postale = models.CharField(max_length=255, blank=True, null=True, verbose_name='Adresse postale')
+    numero_telephone = models.CharField(max_length=25, blank=True, null=True, verbose_name='Numéro de téléphone')
+    date_naissance = models.DateField(blank=True, null=True, verbose_name='Date de naissance')
+    description = models.TextField(blank=True, null=True, verbose_name='Infos utiles')
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
@@ -51,18 +52,21 @@ class Personne(models.Model):
 
 class Relation(models.Model):
     RELATION_CHOICES = [
-        ('mari/femme', 'Mari/Femme'),
-        ('conjoint/conjointe', 'Conjoint/Conjointe'),
-        ('enfant', 'Enfant'),
+        (0, 'mariage'),
+        (1, 'conjoint'),
+        (2, 'parent'),
+        (3, 'enfant'),
     ]
 
     personne1 = models.ForeignKey('Personne', related_name='relations_montantes', on_delete=models.CASCADE)
     personne2 = models.ForeignKey('Personne', related_name='relations_descendantes', on_delete=models.CASCADE)
-    nature_relation = models.CharField(max_length=20, choices=RELATION_CHOICES)
+    nature_relation = models.IntegerField(choices=RELATION_CHOICES)
     date_debut = models.DateField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.personne1} -> {self.nature_relation} -> {self.personne2}"
+        return f"{self.personne1} -> {self.get_nature_relation_display()} -> {self.personne2}"
+    
+    
 
 
 class Chalet(models.Model):
