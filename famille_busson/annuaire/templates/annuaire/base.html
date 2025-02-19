@@ -13,6 +13,12 @@
         <ul>
             {% if user.is_authenticated %}
                 <li><a href="{% url 'profil' %}">Profil</a></li>
+                <li>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">Déconnexion</button>
+                    </form>
+                </li>
             {% else %}
                 <li><a href="{% url 'login' %}">Se connecter</a></li>
             {% endif %}

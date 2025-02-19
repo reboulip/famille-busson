@@ -2,12 +2,17 @@ from django.db.models.base import Model as Model
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, UpdateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth import login
+from django.contrib import messages
+from django.views.generic import DetailView, UpdateView, FormView
 from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden
-from .models import Personne
-from .forms import FormEditionProfil, FormSetEditionRelations
-
+from .models import Personne, Compte
+from .forms import FormEditionProfil, FormSetEditionRelations, CustomAuthenticationForm, SignupForm
+from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
+from allauth.socialaccount.providers.oauth2.client import OAuth2Client
+from dj_rest_auth.registration.views import SocialLoginView
 
 def home(request):
     return render(request, 'annuaire/home.html')
@@ -21,6 +26,55 @@ def profil(request):
     except Personne.DoesNotExist:
         return render(request, 'annuaire/no_profile.html')
     
+
+class CustomLoginView(LoginView):
+    template_name = 'annuaire/login.html'
+    authentication_form = CustomAuthenticationForm
+    redirect_authenticated_user = True
+
+    def form_valid(self, form):
+        user = form.get_user()
+        print(user)
+
+        if hasattr(user, 'profil'):
+            login(self.request, user)
+            return redirect(self.get_success_url())
+        else:
+            messages.error(self.request, "Aucun profil associé à cet utilisateur.")
+            return redirect('login')
+
+    def get_success_url(self):
+        return reverse_lazy('accueil')
+
+
+# Vue pour la connexion avec Google (gérée par django-allauth)
+class GoogleLogin(SocialLoginView):
+    adapter_class = GoogleOAuth2Adapter
+    client_class = OAuth2Client
+
+
+class SignupView(FormView):
+    template_name = 'annuaire/signup.html'
+    form_class = SignupForm
+    success_url = reverse_lazy('edit_profile')
+
+    def form_valid(self, form):
+        email = form.cleaned_data.get('email')
+        password = form.cleaned_data.get('password')
+
+        if not Personne.objects.filter(email=email).exists():
+            raise HttpResponseForbidden("Adresse email non reconnue, vous ne pouvez pas créer de compte.")
+        elif Compte.objects.filter(email=email).exists():
+            messages.error(self.request, "Un compte avec cet email existe déjà.")
+            return redirect('custom_login')
+        else:
+            user = Compte.objects.create_user(email=email)
+            user.set_password(password)
+            user.save()
+
+            login(self.request, user)
+            return super().form_valid(form)
+        
 
 class VueDetailProfil(LoginRequiredMixin, DetailView):
     model = Personne
@@ -40,8 +94,6 @@ class VueEditionProfil(LoginRequiredMixin, UpdateView):
         if obj != profil:
             raise HttpResponseForbidden("Vous ne pouvez pas éditer ce profil car ce n'est pas le vôtre.")
         return obj
-
-
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)

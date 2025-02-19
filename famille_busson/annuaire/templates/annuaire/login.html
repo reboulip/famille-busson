@@ -1,0 +1,22 @@
+{% extends 'annuaire/base.html' %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% load socialaccount %}
+
+{% block content %}
+    <h2>Connexion</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form|crispy }}
+        <button type="submit">Se connecter</button>
+    </form>
+
+    {% comment %} <p>Ou connecte-toi avec ton compte Google :</p>
+    <a href="{% provider_login_url 'google' %}">
+        <img src="{% static 'google_login_button.png' %}" alt="Connexion avec Google">
+    </a> {% endcomment %}
+
+    <p>Tu n'as pas encore créé ton compte ? <a href="{% url 'signup' %}">C'est par ici</a>.</p>
+{% endblock %}

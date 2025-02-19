@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load crispy_forms_filters %}
+
+{% block content %}
+    <h2>Inscription</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.media }}
+        {{ form|crispy }}
+        <button type="submit">S'inscrire</button>
+    </form>
+
+    <p>Tu as déjà un compte ? <a href="{% url 'login' %}">Connecte-toi ici</a>.</p>
+{% endblock %}
