@@ -132,22 +132,22 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_LOGIN_METHODS = {'email'}
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'APP': {
-            'client_id': '237084501140-c57u6qlsopk3hg2p13egec7knj20jh48.apps.googleusercontent.com',
-            'secret': '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',
-            'key': ''
-        },
-        'SCOPE': [
-            'profile',
-            'email',
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'APP': {
+#             'client_id': 'client id goes here',
+#             'secret': 'client secret goes here',
+#             'key': ''
+#         },
+#         'SCOPE': [
+#             'profile',
+#             'email',
+#         ],
+#         'AUTH_PARAMS': {
+#             'access_type': 'online',
+#         }
+#     }
+# }
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
