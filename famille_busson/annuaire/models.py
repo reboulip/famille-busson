@@ -37,7 +37,7 @@ class Compte(AbstractBaseUser, PermissionsMixin):
 # Profil de personne
 class Personne(models.Model):
     nom = models.CharField(max_length=100, verbose_name='Nom')
-    compte = models.OneToOneField(Compte, related_name='profil', on_delete=models.DO_NOTHING, blank=True, null=True)
+    compte = models.OneToOneField(Compte, related_name='profil', on_delete=models.SET_NULL, blank=True, null=True)
     prenom = models.CharField(max_length=100, verbose_name='Prénom')
     email = models.EmailField(blank=True, null=True, verbose_name='Adresse électronique')
     photo_profil = models.ImageField(upload_to='photos/', blank=True, null=True, verbose_name='Photo de profil')

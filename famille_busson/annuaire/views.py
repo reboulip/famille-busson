@@ -19,13 +19,22 @@ def home(request):
 
 
 @login_required
-def profil(request):
+def my_profile(request):
     try:
         personne = Personne.objects.get(compte=request.user)
         return redirect('personne-detail', pk=personne.pk)
     except Personne.DoesNotExist:
         return render(request, 'annuaire/no_profile.html')
-    
+
+
+@login_required
+def edit_my_profile(request):
+    try:
+        personne = Personne.objects.get(compte=request.user)
+        return redirect('personne-edition', pk=personne.pk)
+    except Personne.DoesNotExist:
+        return render(request, 'annuaire/no_profile.html')
+
 
 class CustomLoginView(LoginView):
     template_name = 'annuaire/login.html'
@@ -56,7 +65,7 @@ class GoogleLogin(SocialLoginView):
 class SignupView(FormView):
     template_name = 'annuaire/signup.html'
     form_class = SignupForm
-    success_url = reverse_lazy('edit_profile')
+    success_url = reverse_lazy('edit-my-profile')
 
     def form_valid(self, form):
         email = form.cleaned_data.get('email')
@@ -86,7 +95,7 @@ class VueEditionProfil(LoginRequiredMixin, UpdateView):
     model = Personne
     form_class = FormEditionProfil
     template_name = 'annuaire/update_form.html'
-    success_url = reverse_lazy('profil')
+    success_url = reverse_lazy('my-profile')
 
     def get_object(self, queryset=None) -> Model:
         obj = super().get_object(queryset=queryset)

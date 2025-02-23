@@ -1,10 +1,15 @@
 {% extends "annuaire/base.html" %}
+{% load static %}
 {% block content %}
     <div class="flex-title">
-        <a href="{{ personne.photo_profil.url }}">
-            <img class="expandable-image" src="{{ personne.photo_profil.url }}"
-            alt="Photo de profil de {{ personne.prenom }} {{ personne.nom }}" />
-        </a>
+        {% if personne.photo_profil %}
+            <a href="{{ personne.photo_profil.url }}">
+                <img class="expandable-image" src="{{ personne.photo_profil.url }}"
+                alt="Photo de profil de {{ personne.prenom }} {{ personne.nom }}" />
+            </a>
+        {% else %}
+            <img class="expandable-image" src={% static 'default_profile_picture.png' %} alt="Photo par défaut">
+        {% endif %}
         <div>
             <h1>{{ personne.prenom }} {{ personne.nom }}</h1>
             <p>

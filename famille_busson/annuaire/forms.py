@@ -57,8 +57,9 @@ class SignupForm(forms.Form):
     
     def clean_password(self):
         password = self.cleaned_data.get('password')
+        email = self.cleaned_data.get('email')
         # Valideurs de mots de passe de Django
-        password_validation.validate_password(password, self.instance)
+        password_validation.validate_password(password, email)
         return password
 
     def clean(self):
