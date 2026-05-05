@@ -1,0 +1,33 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="page-header">
+        <h1>Annuaire</h1>
+        <form method="get" action="{% url 'annuaire' %}" class="search-form">
+            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
+            <button type="submit" class="btn btn-outline-primary">Rechercher</button>
+            {% if query %}
+                <a href="{% url 'annuaire' %}" class="btn btn-outline-secondary">Effacer</a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if query %}
+        <p class="search-result-count">{{ personnes|length }} résultat{{ personnes|length|pluralize }} pour « {{ query }} »</p>
+    {% endif %}
+
+    <div class="annuaire-grid">
+        {% for personne in personnes %}
+            <a href="{% url 'personne-detail' personne.pk %}" class="personne-card">
+                <img src="{% if personne.photo_profil %}{{ personne.photo_profil.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                     alt="{{ personne.prenom }} {{ personne.nom }}" class="personne-card-photo">
+                <div class="personne-card-info">
+                    <strong>{{ personne.prenom }} {{ personne.nom }}</strong>
+                    {% if personne.adresse_postale %}<span>{{ personne.adresse_postale }}</span>{% endif %}
+                </div>
+            </a>
+        {% empty %}
+            <p>Aucune personne trouvée.</p>
+        {% endfor %}
+    </div>
+{% endblock content %}

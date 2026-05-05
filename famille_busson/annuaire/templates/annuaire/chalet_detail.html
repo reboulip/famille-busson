@@ -1,0 +1,57 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="flex-title">
+        {% if chalet.photo %}
+            <img src="{{ chalet.photo.url }}" alt="{{ chalet.nom }}" class="expandable-image">
+        {% else %}
+            <div class="chalet-photo-placeholder large">🏔️</div>
+        {% endif %}
+        <div>
+            <h1>{{ chalet.nom }}</h1>
+            <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.adresse|urlencode }}">{{ chalet.adresse }}</a></p>
+            {% if chalet.coordonnees_gps %}<p>📍 {{ chalet.coordonnees_gps }}</p>{% endif %}
+        </div>
+    </div>
+
+    <h2>Présences</h2>
+
+    {% if presences %}
+        <table class="presence-table">
+            <thead>
+                <tr>
+                    <th>Personne</th>
+                    <th>Du</th>
+                    <th>Au</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for presence in presences %}
+                    <tr>
+                        <td><a href="{% url 'personne-detail' presence.personne.pk %}">{{ presence.personne }}</a></td>
+                        <td>{{ presence.date_debut|date:"j F Y" }}</td>
+                        <td>{{ presence.date_fin|date:"j F Y" }}</td>
+                        <td class="presence-actions">
+                            <a href="{% url 'presence-modifier' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form method="post" action="{% url 'presence-supprimer' chalet.pk presence.pk %}" style="display:inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune présence enregistrée pour ce châlet.</p>
+    {% endif %}
+
+    <h2>Ajouter une présence</h2>
+    <form method="post" action="{% url 'presence-ajouter' chalet.pk %}" class="presence-form">
+        {% csrf_token %}
+        {{ form_presence.as_p }}
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </form>
+{% endblock content %}

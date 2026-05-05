@@ -1,6 +1,5 @@
 from django import forms
-from django.contrib.auth.models import User
-from .models import Personne, Relation, Compte
+from .models import Personne, Relation, Compte, PresencePSV
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
 
@@ -71,3 +70,13 @@ class SignupForm(forms.Form):
             if password != password_confirm:
                 raise forms.ValidationError("Les mots de passe ne correspondent pas.")
         return cleaned_data
+
+
+class FormPresencePSV(forms.ModelForm):
+    class Meta:
+        model = PresencePSV
+        fields = ['personne', 'date_debut', 'date_fin']
+        widgets = {
+            'date_debut': forms.DateInput(attrs={'type': 'date'}),
+            'date_fin': forms.DateInput(attrs={'type': 'date'}),
+        }

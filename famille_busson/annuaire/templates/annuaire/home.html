@@ -1,5 +1,35 @@
 {% extends "annuaire/base.html" %}
+{% load static %}
 {% block content %}
-    <h1>Bienvenue sur la page d'accueil</h1>
-    <p>Contenu principal ici.</p>
+    <h1>Famille Busson</h1>
+
+    <div class="tile-grid">
+
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Annuaire</h2>
+                <a href="{% url 'annuaire' %}" class="tile-link">Voir tout →</a>
+            </div>
+            <div class="annuaire-mini-grid">
+                {% for personne in personnes_recentes %}
+                    <a href="{% url 'personne-detail' personne.pk %}" class="personne-mini-card" title="{{ personne.prenom }} {{ personne.nom }}">
+                        <img src="{% if personne.photo_profil %}{{ personne.photo_profil.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                             alt="{{ personne.prenom }}" class="personne-mini-photo">
+                        <span class="personne-mini-nom">{{ personne.prenom }}<br>{{ personne.nom }}</span>
+                    </a>
+                {% empty %}
+                    <p>Aucun profil pour l'instant.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tile tile-placeholder">
+            <div class="tile-header">
+                <h2>Châlets PSV</h2>
+                <a href="{% url 'chalet-list' %}" class="tile-link">Voir tout →</a>
+            </div>
+            <p>Gérez les réservations et présences aux châlets.</p>
+        </div>
+
+    </div>
 {% endblock content %}

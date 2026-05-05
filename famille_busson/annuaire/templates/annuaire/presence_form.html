@@ -1,0 +1,14 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <h1>Modifier la présence</h1>
+    <p>{{ object.personne }} — {{ object.chalet }}</p>
+
+    <form method="post" class="presence-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-group">
+            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
+            <a href="{% url 'chalet-detail' view.kwargs.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        </div>
+    </form>
+{% endblock content %}
