@@ -1,4 +1,5 @@
 from django.db.models.base import Model as Model
+from django.db.models import Q
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -8,7 +9,7 @@ from django.contrib import messages
 from django.views.generic import DetailView, UpdateView, FormView
 from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden
-from .models import Personne, Compte
+from .models import Personne, Compte, Relation
 from .forms import FormEditionProfil, FormSetEditionRelations, CustomAuthenticationForm, SignupForm
 
 def home(request):
@@ -80,6 +81,43 @@ class VueDetailProfil(LoginRequiredMixin, DetailView):
     model = Personne
     template_name = 'annuaire/personne_detail.html'
     context_object_name = 'personne'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        personne = self.get_object()
+
+        # Récupérer le partenaire (mariage ou conjoint)
+        partenaire_relation = Relation.objects.filter(
+            Q(personne1=personne) | Q(personne2=personne),
+            nature_relation__in=[0, 1]
+        ).first()
+        if partenaire_relation:
+            # Identifier le partenaire
+            if partenaire_relation.personne1 == personne:
+                partenaire = partenaire_relation.personne2
+            else:
+                partenaire = partenaire_relation.personne1
+            context['partenaire'] = partenaire
+            context['partenaire_type'] = partenaire_relation.get_nature_relation_display()
+
+        # Récupérer les parents
+        parents_relations = Relation.objects.filter(
+            personne1=personne,
+            nature_relation=2
+        )
+        parents = [rel.personne2 for rel in parents_relations]
+        context['parents'] = parents
+
+        # Récupérer les enfants
+        enfants_relations = Relation.objects.filter(
+            personne1=personne,
+            nature_relation=3
+        )
+        enfants = [rel.personne2 for rel in enfants_relations]
+        context['enfants'] = enfants
+        
+        print(context)
+        return context
 
 
 class VueEditionProfil(LoginRequiredMixin, UpdateView):
