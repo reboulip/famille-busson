@@ -33,4 +33,56 @@
             <p>{{ personne.description }}</p>
         </div>
     {% endif %}
+    <h2>Relations</h2>
+    <!-- Conjoint / époux -->
+    {% if partenaire %}
+        <div class="relations-inline">
+            <div>{{ partenaire_type|title }}</div>
+            <a href="{% url 'personne-detail' partenaire.pk %}" title="{{ partenaire.prenom }} {{ partenaire.nom }}">
+                <img src="{% if partenaire.photo_profil %}
+                            {{ partenaire.photo_profil.url }}
+                        {% else %}
+                            {% static 'default_profile_picture.png' %}
+                        {% endif %}"
+                    alt="Photo de {{ partenaire.prenom }}"
+                    class="profile-picture">
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Parents -->
+    {% if parents %}
+        <div class="relations-inline">
+            <div>Parents</div>
+            {% for parent in parents %}
+                <a href="{% url 'personne-detail' parent.pk %}" title="{{ parent.prenom }} {{ parent.nom }}">
+                    <img src="{% if parent.photo_profil %}
+                                {{ parent.photo_profil.url }}
+                            {% else %}
+                                {% static 'default_profile_picture.png' %}
+                            {% endif %}"
+                        alt="Photo de {{ parent.prenom }} {{ parent.nom }}"
+                        class="profile-picture">
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Enfants -->
+    {% if enfants %}
+        <div class="relations-inline">
+            <div>Enfants</div>
+            {% for enfant in enfants %}
+                <a href="{% url 'personne-detail' enfant.pk %}" title="{{ enfant.prenom }} {{ enfant.nom }}">
+                    <img src="{% if enfant.photo_profil %}
+                                {{ enfant.photo_profil.url }}
+                            {% else %}
+                                {% static 'default_profile_picture.png' %}
+                            {% endif %}"
+                        alt="Photo de {{ enfant.prenom }}"
+                        class="profile-picture">
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
 {% endblock content %}

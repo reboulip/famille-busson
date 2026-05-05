@@ -49,6 +49,18 @@ body {
     border-radius: 0;
 }
 
+.profile-picture  {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius: 50%;
+}
+
+.relations-inline {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
 p {
     margin-top: 0;
     margin-bottom: 0;
@@ -64,5 +76,5 @@ h1 {
 h2 {
     margin-top: .2em;
     margin-bottom: .2em;
-    font-size: 2em;
+    font-size: 1.6em;
 }
