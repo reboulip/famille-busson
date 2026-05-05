@@ -10,9 +10,6 @@ from django.urls import reverse_lazy
 from django.http import HttpResponseForbidden
 from .models import Personne, Compte
 from .forms import FormEditionProfil, FormSetEditionRelations, CustomAuthenticationForm, SignupForm
-from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
-from allauth.socialaccount.providers.oauth2.client import OAuth2Client
-from dj_rest_auth.registration.views import SocialLoginView
 
 def home(request):
     return render(request, 'annuaire/home.html')
@@ -54,12 +51,6 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('accueil')
-
-
-# Vue pour la connexion avec Google (gérée par django-allauth)
-class GoogleLogin(SocialLoginView):
-    adapter_class = GoogleOAuth2Adapter
-    client_class = OAuth2Client
 
 
 class SignupView(FormView):
