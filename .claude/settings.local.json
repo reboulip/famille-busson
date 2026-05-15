@@ -3,7 +3,9 @@
     "allow": [
       "Bash(find /mnt/c/Users/romai/code-projects/famille-busson -type f \\\\\\( -name \"*.py\" -o -name \"*.html\" -o -name \"*.txt\" -o -name \"*.md\" \\\\\\) ! -path \"*/.venv/*\" ! -path \"*/__pycache__/*\" 2>/dev/null | head -50)",
       "Read(//mnt/c/Users/romai/code-projects/**)",
-      "PowerShell(cd 'c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson'; Get-ChildItem -Path './famille_busson' -Recurse -Directory | Where-Object {$_.Name -eq 'migrations'} | Select-Object -ExpandProperty FullName)"
+      "PowerShell(cd 'c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson'; Get-ChildItem -Path './famille_busson' -Recurse -Directory | Where-Object {$_.Name -eq 'migrations'} | Select-Object -ExpandProperty FullName)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
