@@ -27,6 +27,18 @@ Page d'accueil refaite avec une grille de tuiles extensible : tuile annuaire (6 
 
 ---
 
+## Migration Bootstrap 4 → Bootstrap 5 (priorité moyenne)
+
+`crispy_forms` est actuellement configuré avec le pack `crispy_bootstrap4` (`CRISPY_TEMPLATE_PACK = 'bootstrap4'`), alors que le projet cible Bootstrap 5.
+
+Étapes :
+- Remplacer `crispy-bootstrap4` par `crispy-bootstrap5` (`uv add crispy-bootstrap5 && uv remove crispy-bootstrap4`)
+- Mettre à jour `INSTALLED_APPS` : remplacer `crispy_bootstrap4` par `crispy_bootstrap5`
+- Mettre à jour `CRISPY_TEMPLATE_PACK = 'bootstrap5'`
+- Vérifier les templates pour les classes ou structures spécifiques à Bootstrap 4 (ex. `form-row` → `row`, `custom-select` → `form-select`, etc.)
+
+---
+
 ## Nettoyage (priorité moyenne)
 
 ### ~~Print statements de debug~~ ✅
