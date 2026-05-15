@@ -29,7 +29,7 @@ class CustomAuthenticationForm(AuthenticationForm):
 
         return self.cleaned_data
     
-    def get_user(self) -> User:
+    def get_user(self) -> Compte:
         email = self.cleaned_data.get('username')
         compte = Compte.objects.get(email=email)
         return compte
