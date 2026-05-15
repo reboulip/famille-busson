@@ -10,17 +10,18 @@
 ## 2. Critical Configuration (Custom User)
 **IMPORTANT:** This project uses a Custom User Model.
 - **App:** `annuaire`
-- **Model Name:** `Compte`
-- **Settings:** `AUTH_USER_MODEL = 'annuaire.Compte'`
-- **Inheritance:** Inherits from AbstractBaseUser
+- **Model Name:** `Account`
+- **Settings:** `AUTH_USER_MODEL = 'annuaire.Account'`
+- **Inheritance:** Inherits from `AbstractBaseUser` + `PermissionsMixin`
+- **Profile model:** `Person` — linked via `Person.account = OneToOneField(Account, related_name='profile')`
 
-> *Note to AI: Always use `get_user_model()` or refer to `annuaire.Personne` for ForeignKeys. Never suggest using the default `django.contrib.auth.models.User`.*
+> *Note to AI: Always use `get_user_model()` or `settings.AUTH_USER_MODEL` in ForeignKeys. Never reference `django.contrib.auth.models.User`. Access the profile from a user instance via `user.profile`.*
 
 ## 3. Project Structure
 - **Root Directory:** `famille_busson`
 - **Main App (Settings):** `famille_busson`
 - **Functional Apps:**
-    - `annuaire`: Manages users (Personne)
+    - `annuaire`: Manages users (`Person`), family relations (`Relation`), chalets (`Chalet`), and presences (`PresencePSV`)
 
 ## 4. Coding Standards & Preferences
 - **Views:** Class-Based Views preferred. Ownership checks go in `get_object()`, raising `PermissionDenied`.
@@ -43,7 +44,7 @@ Two signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`
 2. **`Relation` post-save:** automatically creates or updates the inverse `Relation` (parent ↔ enfant, conjoint ↔ conjoint). **Never create inverse `Relation` objects manually.**
 
 ## 7. Frontend — Bootstrap 5 / Crispy Forms
-Target frontend is **Bootstrap 5**. Crispy Forms is currently wired to `crispy_bootstrap4` (pending migration — see ROADMAP). When writing new templates, use Bootstrap 5 classes. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).
+Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMPLATE_PACK = 'bootstrap5'`). Use Bootstrap 5 classes in all templates. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).
 
 **No REST API:** `djangorestframework` and `dj-rest-auth` are installed but not configured. All views render Django templates. Do not generate serializers or API views unless explicitly asked.
 

@@ -3,14 +3,14 @@
 {% block content %}
     <div class="flex-title">
         {% if chalet.photo %}
-            <img src="{{ chalet.photo.url }}" alt="{{ chalet.nom }}" class="expandable-image">
+            <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="expandable-image">
         {% else %}
             <div class="chalet-photo-placeholder large">🏔️</div>
         {% endif %}
         <div>
-            <h1>{{ chalet.nom }}</h1>
-            <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.adresse|urlencode }}">{{ chalet.adresse }}</a></p>
-            {% if chalet.coordonnees_gps %}<p>📍 {{ chalet.coordonnees_gps }}</p>{% endif %}
+            <h1>{{ chalet.name }}</h1>
+            <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>
+            {% if chalet.gps_coordinates %}<p>📍 {{ chalet.gps_coordinates }}</p>{% endif %}
         </div>
     </div>
 
@@ -29,12 +29,12 @@
             <tbody>
                 {% for presence in presences %}
                     <tr>
-                        <td><a href="{% url 'personne-detail' presence.personne.pk %}">{{ presence.personne }}</a></td>
-                        <td>{{ presence.date_debut|date:"j F Y" }}</td>
-                        <td>{{ presence.date_fin|date:"j F Y" }}</td>
+                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                        <td>{{ presence.start_date|date:"j F Y" }}</td>
+                        <td>{{ presence.end_date|date:"j F Y" }}</td>
                         <td class="presence-actions">
-                            <a href="{% url 'presence-modifier' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                            <form method="post" action="{% url 'presence-supprimer' chalet.pk presence.pk %}" style="display:inline">
+                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
                                 {% csrf_token %}
                                 <button type="submit" class="btn btn-sm btn-outline-danger"
                                         onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
@@ -49,9 +49,9 @@
     {% endif %}
 
     <h2>Ajouter une présence</h2>
-    <form method="post" action="{% url 'presence-ajouter' chalet.pk %}" class="presence-form">
+    <form method="post" action="{% url 'presence-add' chalet.pk %}" class="presence-form">
         {% csrf_token %}
-        {{ form_presence.as_p }}
+        {{ presence_form.as_p }}
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </form>
 {% endblock content %}

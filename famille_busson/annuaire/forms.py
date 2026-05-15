@@ -1,16 +1,17 @@
 from django import forms
-from .models import Personne, Relation, Compte, PresencePSV
+from .models import Person, Relation, Account, PresencePSV
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
 
-class FormEditionProfil(forms.ModelForm):
+
+class ProfileEditForm(forms.ModelForm):
     class Meta:
-        model = Personne
-        fields = ['prenom', 'nom', 'photo_profil', 'email', 'numero_telephone', 'adresse_postale', 'date_naissance', 'description']
+        model = Person
+        fields = ['first_name', 'last_name', 'profile_photo', 'email', 'phone_number', 'postal_address', 'birth_date', 'description']
 
 
-FormSetEditionRelations = forms.inlineformset_factory(Personne, Relation, fk_name='personne1', extra=1,
-                                                      fields=['personne2', 'nature_relation', 'date_debut'])
+RelationEditFormSet = forms.inlineformset_factory(Person, Relation, fk_name='person1', extra=1,
+                                                  fields=['person2', 'relationship_type', 'start_date'])
 
 
 class CustomAuthenticationForm(AuthenticationForm):
@@ -28,11 +29,11 @@ class CustomAuthenticationForm(AuthenticationForm):
                 self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
-    
-    def get_user(self) -> Compte:
+
+    def get_user(self) -> Account:
         email = self.cleaned_data.get('username')
-        compte = Compte.objects.get(email=email)
-        return compte
+        account = Account.objects.get(email=email)
+        return account
 
 
 class SignupForm(forms.Form):
@@ -50,14 +51,13 @@ class SignupForm(forms.Form):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if Compte.objects.filter(email=email).exists():
+        if Account.objects.filter(email=email).exists():
             raise forms.ValidationError("Un compte avec cet email existe déjà.")
         return email
-    
+
     def clean_password(self):
         password = self.cleaned_data.get('password')
         email = self.cleaned_data.get('email')
-        # Valideurs de mots de passe de Django
         password_validation.validate_password(password, email)
         return password
 
@@ -72,11 +72,11 @@ class SignupForm(forms.Form):
         return cleaned_data
 
 
-class FormPresencePSV(forms.ModelForm):
+class PresenceForm(forms.ModelForm):
     class Meta:
         model = PresencePSV
-        fields = ['personne', 'date_debut', 'date_fin']
+        fields = ['person', 'start_date', 'end_date']
         widgets = {
-            'date_debut': forms.DateInput(attrs={'type': 'date'}),
-            'date_fin': forms.DateInput(attrs={'type': 'date'}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}),
+            'end_date': forms.DateInput(attrs={'type': 'date'}),
         }

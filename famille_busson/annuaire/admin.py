@@ -1,11 +1,13 @@
 from django.contrib import admin
-from .models import Personne, Compte, Relation, Chalet, PresencePSV
+from .models import Person, Account, Relation, Chalet, PresencePSV
 
-@admin.register(Personne)
-class PersonneAdmin(admin.ModelAdmin):
-    list_display = ('prenom', 'nom', 'email')
 
-admin.site.register(Compte)
+@admin.register(Person)
+class PersonAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'email')
+
+
+admin.site.register(Account)
 admin.site.register(Relation)
 admin.site.register(Chalet)
 admin.site.register(PresencePSV)

@@ -27,7 +27,7 @@ Page d'accueil refaite avec une grille de tuiles extensible : tuile annuaire (6 
 
 ---
 
-## Migration Bootstrap 4 → Bootstrap 5 (priorité moyenne)
+## ~~Migration Bootstrap 4 → Bootstrap 5~~ ✅
 
 `crispy_forms` est actuellement configuré avec le pack `crispy_bootstrap4` (`CRISPY_TEMPLATE_PACK = 'bootstrap4'`), alors que le projet cible Bootstrap 5.
 

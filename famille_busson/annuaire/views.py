@@ -8,30 +8,30 @@ from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.views.generic import DetailView, UpdateView, FormView, ListView, CreateView, DeleteView
 from django.urls import reverse_lazy
-from .models import Personne, Compte, Relation, Chalet, PresencePSV
-from .forms import FormEditionProfil, FormSetEditionRelations, CustomAuthenticationForm, SignupForm, FormPresencePSV
+from .models import Person, Account, Relation, Chalet, PresencePSV
+from .forms import ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm, SignupForm, PresenceForm
 
 
 def home(request):
-    personnes_recentes = Personne.objects.all().order_by('-pk')[:6]
-    return render(request, 'annuaire/home.html', {'personnes_recentes': personnes_recentes})
+    recent_persons = Person.objects.all().order_by('-pk')[:6]
+    return render(request, 'annuaire/home.html', {'recent_persons': recent_persons})
 
 
 @login_required
 def my_profile(request):
     try:
-        personne = Personne.objects.get(compte=request.user)
-        return redirect('personne-detail', pk=personne.pk)
-    except Personne.DoesNotExist:
+        person = Person.objects.get(account=request.user)
+        return redirect('personne-detail', pk=person.pk)
+    except Person.DoesNotExist:
         return render(request, 'annuaire/no_profile.html')
 
 
 @login_required
 def edit_my_profile(request):
     try:
-        personne = Personne.objects.get(compte=request.user)
-        return redirect('personne-edition', pk=personne.pk)
-    except Personne.DoesNotExist:
+        person = Person.objects.get(account=request.user)
+        return redirect('person-edit', pk=person.pk)
+    except Person.DoesNotExist:
         return render(request, 'annuaire/no_profile.html')
 
 
@@ -42,7 +42,7 @@ class CustomLoginView(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
-        if hasattr(user, 'profil'):
+        if hasattr(user, 'profile'):
             login(self.request, user)
             return redirect(self.get_success_url())
         else:
@@ -50,7 +50,7 @@ class CustomLoginView(LoginView):
             return redirect('login')
 
     def get_success_url(self):
-        return reverse_lazy('accueil')
+        return reverse_lazy('home')
 
 
 class SignupView(FormView):
@@ -62,30 +62,30 @@ class SignupView(FormView):
         email = form.cleaned_data.get('email')
         password = form.cleaned_data.get('password')
 
-        if not Personne.objects.filter(email=email).exists():
+        if not Person.objects.filter(email=email).exists():
             messages.error(self.request, "Adresse email non reconnue, vous ne pouvez pas créer de compte.")
             return self.form_invalid(form)
-        elif Compte.objects.filter(email=email).exists():
+        elif Account.objects.filter(email=email).exists():
             messages.error(self.request, "Un compte avec cet email existe déjà.")
             return redirect('login')
         else:
-            user = Compte.objects.create_user(email=email)
+            user = Account.objects.create_user(email=email)
             user.set_password(password)
             user.save()
             login(self.request, user)
             return super().form_valid(form)
 
 
-class VueListeAnnuaire(LoginRequiredMixin, ListView):
-    model = Personne
+class DirectoryListView(LoginRequiredMixin, ListView):
+    model = Person
     template_name = 'annuaire/annuaire_list.html'
-    context_object_name = 'personnes'
+    context_object_name = 'persons'
 
     def get_queryset(self):
         q = self.request.GET.get('q', '')
-        qs = Personne.objects.all().order_by('nom', 'prenom')
+        qs = Person.objects.all().order_by('last_name', 'first_name')
         if q:
-            qs = qs.filter(Q(nom__icontains=q) | Q(prenom__icontains=q))
+            qs = qs.filter(Q(last_name__icontains=q) | Q(first_name__icontains=q))
         return qs
 
     def get_context_data(self, **kwargs):
@@ -94,54 +94,54 @@ class VueListeAnnuaire(LoginRequiredMixin, ListView):
         return context
 
 
-class VueDetailProfil(LoginRequiredMixin, DetailView):
-    model = Personne
+class ProfileDetailView(LoginRequiredMixin, DetailView):
+    model = Person
     template_name = 'annuaire/personne_detail.html'
-    context_object_name = 'personne'
+    context_object_name = 'person'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        personne = self.get_object()
+        person = self.get_object()
 
-        partenaire_relation = Relation.objects.filter(
-            Q(personne1=personne) | Q(personne2=personne),
-            nature_relation__in=[0, 1]
+        partner_relation = Relation.objects.filter(
+            Q(person1=person) | Q(person2=person),
+            relationship_type__in=[0, 1]
         ).first()
-        if partenaire_relation:
-            if partenaire_relation.personne1 == personne:
-                partenaire = partenaire_relation.personne2
+        if partner_relation:
+            if partner_relation.person1 == person:
+                partner = partner_relation.person2
             else:
-                partenaire = partenaire_relation.personne1
-            context['partenaire'] = partenaire
-            context['partenaire_type'] = partenaire_relation.get_nature_relation_display()
+                partner = partner_relation.person1
+            context['partner'] = partner
+            context['partner_type'] = partner_relation.get_relationship_type_display()
 
-        parents_relations = Relation.objects.filter(personne1=personne, nature_relation=2)
-        context['parents'] = [rel.personne2 for rel in parents_relations]
+        parent_relations = Relation.objects.filter(person1=person, relationship_type=2)
+        context['parents'] = [rel.person2 for rel in parent_relations]
 
-        enfants_relations = Relation.objects.filter(personne1=personne, nature_relation=3)
-        context['enfants'] = [rel.personne2 for rel in enfants_relations]
+        child_relations = Relation.objects.filter(person1=person, relationship_type=3)
+        context['children'] = [rel.person2 for rel in child_relations]
 
         return context
 
 
-class VueEditionProfil(LoginRequiredMixin, UpdateView):
-    model = Personne
-    form_class = FormEditionProfil
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    model = Person
+    form_class = ProfileEditForm
     template_name = 'annuaire/update_form.html'
     success_url = reverse_lazy('my-profile')
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
-        if obj != self.request.user.profil:
+        if obj != self.request.user.profile:
             raise PermissionDenied("Vous ne pouvez pas éditer ce profil car ce n'est pas le vôtre.")
         return obj
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         if self.request.POST:
-            data['formsets'] = [FormSetEditionRelations(self.request.POST, instance=self.object)]
+            data['formsets'] = [RelationEditFormSet(self.request.POST, instance=self.object)]
         else:
-            data['formsets'] = [FormSetEditionRelations(instance=self.object)]
+            data['formsets'] = [RelationEditFormSet(instance=self.object)]
         return data
 
     def form_valid(self, form):
@@ -156,27 +156,27 @@ class VueEditionProfil(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class VueListeChalets(LoginRequiredMixin, ListView):
+class ChaletListView(LoginRequiredMixin, ListView):
     model = Chalet
     template_name = 'annuaire/chalet_list.html'
     context_object_name = 'chalets'
 
 
-class VueDetailChalet(LoginRequiredMixin, DetailView):
+class ChaletDetailView(LoginRequiredMixin, DetailView):
     model = Chalet
     template_name = 'annuaire/chalet_detail.html'
     context_object_name = 'chalet'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('date_debut')
-        context['form_presence'] = FormPresencePSV(initial={'chalet': self.object})
+        context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('start_date')
+        context['presence_form'] = PresenceForm(initial={'chalet': self.object})
         return context
 
 
-class VueAjouterPresence(LoginRequiredMixin, CreateView):
+class AddPresenceView(LoginRequiredMixin, CreateView):
     model = PresencePSV
-    form_class = FormPresencePSV
+    form_class = PresenceForm
 
     def form_valid(self, form):
         form.instance.chalet_id = self.kwargs['pk']
@@ -190,9 +190,9 @@ class VueAjouterPresence(LoginRequiredMixin, CreateView):
         return redirect('chalet-detail', pk=self.kwargs['pk'])
 
 
-class VueModifierPresence(LoginRequiredMixin, UpdateView):
+class UpdatePresenceView(LoginRequiredMixin, UpdateView):
     model = PresencePSV
-    form_class = FormPresencePSV
+    form_class = PresenceForm
     template_name = 'annuaire/presence_form.html'
     pk_url_kwarg = 'presence_pk'
 
@@ -200,7 +200,7 @@ class VueModifierPresence(LoginRequiredMixin, UpdateView):
         return reverse_lazy('chalet-detail', kwargs={'pk': self.kwargs['pk']})
 
 
-class VueSupprimerPresence(LoginRequiredMixin, DeleteView):
+class DeletePresenceView(LoginRequiredMixin, DeleteView):
     model = PresencePSV
     pk_url_kwarg = 'presence_pk'
 

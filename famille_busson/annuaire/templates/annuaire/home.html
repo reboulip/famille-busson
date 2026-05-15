@@ -8,14 +8,14 @@
         <div class="tile">
             <div class="tile-header">
                 <h2>Annuaire</h2>
-                <a href="{% url 'annuaire' %}" class="tile-link">Voir tout →</a>
+                <a href="{% url 'directory' %}" class="tile-link">Voir tout →</a>
             </div>
             <div class="annuaire-mini-grid">
-                {% for personne in personnes_recentes %}
-                    <a href="{% url 'personne-detail' personne.pk %}" class="personne-mini-card" title="{{ personne.prenom }} {{ personne.nom }}">
-                        <img src="{% if personne.photo_profil %}{{ personne.photo_profil.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                             alt="{{ personne.prenom }}" class="personne-mini-photo">
-                        <span class="personne-mini-nom">{{ personne.prenom }}<br>{{ personne.nom }}</span>
+                {% for person in recent_persons %}
+                    <a href="{% url 'personne-detail' person.pk %}" class="personne-mini-card" title="{{ person.first_name }} {{ person.last_name }}">
+                        <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                             alt="{{ person.first_name }}" class="personne-mini-photo">
+                        <span class="personne-mini-nom">{{ person.first_name }}<br>{{ person.last_name }}</span>
                     </a>
                 {% empty %}
                     <p>Aucun profil pour l'instant.</p>

@@ -2,49 +2,49 @@
 {% load static %}
 {% block content %}
     <div class="flex-title">
-        {% if personne.photo_profil %}
-            <a href="{{ personne.photo_profil.url }}">
-                <img class="expandable-image" src="{{ personne.photo_profil.url }}"
-                alt="Photo de profil de {{ personne.prenom }} {{ personne.nom }}" />
+        {% if person.profile_photo %}
+            <a href="{{ person.profile_photo.url }}">
+                <img class="expandable-image" src="{{ person.profile_photo.url }}"
+                alt="Photo de profil de {{ person.first_name }} {{ person.last_name }}" />
             </a>
         {% else %}
             <img class="expandable-image" src={% static 'default_profile_picture.png' %} alt="Photo par défaut">
         {% endif %}
         <div>
-            <h1>{{ personne.prenom }} {{ personne.nom }}</h1>
+            <h1>{{ person.first_name }} {{ person.last_name }}</h1>
             <p>
-                📧 <a href="mailto:{{ personne.prenom }} {{ personne.nom }}<{{ personne.email }}>">{{ personne.email }}</a>
-                {% if personne.numero_telephone %}
-                - ☎️ <a href="sip:{{ personne.numero_telephone }}">{{ personne.numero_telephone }}</a>
+                📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email }}>">{{ person.email }}</a>
+                {% if person.phone_number %}
+                - ☎️ <a href="sip:{{ person.phone_number }}">{{ person.phone_number }}</a>
                 {% endif %}
             </p>
-            {% if personne.adresse_postale %}
-                <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ personne.adresse_postale|urlencode }}">
-                    {{ personne.adresse_postale}}
+            {% if person.postal_address %}
+                <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">
+                    {{ person.postal_address}}
                     </a>
                 </p>
             {% endif %}
-            {% if personne.date_naissance %}<p>🎂 {{ personne.date_naissance|date:"j F Y" }}</p>{% endif %}
+            {% if person.birth_date %}<p>🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
         </div>
     </div>
-    {% if personne.description %}
+    {% if person.description %}
         <div class="annuaire-description">
-            <h2>À propos de {{ personne.prenom }}</h2>
-            <p>{{ personne.description }}</p>
+            <h2>À propos de {{ person.first_name }}</h2>
+            <p>{{ person.description }}</p>
         </div>
     {% endif %}
     <h2>Relations</h2>
     <!-- Conjoint / époux -->
-    {% if partenaire %}
+    {% if partner %}
         <div class="relations-inline">
-            <div>{{ partenaire_type|title }}</div>
-            <a href="{% url 'personne-detail' partenaire.pk %}" title="{{ partenaire.prenom }} {{ partenaire.nom }}">
-                <img src="{% if partenaire.photo_profil %}
-                            {{ partenaire.photo_profil.url }}
+            <div>{{ partner_type|title }}</div>
+            <a href="{% url 'personne-detail' partner.pk %}" title="{{ partner.first_name }} {{ partner.last_name }}">
+                <img src="{% if partner.profile_photo %}
+                            {{ partner.profile_photo.url }}
                         {% else %}
                             {% static 'default_profile_picture.png' %}
                         {% endif %}"
-                    alt="Photo de {{ partenaire.prenom }}"
+                    alt="Photo de {{ partner.first_name }}"
                     class="profile-picture">
             </a>
         </div>
@@ -55,13 +55,13 @@
         <div class="relations-inline">
             <div>Parents</div>
             {% for parent in parents %}
-                <a href="{% url 'personne-detail' parent.pk %}" title="{{ parent.prenom }} {{ parent.nom }}">
-                    <img src="{% if parent.photo_profil %}
-                                {{ parent.photo_profil.url }}
+                <a href="{% url 'personne-detail' parent.pk %}" title="{{ parent.first_name }} {{ parent.last_name }}">
+                    <img src="{% if parent.profile_photo %}
+                                {{ parent.profile_photo.url }}
                             {% else %}
                                 {% static 'default_profile_picture.png' %}
                             {% endif %}"
-                        alt="Photo de {{ parent.prenom }} {{ parent.nom }}"
+                        alt="Photo de {{ parent.first_name }} {{ parent.last_name }}"
                         class="profile-picture">
                 </a>
             {% endfor %}
@@ -69,17 +69,17 @@
     {% endif %}
 
     <!-- Enfants -->
-    {% if enfants %}
+    {% if children %}
         <div class="relations-inline">
             <div>Enfants</div>
-            {% for enfant in enfants %}
-                <a href="{% url 'personne-detail' enfant.pk %}" title="{{ enfant.prenom }} {{ enfant.nom }}">
-                    <img src="{% if enfant.photo_profil %}
-                                {{ enfant.photo_profil.url }}
+            {% for child in children %}
+                <a href="{% url 'personne-detail' child.pk %}" title="{{ child.first_name }} {{ child.last_name }}">
+                    <img src="{% if child.profile_photo %}
+                                {{ child.profile_photo.url }}
                             {% else %}
                                 {% static 'default_profile_picture.png' %}
                             {% endif %}"
-                        alt="Photo de {{ enfant.prenom }}"
+                        alt="Photo de {{ child.first_name }}"
                         class="profile-picture">
                 </a>
             {% endfor %}

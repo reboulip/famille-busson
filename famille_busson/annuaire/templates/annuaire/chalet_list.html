@@ -7,13 +7,13 @@
         {% for chalet in chalets %}
             <a href="{% url 'chalet-detail' chalet.pk %}" class="personne-card">
                 {% if chalet.photo %}
-                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.nom }}" class="personne-card-photo">
+                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="personne-card-photo">
                 {% else %}
                     <div class="chalet-photo-placeholder">🏔️</div>
                 {% endif %}
                 <div class="personne-card-info">
-                    <strong>{{ chalet.nom }}</strong>
-                    <span>{{ chalet.adresse }}</span>
+                    <strong>{{ chalet.name }}</strong>
+                    <span>{{ chalet.address }}</span>
                 </div>
             </a>
         {% empty %}

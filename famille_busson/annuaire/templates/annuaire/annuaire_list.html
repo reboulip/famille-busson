@@ -3,27 +3,27 @@
 {% block content %}
     <div class="page-header">
         <h1>Annuaire</h1>
-        <form method="get" action="{% url 'annuaire' %}" class="search-form">
+        <form method="get" action="{% url 'directory' %}" class="search-form">
             <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
             <button type="submit" class="btn btn-outline-primary">Rechercher</button>
             {% if query %}
-                <a href="{% url 'annuaire' %}" class="btn btn-outline-secondary">Effacer</a>
+                <a href="{% url 'directory' %}" class="btn btn-outline-secondary">Effacer</a>
             {% endif %}
         </form>
     </div>
 
     {% if query %}
-        <p class="search-result-count">{{ personnes|length }} résultat{{ personnes|length|pluralize }} pour « {{ query }} »</p>
+        <p class="search-result-count">{{ persons|length }} résultat{{ persons|length|pluralize }} pour « {{ query }} »</p>
     {% endif %}
 
     <div class="annuaire-grid">
-        {% for personne in personnes %}
-            <a href="{% url 'personne-detail' personne.pk %}" class="personne-card">
-                <img src="{% if personne.photo_profil %}{{ personne.photo_profil.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                     alt="{{ personne.prenom }} {{ personne.nom }}" class="personne-card-photo">
+        {% for person in persons %}
+            <a href="{% url 'personne-detail' person.pk %}" class="personne-card">
+                <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                     alt="{{ person.first_name }} {{ person.last_name }}" class="personne-card-photo">
                 <div class="personne-card-info">
-                    <strong>{{ personne.prenom }} {{ personne.nom }}</strong>
-                    {% if personne.adresse_postale %}<span>{{ personne.adresse_postale }}</span>{% endif %}
+                    <strong>{{ person.first_name }} {{ person.last_name }}</strong>
+                    {% if person.postal_address %}<span>{{ person.postal_address }}</span>{% endif %}
                 </div>
             </a>
         {% empty %}
