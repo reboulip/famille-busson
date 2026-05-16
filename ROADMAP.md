@@ -49,22 +49,19 @@ Les 5 `print()` ont été supprimés de `views.py`.
 
 ---
 
-## Management of static files
+## ~~Management of static files~~ ✅
 
-Some warnings are present in the django logs:
-- ?: (staticfiles.W004) The directory 'C:\Users\romai\code-projects\famille-busson\famille_busson\static\images' in the STATICFILES_DIRS setting does not exist
-- "GET /static/js/bootstrap.min.js HTTP/1.1" 404 1984
-
-These warnings mean there is something wrong, following tasks should probably be performed:
-- Analyze the current organization of css and js files from bootstrap
-- Change files location if necessary and update the settings
+- `STATICFILES_DIRS` pointait sur `static/images/` (dossier inexistant) → supprimé. Les fichiers statiques de l'app `annuaire` sont découverts automatiquement via `AppDirectoriesFinder`.
+- La balise `<script src="js/bootstrap.min.js">` chargeait un fichier inexistant → retirée. Aucun composant Bootstrap 5 JS (`data-bs-*`) n'est utilisé dans les templates.
 
 ---
 
-## Tests (priorité basse)
+## ~~Tests (priorité basse)~~ ✅
 
-`tests.py` est vide. Fonctionnalités à couvrir en priorité :
-- Création de compte (vérification de l'email pré-existant)
-- Authentification
-- Édition de profil (accès restreint au propriétaire)
-- Signaux de création des relations inverses
+Suite de tests complète en place dans `famille_busson/annuaire/tests/` :
+- `test_views_auth.py` — création de compte, authentification
+- `test_views_profile.py` — édition de profil restreinte au propriétaire
+- `test_views_chalets.py` — chalets, présences, recherche AJAX de personnes
+- `test_views_staff.py` — création en masse de comptes
+- `test_views_password.py` — middleware de changement forcé de mot de passe
+Fixtures partagées dans `conftest.py`. CI sur push via `.github/workflows/tests.yml`.
