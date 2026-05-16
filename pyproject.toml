@@ -25,3 +25,25 @@ dependencies = [
     "tzdata>=2025.3",
     "urllib3>=2.6.3",
 ]
+
+[dependency-groups]
+test = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "pytest-cov>=6.0",
+    "coverage[toml]>=7.6",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "famille_busson.settings"
+pythonpath = ["famille_busson"]
+testpaths = ["famille_busson/annuaire/tests"]
+addopts = "-v --tb=short --cov=annuaire --cov-report=term-missing --cov-fail-under=80"
+
+[tool.coverage.run]
+source = ["annuaire"]
+omit = ["*/migrations/*", "*/tests/*", "manage.py"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = false

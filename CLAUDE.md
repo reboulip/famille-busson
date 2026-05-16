@@ -49,18 +49,26 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 **No REST API:** `djangorestframework` and `dj-rest-auth` are installed but not configured. All views render Django templates. Do not generate serializers or API views unless explicitly asked.
 
 ## 8. Common Commands Reference
-- **Run Server:** `python manage.py runserver` (from `famille_busson/`)
-- **Migrate:** `python manage.py makemigrations` / `python manage.py migrate`
-- **Shell:** `python manage.py shell`
+- **Run Server:** `uv run python manage.py runserver` (from `famille_busson/`)
+- **Migrate:** `uv run python manage.py makemigrations` / `uv run python manage.py migrate`
+- **Shell:** `uv run python manage.py shell`
 - **Add dependency:** `uv add <package>`
 - **Install deps:** `uv sync`
 
-## 9. Git workflow
+## 9. Tests
+- **Install test deps (once):** `uv sync --group test` (from repo root)
+- **Run tests:** `uv run --group test pytest` (from repo root)
+- **Run a single file:** `uv run --group test pytest famille_busson/annuaire/tests/test_views_auth.py`
+- **HTML coverage report:** `uv run --group test pytest --cov-report=html` → open `htmlcov/index.html`
+
+Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, persons, chalets) are in `conftest.py`. CI runs automatically on push to `develop` and `main` via `.github/workflows/tests.yml`.
+
+## 10. Git workflow
 - **Branches:** `develop` for active development, `main` for stable releases. Always work on `develop`.
 - **Migrations are gitignored:** `migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
 - **Also gitignored:** `db.sqlite3`, `.env`, `famille_busson/static/`, `famille_busson/media/`.
 
-## 10. Instructions for Claude
+## 11. Instructions for Claude
 1. **Always verify migrations:** Before suggesting a model change, remind me of the impact on the Custom User Model.
 2. **Be Concise:** Provide code snippets first, followed by brief explanations.
 3. **Check Imports:** Ensure `from django.conf import settings` is used when referencing the User model in ForeignKeys.

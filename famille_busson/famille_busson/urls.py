@@ -22,6 +22,6 @@ from famille_busson import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('annuaire/', include('annuaire.urls')),
-    path('', RedirectView.as_view(pattern_name='accueil'))
+    path('', RedirectView.as_view(pattern_name='home'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
   + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

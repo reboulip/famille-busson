@@ -113,6 +113,7 @@ AUTH_USER_MODEL = 'annuaire.Account'
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
+LOGIN_URL = '/annuaire/login/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
