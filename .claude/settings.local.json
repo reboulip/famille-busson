@@ -6,7 +6,8 @@
       "PowerShell(cd 'c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson'; Get-ChildItem -Path './famille_busson' -Recurse -Directory | Where-Object {$_.Name -eq 'migrations'} | Select-Object -ExpandProperty FullName)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "PowerShell(Get-Content \"C:\\\\Users\\\\romai\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-romai-code-projects-famille-busson\\\\218e6593-79cc-409b-b56f-afecb6eff9d6\\\\tasks\\\\byd5n2lns.output\" -Wait -Tail 30)"
+      "PowerShell(cd \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\"; uv run --group test pytest *)",
+      "PowerShell(cd \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\"; uv run --group test pytest)"
     ]
   }
 }

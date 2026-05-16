@@ -82,5 +82,5 @@ Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, perso
      - **B)** Don't commit yet
    Never commit or run tests without this explicit choice.
 5. **Tests gate commits:** If tests were run and any failed, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose to commit without tests).
-6. **Test file changes require approval:** Before writing or modifying any file under `famille_busson/annuaire/tests/`, present the planned changes and wait for user approval. Do not auto-apply test edits.
+6. **Test changes:** New tests can be written freely. Modifying or deleting existing tests requires presenting the change and waiting for user approval first.
 7. **New view → new tests:** Every new view (function or class-based) must be accompanied by a corresponding test block in the appropriate test file. Do not consider a view complete until its tests are written and passing.

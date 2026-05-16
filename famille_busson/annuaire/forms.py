@@ -1,6 +1,6 @@
 import secrets
 from django import forms
-from .models import Person, Relation, Account, PresencePSV
+from .models import Person, Relation, Account, PresencePSV, Chalet
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
 from django.core.validators import validate_email
@@ -83,6 +83,12 @@ class PresenceForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class ChaletForm(forms.ModelForm):
+    class Meta:
+        model = Chalet
+        fields = ['name', 'address', 'gps_coordinates', 'photo']
 
 
 class BulkAccountCreateForm(forms.Form):

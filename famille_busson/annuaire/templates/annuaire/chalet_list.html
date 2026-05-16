@@ -1,7 +1,12 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% block content %}
-    <h1>Châlets PSV</h1>
+    <div class="page-header">
+        <h1>Chalets PSV</h1>
+        {% if user.is_staff %}
+            <a href="{% url 'chalet-create' %}" class="btn btn-outline-primary">+ Créer un chalet</a>
+        {% endif %}
+    </div>
 
     <div class="annuaire-grid">
         {% for chalet in chalets %}
@@ -17,7 +22,7 @@
                 </div>
             </a>
         {% empty %}
-            <p>Aucun châlet enregistré.</p>
+            <p>Aucun chalet enregistré.</p>
         {% endfor %}
     </div>
 {% endblock content %}

@@ -6,9 +6,9 @@
 Implémentée : `VueListeAnnuaire`, template `annuaire_list.html`, URL `/annuaire/`, barre de recherche nom/prénom.
 
 ### ~~Navigation sidebar~~ ✅
-Sidebar mise à jour avec les vraies URLs (Annuaire, Châlets PSV). Section Publications retirée.
+Sidebar mise à jour avec les vraies URLs (Annuaire, Chalets PSV). Section Publications retirée.
 
-### ~~Châlets~~ ✅
+### ~~Chalets~~ ✅
 Implémentés : `VueListeChalets` + `VueDetailChalet`, templates `chalet_list.html` et `chalet_detail.html`, URLs `/chalets/` et `/chalets/<pk>/`.
 
 ### ~~Présences PSV~~ ✅

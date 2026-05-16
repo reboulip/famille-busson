@@ -1,0 +1,18 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="form">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend>{% if object %}Modifier {{ object.name }}{% else %}Créer un chalet{% endif %}</legend>
+                {{ form.media }}
+                {{ form|crispy }}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
+                <a href="{% url 'chalet-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

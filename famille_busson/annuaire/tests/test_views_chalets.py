@@ -184,3 +184,45 @@ def test_delete_presence_invalid_pk_returns_404(auth_client, chalet):
         reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": 99999})
     )
     assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# ChaletCreateView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_chalet_create_requires_login(client):
+    response = client.get(reverse("chalet-create"))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_chalet_create_requires_staff(auth_client):
+    response = auth_client.get(reverse("chalet-create"))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_chalet_create_get_returns_200(staff_client):
+    response = staff_client.get(reverse("chalet-create"))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_chalet_create_post_creates_chalet(staff_client, db):
+    from annuaire.models import Chalet
+    response = staff_client.post(
+        reverse("chalet-create"),
+        {"name": "Chalet Nouveau", "address": "Route du Col 12, Verbier"},
+    )
+    assert response.status_code == 302
+    chalet = Chalet.objects.get(name="Chalet Nouveau")
+    assert reverse("chalet-detail", kwargs={"pk": chalet.pk}) in response["Location"]
+
+
+@pytest.mark.django_db
+def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, db):
+    response = staff_client.post(reverse("chalet-create"), {"name": "", "address": ""})
+    assert response.status_code == 200
+    assert response.context["form"].errors

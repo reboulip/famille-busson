@@ -14,7 +14,7 @@ from django.urls import reverse_lazy
 from .models import Person, Account, Relation, Chalet, PresencePSV
 from .forms import (
     ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm,
-    SignupForm, PresenceForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
+    SignupForm, PresenceForm, ChaletForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
 )
 
 
@@ -276,6 +276,15 @@ class ChaletListView(LoginRequiredMixin, ListView):
     model = Chalet
     template_name = 'annuaire/chalet_list.html'
     context_object_name = 'chalets'
+
+
+class ChaletCreateView(StaffRequiredMixin, CreateView):
+    model = Chalet
+    form_class = ChaletForm
+    template_name = 'annuaire/chalet_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('chalet-detail', kwargs={'pk': self.object.pk})
 
 
 class ChaletDetailView(LoginRequiredMixin, DetailView):
