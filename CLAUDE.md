@@ -57,11 +57,20 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 
 ## 9. Tests
 - **Install test deps (once):** `uv sync --group test` (from repo root)
-- **Run tests:** `uv run --group test pytest` (from repo root)
+- **Run all tests:** `uv run --group test pytest` (from repo root)
 - **Run a single file:** `uv run --group test pytest famille_busson/annuaire/tests/test_views_auth.py`
+- **Run multiple files:** `uv run --group test pytest famille_busson/annuaire/tests/test_views_auth.py famille_busson/annuaire/tests/test_views_profile.py`
 - **HTML coverage report:** `uv run --group test pytest --cov-report=html` → open `htmlcov/index.html`
 
 Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, persons, chalets) are in `conftest.py`. CI runs automatically on push to `develop` and `main` via `.github/workflows/tests.yml`.
+
+**Test scope selection:** When running tests, select the minimal relevant scope based on the changes made:
+- **Single view/form change** → run only the corresponding test file(s) (e.g. `test_views_chalets.py` for chalet views)
+- **Model change** → run the full suite (models underpin everything)
+- **Settings / middleware / signals change** → run the full suite
+- **Mass refactoring or cross-cutting change** → run the full suite
+- **New feature confined to one area** → run that area's test file(s) plus `conftest.py`-dependent files if fixtures changed
+When in doubt, prefer the full suite. Always state which files you are running and why.
 
 ## 10. Git workflow
 - **Branches:** `develop` for active development, `main` for stable releases. Always work on `develop`.
@@ -73,14 +82,14 @@ Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, perso
 2. **Be Concise:** Provide code snippets first, followed by brief explanations.
 3. **Check Imports:** Ensure `from django.conf import settings` is used when referencing the User model in ForeignKeys.
 4. **End-of-task ritual:** At the end of every task, propose the appropriate options depending on whether tests have already been run during the task:
-   - **If tests were NOT run during the task**, offer all three:
-     - **A)** Run tests and commit if they all pass
-     - **B)** Run tests and report results (no commit)
+   - **If tests were NOT run during the task**, offer all three and state which test files would be run:
+     - **A)** Run relevant tests and commit if they all pass
+     - **B)** Run relevant tests and report results (no commit)
      - **C)** Commit immediately without running tests
    - **If tests were already run and are green**, only offer:
      - **A)** Commit (tests already passed)
      - **B)** Don't commit yet
-   Never commit or run tests without this explicit choice.
+   Never commit or run tests without this explicit choice. Always apply the scope selection rule from section 9 to decide which files to run.
 5. **Tests gate commits:** If tests were run and any failed, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose to commit without tests).
 6. **Test changes:** New tests can be written freely. Modifying or deleting existing tests requires presenting the change and waiting for user approval first.
 7. **New view → new tests:** Every new view (function or class-based) must be accompanied by a corresponding test block in the appropriate test file. Do not consider a view complete until its tests are written and passing.
