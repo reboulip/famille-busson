@@ -1,15 +1,21 @@
+import json
+import secrets
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
 from django.views.generic import DetailView, UpdateView, FormView, ListView, CreateView, DeleteView
 from django.urls import reverse_lazy
 from .models import Person, Account, Relation, Chalet, PresencePSV
-from .forms import ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm, SignupForm, PresenceForm
+from .forms import (
+    ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm,
+    SignupForm, PresenceForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
+)
 
 
 def home(request):
@@ -35,6 +41,15 @@ def edit_my_profile(request):
         return render(request, 'annuaire/no_profile.html')
 
 
+class StaffRequiredMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        if not request.user.is_staff:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+
 class CustomLoginView(LoginView):
     template_name = 'annuaire/login.html'
     authentication_form = CustomAuthenticationForm
@@ -42,8 +57,10 @@ class CustomLoginView(LoginView):
 
     def form_valid(self, form):
         user = form.get_user()
+        login(self.request, user)
+        if user.must_change_password:
+            return redirect('password-change-forced')
         if hasattr(user, 'profile'):
-            login(self.request, user)
             return redirect(self.get_success_url())
         else:
             messages.error(self.request, "Aucun profil associé à cet utilisateur.")
@@ -74,6 +91,89 @@ class SignupView(FormView):
             user.save()
             login(self.request, user)
             return super().form_valid(form)
+
+
+class BulkAccountCreateView(StaffRequiredMixin, FormView):
+    template_name = 'annuaire/bulk_account_create.html'
+    form_class = BulkAccountCreateForm
+
+    def form_valid(self, form):
+        emails = form.cleaned_data['emails']
+        results = []
+        reset_emails = []
+
+        for email in emails:
+            temp_password = secrets.token_urlsafe(12)
+            existing = Account.objects.filter(email=email).first()
+            if existing:
+                existing.set_password(temp_password)
+                existing.must_change_password = True
+                existing.save()
+                results.append({'email': email, 'status': 'reset', 'temp_password': temp_password})
+                reset_emails.append(email)
+            else:
+                account = Account(email=email, must_change_password=True)
+                account.set_password(temp_password)
+                account.save()
+                results.append({'email': email, 'status': 'created', 'temp_password': temp_password})
+
+        if reset_emails:
+            messages.warning(
+                self.request,
+                "Mot de passe réinitialisé pour : " + ", ".join(reset_emails),
+            )
+
+        return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
+
+
+@login_required
+def check_emails_ajax(request):
+    if not request.user.is_staff:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    try:
+        data = json.loads(request.body)
+        emails = data.get('emails', [])
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    existing = list(Account.objects.filter(email__in=emails).values_list('email', flat=True))
+    return JsonResponse({'existing': existing})
+
+
+class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
+    template_name = 'annuaire/password_change_forced.html'
+
+    def get_form(self, form_class=None):
+        if self.request.method == 'POST':
+            return ForcedPasswordChangeForm(self.request.user, self.request.POST)
+        return ForcedPasswordChangeForm(self.request.user)
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        return self.form_invalid(form)
+
+    def form_valid(self, form):
+        user = self.request.user
+        user.set_password(form.cleaned_data['new_password'])
+        user.must_change_password = False
+        user.save()
+        update_session_auth_hash(self.request, user)
+        messages.success(self.request, "Votre mot de passe a été mis à jour.")
+        return redirect('my-profile')
+
+    def form_invalid(self, form):
+        return self.render_to_response(self.get_context_data(form=form))
+
+    def get_context_data(self, **kwargs):
+        from django.contrib.auth.password_validation import password_validators_help_texts
+        context = super().get_context_data(**kwargs)
+        if 'form' not in context:
+            context['form'] = self.get_form()
+        context['password_hints'] = password_validators_help_texts()
+        return context
 
 
 class DirectoryListView(LoginRequiredMixin, ListView):

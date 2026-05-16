@@ -14,6 +14,9 @@
         <ul>
             {% if user.is_authenticated %}
                 <li><a href="{% url 'my-profile' %}">Mon profil</a></li>
+                {% if user.is_staff %}
+                    <li><a href="{% url 'bulk-account-create' %}">Créer des comptes</a></li>
+                {% endif %}
                 <li>
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}

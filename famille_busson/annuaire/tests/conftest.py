@@ -42,6 +42,17 @@ def auth_client(client, account, person):
 
 
 @pytest.fixture
+def staff_account(db):
+    return Account.objects.create_user(email="staff@example.com", password="testpass123!", is_staff=True)
+
+
+@pytest.fixture
+def staff_client(client, staff_account):
+    client.login(username="staff@example.com", password="testpass123!")
+    return client
+
+
+@pytest.fixture
 def chalet(db):
     return Chalet.objects.create(name="Chalet des Alpes", address="Route des Alpes 1, Verbier")
 

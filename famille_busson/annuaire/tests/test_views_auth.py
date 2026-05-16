@@ -103,6 +103,15 @@ def test_signup_existing_account_shows_form_error(client, account, person):
 
 
 @pytest.mark.django_db
+def test_login_redirects_to_forced_change_when_flag_set(client, account, person):
+    account.must_change_password = True
+    account.save()
+    response = client.post(reverse("login"), {"username": "alice@example.com", "password": "testpass123!"})
+    assert response.status_code == 302
+    assert reverse("password-change-forced") in response["Location"]
+
+
+@pytest.mark.django_db
 def test_signup_valid_creates_account_and_logs_in(client, db):
     Person.objects.create(first_name="Carol", last_name="Busson", email="carol@example.com")
     response = client.post(

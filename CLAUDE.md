@@ -72,11 +72,15 @@ Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, perso
 1. **Always verify migrations:** Before suggesting a model change, remind me of the impact on the Custom User Model.
 2. **Be Concise:** Provide code snippets first, followed by brief explanations.
 3. **Check Imports:** Ensure `from django.conf import settings` is used when referencing the User model in ForeignKeys.
-4. **End-of-task ritual:** At the end of every task, always offer the user these three options before doing anything else:
-   - **A)** Run tests and commit if they all pass
-   - **B)** Run tests and report results (no commit)
-   - **C)** Commit immediately without running tests
+4. **End-of-task ritual:** At the end of every task, propose the appropriate options depending on whether tests have already been run during the task:
+   - **If tests were NOT run during the task**, offer all three:
+     - **A)** Run tests and commit if they all pass
+     - **B)** Run tests and report results (no commit)
+     - **C)** Commit immediately without running tests
+   - **If tests were already run and are green**, only offer:
+     - **A)** Commit (tests already passed)
+     - **B)** Don't commit yet
    Never commit or run tests without this explicit choice.
-5. **Tests gate commits:** If option A is chosen and any test fails, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose option C).
+5. **Tests gate commits:** If tests were run and any failed, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose to commit without tests).
 6. **Test file changes require approval:** Before writing or modifying any file under `famille_busson/annuaire/tests/`, present the planned changes and wait for user approval. Do not auto-apply test edits.
 7. **New view → new tests:** Every new view (function or class-based) must be accompanied by a corresponding test block in the appropriate test file. Do not consider a view complete until its tests are written and passing.

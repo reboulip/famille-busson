@@ -23,6 +23,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
+    must_change_password = models.BooleanField(default=False)
     groups = models.ManyToManyField(Group, related_name='account_set', blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name='account_set', blank=True)
     objects = AccountManager()

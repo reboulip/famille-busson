@@ -1,0 +1,96 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+<h1>Créer des comptes</h1>
+
+{% if results %}
+<div class="alert alert-success">
+    <strong>Opération terminée.</strong> {{ results|length }} compte(s) traité(s).
+</div>
+<table class="table table-bordered mt-3">
+    <thead>
+        <tr>
+            <th>Email</th>
+            <th>Statut</th>
+            <th>Mot de passe temporaire</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in results %}
+        <tr class="{% if row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
+            <td>{{ row.email }}</td>
+            <td>{% if row.status == 'created' %}Créé{% else %}Réinitialisé{% endif %}</td>
+            <td><code>{{ row.temp_password }}</code></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<p class="text-muted small">⚠️ Notez ces mots de passe maintenant, ils ne seront plus affichés.</p>
+<hr>
+<h2 class="mt-4">Créer d'autres comptes</h2>
+{% endif %}
+
+<div id="email-warnings" class="alert alert-warning d-none" role="alert">
+    <strong>Attention :</strong> les adresses suivantes ont déjà un compte — leur mot de passe sera réinitialisé :
+    <ul id="email-warnings-list" class="mb-0 mt-1"></ul>
+</div>
+
+<form method="post" id="bulk-create-form">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-primary mt-2">Créer / réinitialiser les comptes</button>
+</form>
+
+<script>
+(function () {
+    const textarea = document.getElementById('id_emails');
+    const warningBox = document.getElementById('email-warnings');
+    const warningList = document.getElementById('email-warnings-list');
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    const checkUrl = '{% url "check-emails-ajax" %}';
+
+    let debounceTimer;
+
+    function parseEmails(text) {
+        return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    }
+
+    function showWarnings(existing) {
+        warningList.innerHTML = '';
+        if (existing.length > 0) {
+            existing.forEach(email => {
+                const li = document.createElement('li');
+                li.textContent = email;
+                warningList.appendChild(li);
+            });
+            warningBox.classList.remove('d-none');
+        } else {
+            warningBox.classList.add('d-none');
+        }
+    }
+
+    function checkEmails() {
+        const emails = parseEmails(textarea.value);
+        if (emails.length === 0) {
+            showWarnings([]);
+            return;
+        }
+        fetch(checkUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+            body: JSON.stringify({emails: emails}),
+        })
+        .then(r => r.json())
+        .then(data => showWarnings(data.existing || []))
+        .catch(() => {});
+    }
+
+    if (textarea) {
+        textarea.addEventListener('input', function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(checkEmails, 400);
+        });
+    }
+})();
+</script>
+{% endblock content %}

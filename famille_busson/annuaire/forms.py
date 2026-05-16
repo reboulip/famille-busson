@@ -1,7 +1,10 @@
+import secrets
 from django import forms
 from .models import Person, Relation, Account, PresencePSV
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 
 class ProfileEditForm(forms.ModelForm):
@@ -80,3 +83,58 @@ class PresenceForm(forms.ModelForm):
             'start_date': forms.DateInput(attrs={'type': 'date'}),
             'end_date': forms.DateInput(attrs={'type': 'date'}),
         }
+
+
+class BulkAccountCreateForm(forms.Form):
+    emails = forms.CharField(
+        label='Adresses email',
+        widget=forms.Textarea(attrs={'rows': 8, 'placeholder': 'Une adresse email par ligne'}),
+        help_text='Entrez une adresse email par ligne.',
+    )
+
+    def clean_emails(self):
+        raw = self.cleaned_data.get('emails', '')
+        lines = [line.strip() for line in raw.splitlines() if line.strip()]
+        if not lines:
+            raise forms.ValidationError("Veuillez saisir au moins une adresse email.")
+        errors = []
+        valid = []
+        for line in lines:
+            try:
+                validate_email(line)
+                valid.append(line)
+            except ValidationError:
+                errors.append(f"« {line} » n'est pas une adresse email valide.")
+        if errors:
+            raise forms.ValidationError(errors)
+        return valid
+
+
+class ForcedPasswordChangeForm(forms.Form):
+    new_password = forms.CharField(
+        label='Nouveau mot de passe',
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+    new_password_confirm = forms.CharField(
+        label='Confirmez le nouveau mot de passe',
+        strip=False,
+        widget=forms.PasswordInput,
+    )
+
+    def __init__(self, user, *args, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def clean_new_password(self):
+        password = self.cleaned_data.get('new_password')
+        password_validation.validate_password(password, self.user)
+        return password
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get('new_password')
+        p2 = cleaned_data.get('new_password_confirm')
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("Les mots de passe ne correspondent pas.")
+        return cleaned_data
