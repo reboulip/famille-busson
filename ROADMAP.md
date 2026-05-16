@@ -49,11 +49,15 @@ Les 5 `print()` ont été supprimés de `views.py`.
 
 ---
 
-## Configuration production (priorité moyenne)
+## Management of static files
 
-- Sortir `SECRET_KEY` du code source et la mettre dans une variable d'environnement
-- Passer `DEBUG = False` et configurer `ALLOWED_HOSTS` pour la production
-- Créer un fichier `.env.example` documentant les variables requises
+Some warnings are present in the django logs:
+- ?: (staticfiles.W004) The directory 'C:\Users\romai\code-projects\famille-busson\famille_busson\static\images' in the STATICFILES_DIRS setting does not exist
+- "GET /static/js/bootstrap.min.js HTTP/1.1" 404 1984
+
+These warnings mean there is something wrong, following tasks should probably be performed:
+- Analyze the current organization of css and js files from bootstrap
+- Change files location if necessary and update the settings
 
 ---
 
