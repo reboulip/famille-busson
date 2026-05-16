@@ -4,7 +4,7 @@ from .views import (
     home, my_profile, edit_my_profile, check_emails_ajax,
     CustomLoginView, SignupView,
     BulkAccountCreateView, ForcedPasswordChangeView,
-    DirectoryListView, ProfileDetailView, ProfileUpdateView,
+    ProfileCreateView, DirectoryListView, ProfileDetailView, ProfileUpdateView,
     ChaletListView, ChaletDetailView,
     AddPresenceView, UpdatePresenceView, DeletePresenceView,
 )
@@ -15,6 +15,7 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('signup/', SignupView.as_view(), name='signup'),
     path('profile/', my_profile, name='my-profile'),
+    path('profile/create/', ProfileCreateView.as_view(), name='profile-create'),
     path('profile/edit', edit_my_profile, name='edit-my-profile'),
     path('accounts/bulk-create/', BulkAccountCreateView.as_view(), name='bulk-account-create'),
     path('accounts/check-emails/', check_emails_ajax, name='check-emails-ajax'),

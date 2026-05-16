@@ -29,7 +29,7 @@ def my_profile(request):
         person = Person.objects.get(account=request.user)
         return redirect('personne-detail', pk=person.pk)
     except Person.DoesNotExist:
-        return render(request, 'annuaire/no_profile.html')
+        return redirect('profile-create')
 
 
 @login_required
@@ -38,7 +38,7 @@ def edit_my_profile(request):
         person = Person.objects.get(account=request.user)
         return redirect('person-edit', pk=person.pk)
     except Person.DoesNotExist:
-        return render(request, 'annuaire/no_profile.html')
+        return redirect('profile-create')
 
 
 class StaffRequiredMixin(LoginRequiredMixin):
@@ -63,8 +63,7 @@ class CustomLoginView(LoginView):
         if hasattr(user, 'profile'):
             return redirect(self.get_success_url())
         else:
-            messages.error(self.request, "Aucun profil associé à cet utilisateur.")
-            return redirect('login')
+            return redirect('profile-create')
 
     def get_success_url(self):
         return reverse_lazy('home')
@@ -174,6 +173,23 @@ class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
             context['form'] = self.get_form()
         context['password_hints'] = password_validators_help_texts()
         return context
+
+
+class ProfileCreateView(LoginRequiredMixin, CreateView):
+    model = Person
+    form_class = ProfileEditForm
+    template_name = 'annuaire/profile_create.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and hasattr(request.user, 'profile'):
+            return redirect('my-profile')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        person = form.save(commit=False)
+        person.account = self.request.user
+        person.save()
+        return redirect('personne-detail', pk=person.pk)
 
 
 class DirectoryListView(LoginRequiredMixin, ListView):

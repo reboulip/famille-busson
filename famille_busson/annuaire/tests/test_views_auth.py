@@ -50,16 +50,11 @@ def test_login_post_invalid_credentials_returns_200(client, account):
 
 
 @pytest.mark.django_db
-def test_login_post_account_without_profile_shows_error(client, account):
-    # Account exists but has no linked Person — login should fail with error message
-    response = client.post(
-        reverse("login"),
-        {"username": "alice@example.com", "password": "testpass123!"},
-        follow=True,
-    )
-    assert response.status_code == 200
-    messages = list(response.context["messages"])
-    assert any("profil" in str(m).lower() for m in messages)
+def test_login_redirects_to_profile_create_when_no_profile(client, account):
+    # Account exists but has no linked Person — should redirect to profile creation
+    response = client.post(reverse("login"), {"username": "alice@example.com", "password": "testpass123!"})
+    assert response.status_code == 302
+    assert reverse("profile-create") in response["Location"]
 
 
 @pytest.mark.django_db

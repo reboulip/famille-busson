@@ -25,11 +25,11 @@ def test_my_profile_redirects_to_person_detail(auth_client, person):
 
 
 @pytest.mark.django_db
-def test_my_profile_no_profile_returns_no_profile_page(client, account):
+def test_my_profile_no_profile_redirects_to_create(client, account):
     client.login(username="alice@example.com", password="testpass123!")
     response = client.get(reverse("my-profile"))
-    assert response.status_code == 200
-    assert "annuaire/no_profile.html" in [t.name for t in response.templates]
+    assert response.status_code == 302
+    assert reverse("profile-create") in response["Location"]
 
 
 # ---------------------------------------------------------------------------
@@ -51,11 +51,11 @@ def test_edit_my_profile_redirects_to_person_edit(auth_client, person):
 
 
 @pytest.mark.django_db
-def test_edit_my_profile_no_profile_returns_no_profile_page(client, account):
+def test_edit_my_profile_no_profile_redirects_to_create(client, account):
     client.login(username="alice@example.com", password="testpass123!")
     response = client.get(reverse("edit-my-profile"))
-    assert response.status_code == 200
-    assert "annuaire/no_profile.html" in [t.name for t in response.templates]
+    assert response.status_code == 302
+    assert reverse("profile-create") in response["Location"]
 
 
 # ---------------------------------------------------------------------------
@@ -200,3 +200,50 @@ def test_profile_update_post_invalid_returns_200_with_errors(auth_client, person
     data.update(_empty_formset_data())
     response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
     assert response.status_code == 200
+
+
+# ---------------------------------------------------------------------------
+# ProfileCreateView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_profile_create_requires_login(client):
+    response = client.get(reverse("profile-create"))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_profile_create_get_returns_200(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.get(reverse("profile-create"))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_profile_create_redirects_if_profile_exists(auth_client, person):
+    response = auth_client.get(reverse("profile-create"))
+    assert response.status_code == 302
+    assert reverse("my-profile") in response["Location"]
+
+
+@pytest.mark.django_db
+def test_profile_create_post_creates_person_and_links_account(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(
+        reverse("profile-create"),
+        {"first_name": "Alice", "last_name": "Busson"},
+    )
+    assert response.status_code == 302
+    from annuaire.models import Person
+    person = Person.objects.get(account=account)
+    assert person.first_name == "Alice"
+    assert reverse("personne-detail", kwargs={"pk": person.pk}) in response["Location"]
+
+
+@pytest.mark.django_db
+def test_profile_create_post_invalid_returns_200_with_errors(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(reverse("profile-create"), {"first_name": "", "last_name": ""})
+    assert response.status_code == 200
+    assert response.context["form"].errors
