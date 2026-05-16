@@ -299,3 +299,52 @@ h2 {
     border: 1px solid #fcc;
     color: #c00;
 }
+
+.person-picker {
+    position: relative;
+}
+
+.person-picker-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0 0 4px 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.person-picker-result,
+.person-picker-empty {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.person-picker-empty {
+    color: #6c757d;
+    cursor: default;
+    font-style: italic;
+}
+
+.person-picker-result:hover,
+.person-picker-result.highlighted {
+    background: #e9ecef;
+}
+
+.person-picker-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+}
+
+.person-picker-badge .btn-close {
+    font-size: 0.65rem;
+}

@@ -52,14 +52,14 @@
     <form method="post" action="{% url 'presence-add' chalet.pk %}" class="presence-form">
         {% csrf_token %}
         <div class="mb-3">
-            <label class="form-label fw-semibold">{{ presence_form.persons.label }}</label>
-            <div class="presence-persons-list">
-                {% for checkbox in presence_form.persons %}
-                    <div class="form-check">
-                        {{ checkbox.tag }}
-                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
-                    </div>
-                {% endfor %}
+            <label class="form-label fw-semibold" for="person-search-input">Personnes</label>
+            <div class="person-picker" data-search-url="{% url 'person-search-ajax' %}">
+                <input type="text" id="person-search-input" class="form-control person-picker-input"
+                       placeholder="Tapez au moins 2 lettres pour chercher…"
+                       autocomplete="off" aria-label="Chercher une personne">
+                <ul class="person-picker-results" role="listbox" hidden></ul>
+                <div class="person-picker-selected mt-2" aria-live="polite"></div>
+                <div class="person-picker-hidden-inputs"></div>
             </div>
             {% if presence_form.persons.errors %}<div class="text-danger small">{{ presence_form.persons.errors }}</div>{% endif %}
         </div>
@@ -78,4 +78,5 @@
         {% endif %}
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
 {% endblock content %}

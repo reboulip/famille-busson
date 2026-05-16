@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth.views import LogoutView
 from .views import (
-    home, my_profile, edit_my_profile, check_emails_ajax,
+    home, my_profile, edit_my_profile, check_emails_ajax, person_search_ajax,
     CustomLoginView, SignupView,
     BulkAccountCreateView, ForcedPasswordChangeView,
     ProfileCreateView, DirectoryListView, ProfileDetailView, ProfileUpdateView,
@@ -19,6 +19,7 @@ urlpatterns = [
     path('profile/edit', edit_my_profile, name='edit-my-profile'),
     path('accounts/bulk-create/', BulkAccountCreateView.as_view(), name='bulk-account-create'),
     path('accounts/check-emails/', check_emails_ajax, name='check-emails-ajax'),
+    path('persons/search/', person_search_ajax, name='person-search-ajax'),
     path('password/change/', ForcedPasswordChangeView.as_view(), name='password-change-forced'),
     path('annuaire/', DirectoryListView.as_view(), name='directory'),
     path('personne/<int:pk>/', ProfileDetailView.as_view(), name='personne-detail'),

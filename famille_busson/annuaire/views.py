@@ -126,6 +126,21 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
 
 
 @login_required
+def person_search_ajax(request):
+    q = request.GET.get('q', '').strip()
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+    exclude_ids = [int(x) for x in request.GET.get('exclude', '').split(',') if x.isdigit()]
+    # Note: icontains is case-insensitive but accent-sensitive on SQLite — "Bus" will not match "Büsson".
+    # Revisit with the unaccent extension when moving to PostgreSQL.
+    qs = (Person.objects
+          .filter(Q(first_name__icontains=q) | Q(last_name__icontains=q))
+          .exclude(pk__in=exclude_ids)
+          .order_by('last_name', 'first_name')[:10])
+    return JsonResponse({'results': [{'id': p.pk, 'name': str(p)} for p in qs]})
+
+
+@login_required
 def check_emails_ajax(request):
     if not request.user.is_staff:
         return JsonResponse({'error': 'Forbidden'}, status=403)

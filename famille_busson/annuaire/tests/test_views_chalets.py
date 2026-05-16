@@ -1,7 +1,8 @@
 import datetime
+import json
 import pytest
 from django.urls import reverse
-from annuaire.models import PresencePSV
+from annuaire.models import Person, PresencePSV
 
 
 LOGIN_URL = "/annuaire/login/"
@@ -240,3 +241,58 @@ def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, db):
     response = staff_client.post(reverse("chalet-create"), {"name": "", "address": ""})
     assert response.status_code == 200
     assert response.context["form"].errors
+
+
+# ---------------------------------------------------------------------------
+# person_search_ajax
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_person_search_requires_login(client):
+    response = client.get(reverse("person-search-ajax"), {"q": "ali"})
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_person_search_short_query_returns_empty(auth_client, person):
+    response = auth_client.get(reverse("person-search-ajax"), {"q": "a"})
+    assert response.status_code == 200
+    assert json.loads(response.content) == {"results": []}
+
+
+@pytest.mark.django_db
+def test_person_search_matches_first_name(auth_client, person):
+    response = auth_client.get(reverse("person-search-ajax"), {"q": "Ali"})
+    data = json.loads(response.content)
+    assert any(r["id"] == person.pk for r in data["results"])
+
+
+@pytest.mark.django_db
+def test_person_search_matches_last_name(auth_client, person, other_person):
+    response = auth_client.get(reverse("person-search-ajax"), {"q": "Bus"})
+    data = json.loads(response.content)
+    ids = {r["id"] for r in data["results"]}
+    assert person.pk in ids
+    assert other_person.pk in ids
+
+
+@pytest.mark.django_db
+def test_person_search_excludes_ids(auth_client, person, other_person):
+    response = auth_client.get(
+        reverse("person-search-ajax"),
+        {"q": "Bus", "exclude": str(person.pk)},
+    )
+    data = json.loads(response.content)
+    ids = {r["id"] for r in data["results"]}
+    assert person.pk not in ids
+    assert other_person.pk in ids
+
+
+@pytest.mark.django_db
+def test_person_search_limits_to_ten(auth_client, db):
+    for i in range(12):
+        Person.objects.create(first_name=f"Test{i:02d}", last_name="Search")
+    response = auth_client.get(reverse("person-search-ajax"), {"q": "Search"})
+    data = json.loads(response.content)
+    assert len(data["results"]) == 10

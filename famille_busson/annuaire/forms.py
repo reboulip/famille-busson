@@ -79,7 +79,7 @@ class AddPresenceForm(forms.Form):
     persons = forms.ModelMultipleChoiceField(
         queryset=Person.objects.all().order_by('last_name', 'first_name'),
         label='Personnes',
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.MultipleHiddenInput,
     )
     start_date = forms.DateField(
         label="Date d'arrivée",
