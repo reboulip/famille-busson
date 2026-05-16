@@ -51,7 +51,31 @@
     <h2>Ajouter une présence</h2>
     <form method="post" action="{% url 'presence-add' chalet.pk %}" class="presence-form">
         {% csrf_token %}
-        {{ presence_form.as_p }}
+        <div class="mb-3">
+            <label class="form-label fw-semibold">{{ presence_form.persons.label }}</label>
+            <div class="presence-persons-list">
+                {% for checkbox in presence_form.persons %}
+                    <div class="form-check">
+                        {{ checkbox.tag }}
+                        <label class="form-check-label" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            {% if presence_form.persons.errors %}<div class="text-danger small">{{ presence_form.persons.errors }}</div>{% endif %}
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-auto">
+                <label class="form-label" for="{{ presence_form.start_date.id_for_label }}">{{ presence_form.start_date.label }}</label>
+                {{ presence_form.start_date }}
+            </div>
+            <div class="col-auto">
+                <label class="form-label" for="{{ presence_form.end_date.id_for_label }}">{{ presence_form.end_date.label }}</label>
+                {{ presence_form.end_date }}
+            </div>
+        </div>
+        {% if presence_form.start_date.errors or presence_form.end_date.errors %}
+            <div class="text-danger small mb-2">{{ presence_form.start_date.errors }}{{ presence_form.end_date.errors }}</div>
+        {% endif %}
         <button type="submit" class="btn btn-outline-primary">Ajouter</button>
     </form>
 {% endblock content %}

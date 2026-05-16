@@ -81,14 +81,28 @@ def test_add_presence_valid_post_creates_and_redirects(auth_client, chalet, pers
     response = auth_client.post(
         reverse("presence-add", kwargs={"pk": chalet.pk}),
         {
-            "person": person.pk,
+            "persons": [person.pk],
             "start_date": "2026-08-01",
             "end_date": "2026-08-15",
         },
     )
     assert response.status_code == 302
     assert reverse("chalet-detail", kwargs={"pk": chalet.pk}) in response["Location"]
-    assert PresencePSV.objects.filter(person=person, chalet=chalet).exists()
+    assert PresencePSV.objects.filter(person=person, chalet=chalet).count() == 1
+
+
+@pytest.mark.django_db
+def test_add_presence_creates_one_row_per_person(auth_client, chalet, person, other_person):
+    response = auth_client.post(
+        reverse("presence-add", kwargs={"pk": chalet.pk}),
+        {
+            "persons": [person.pk, other_person.pk],
+            "start_date": "2026-08-01",
+            "end_date": "2026-08-15",
+        },
+    )
+    assert response.status_code == 302
+    assert PresencePSV.objects.filter(chalet=chalet, start_date="2026-08-01").count() == 2
 
 
 @pytest.mark.django_db

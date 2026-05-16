@@ -14,7 +14,7 @@ from django.urls import reverse_lazy
 from .models import Person, Account, Relation, Chalet, PresencePSV
 from .forms import (
     ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm,
-    SignupForm, PresenceForm, ChaletForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
+    SignupForm, AddPresenceForm, PresenceForm, ChaletForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
 )
 
 
@@ -295,20 +295,23 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('start_date')
-        context['presence_form'] = PresenceForm(initial={'chalet': self.object})
+        context['presence_form'] = AddPresenceForm()
         return context
 
 
-class AddPresenceView(LoginRequiredMixin, CreateView):
-    model = PresencePSV
-    form_class = PresenceForm
-
-    def form_valid(self, form):
-        form.instance.chalet_id = self.kwargs['pk']
-        return super().form_valid(form)
+class AddPresenceView(LoginRequiredMixin, FormView):
+    form_class = AddPresenceForm
 
     def get_success_url(self):
         return reverse_lazy('chalet-detail', kwargs={'pk': self.kwargs['pk']})
+
+    def form_valid(self, form):
+        chalet_id = self.kwargs['pk']
+        start_date = form.cleaned_data['start_date']
+        end_date = form.cleaned_data['end_date']
+        for person in form.cleaned_data['persons']:
+            PresencePSV.objects.create(chalet_id=chalet_id, person=person, start_date=start_date, end_date=end_date)
+        return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, "Erreur dans le formulaire de présence.")

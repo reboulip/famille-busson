@@ -75,6 +75,22 @@ class SignupForm(forms.Form):
         return cleaned_data
 
 
+class AddPresenceForm(forms.Form):
+    persons = forms.ModelMultipleChoiceField(
+        queryset=Person.objects.all().order_by('last_name', 'first_name'),
+        label='Personnes',
+        widget=forms.CheckboxSelectMultiple,
+    )
+    start_date = forms.DateField(
+        label="Date d'arrivée",
+        widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+    end_date = forms.DateField(
+        label='Date de départ',
+        widget=forms.DateInput(attrs={'type': 'date'}),
+    )
+
+
 class PresenceForm(forms.ModelForm):
     class Meta:
         model = PresencePSV
