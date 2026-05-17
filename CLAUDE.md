@@ -54,6 +54,13 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 - **Shell:** `uv run python manage.py shell`
 - **Add dependency:** `uv add <package>`
 - **Install deps:** `uv sync`
+- **Populate dev data:** `uv run python manage.py populate_dev_data`
+  - Wipes existing data from all app models and recreates a deterministic fixture (seeded). Pass `--no-clear` to append, or `--seed <N>` to change the seed.
+  - Test credentials:
+    - **Superuser:** `admin@example.com` / `admin`
+    - **Staff (non-superuser):** `staff@example.com` / `staff`
+    - **Regular user:** any of the 20 generated accounts, e.g. `paul.bernard.0@example.com` / `dev` (password is `dev` for all regular users)
+  - Use this after `rm db.sqlite3 && uv run python manage.py migrate` to fully reset a dev DB.
 
 ## 9. Tests
 - **Install test deps (once):** `uv sync --group test` (from repo root)
