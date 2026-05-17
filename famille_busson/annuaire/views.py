@@ -19,8 +19,19 @@ from .forms import (
 
 
 def home(request):
+    from publications.models import BlogPost, Comment
     recent_persons = Person.objects.all().order_by('-pk')[:6]
-    return render(request, 'annuaire/home.html', {'recent_persons': recent_persons})
+    recent_posts = (
+        BlogPost.objects.prefetch_related('authors').order_by('-created_at')[:5]
+    )
+    recent_comments = (
+        Comment.objects.select_related('post', 'author').order_by('-created_at')[:5]
+    )
+    return render(request, 'annuaire/home.html', {
+        'recent_persons': recent_persons,
+        'recent_posts': recent_posts,
+        'recent_comments': recent_comments,
+    })
 
 
 @login_required

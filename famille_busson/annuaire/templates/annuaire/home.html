@@ -31,5 +31,36 @@
             <p>Gérez les réservations et présences aux chalets.</p>
         </div>
 
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Dernières publications</h2>
+                <a href="{% url 'blogpost-list' %}" class="tile-link">Voir tout →</a>
+            </div>
+            {% for post in recent_posts %}
+                <div class="home-publication-item">
+                    <a href="{% url 'blogpost-detail' post.pk %}"><strong>{{ post.title }}</strong></a>
+                    <span class="muted">— {{ post.created_at|date:"j F" }}</span>
+                </div>
+            {% empty %}
+                <p>Aucune publication.</p>
+            {% endfor %}
+        </div>
+
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Derniers commentaires</h2>
+            </div>
+            {% for comment in recent_comments %}
+                <div class="home-comment-item">
+                    <a href="{% url 'blogpost-detail' comment.post.pk %}">
+                        {{ comment.author|default:"Anonyme" }} sur « {{ comment.post.title }} »
+                    </a>
+                    <p class="muted">{{ comment.body|truncatechars:80 }}</p>
+                </div>
+            {% empty %}
+                <p>Aucun commentaire.</p>
+            {% endfor %}
+        </div>
+
     </div>
 {% endblock content %}

@@ -32,6 +32,15 @@
                     <li><a href="{% url 'chalet-list' %}">Chalets PSV</a></li>
                 </ul>
             </li>
+            <li class="sidebar-section">Publications</li>
+            <li>
+                <ul>
+                    <li><a href="{% url 'blogpost-list' %}">Toutes les publications</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'blogpost-create' %}">Nouvelle publication</a></li>
+                    {% endif %}
+                </ul>
+            </li>
         </ul>
     </div>
     <div class="content">

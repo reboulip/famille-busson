@@ -1,0 +1,19 @@
+{% load static %}
+<article class="blogpost-card">
+    <header class="blogpost-card-header">
+        <h2 class="blogpost-card-title">
+            <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
+        </h2>
+        <span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span>
+    </header>
+    <p class="blogpost-card-meta">
+        Par
+        {% for author in post.authors.all %}
+            <a href="{% url 'personne-detail' author.pk %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
+        {% empty %}
+            anonyme
+        {% endfor %}
+        — {{ post.created_at|date:"j F Y" }}
+    </p>
+    <p class="blogpost-card-excerpt">{{ post.body|truncatechars:200 }}</p>
+</article>
