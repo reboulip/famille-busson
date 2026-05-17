@@ -73,7 +73,4 @@ Fixtures partagées dans `conftest.py`. CI sur push via `.github/workflows/tests
 Items différés lors de la création de l'app `publications` :
 
 - **Sélecteur multi-auteurs** — `BlogPostForm.authors` utilise un `SelectMultiple` standard, peu pratique pour beaucoup de personnes. `person_picker.js` ne supporte qu'une instance par page ; le généraliser permettrait de réutiliser le picker existant.
-- **Réordonnancement des pièces jointes** — pas de champ `order` ; l'ordre d'affichage suit `uploaded_at`.
-- **Commentaires en arborescence** — liste plate uniquement, pas de champ `parent`.
-- **Édition de commentaires** — non demandée ; commentaires immuables après publication.
 - **Nettoyage des fichiers orphelins** — Django ne supprime pas les fichiers de `MEDIA_ROOT` quand une ligne est supprimée. Le même problème existe déjà pour `Person.profile_photo` et `Chalet.photo` ; à traiter en une seule fois pour les trois modèles.
