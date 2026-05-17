@@ -49,7 +49,7 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 **No REST API:** `djangorestframework` and `dj-rest-auth` are installed but not configured. All views render Django templates. Do not generate serializers or API views unless explicitly asked.
 
 ## 8. Common Commands Reference
-- **Run Server:** `uv run python manage.py runserver` (from `famille_busson/`)
+- **Run Server:** `uv run python manage.py runserver` (from repo root)
 - **Migrate:** `uv run python manage.py makemigrations` / `uv run python manage.py migrate`
 - **Shell:** `uv run python manage.py shell`
 - **Add dependency:** `uv add <package>`
@@ -58,11 +58,11 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 ## 9. Tests
 - **Install test deps (once):** `uv sync --group test` (from repo root)
 - **Run all tests:** `uv run --group test pytest` (from repo root)
-- **Run a single file:** `uv run --group test pytest famille_busson/annuaire/tests/test_views_auth.py`
-- **Run multiple files:** `uv run --group test pytest famille_busson/annuaire/tests/test_views_auth.py famille_busson/annuaire/tests/test_views_profile.py`
+- **Run a single file:** `uv run --group test pytest annuaire/tests/test_views_auth.py`
+- **Run multiple files:** `uv run --group test pytest annuaire/tests/test_views_auth.py annuaire/tests/test_views_profile.py`
 - **HTML coverage report:** `uv run --group test pytest --cov-report=html` → open `htmlcov/index.html`
 
-Tests live in `famille_busson/annuaire/tests/`. Shared fixtures (accounts, persons, chalets) are in `conftest.py`. CI runs automatically on push to `develop` and `main` via `.github/workflows/tests.yml`.
+Tests live in `annuaire/tests/` and `publications/tests/`. Shared fixtures (accounts, persons, chalets) are in `annuaire/tests/conftest.py`; `publications/tests/conftest.py` re-uses them. CI runs automatically on push to `develop` and `main` via `.github/workflows/tests.yml`.
 
 **Test scope selection:** When running tests, select the minimal relevant scope based on the changes made:
 - **Single view/form change** → run only the corresponding test file(s) (e.g. `test_views_chalets.py` for chalet views)
@@ -75,7 +75,7 @@ When in doubt, prefer the full suite. Always state which files you are running a
 ## 10. Git workflow
 - **Branches:** `develop` for active development, `main` for stable releases. Always work on `develop`.
 - **Migrations are gitignored:** `migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
-- **Also gitignored:** `db.sqlite3`, `.env`, `famille_busson/static/`, `famille_busson/media/`.
+- **Also gitignored:** `db.sqlite3`, `.env`, `/static/`, `/media/`.
 
 ## 11. Instructions for Claude
 1. **Always verify migrations:** Before suggesting a model change, remind me of the impact on the Custom User Model.

@@ -58,7 +58,7 @@ Les 5 `print()` ont été supprimés de `views.py`.
 
 ## ~~Tests (priorité basse)~~ ✅
 
-Suite de tests complète en place dans `famille_busson/annuaire/tests/` :
+Suite de tests complète en place dans `annuaire/tests/` :
 - `test_views_auth.py` — création de compte, authentification
 - `test_views_profile.py` — édition de profil restreinte au propriétaire
 - `test_views_chalets.py` — chalets, présences, recherche AJAX de personnes

@@ -37,8 +37,8 @@ test = [
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "famille_busson.settings"
-pythonpath = ["famille_busson"]
-testpaths = ["famille_busson/annuaire/tests", "famille_busson/publications/tests"]
+pythonpath = ["."]
+testpaths = ["annuaire/tests", "publications/tests"]
 addopts = "-v --tb=short --cov=annuaire --cov=publications --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
 
 [tool.coverage.run]
