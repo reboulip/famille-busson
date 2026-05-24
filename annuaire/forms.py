@@ -96,8 +96,8 @@ class PresenceForm(forms.ModelForm):
         model = PresencePSV
         fields = ['person', 'start_date', 'end_date']
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}),
-            'end_date': forms.DateInput(attrs={'type': 'date'}),
+            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            'end_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
         }
 
 

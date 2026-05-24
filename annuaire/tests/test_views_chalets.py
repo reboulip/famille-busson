@@ -140,6 +140,16 @@ def test_update_presence_get_returns_200(auth_client, chalet, presence):
 
 
 @pytest.mark.django_db
+def test_update_presence_get_prefills_dates(auth_client, chalet, presence):
+    response = auth_client.get(
+        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
+    )
+    content = response.content.decode()
+    assert 'value="2026-07-01"' in content
+    assert 'value="2026-07-14"' in content
+
+
+@pytest.mark.django_db
 def test_update_presence_invalid_pk_returns_404(auth_client, chalet):
     response = auth_client.get(
         reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": 99999})
