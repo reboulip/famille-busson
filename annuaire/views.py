@@ -331,8 +331,17 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'chalet'
 
     def get_context_data(self, **kwargs):
+        import datetime
         context = super().get_context_data(**kwargs)
-        context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('start_date')
+        today = datetime.date.today()
+        all_presences = (
+            PresencePSV.objects.filter(chalet=self.object)
+            .select_related('person')
+            .order_by('start_date')
+        )
+        context['past_presences'] = [p for p in all_presences if p.end_date < today]
+        context['current_presences'] = [p for p in all_presences if p.start_date <= today <= p.end_date]
+        context['future_presences'] = [p for p in all_presences if p.start_date > today]
         context['presence_form'] = AddPresenceForm()
         return context
 
