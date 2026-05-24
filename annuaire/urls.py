@@ -5,7 +5,7 @@ from .views import (
     CustomLoginView, SignupView,
     BulkAccountCreateView, ForcedPasswordChangeView,
     ProfileCreateView, DirectoryListView, ProfileDetailView, ProfileUpdateView,
-    ChaletListView, ChaletCreateView, ChaletDetailView,
+    ChaletListView, ChaletCreateView, ChaletDetailView, ChaletUpdateView,
     AddPresenceView, UpdatePresenceView, DeletePresenceView,
 )
 
@@ -27,6 +27,7 @@ urlpatterns = [
     path('chalets/', ChaletListView.as_view(), name='chalet-list'),
     path('chalets/create/', ChaletCreateView.as_view(), name='chalet-create'),
     path('chalets/<int:pk>/', ChaletDetailView.as_view(), name='chalet-detail'),
+    path('chalets/<int:pk>/edit/', ChaletUpdateView.as_view(), name='chalet-edit'),
     path('chalets/<int:pk>/presence/ajouter/', AddPresenceView.as_view(), name='presence-add'),
     path('chalets/<int:pk>/presence/<int:presence_pk>/modifier/', UpdatePresenceView.as_view(), name='presence-edit'),
     path('chalets/<int:pk>/presence/<int:presence_pk>/supprimer/', DeletePresenceView.as_view(), name='presence-delete'),

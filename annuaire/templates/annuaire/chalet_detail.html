@@ -8,7 +8,12 @@
             <div class="chalet-photo-placeholder large">🏔️</div>
         {% endif %}
         <div>
-            <h1>{{ chalet.name }}</h1>
+            <h1>
+                {{ chalet.name }}
+                {% if can_edit_chalet %}
+                    <a href="{% url 'chalet-edit' chalet.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier</a>
+                {% endif %}
+            </h1>
             <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>
             {% if chalet.gps_coordinates %}<p>📍 {{ chalet.gps_coordinates }}</p>{% endif %}
         </div>
