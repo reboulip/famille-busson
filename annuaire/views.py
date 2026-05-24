@@ -264,6 +264,10 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
         child_relations = Relation.objects.filter(person1=person, relationship_type=3)
         context['children'] = [rel.person2 for rel in child_relations]
 
+        user = self.request.user
+        profile = getattr(user, 'profile', None)
+        context['can_edit'] = user.is_staff or user.is_superuser or profile == person
+
         return context
 
 
@@ -271,13 +275,21 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     model = Person
     form_class = ProfileEditForm
     template_name = 'annuaire/update_form.html'
-    success_url = reverse_lazy('my-profile')
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
-        if obj != self.request.user.profile:
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return obj
+        if obj != getattr(user, 'profile', None):
             raise PermissionDenied("Vous ne pouvez pas éditer ce profil car ce n'est pas le vôtre.")
         return obj
+
+    def get_success_url(self):
+        user = self.request.user
+        if self.object == getattr(user, 'profile', None):
+            return reverse_lazy('my-profile')
+        return reverse_lazy('personne-detail', kwargs={'pk': self.object.pk})
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
@@ -332,8 +344,17 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'chalet'
 
     def get_context_data(self, **kwargs):
+        import datetime
         context = super().get_context_data(**kwargs)
-        context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('start_date')
+        today = datetime.date.today()
+        all_presences = (
+            PresencePSV.objects.filter(chalet=self.object)
+            .select_related('person')
+            .order_by('start_date')
+        )
+        context['past_presences'] = [p for p in all_presences if p.end_date < today]
+        context['current_presences'] = [p for p in all_presences if p.start_date <= today <= p.end_date]
+        context['future_presences'] = [p for p in all_presences if p.start_date > today]
         context['presence_form'] = AddPresenceForm()
         user = self.request.user
         profile = getattr(user, 'profile', None)

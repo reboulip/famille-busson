@@ -55,9 +55,33 @@ def test_chalet_detail_404_on_invalid_pk(auth_client):
 
 
 @pytest.mark.django_db
-def test_chalet_detail_context_has_presences(auth_client, chalet, presence):
+def test_chalet_detail_context_has_future_presences(auth_client, chalet, presence):
     response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
-    assert presence in response.context["presences"]
+    assert presence in response.context["future_presences"]
+
+
+@pytest.mark.django_db
+def test_chalet_detail_context_has_past_presence(auth_client, chalet, person):
+    past = PresencePSV.objects.create(
+        person=person, chalet=chalet,
+        start_date=datetime.date(2025, 1, 1),
+        end_date=datetime.date(2025, 1, 14),
+    )
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert past in response.context["past_presences"]
+
+
+@pytest.mark.django_db
+def test_chalet_detail_context_has_current_presence(auth_client, chalet, person):
+    import datetime as dt
+    today = dt.date.today()
+    current = PresencePSV.objects.create(
+        person=person, chalet=chalet,
+        start_date=today - dt.timedelta(days=1),
+        end_date=today + dt.timedelta(days=1),
+    )
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert current in response.context["current_presences"]
 
 
 @pytest.mark.django_db
@@ -137,6 +161,16 @@ def test_update_presence_get_returns_200(auth_client, chalet, presence):
         reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
     )
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_update_presence_get_prefills_dates(auth_client, chalet, presence):
+    response = auth_client.get(
+        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
+    )
+    content = response.content.decode()
+    assert 'value="2026-07-01"' in content
+    assert 'value="2026-07-14"' in content
 
 
 @pytest.mark.django_db

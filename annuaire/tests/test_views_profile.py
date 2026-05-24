@@ -145,6 +145,24 @@ def test_profile_detail_shows_children(auth_client, person, other_person):
     assert other_person in response.context["children"]
 
 
+@pytest.mark.django_db
+def test_profile_detail_can_edit_true_for_own_profile(auth_client, person):
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    assert response.context["can_edit"] is True
+
+
+@pytest.mark.django_db
+def test_profile_detail_can_edit_false_for_other_profile(auth_client, other_person):
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": other_person.pk}))
+    assert response.context["can_edit"] is False
+
+
+@pytest.mark.django_db
+def test_profile_detail_can_edit_true_for_staff(staff_client, other_person):
+    response = staff_client.get(reverse("personne-detail", kwargs={"pk": other_person.pk}))
+    assert response.context["can_edit"] is True
+
+
 # ---------------------------------------------------------------------------
 # ProfileUpdateView
 # ---------------------------------------------------------------------------
@@ -166,6 +184,21 @@ def test_profile_update_own_profile_get_200(auth_client, person):
 def test_profile_update_other_profile_returns_403(auth_client, other_person):
     response = auth_client.get(reverse("person-edit", kwargs={"pk": other_person.pk}))
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_profile_update_staff_can_edit_any_profile(staff_client, other_person):
+    response = staff_client.get(reverse("person-edit", kwargs={"pk": other_person.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_profile_update_staff_redirects_to_person_detail_after_save(staff_client, other_person):
+    data = {"first_name": other_person.first_name, "last_name": other_person.last_name}
+    data.update(_empty_formset_data())
+    response = staff_client.post(reverse("person-edit", kwargs={"pk": other_person.pk}), data)
+    assert response.status_code == 302
+    assert reverse("personne-detail", kwargs={"pk": other_person.pk}) in response["Location"]
 
 
 @pytest.mark.django_db

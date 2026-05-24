@@ -348,3 +348,23 @@ h2 {
 .person-picker-badge .btn-close {
     font-size: 0.65rem;
 }
+
+.presence-current {
+    background-color: #d1e7dd;
+    font-weight: 500;
+}
+
+.presence-past-details {
+    margin-top: 1rem;
+}
+
+.presence-past-details summary {
+    cursor: pointer;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.presence-past {
+    color: #6c757d;
+}

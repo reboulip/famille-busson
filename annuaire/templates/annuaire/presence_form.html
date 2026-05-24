@@ -1,7 +1,7 @@
 {% extends "annuaire/base.html" %}
 {% block content %}
     <h1>Modifier la présence</h1>
-    <p>{{ object.personne }} — {{ object.chalet }}</p>
+    <p>{{ object.person }} — {{ object.chalet }}</p>
 
     <form method="post" class="presence-form">
         {% csrf_token %}
