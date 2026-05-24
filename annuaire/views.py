@@ -14,7 +14,8 @@ from django.urls import reverse_lazy
 from .models import Person, Account, Relation, Chalet, PresencePSV
 from .forms import (
     ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm,
-    SignupForm, AddPresenceForm, PresenceForm, ChaletForm, BulkAccountCreateForm, ForcedPasswordChangeForm,
+    SignupForm, AddPresenceForm, PresenceForm, ChaletForm, ChaletUpdateForm,
+    BulkAccountCreateForm, ForcedPasswordChangeForm,
 )
 
 
@@ -313,6 +314,18 @@ class ChaletCreateView(StaffRequiredMixin, CreateView):
         return reverse_lazy('chalet-detail', kwargs={'pk': self.object.pk})
 
 
+class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return obj
+        profile = getattr(user, 'profile', None)
+        if profile is None or not obj.owners.filter(pk=profile.pk).exists():
+            raise PermissionDenied("Vous n'êtes pas propriétaire de ce chalet.")
+        return obj
+
+
 class ChaletDetailView(LoginRequiredMixin, DetailView):
     model = Chalet
     template_name = 'annuaire/chalet_detail.html'
@@ -322,7 +335,22 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context['presences'] = PresencePSV.objects.filter(chalet=self.object).order_by('start_date')
         context['presence_form'] = AddPresenceForm()
+        user = self.request.user
+        profile = getattr(user, 'profile', None)
+        context['can_edit_chalet'] = (
+            user.is_staff or user.is_superuser
+            or (profile is not None and self.object.owners.filter(pk=profile.pk).exists())
+        )
         return context
+
+
+class ChaletUpdateView(ChaletOwnerOrStaffMixin, UpdateView):
+    model = Chalet
+    form_class = ChaletUpdateForm
+    template_name = 'annuaire/chalet_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('chalet-detail', kwargs={'pk': self.object.pk})
 
 
 class AddPresenceView(LoginRequiredMixin, FormView):

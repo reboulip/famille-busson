@@ -107,6 +107,12 @@ class ChaletForm(forms.ModelForm):
         fields = ['name', 'address', 'gps_coordinates', 'photo']
 
 
+class ChaletUpdateForm(forms.ModelForm):
+    class Meta:
+        model = Chalet
+        fields = ['name', 'address', 'gps_coordinates', 'photo', 'owners']
+
+
 class BulkAccountCreateForm(forms.Form):
     emails = forms.CharField(
         label='Adresses email',

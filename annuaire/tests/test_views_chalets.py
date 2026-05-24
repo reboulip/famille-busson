@@ -244,6 +244,66 @@ def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, db):
 
 
 # ---------------------------------------------------------------------------
+# ChaletUpdateView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_chalet_update_requires_login(client, chalet):
+    response = client.get(reverse("chalet-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_chalet_update_non_owner_non_staff_returns_403(auth_client, chalet):
+    response = auth_client.get(reverse("chalet-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_chalet_update_staff_returns_200(staff_client, chalet):
+    response = staff_client.get(reverse("chalet-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_chalet_update_owner_returns_200(auth_client, chalet, person):
+    chalet.owners.add(person)
+    response = auth_client.get(reverse("chalet-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_chalet_update_post_valid_updates_chalet(staff_client, chalet):
+    response = staff_client.post(
+        reverse("chalet-edit", kwargs={"pk": chalet.pk}),
+        {"name": "Nouveau Nom", "address": chalet.address},
+    )
+    assert response.status_code == 302
+    chalet.refresh_from_db()
+    assert chalet.name == "Nouveau Nom"
+
+
+@pytest.mark.django_db
+def test_chalet_detail_can_edit_chalet_true_for_staff(staff_client, chalet):
+    response = staff_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert response.context["can_edit_chalet"] is True
+
+
+@pytest.mark.django_db
+def test_chalet_detail_can_edit_chalet_false_for_non_owner(auth_client, chalet):
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert response.context["can_edit_chalet"] is False
+
+
+@pytest.mark.django_db
+def test_chalet_detail_can_edit_chalet_true_for_owner(auth_client, chalet, person):
+    chalet.owners.add(person)
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert response.context["can_edit_chalet"] is True
+
+
+# ---------------------------------------------------------------------------
 # person_search_ajax
 # ---------------------------------------------------------------------------
 
