@@ -11,7 +11,12 @@
             <img class="expandable-image" src={% static 'default_profile_picture.png' %} alt="Photo par défaut">
         {% endif %}
         <div>
-            <h1>{{ person.first_name }} {{ person.last_name }}</h1>
+            <h1>
+                {{ person.first_name }} {{ person.last_name }}
+                {% if can_edit %}
+                    <a href="{% url 'person-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier le profil</a>
+                {% endif %}
+            </h1>
             <p>
                 📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email }}>">{{ person.email }}</a>
                 {% if person.phone_number %}
