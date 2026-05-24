@@ -84,27 +84,46 @@ When in doubt, prefer the full suite. Always state which files you are running a
 ### Branch model
 | Branch | Role | Direct push? |
 |--------|------|-------------|
-| `main` | Stable releases | Never — PR only |
-| `develop` | Integration branch | Never — PR only |
+| `main` | Stable releases | Never — PR only, one commit per issue |
+| `develop` | Integration branch | Yes (via squash-merge of issue branches, no PR) |
 | `<type>/issue-<N>/<summary>` | One issue = one branch | Yes (your own branch) |
 
-### Issue-driven workflow
+### Issue-driven workflow (issue → develop)
 When asked to work on a GitHub issue:
 1. Fetch the issue details: `gh issue view <number>`
 2. Infer the branch `<type>` from the issue description (see types below).
-3. Create the branch from `develop` (hotfixes from `main`):
+3. Create the branch from up-to-date `develop` (hotfixes from `main`):
    ```
    git checkout develop && git pull origin develop
    git checkout -b <type>/issue-<number>/<short-summary>
    ```
-4. Implement, run tests, commit on the branch.
-5. Push: `git push -u origin <branch-name>`
-6. Open a PR targeting `develop` (or `main` for hotfixes):
+4. Implement, run the relevant tests (per §9 scope rule), commit on the branch.
+5. If tests are green, **squash-merge directly into `develop`** locally — no PR:
    ```
-   gh pr create --base develop --title "<type>: <summary> (#<number>)" --body "Closes #<number>\n\n## Summary\n...\n\n## Test plan\n..."
+   git checkout develop && git pull origin develop
+   git merge --squash <type>/issue-<number>/<short-summary>
+   git commit -m "<type>: <summary> (#<issue-number>)"
+   git push origin develop
+   git branch -D <type>/issue-<number>/<short-summary>      # local cleanup
+   git push origin --delete <type>/issue-<number>/<short-summary>   # remote cleanup (if pushed)
    ```
-7. **Do not merge the PR** — the user reviews and merges via squash merge.
-8. The branch is deleted automatically by GitHub after merge.
+6. If tests fail, fix on the branch and re-run. Never merge a red branch into `develop`.
+7. Working in parallel on multiple issues is fine — rebase each issue branch onto `develop` as often as needed to stay current:
+   ```
+   git checkout <type>/issue-<N>/<summary>
+   git fetch origin && git rebase origin/develop
+   ```
+
+### Release workflow (develop → main)
+Triggered explicitly by the user ("ouvre la PR vers main", "release time", etc.). Never start this on your own.
+1. `gh pr create --base main --head develop --title "release: <short summary>" --body "<bulleted list of issues this release closes>"`
+2. Wait for CI to go green on the PR (poll with `gh pr checks <N>`, no manual prompts to the user).
+3. Squash-merge: `gh pr merge <N> --squash` (use `--admin` if branch protection requires it and the user is an admin).
+4. For each issue referenced in the release, close it with a comment that links to the squash-merge commit on `main`:
+   ```
+   gh issue close <issue-number> --comment "Released in <main-sha> — <one-line description>."
+   ```
+5. End result: `main` has exactly one commit per shipped issue (the squash-merge from develop), and each closed issue references that commit.
 
 ### Branch naming convention
 `<type>/issue-<number>/<short-summary>` e.g. `feat/issue-12/person-avatar-upload`
@@ -119,8 +138,9 @@ When asked to work on a GitHub issue:
 | `test` | Tests only |
 
 ### Merge strategy
-Squash merge on GitHub — one issue = one atomic commit on `develop`.
-Commit message format: `<type>(<scope>): <summary> (#<issue-number>)`
+- Issue → develop: local squash-merge (no PR) — one issue = one commit on `develop`.
+- develop → main: squash-merge via PR — one release PR may bundle several develop commits into one commit per shipped issue on `main`.
+- Commit message format on both sides: `<type>(<scope>): <summary> (#<issue-number>)`
 
 ### Migrations are gitignored
 `migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
@@ -144,4 +164,4 @@ Commit message format: `<type>(<scope>): <summary> (#<issue-number>)`
 5. **Tests gate commits:** If tests were run and any failed, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose to commit without tests).
 6. **Test changes:** New tests can be written freely. Modifying or deleting existing tests requires presenting the change and waiting for user approval first.
 7. **New view → new tests:** Every new view (function or class-based) must be accompanied by a corresponding test block in the appropriate test file. Do not consider a view complete until its tests are written and passing.
-8. **GitHub issue workflow:** When asked to work on a GitHub issue, follow §10 exactly. Fetch the issue with `gh issue view <number>`, create the appropriately-named branch from `develop` (or `main` for hotfixes), implement, test, push, and open a PR targeting `develop`. Never commit or push directly to `develop` or `main`.
+8. **GitHub issue workflow:** When asked to work on a GitHub issue, follow §10 exactly. Fetch with `gh issue view <number>`, create the appropriately-named branch from up-to-date `develop` (or `main` for hotfixes), implement, run the relevant tests. If tests pass, squash-merge the branch into `develop` locally and push (no PR). Never push directly to `main`. The user reviews `develop` and triggers the release-to-main PR explicitly.
