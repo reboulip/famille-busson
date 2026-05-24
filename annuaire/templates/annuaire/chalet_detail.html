@@ -16,18 +16,40 @@
 
     <h2>Présences</h2>
 
-    {% if presences %}
+    {% if current_presences %}
+        <h3>En ce moment</h3>
         <table class="presence-table">
             <thead>
-                <tr>
-                    <th>Personne</th>
-                    <th>Du</th>
-                    <th>Au</th>
-                    <th>Actions</th>
-                </tr>
+                <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
             </thead>
             <tbody>
-                {% for presence in presences %}
+                {% for presence in current_presences %}
+                    <tr class="presence-current">
+                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                        <td>{{ presence.start_date|date:"j F Y" }}</td>
+                        <td>{{ presence.end_date|date:"j F Y" }}</td>
+                        <td class="presence-actions">
+                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if future_presences %}
+        <h3>À venir</h3>
+        <table class="presence-table">
+            <thead>
+                <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for presence in future_presences %}
                     <tr>
                         <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
                         <td>{{ presence.start_date|date:"j F Y" }}</td>
@@ -44,8 +66,38 @@
                 {% endfor %}
             </tbody>
         </table>
-    {% else %}
-        <p>Aucune présence enregistrée pour ce chalet.</p>
+    {% endif %}
+
+    {% if not current_presences and not future_presences %}
+        <p>Aucune présence en cours ou à venir pour ce chalet.</p>
+    {% endif %}
+
+    {% if past_presences %}
+        <details class="presence-past-details">
+            <summary>{{ past_presences|length }} présence{{ past_presences|length|pluralize }} passée{{ past_presences|length|pluralize }}</summary>
+            <table class="presence-table">
+                <thead>
+                    <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for presence in past_presences %}
+                        <tr class="presence-past">
+                            <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                            <td>{{ presence.start_date|date:"j F Y" }}</td>
+                            <td>{{ presence.end_date|date:"j F Y" }}</td>
+                            <td class="presence-actions">
+                                <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                                <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                            onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </details>
     {% endif %}
 
     <h2>Ajouter une présence</h2>
