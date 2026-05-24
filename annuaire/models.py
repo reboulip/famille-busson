@@ -72,6 +72,9 @@ class Chalet(models.Model):
     address = models.CharField(max_length=255, verbose_name='Adresse')
     gps_coordinates = models.CharField(max_length=100, blank=True, null=True, verbose_name='Coordonnées GPS')
     photo = models.ImageField(upload_to='photos/', blank=True, null=True, verbose_name='Photo')
+    owners = models.ManyToManyField(
+        'Person', related_name='owned_chalets', blank=True, verbose_name='Propriétaires'
+    )
 
     def __str__(self):
         return self.name
