@@ -116,14 +116,35 @@ When asked to work on a GitHub issue:
 
 ### Release workflow (develop → main)
 Triggered explicitly by the user ("ouvre la PR vers main", "release time", etc.). Never start this on your own.
-1. `gh pr create --base main --head develop --title "release: <short summary>" --body "<bulleted list of issues this release closes>"`
-2. Wait for CI to go green on the PR (poll with `gh pr checks <N>`, no manual prompts to the user).
-3. Squash-merge: `gh pr merge <N> --squash` (use `--admin` if branch protection requires it and the user is an admin).
-4. For each issue referenced in the release, close it with a comment that links to the squash-merge commit on `main`:
+
+**Goal: each shipped issue is one commit on `main`** (one `fix:` / `feat:` / etc. per issue, with the issue number in the subject). This makes `git log main` a clean release history that aligns 1-to-1 with closed issues.
+
+**Why not a direct `develop → main` PR?** `main` was originally built from squash-merges, so develop's history contains many individual commits whose content was already shipped to main as squashes. A direct `develop → main` rebase-and-merge replays those old commits (conflicts/duplicates) and a squash collapses every shipped issue into one indistinguishable blob. Cherry-picking the relevant commits onto a release branch sidesteps both problems.
+
+**Steps:**
+1. Identify the develop commits to ship (typically the new issue commits since the last release, plus any chore/docs commits the user has explicitly approved for `main`).
+2. Create a release branch from up-to-date `main`:
    ```
-   gh issue close <issue-number> --comment "Released in <main-sha> — <one-line description>."
+   git checkout main && git pull origin main
+   git checkout -b release/<short-summary>
    ```
-5. End result: `main` has exactly one commit per shipped issue (the squash-merge from develop), and each closed issue references that commit.
+   The short summary can be the issue numbers (e.g. `release/issues-3-4-5-6`) or a thematic name.
+3. Cherry-pick the chosen develop commits in chronological order (oldest first). After each `git cherry-pick <sha>`, immediately `git commit --amend -m "<clean-message>"` to drop any trailing PR-number suffix added by GitHub squash-merges. The final per-issue commit message must be `<type>: <summary> (#<issue-number>)`.
+4. Push the release branch: `git push -u origin release/<short-summary>`.
+5. Open the PR to main:
+   ```
+   gh pr create --base main --head release/<short-summary> --title "release: <short summary>" --body "<table of shipped issues>"
+   ```
+6. Wait for CI to go green (poll with `gh pr checks <N> --watch --interval 15`, no manual prompts to the user). Repo does not allow auto-merge, so polling is required.
+7. **Rebase-merge** (NOT squash): `gh pr merge <N> --rebase`. This replays each cherry-picked commit onto main individually, preserving the 1-commit-per-issue mapping. The repo must allow rebase merges (`allow_rebase_merge=true` — already enabled).
+8. Fetch and inspect the new commits on `main`: `git fetch origin && git log origin/main --oneline -<N>`. Capture the SHA of each issue's commit.
+9. Close each shipped issue with a French comment that links to its specific main SHA:
+   ```
+   gh issue close <issue-number> --comment "Livré sur \`main\` en [<sha>](https://github.com/reboulip/famille-busson/commit/<sha>) — \`<commit-message>\`."
+   ```
+10. Local cleanup: `git checkout main && git pull origin main`, then delete the local release branch and prune the remote (GitHub auto-deletes the remote branch on merge).
+
+**End result:** `main` gains exactly one commit per shipped issue. Each closed issue carries a permalink to its commit. The release branch is ephemeral and gone after merge.
 
 ### Branch naming convention
 `<type>/issue-<number>/<short-summary>` e.g. `feat/issue-12/person-avatar-upload`
@@ -139,8 +160,8 @@ Triggered explicitly by the user ("ouvre la PR vers main", "release time", etc.)
 
 ### Merge strategy
 - Issue → develop: local squash-merge (no PR) — one issue = one commit on `develop`.
-- develop → main: squash-merge via PR — one release PR may bundle several develop commits into one commit per shipped issue on `main`.
-- Commit message format on both sides: `<type>(<scope>): <summary> (#<issue-number>)`
+- develop → main: cherry-pick the new issue commits onto a `release/<summary>` branch off `main`, open a PR to `main`, **rebase-merge** so each commit lands on `main` individually. Never squash this PR (would collapse multiple issues into one commit) and never rebase-merge straight from `develop` (would replay pre-release commits that are already squashed on `main`).
+- Commit message format on both sides: `<type>: <summary> (#<issue-number>)`
 
 ### Migrations are gitignored
 `migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
