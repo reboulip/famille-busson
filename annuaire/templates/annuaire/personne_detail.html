@@ -1,0 +1,88 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="flex-title">
+        {% if person.profile_photo %}
+            <a href="{{ person.profile_photo.url }}">
+                <img class="expandable-image" src="{{ person.profile_photo.url }}"
+                alt="Photo de profil de {{ person.first_name }} {{ person.last_name }}" />
+            </a>
+        {% else %}
+            <img class="expandable-image" src={% static 'default_profile_picture.png' %} alt="Photo par défaut">
+        {% endif %}
+        <div>
+            <h1>{{ person.first_name }} {{ person.last_name }}</h1>
+            <p>
+                📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email }}>">{{ person.email }}</a>
+                {% if person.phone_number %}
+                - ☎️ <a href="sip:{{ person.phone_number }}">{{ person.phone_number }}</a>
+                {% endif %}
+            </p>
+            {% if person.postal_address %}
+                <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">
+                    {{ person.postal_address}}
+                    </a>
+                </p>
+            {% endif %}
+            {% if person.birth_date %}<p>🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
+        </div>
+    </div>
+    {% if person.description %}
+        <div class="annuaire-description">
+            <h2>À propos de {{ person.first_name }}</h2>
+            <p>{{ person.description }}</p>
+        </div>
+    {% endif %}
+    <h2>Relations</h2>
+    <!-- Conjoint / époux -->
+    {% if partner %}
+        <div class="relations-inline">
+            <div>{{ partner_type|title }}</div>
+            <a href="{% url 'personne-detail' partner.pk %}" title="{{ partner.first_name }} {{ partner.last_name }}">
+                <img src="{% if partner.profile_photo %}
+                            {{ partner.profile_photo.url }}
+                        {% else %}
+                            {% static 'default_profile_picture.png' %}
+                        {% endif %}"
+                    alt="Photo de {{ partner.first_name }}"
+                    class="profile-picture">
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Parents -->
+    {% if parents %}
+        <div class="relations-inline">
+            <div>Parents</div>
+            {% for parent in parents %}
+                <a href="{% url 'personne-detail' parent.pk %}" title="{{ parent.first_name }} {{ parent.last_name }}">
+                    <img src="{% if parent.profile_photo %}
+                                {{ parent.profile_photo.url }}
+                            {% else %}
+                                {% static 'default_profile_picture.png' %}
+                            {% endif %}"
+                        alt="Photo de {{ parent.first_name }} {{ parent.last_name }}"
+                        class="profile-picture">
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Enfants -->
+    {% if children %}
+        <div class="relations-inline">
+            <div>Enfants</div>
+            {% for child in children %}
+                <a href="{% url 'personne-detail' child.pk %}" title="{{ child.first_name }} {{ child.last_name }}">
+                    <img src="{% if child.profile_photo %}
+                                {{ child.profile_photo.url }}
+                            {% else %}
+                                {% static 'default_profile_picture.png' %}
+                            {% endif %}"
+                        alt="Photo de {{ child.first_name }}"
+                        class="profile-picture">
+                </a>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock content %}

@@ -1,0 +1,73 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <article class="blogpost-detail">
+        <header class="blogpost-detail-header">
+            <h1>{{ post.title }}</h1>
+            <span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span>
+        </header>
+        <p class="blogpost-detail-meta">
+            Par
+            {% for author in post.authors.all %}
+                <a href="{% url 'personne-detail' author.pk %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                anonyme
+            {% endfor %}
+            — publié le {{ post.created_at|date:"j F Y" }}
+            {% if post.updated_at and post.updated_at|date:"YmdHi" != post.created_at|date:"YmdHi" %}
+                (modifié le {{ post.updated_at|date:"j F Y" }})
+            {% endif %}
+        </p>
+
+        <div class="blogpost-detail-body">{{ post.body|linebreaks }}</div>
+
+        {% if can_edit %}
+            <div class="blogpost-detail-actions">
+                <a href="{% url 'blogpost-edit' post.pk %}" class="btn btn-outline-primary">Modifier</a>
+                <a href="{% url 'blogpost-delete' post.pk %}" class="btn btn-outline-danger">Supprimer</a>
+            </div>
+        {% endif %}
+    </article>
+
+    {% if post.attachments.all %}
+        <section class="blogpost-attachments">
+            <h2>Pièces jointes</h2>
+            {% for attachment in post.attachments.all %}
+                {% if attachment.is_image %}
+                    <figure class="attachment-image">
+                        <img src="{{ attachment.file.url }}" alt="{{ attachment.caption|default:attachment.filename }}">
+                        {% if attachment.caption %}<figcaption>{{ attachment.caption }}</figcaption>{% endif %}
+                    </figure>
+                {% else %}
+                    <p class="attachment-file">
+                        📎 <a href="{{ attachment.file.url }}" download>{{ attachment.caption|default:attachment.filename }}</a>
+                    </p>
+                {% endif %}
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    <section class="blogpost-comments">
+        <h2>Commentaires</h2>
+        {% for comment in post.comments.all %}
+            <article class="comment">
+                <header class="comment-header">
+                    <strong>{{ comment.author|default:"Anonyme" }}</strong>
+                    <span class="comment-date">— {{ comment.created_at|date:"j F Y H:i" }}</span>
+                    {% if user.is_staff %}
+                        <a href="{% url 'comment-delete' comment.pk %}" class="btn btn-sm btn-outline-danger ms-2">Supprimer</a>
+                    {% endif %}
+                </header>
+                <div class="comment-body">{{ comment.body|linebreaks }}</div>
+            </article>
+        {% empty %}
+            <p>Aucun commentaire pour l'instant.</p>
+        {% endfor %}
+
+        <form method="post" class="comment-form mt-3">
+            {% csrf_token %}
+            {{ comment_form|crispy }}
+            <button type="submit" class="btn btn-outline-primary">Commenter</button>
+        </form>
+    </section>
+{% endblock content %}

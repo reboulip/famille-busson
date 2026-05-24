@@ -1,0 +1,66 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Famille Busson</h1>
+
+    <div class="tile-grid">
+
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Annuaire</h2>
+                <a href="{% url 'directory' %}" class="tile-link">Voir tout →</a>
+            </div>
+            <div class="annuaire-mini-grid">
+                {% for person in recent_persons %}
+                    <a href="{% url 'personne-detail' person.pk %}" class="personne-mini-card" title="{{ person.first_name }} {{ person.last_name }}">
+                        <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                             alt="{{ person.first_name }}" class="personne-mini-photo">
+                        <span class="personne-mini-nom">{{ person.first_name }}<br>{{ person.last_name }}</span>
+                    </a>
+                {% empty %}
+                    <p>Aucun profil pour l'instant.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="tile tile-placeholder">
+            <div class="tile-header">
+                <h2>Chalets PSV</h2>
+                <a href="{% url 'chalet-list' %}" class="tile-link">Voir tout →</a>
+            </div>
+            <p>Gérez les réservations et présences aux chalets.</p>
+        </div>
+
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Dernières publications</h2>
+                <a href="{% url 'blogpost-list' %}" class="tile-link">Voir tout →</a>
+            </div>
+            {% for post in recent_posts %}
+                <div class="home-publication-item">
+                    <a href="{% url 'blogpost-detail' post.pk %}"><strong>{{ post.title }}</strong></a>
+                    <span class="muted">— {{ post.created_at|date:"j F" }}</span>
+                </div>
+            {% empty %}
+                <p>Aucune publication.</p>
+            {% endfor %}
+        </div>
+
+        <div class="tile">
+            <div class="tile-header">
+                <h2>Derniers commentaires</h2>
+            </div>
+            {% for comment in recent_comments %}
+                <div class="home-comment-item">
+                    <a href="{% url 'blogpost-detail' comment.post.pk %}">
+                        {{ comment.author|default:"Anonyme" }} sur « {{ comment.post.title }} »
+                    </a>
+                    <p class="muted">{{ comment.body|truncatechars:80 }}</p>
+                </div>
+            {% empty %}
+                <p>Aucun commentaire.</p>
+            {% endfor %}
+        </div>
+
+    </div>
+{% endblock content %}

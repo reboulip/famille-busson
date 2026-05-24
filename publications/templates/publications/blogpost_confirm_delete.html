@@ -1,0 +1,12 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <div class="form">
+        <h1>Supprimer « {{ object.title }} » ?</h1>
+        <p>Cette action est irréversible. La publication, ses commentaires et ses pièces jointes seront supprimés.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <button class="btn btn-outline-danger" type="submit">Supprimer définitivement</button>
+            <a href="{% url 'blogpost-detail' object.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+        </form>
+    </div>
+{% endblock content %}

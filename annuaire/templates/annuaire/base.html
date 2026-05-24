@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Famille Busson</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+<body>
+    <div class="sidebar">
+        <ul>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'my-profile' %}">Mon profil</a></li>
+                {% if user.is_staff %}
+                    <li><a href="{% url 'bulk-account-create' %}">Créer des comptes</a></li>
+                {% endif %}
+                <li>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button type="submit">Déconnexion</button>
+                    </form>
+                </li>
+            {% else %}
+                <li><a href="{% url 'login' %}">Se connecter</a></li>
+            {% endif %}
+            <li class="sidebar-section">Annuaire</li>
+            <li>
+                <ul>
+                    <li><a href="{% url 'directory' %}">Toutes les personnes</a></li>
+                    <li><a href="{% url 'chalet-list' %}">Chalets PSV</a></li>
+                </ul>
+            </li>
+            <li class="sidebar-section">Publications</li>
+            <li>
+                <ul>
+                    <li><a href="{% url 'blogpost-list' %}">Toutes les publications</a></li>
+                    {% if user.is_authenticated %}
+                        <li><a href="{% url 'blogpost-create' %}">Nouvelle publication</a></li>
+                    {% endif %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+    <div class="content">
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        {% block content %}{% endblock content %}
+    </div>
+</body>
+</html>

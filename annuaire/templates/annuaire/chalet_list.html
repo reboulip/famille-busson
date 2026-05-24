@@ -1,0 +1,28 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="page-header">
+        <h1>Chalets PSV</h1>
+        {% if user.is_staff %}
+            <a href="{% url 'chalet-create' %}" class="btn btn-outline-primary">+ Créer un chalet</a>
+        {% endif %}
+    </div>
+
+    <div class="annuaire-grid">
+        {% for chalet in chalets %}
+            <a href="{% url 'chalet-detail' chalet.pk %}" class="personne-card">
+                {% if chalet.photo %}
+                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="personne-card-photo">
+                {% else %}
+                    <div class="chalet-photo-placeholder">🏔️</div>
+                {% endif %}
+                <div class="personne-card-info">
+                    <strong>{{ chalet.name }}</strong>
+                    <span>{{ chalet.address }}</span>
+                </div>
+            </a>
+        {% empty %}
+            <p>Aucun chalet enregistré.</p>
+        {% endfor %}
+    </div>
+{% endblock content %}

@@ -3,7 +3,22 @@
     "allow": [
       "Bash(find /mnt/c/Users/romai/code-projects/famille-busson -type f \\\\\\( -name \"*.py\" -o -name \"*.html\" -o -name \"*.txt\" -o -name \"*.md\" \\\\\\) ! -path \"*/.venv/*\" ! -path \"*/__pycache__/*\" 2>/dev/null | head -50)",
       "Read(//mnt/c/Users/romai/code-projects/**)",
-      "PowerShell(cd 'c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson'; Get-ChildItem -Path './famille_busson' -Recurse -Directory | Where-Object {$_.Name -eq 'migrations'} | Select-Object -ExpandProperty FullName)"
+      "PowerShell(cd 'c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson'; Get-ChildItem -Path './famille_busson' -Recurse -Directory | Where-Object {$_.Name -eq 'migrations'} | Select-Object -ExpandProperty FullName)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "PowerShell(cd \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\"; uv run --group test pytest *)",
+      "PowerShell(cd \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\"; uv run --group test pytest)",
+      "PowerShell(Get-Content \"C:\\\\Users\\\\romai\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-romai-code-projects-famille-busson\\\\218e6593-79cc-409b-b56f-afecb6eff9d6\\\\tasks\\\\bifxirxm3.output\" -Wait)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\" -Recurse -Include \"*.html\")",
+      "Bash(Select-Object FullName)",
+      "Bash(Head -30)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\" -Recurse -Include \"views.py\")",
+      "Bash(custom\" | head -10)",
+      "PowerShell(Get-ChildItem c:\\\\Users\\\\romai\\\\code-projects\\\\famille-busson\\\\famille_busson\\\\annuaire -Recurse | Where-Object { -not $_.PSIsContainer } | Select-Object FullName)",
+      "PowerShell(if \\(-not \\(Test-Path C:\\\\Users\\\\romai\\\\.claude\\\\plans\\)\\) { New-Item -ItemType Directory -Path C:\\\\Users\\\\romai\\\\.claude\\\\plans -Force | Out-Null }; Test-Path C:\\\\Users\\\\romai\\\\.claude\\\\plans)",
+      "Bash(uv run *)",
+      "Bash(tail -5 /c/Users/romai/AppData/Local/Temp/claude/c--Users-romai-code-projects-famille-busson/12969a7a-4ed2-429b-8052-89e725fd5a90/tasks/b31durmy6.output)",
+      "Read(//c/Users/romai/AppData/Local/Temp/claude/c--Users-romai-code-projects-famille-busson/12969a7a-4ed2-429b-8052-89e725fd5a90/tasks/**)"
     ]
   }
 }

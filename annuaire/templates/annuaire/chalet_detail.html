@@ -1,0 +1,82 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="flex-title">
+        {% if chalet.photo %}
+            <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="expandable-image">
+        {% else %}
+            <div class="chalet-photo-placeholder large">🏔️</div>
+        {% endif %}
+        <div>
+            <h1>{{ chalet.name }}</h1>
+            <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>
+            {% if chalet.gps_coordinates %}<p>📍 {{ chalet.gps_coordinates }}</p>{% endif %}
+        </div>
+    </div>
+
+    <h2>Présences</h2>
+
+    {% if presences %}
+        <table class="presence-table">
+            <thead>
+                <tr>
+                    <th>Personne</th>
+                    <th>Du</th>
+                    <th>Au</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for presence in presences %}
+                    <tr>
+                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                        <td>{{ presence.start_date|date:"j F Y" }}</td>
+                        <td>{{ presence.end_date|date:"j F Y" }}</td>
+                        <td class="presence-actions">
+                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune présence enregistrée pour ce chalet.</p>
+    {% endif %}
+
+    <h2>Ajouter une présence</h2>
+    <form method="post" action="{% url 'presence-add' chalet.pk %}" class="presence-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="person-search-input">Personnes</label>
+            <div class="person-picker" data-search-url="{% url 'person-search-ajax' %}">
+                <input type="text" id="person-search-input" class="form-control person-picker-input"
+                       placeholder="Tapez au moins 2 lettres pour chercher…"
+                       autocomplete="off" aria-label="Chercher une personne">
+                <ul class="person-picker-results" role="listbox" hidden></ul>
+                <div class="person-picker-selected mt-2" aria-live="polite"></div>
+                <div class="person-picker-hidden-inputs"></div>
+            </div>
+            {% if presence_form.persons.errors %}<div class="text-danger small">{{ presence_form.persons.errors }}</div>{% endif %}
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-auto">
+                <label class="form-label" for="{{ presence_form.start_date.id_for_label }}">{{ presence_form.start_date.label }}</label>
+                {{ presence_form.start_date }}
+            </div>
+            <div class="col-auto">
+                <label class="form-label" for="{{ presence_form.end_date.id_for_label }}">{{ presence_form.end_date.label }}</label>
+                {{ presence_form.end_date }}
+            </div>
+        </div>
+        {% if presence_form.start_date.errors or presence_form.end_date.errors %}
+            <div class="text-danger small mb-2">{{ presence_form.start_date.errors }}{{ presence_form.end_date.errors }}</div>
+        {% endif %}
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}
