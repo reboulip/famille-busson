@@ -80,9 +80,53 @@ Tests live in `annuaire/tests/` and `publications/tests/`. Shared fixtures (acco
 When in doubt, prefer the full suite. Always state which files you are running and why.
 
 ## 10. Git workflow
-- **Branches:** `develop` for active development, `main` for stable releases. Always work on `develop`.
-- **Migrations are gitignored:** `migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
-- **Also gitignored:** `db.sqlite3`, `.env`, `/static/`, `/media/`.
+
+### Branch model
+| Branch | Role | Direct push? |
+|--------|------|-------------|
+| `main` | Stable releases | Never — PR only |
+| `develop` | Integration branch | Never — PR only |
+| `<type>/issue-<N>/<summary>` | One issue = one branch | Yes (your own branch) |
+
+### Issue-driven workflow
+When asked to work on a GitHub issue:
+1. Fetch the issue details: `gh issue view <number>`
+2. Infer the branch `<type>` from the issue description (see types below).
+3. Create the branch from `develop` (hotfixes from `main`):
+   ```
+   git checkout develop && git pull origin develop
+   git checkout -b <type>/issue-<number>/<short-summary>
+   ```
+4. Implement, run tests, commit on the branch.
+5. Push: `git push -u origin <branch-name>`
+6. Open a PR targeting `develop` (or `main` for hotfixes):
+   ```
+   gh pr create --base develop --title "<type>: <summary> (#<number>)" --body "Closes #<number>\n\n## Summary\n...\n\n## Test plan\n..."
+   ```
+7. **Do not merge the PR** — the user reviews and merges via squash merge.
+8. The branch is deleted automatically by GitHub after merge.
+
+### Branch naming convention
+`<type>/issue-<number>/<short-summary>` e.g. `feat/issue-12/person-avatar-upload`
+
+| Type | When to use |
+|------|-------------|
+| `feat` | New feature or user-visible capability |
+| `fix` | Bug fix |
+| `refactor` | Code restructuring, no behaviour change |
+| `chore` | Dependency update, tooling, CI, config |
+| `docs` | Documentation only |
+| `test` | Tests only |
+
+### Merge strategy
+Squash merge on GitHub — one issue = one atomic commit on `develop`.
+Commit message format: `<type>(<scope>): <summary> (#<issue-number>)`
+
+### Migrations are gitignored
+`migrations/` is in `.gitignore` and is never committed. After cloning or pulling model changes, always run `python manage.py makemigrations` then `python manage.py migrate`. Never assume migrations exist in the repo.
+
+### Also gitignored
+`db.sqlite3`, `.env`, `/static/`, `/media/`.
 
 ## 11. Instructions for Claude
 1. **Always verify migrations:** Before suggesting a model change, remind me of the impact on the Custom User Model.
@@ -100,3 +144,4 @@ When in doubt, prefer the full suite. Always state which files you are running a
 5. **Tests gate commits:** If tests were run and any failed, do not commit — report the failures instead. A commit may only happen after a fully green test run (or the user explicitly chose to commit without tests).
 6. **Test changes:** New tests can be written freely. Modifying or deleting existing tests requires presenting the change and waiting for user approval first.
 7. **New view → new tests:** Every new view (function or class-based) must be accompanied by a corresponding test block in the appropriate test file. Do not consider a view complete until its tests are written and passing.
+8. **GitHub issue workflow:** When asked to work on a GitHub issue, follow §10 exactly. Fetch the issue with `gh issue view <number>`, create the appropriately-named branch from `develop` (or `main` for hotfixes), implement, test, push, and open a PR targeting `develop`. Never commit or push directly to `develop` or `main`.
