@@ -172,34 +172,42 @@ class Command(BaseCommand):
         Account.objects.all().delete()
 
     def _create_admin(self) -> Account:
-        admin = Account.objects.create_superuser(
-            email="admin@example.com", password="admin",
-        )
-        admin.must_change_password = False
-        admin.save()
-        self.stdout.write(f"  · created superuser {admin.email}")
+        try:
+            admin = Account.objects.get(email="admin@example.com")
+            self.stdout.write(f"  · admin {admin.email} already exists, skipping")
+        except Account.DoesNotExist:
+            admin = Account.objects.create_superuser(
+                email="admin@example.com", password="admin",
+            )
+            admin.must_change_password = False
+            admin.save()
+            self.stdout.write(f"  · created superuser {admin.email}")
         return admin
 
     def _create_staff(self) -> Account:
         """Non-superuser staff account — exercises StaffRequiredMixin paths
         without the superuser shortcut around permission checks."""
-        staff = Account.objects.create_user(
-            email="staff@example.com", password="staff", is_staff=True,
-        )
-        staff.must_change_password = False
-        staff.save()
-        # Give the staff member a Person profile too, so they can author posts
-        # and comments like a normal member.
-        Person.objects.create(
-            first_name="Sandrine", last_name="Staff",
-            email="staff@example.com",
-            description="Membre du personnel (compte de test, non-superuser).",
-        )
-        # Re-link via signal (Person was created after Account, so trigger by save).
-        person = Person.objects.get(email="staff@example.com")
-        person.account = staff
-        person.save()
-        self.stdout.write(f"  · created staff {staff.email}")
+        try:
+            staff = Account.objects.get(email="staff@example.com")
+            self.stdout.write(f"  · staff {staff.email} already exists, skipping")
+        except Account.DoesNotExist:
+            staff = Account.objects.create_user(
+                email="staff@example.com", password="staff", is_staff=True,
+            )
+            staff.must_change_password = False
+            staff.save()
+            # Give the staff member a Person profile too, so they can author posts
+            # and comments like a normal member.
+            Person.objects.create(
+                first_name="Sandrine", last_name="Staff",
+                email="staff@example.com",
+                description="Membre du personnel (compte de test, non-superuser).",
+            )
+            # Re-link via signal (Person was created after Account, so trigger by save).
+            person = Person.objects.get(email="staff@example.com")
+            person.account = staff
+            person.save()
+            self.stdout.write(f"  · created staff {staff.email}")
         return staff
 
     def _create_persons(self) -> list[Person]:
