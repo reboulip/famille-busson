@@ -10,7 +10,24 @@
                     {% if object %}Modifier « {{ object.title }} »{% else %}Nouvelle publication{% endif %}
                 </legend>
                 {{ form.media }}
-                {{ form|crispy }}
+                {{ form.title|as_crispy_field }}
+                {{ form.post_type|as_crispy_field }}
+                {{ form.body|as_crispy_field }}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="author-search-input">Auteur(s)</label>
+                    <div class="person-picker"
+                         data-search-url="{% url 'person-search-ajax' %}"
+                         data-field-name="authors"
+                         data-initial-selection='{{ authors_initial_json|escape }}'>
+                        <input type="text" id="author-search-input" class="form-control person-picker-input"
+                               placeholder="Tapez au moins 2 lettres pour chercher…"
+                               autocomplete="off" aria-label="Chercher un auteur">
+                        <ul class="person-picker-results" role="listbox" hidden></ul>
+                        <div class="person-picker-selected mt-2" aria-live="polite"></div>
+                        <div class="person-picker-hidden-inputs"></div>
+                    </div>
+                    {% if form.authors.errors %}<div class="text-danger small">{{ form.authors.errors }}</div>{% endif %}
+                </div>
             </fieldset>
 
             {% with subform=formsets.0 %}
@@ -57,5 +74,6 @@
             </div>
         </form>
     </div>
+    <script src="{% static 'js/person_picker.js' %}"></script>
     <script src="{% static 'js/publication_attachments.js' %}"></script>
 {% endblock content %}

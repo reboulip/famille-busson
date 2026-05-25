@@ -7,6 +7,9 @@ class BlogPostForm(forms.ModelForm):
     class Meta:
         model = BlogPost
         fields = ['title', 'post_type', 'body', 'authors']
+        widgets = {
+            'authors': forms.MultipleHiddenInput,
+        }
 
     def __init__(self, *args, current_person=None, **kwargs):
         super().__init__(*args, **kwargs)
