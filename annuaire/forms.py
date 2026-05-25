@@ -113,7 +113,7 @@ class ChaletForm(forms.ModelForm):
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ['name', 'address', 'gps_coordinates', 'photo', 'owners']
+        fields = ['name', 'address', 'gps_coordinates', 'photo']
 
 
 class BulkAccountCreateForm(forms.Form):
