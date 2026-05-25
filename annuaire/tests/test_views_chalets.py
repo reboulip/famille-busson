@@ -390,3 +390,87 @@ def test_person_search_limits_to_ten(auth_client, db):
     response = auth_client.get(reverse("person-search-ajax"), {"q": "Search"})
     data = json.loads(response.content)
     assert len(data["results"]) == 10
+
+
+# ---------------------------------------------------------------------------
+# ChaletOwnersUpdateView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_requires_login(client, chalet):
+    response = client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_forbidden_for_non_owner_non_staff(auth_client, chalet):
+    response = auth_client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_get_allowed_for_owner(auth_client, chalet, person):
+    chalet.owners.add(person)
+    response = auth_client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 200
+    assert response.context["chalet"] == chalet
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_get_allowed_for_staff(staff_client, chalet):
+    response = staff_client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_get_exposes_initial_json(auth_client, chalet, person, other_person):
+    chalet.owners.add(person)
+    chalet.owners.add(other_person)
+    response = auth_client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
+    data = json.loads(response.context["owners_initial_json"])
+    ids = {item["id"] for item in data}
+    assert ids == {person.pk, other_person.pk}
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_post_replaces_owners(staff_client, chalet, person, other_person):
+    chalet.owners.add(person)
+    response = staff_client.post(
+        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}),
+        {"owners": [str(other_person.pk)]},
+    )
+    assert response.status_code == 302
+    assert response["Location"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+    assert list(chalet.owners.all()) == [other_person]
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_post_empty_clears_owners(staff_client, chalet, person):
+    chalet.owners.add(person)
+    response = staff_client.post(
+        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}), {},
+    )
+    assert response.status_code == 302
+    assert chalet.owners.count() == 0
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_post_forbidden_for_non_owner_non_staff(auth_client, chalet, other_person):
+    response = auth_client.post(
+        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}),
+        {"owners": [str(other_person.pk)]},
+    )
+    assert response.status_code == 403
+    assert chalet.owners.count() == 0
+
+
+@pytest.mark.django_db
+def test_chalet_owners_edit_post_allowed_for_owner(auth_client, chalet, person, other_person):
+    chalet.owners.add(person)
+    response = auth_client.post(
+        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}),
+        {"owners": [str(person.pk), str(other_person.pk)]},
+    )
+    assert response.status_code == 302
+    assert set(chalet.owners.all()) == {person, other_person}

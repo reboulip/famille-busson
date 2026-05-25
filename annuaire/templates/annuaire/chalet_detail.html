@@ -12,6 +12,7 @@
                 {{ chalet.name }}
                 {% if can_edit_chalet %}
                     <a href="{% url 'chalet-edit' chalet.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier</a>
+                    <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les propriétaires</a>
                 {% endif %}
             </h1>
             <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>

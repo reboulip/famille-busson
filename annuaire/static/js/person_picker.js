@@ -3,6 +3,7 @@
     if (!picker) return;
 
     const searchUrl = picker.dataset.searchUrl;
+    const fieldName = picker.dataset.fieldName || 'persons';
     const input = picker.querySelector('.person-picker-input');
     const resultsList = picker.querySelector('.person-picker-results');
     const selectedZone = picker.querySelector('.person-picker-selected');
@@ -76,7 +77,7 @@
 
         const hidden = document.createElement('input');
         hidden.type = 'hidden';
-        hidden.name = 'persons';
+        hidden.name = fieldName;
         hidden.value = id;
         hidden.dataset.id = id;
         hiddenInputsZone.appendChild(hidden);
@@ -141,4 +142,17 @@
     document.addEventListener('click', (e) => {
         if (!picker.contains(e.target)) closeDropdown();
     });
+
+    function initFromDataset() {
+        const raw = picker.dataset.initialSelection;
+        if (!raw) return;
+        try {
+            const items = JSON.parse(raw);
+            items.forEach((item) => addPerson(item.id, item.name));
+        } catch (e) {
+            // Ignore malformed initial selection.
+        }
+    }
+
+    initFromDataset();
 })();

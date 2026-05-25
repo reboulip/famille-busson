@@ -1,0 +1,29 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Propriétaires de {{ chalet.name }}</h1>
+
+    <form method="post" class="presence-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="person-search-input">Propriétaires actuels</label>
+            <div class="person-picker"
+                 data-search-url="{% url 'person-search-ajax' %}"
+                 data-field-name="owners"
+                 data-initial-selection='{{ owners_initial_json|escape }}'>
+                <input type="text" id="person-search-input" class="form-control person-picker-input"
+                       placeholder="Tapez au moins 2 lettres pour chercher…"
+                       autocomplete="off" aria-label="Chercher une personne">
+                <ul class="person-picker-results" role="listbox" hidden></ul>
+                <div class="person-picker-selected mt-2" aria-live="polite"></div>
+                <div class="person-picker-hidden-inputs"></div>
+            </div>
+            <div class="form-text">Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer.</div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
+            <a href="{% url 'chalet-detail' chalet.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}

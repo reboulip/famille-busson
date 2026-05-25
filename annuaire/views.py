@@ -374,6 +374,27 @@ class ChaletUpdateView(ChaletOwnerOrStaffMixin, UpdateView):
         return reverse_lazy('chalet-detail', kwargs={'pk': self.object.pk})
 
 
+class ChaletOwnersUpdateView(ChaletOwnerOrStaffMixin, DetailView):
+    model = Chalet
+    template_name = 'annuaire/chalet_owners_form.html'
+    context_object_name = 'chalet'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        owners = self.object.owners.all().order_by('last_name', 'first_name')
+        context['owners'] = owners
+        context['owners_initial_json'] = json.dumps(
+            [{'id': p.pk, 'name': str(p)} for p in owners]
+        )
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        owner_ids = [int(pk) for pk in request.POST.getlist('owners') if pk.isdigit()]
+        self.object.owners.set(Person.objects.filter(pk__in=owner_ids))
+        return redirect('chalet-detail', pk=self.object.pk)
+
+
 class AddPresenceView(LoginRequiredMixin, FormView):
     form_class = AddPresenceForm
 
