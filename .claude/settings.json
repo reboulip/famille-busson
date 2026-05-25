@@ -2,11 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(git *)",
-      "Bash(\"c:/Program Files/GitHub CLI/gh.exe\" *)",
-      "Bash('c:/Program Files/GitHub CLI/gh.exe' *)",
       "Bash(gh *)",
       "Bash(uv *)",
-      "Bash(where *)"
+      "Bash(where *)",
+      "PowerShell(git *)",
+      "PowerShell(gh *)",
+      "PowerShell(uv *)",
+      "PowerShell(where *)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
     ],
     "deny": [
       "Bash(git push * main)",
@@ -17,7 +21,16 @@
       "Bash(git reset --hard *)",
       "Bash(git clean -f *)",
       "Bash(git branch -D main)",
-      "Bash(git branch -D develop)"
+      "Bash(git branch -D develop)",
+      "PowerShell(git push * main)",
+      "PowerShell(git push * main:*)",
+      "PowerShell(git push *:main)",
+      "PowerShell(git push --force *)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git reset --hard *)",
+      "PowerShell(git clean -f *)",
+      "PowerShell(git branch -D main)",
+      "PowerShell(git branch -D develop)"
     ]
   }
 }
