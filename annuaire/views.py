@@ -2,19 +2,20 @@ import json
 import secrets
 from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.views import LoginView
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
-from django.views.generic import DetailView, UpdateView, FormView, ListView, CreateView, DeleteView
+from django.views.generic import DetailView, UpdateView, FormView, ListView, CreateView, DeleteView, View
 from django.urls import reverse_lazy
 from .models import Person, Account, Relation, Chalet, PresencePSV
 from .forms import (
     ProfileEditForm, RelationEditFormSet, CustomAuthenticationForm,
     SignupForm, AddPresenceForm, PresenceForm, ChaletForm, ChaletUpdateForm,
+    AddRelationForm, UpdateRelationForm,
     BulkAccountCreateForm, ForcedPasswordChangeForm,
 )
 
@@ -293,22 +294,78 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
-        if self.request.POST:
-            data['formsets'] = [RelationEditFormSet(self.request.POST, instance=self.object)]
-        else:
-            data['formsets'] = [RelationEditFormSet(instance=self.object)]
+        data['formsets'] = []
         return data
 
-    def form_valid(self, form):
-        context = self.get_context_data()
-        form_relations = context['formsets'][0]
-        self.object = form.save()
-        if form_relations.is_valid():
-            form_relations.instance = self.object
-            form_relations.save()
+
+def _get_person_for_relations_edit(request, pk):
+    person = get_object_or_404(Person, pk=pk)
+    user = request.user
+    if user.is_staff or user.is_superuser:
+        return person
+    if person.account_id != user.pk:
+        raise PermissionDenied("Vous ne pouvez modifier que vos propres relations.")
+    return person
+
+
+class PersonRelationsView(LoginRequiredMixin, View):
+    template_name = 'annuaire/person_relations_form.html'
+
+    def get(self, request, *args, **kwargs):
+        person = _get_person_for_relations_edit(request, kwargs['pk'])
+        relations = (
+            Relation.objects.filter(person1=person)
+            .select_related('person2')
+            .order_by('person2__last_name', 'person2__first_name')
+        )
+        row_forms = [
+            (rel, UpdateRelationForm(instance=rel, prefix=f'rel-{rel.pk}'))
+            for rel in relations
+        ]
+        return render(request, self.template_name, {
+            'person': person,
+            'row_forms': row_forms,
+            'add_form': AddRelationForm(),
+        })
+
+
+class AddRelationView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        person = _get_person_for_relations_edit(request, kwargs['pk'])
+        form = AddRelationForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, "Formulaire invalide. Vérifiez la personne et le type de relation.")
+            return redirect('person-relations-edit', pk=person.pk)
+        relation = form.save(commit=False)
+        if relation.person2 == person:
+            messages.error(request, "Une personne ne peut pas être en relation avec elle-même.")
+            return redirect('person-relations-edit', pk=person.pk)
+        if Relation.objects.filter(person1=person, person2=relation.person2).exists():
+            messages.error(request, "Une relation avec cette personne existe déjà.")
+            return redirect('person-relations-edit', pk=person.pk)
+        relation.person1 = person
+        relation.save()
+        return redirect('person-relations-edit', pk=person.pk)
+
+
+class UpdateRelationView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        person = _get_person_for_relations_edit(request, kwargs['pk'])
+        relation = get_object_or_404(Relation, pk=kwargs['rid'], person1=person)
+        form = UpdateRelationForm(request.POST, instance=relation, prefix=f'rel-{relation.pk}')
+        if form.is_valid():
+            form.save()
         else:
-            return super().form_invalid(form)
-        return super().form_valid(form)
+            messages.error(request, "Modification invalide.")
+        return redirect('person-relations-edit', pk=person.pk)
+
+
+class DeleteRelationView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        person = _get_person_for_relations_edit(request, kwargs['pk'])
+        relation = get_object_or_404(Relation, pk=kwargs['rid'], person1=person)
+        relation.delete()
+        return redirect('person-relations-edit', pk=person.pk)
 
 
 class ChaletListView(LoginRequiredMixin, ListView):
