@@ -91,14 +91,15 @@ When in doubt, prefer the full suite. Always state which files you are running a
 ### Issue-driven workflow (issue → develop)
 When asked to work on a GitHub issue:
 1. Fetch the issue details: `gh issue view <number>`
-2. Infer the branch `<type>` from the issue description (see types below).
-3. Create the branch from up-to-date `develop` (hotfixes from `main`):
+2. **If the issue is ambiguous, contradictory, or missing acceptance criteria, ask the user clarifying questions before writing any code.** Cover scope ("does this also cover X?"), UX choices that aren't obvious from the description, and edge cases the issue doesn't mention. It is far cheaper to ask up-front than to ship the wrong thing and revert. Skip this step only when the issue is genuinely self-explanatory.
+3. Infer the branch `<type>` from the issue description (see types below).
+4. Create the branch from up-to-date `develop` (hotfixes from `main`):
    ```
    git checkout develop && git pull origin develop
    git checkout -b <type>/issue-<number>/<short-summary>
    ```
-4. Implement, run the relevant tests (per §9 scope rule), commit on the branch.
-5. If tests are green, **squash-merge directly into `develop`** locally — no PR:
+5. Implement, run the relevant tests (per §9 scope rule), commit on the branch.
+6. If tests are green, **squash-merge directly into `develop`** locally — no PR:
    ```
    git checkout develop && git pull origin develop
    git merge --squash <type>/issue-<number>/<short-summary>
@@ -107,8 +108,19 @@ When asked to work on a GitHub issue:
    git branch -D <type>/issue-<number>/<short-summary>      # local cleanup
    git push origin --delete <type>/issue-<number>/<short-summary>   # remote cleanup (if pushed)
    ```
-6. If tests fail, fix on the branch and re-run. Never merge a red branch into `develop`.
-7. Working in parallel on multiple issues is fine — rebase each issue branch onto `develop` as often as needed to stay current:
+7. **Immediately after the merge to develop**, post a French resolution comment on the GH issue. Merging is your assertion that the issue is fixed, so this comment is the proof-of-work the user reads before testing on `develop`. Always end the comment with `*Message généré par Claude.*` so the user can tell at a glance who wrote it.
+   ```
+   gh issue comment <issue-number> --body "**Résolu sur \`develop\`** (commit <develop-sha>).
+
+   <2-4 short bullets: what was changed, in which file/area>
+
+   <1 sentence on WHY this resolves the issue — link the change back to the problem statement>
+
+   *Message généré par Claude.*"
+   ```
+   Do not close the issue here — closing happens in the release workflow once the commit ships to `main`.
+8. If tests fail, fix on the branch and re-run. Never merge a red branch into `develop`.
+9. Working in parallel on multiple issues is fine — rebase each issue branch onto `develop` as often as needed to stay current:
    ```
    git checkout <type>/issue-<N>/<summary>
    git fetch origin && git rebase origin/develop
