@@ -11,6 +11,9 @@ class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Person
         fields = ['first_name', 'last_name', 'profile_photo', 'email', 'phone_number', 'postal_address', 'birth_date', 'description']
+        widgets = {
+            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        }
 
 
 RelationEditFormSet = forms.inlineformset_factory(Person, Relation, fk_name='person1', extra=1,
