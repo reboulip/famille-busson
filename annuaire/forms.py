@@ -20,6 +20,31 @@ RelationEditFormSet = forms.inlineformset_factory(Person, Relation, fk_name='per
                                                   fields=['person2', 'relationship_type', 'start_date'])
 
 
+class AddRelationForm(forms.ModelForm):
+    person2 = forms.ModelChoiceField(
+        queryset=Person.objects.all(),
+        widget=forms.HiddenInput,
+        label='Personne',
+        error_messages={'required': "Choisissez une personne dans la recherche."},
+    )
+
+    class Meta:
+        model = Relation
+        fields = ['person2', 'relationship_type', 'start_date']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        }
+
+
+class UpdateRelationForm(forms.ModelForm):
+    class Meta:
+        model = Relation
+        fields = ['relationship_type', 'start_date']
+        widgets = {
+            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+        }
+
+
 class CustomAuthenticationForm(AuthenticationForm):
     password = forms.CharField(label='Mot de passe', strip=False, widget=forms.PasswordInput)
 

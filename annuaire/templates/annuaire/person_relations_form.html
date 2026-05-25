@@ -1,0 +1,73 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Relations de {{ person }}</h1>
+    <a href="{% url 'personne-detail' person.pk %}" class="btn btn-sm btn-outline-secondary mb-3">← Retour au profil</a>
+
+    {% if row_forms %}
+        <table class="presence-table">
+            <thead>
+                <tr><th>Personne</th><th>Type</th><th>Date de début</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for relation, edit_form in row_forms %}
+                    <tr>
+                        <td><a href="{% url 'personne-detail' relation.person2.pk %}">{{ relation.person2 }}</a></td>
+                        <td colspan="3">
+                            <form method="post" action="{% url 'person-relation-update' person.pk relation.pk %}" class="d-flex flex-wrap align-items-center gap-2">
+                                {% csrf_token %}
+                                {{ edit_form.relationship_type }}
+                                {{ edit_form.start_date }}
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Enregistrer</button>
+                            </form>
+                        </td>
+                        <td class="presence-actions">
+                            <form method="post" action="{% url 'person-relation-delete' person.pk relation.pk %}" style="display:inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Supprimer cette relation ?')">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>Aucune relation enregistrée.</p>
+    {% endif %}
+
+    <h2>Ajouter une relation</h2>
+    <form method="post" action="{% url 'person-relation-add' person.pk %}" class="presence-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="person-search-input">Personne</label>
+            <div class="person-picker"
+                 data-search-url="{% url 'person-search-ajax' %}"
+                 data-field-name="person2"
+                 data-single-select="true">
+                <input type="text" id="person-search-input" class="form-control person-picker-input"
+                       placeholder="Tapez au moins 2 lettres pour chercher…"
+                       autocomplete="off" aria-label="Chercher une personne">
+                <ul class="person-picker-results" role="listbox" hidden></ul>
+                <div class="person-picker-selected mt-2" aria-live="polite"></div>
+                <div class="person-picker-hidden-inputs"></div>
+            </div>
+            {% if add_form.person2.errors %}<div class="text-danger small">{{ add_form.person2.errors }}</div>{% endif %}
+        </div>
+        <div class="row g-2 mb-3">
+            <div class="col-auto">
+                <label class="form-label" for="{{ add_form.relationship_type.id_for_label }}">{{ add_form.relationship_type.label }}</label>
+                {{ add_form.relationship_type }}
+            </div>
+            <div class="col-auto">
+                <label class="form-label" for="{{ add_form.start_date.id_for_label }}">{{ add_form.start_date.label }}</label>
+                {{ add_form.start_date }}
+            </div>
+        </div>
+        {% if add_form.relationship_type.errors or add_form.start_date.errors %}
+            <div class="text-danger small mb-2">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}</div>
+        {% endif %}
+        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}

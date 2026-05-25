@@ -280,3 +280,157 @@ def test_profile_create_post_invalid_returns_200_with_errors(client, account):
     response = client.post(reverse("profile-create"), {"first_name": "", "last_name": ""})
     assert response.status_code == 200
     assert response.context["form"].errors
+
+
+# ---------------------------------------------------------------------------
+# PersonRelationsView (GET)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_person_relations_requires_login(client, person):
+    response = client.get(reverse("person-relations-edit", kwargs={"pk": person.pk}))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_person_relations_forbidden_for_other_user(auth_client, other_person):
+    response = auth_client.get(reverse("person-relations-edit", kwargs={"pk": other_person.pk}))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_person_relations_allowed_for_owner(auth_client, person):
+    response = auth_client.get(reverse("person-relations-edit", kwargs={"pk": person.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_person_relations_allowed_for_staff(staff_client, person):
+    response = staff_client.get(reverse("person-relations-edit", kwargs={"pk": person.pk}))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_person_relations_404_for_invalid_pk(auth_client):
+    response = auth_client.get(reverse("person-relations-edit", kwargs={"pk": 99999}))
+    assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_person_relations_lists_existing(auth_client, person, other_person):
+    Relation.objects.create(person1=person, person2=other_person, relationship_type=1)
+    response = auth_client.get(reverse("person-relations-edit", kwargs={"pk": person.pk}))
+    row_forms = response.context["row_forms"]
+    assert len(row_forms) == 1
+    relation, _form = row_forms[0]
+    assert relation.person2 == other_person
+
+
+# ---------------------------------------------------------------------------
+# AddRelationView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_add_relation_creates_relation_and_inverse(auth_client, person, other_person):
+    response = auth_client.post(
+        reverse("person-relation-add", kwargs={"pk": person.pk}),
+        {"person2": other_person.pk, "relationship_type": 2},
+    )
+    assert response.status_code == 302
+    assert Relation.objects.filter(person1=person, person2=other_person, relationship_type=2).exists()
+    # inverse: parent -> enfant
+    assert Relation.objects.filter(person1=other_person, person2=person, relationship_type=3).exists()
+
+
+@pytest.mark.django_db
+def test_add_relation_rejects_self(auth_client, person):
+    response = auth_client.post(
+        reverse("person-relation-add", kwargs={"pk": person.pk}),
+        {"person2": person.pk, "relationship_type": 2},
+    )
+    assert response.status_code == 302
+    assert not Relation.objects.filter(person1=person).exists()
+
+
+@pytest.mark.django_db
+def test_add_relation_rejects_duplicate(auth_client, person, other_person):
+    Relation.objects.create(person1=person, person2=other_person, relationship_type=2)
+    response = auth_client.post(
+        reverse("person-relation-add", kwargs={"pk": person.pk}),
+        {"person2": other_person.pk, "relationship_type": 1},
+    )
+    assert response.status_code == 302
+    assert Relation.objects.filter(person1=person, person2=other_person).count() == 1
+
+
+@pytest.mark.django_db
+def test_add_relation_forbidden_for_other_user(auth_client, other_person, person):
+    response = auth_client.post(
+        reverse("person-relation-add", kwargs={"pk": other_person.pk}),
+        {"person2": person.pk, "relationship_type": 2},
+    )
+    assert response.status_code == 403
+
+
+# ---------------------------------------------------------------------------
+# UpdateRelationView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_update_relation_changes_type(auth_client, person, other_person):
+    relation = Relation.objects.create(person1=person, person2=other_person, relationship_type=2)
+    response = auth_client.post(
+        reverse("person-relation-update", kwargs={"pk": person.pk, "rid": relation.pk}),
+        {f"rel-{relation.pk}-relationship_type": "3", f"rel-{relation.pk}-start_date": ""},
+    )
+    assert response.status_code == 302
+    relation.refresh_from_db()
+    assert relation.relationship_type == 3
+
+
+@pytest.mark.django_db
+def test_update_relation_404_for_other_person_relation(auth_client, person, other_person):
+    foreign = Person.objects.create(first_name="Foreign", last_name="Person")
+    relation = Relation.objects.create(person1=other_person, person2=foreign, relationship_type=2)
+    response = auth_client.post(
+        reverse("person-relation-update", kwargs={"pk": person.pk, "rid": relation.pk}),
+        {f"rel-{relation.pk}-relationship_type": "3"},
+    )
+    assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# DeleteRelationView
+# ---------------------------------------------------------------------------
+
+@pytest.mark.django_db
+def test_delete_relation_removes_both_sides(auth_client, person, other_person):
+    relation = Relation.objects.create(person1=person, person2=other_person, relationship_type=2)
+    inverse = Relation.objects.get(person1=other_person, person2=person)
+    response = auth_client.post(
+        reverse("person-relation-delete", kwargs={"pk": person.pk, "rid": relation.pk}),
+    )
+    assert response.status_code == 302
+    assert not Relation.objects.filter(pk=relation.pk).exists()
+    assert not Relation.objects.filter(pk=inverse.pk).exists()
+
+
+@pytest.mark.django_db
+def test_delete_relation_forbidden_for_other_user(auth_client, other_person, person):
+    relation = Relation.objects.create(person1=other_person, person2=person, relationship_type=2)
+    response = auth_client.post(
+        reverse("person-relation-delete", kwargs={"pk": other_person.pk, "rid": relation.pk}),
+    )
+    assert response.status_code == 403
+    assert Relation.objects.filter(pk=relation.pk).exists()
+
+
+@pytest.mark.django_db
+def test_delete_relation_404_for_other_person_relation(auth_client, person, other_person):
+    foreign = Person.objects.create(first_name="Foreign", last_name="Person")
+    relation = Relation.objects.create(person1=other_person, person2=foreign, relationship_type=2)
+    response = auth_client.post(
+        reverse("person-relation-delete", kwargs={"pk": person.pk, "rid": relation.pk}),
+    )
+    assert response.status_code == 404
