@@ -12,27 +12,24 @@
     <div class="sidebar">
         <ul>
             {% if user.is_authenticated %}
-                <li><a href="{% url 'my-profile' %}">Mon profil</a></li>
-                {% if user.is_staff %}
-                    <li><a href="{% url 'bulk-account-create' %}">Créer des comptes</a></li>
-                {% endif %}
-                <li>
-                    <form method="post" action="{% url 'logout' %}">
-                        {% csrf_token %}
-                        <button type="submit">Déconnexion</button>
-                    </form>
+                <li class="sidebar-title sidebar-profile">
+                    <a href="{% url 'my-profile' %}">
+                        <img src="{% if user.profile.profile_photo %}{{ user.profile.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                             alt="Mon profil" class="sidebar-profile-photo">
+                        <span>Mon profil</span>
+                    </a>
                 </li>
-            {% else %}
-                <li><a href="{% url 'login' %}">Se connecter</a></li>
             {% endif %}
-            <li class="sidebar-section">Annuaire</li>
+
+            <li class="sidebar-title">Les Busson</li>
             <li>
                 <ul>
-                    <li><a href="{% url 'directory' %}">Toutes les personnes</a></li>
-                    <li><a href="{% url 'chalet-list' %}">Chalets PSV</a></li>
+                    <li><a href="{% url 'directory' %}">Annuaire</a></li>
+                    <li><a href="{% url 'chalet-list' %}">Chalets</a></li>
                 </ul>
             </li>
-            <li class="sidebar-section">Publications</li>
+
+            <li class="sidebar-title">Publications</li>
             <li>
                 <ul>
                     <li><a href="{% url 'blogpost-list' %}">Toutes les publications</a></li>
@@ -41,6 +38,27 @@
                     {% endif %}
                 </ul>
             </li>
+
+            {% if user.is_staff %}
+                <li class="sidebar-title">Administration</li>
+                <li>
+                    <ul>
+                        <li><a href="{% url 'bulk-account-create' %}">Créer des comptes</a></li>
+                        <li><a href="{% url 'admin:index' %}">Console d'admin</a></li>
+                    </ul>
+                </li>
+            {% endif %}
+
+            {% if user.is_authenticated %}
+                <li class="sidebar-title">
+                    <form method="post" action="{% url 'logout' %}" class="sidebar-logout-form">
+                        {% csrf_token %}
+                        <button type="submit" class="sidebar-logout-btn">Déconnexion</button>
+                    </form>
+                </li>
+            {% else %}
+                <li class="sidebar-title"><a href="{% url 'login' %}">Se connecter</a></li>
+            {% endif %}
         </ul>
     </div>
     <div class="content">
