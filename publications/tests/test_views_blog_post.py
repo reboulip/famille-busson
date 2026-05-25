@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
@@ -241,6 +243,37 @@ def test_blogpost_create_without_attachment_creates_post(auth_client, person):
     assert response.status_code == 302
     post = BlogPost.objects.get(title="Sans pièce jointe")
     assert post.attachments.count() == 0
+
+
+@pytest.mark.django_db
+def test_blogpost_create_get_seeds_authors_with_current_user(auth_client, person):
+    response = auth_client.get(reverse("blogpost-create"))
+    data = json.loads(response.context["authors_initial_json"])
+    assert [item["id"] for item in data] == [person.pk]
+
+
+@pytest.mark.django_db
+def test_blogpost_edit_get_seeds_authors_with_existing(auth_client, blog_post, person, other_person):
+    blog_post.authors.add(other_person)
+    response = auth_client.get(reverse("blogpost-edit", kwargs={"pk": blog_post.pk}))
+    data = json.loads(response.context["authors_initial_json"])
+    ids = {item["id"] for item in data}
+    assert ids == {person.pk, other_person.pk}
+
+
+@pytest.mark.django_db
+def test_blogpost_create_supports_multiple_authors(auth_client, person, other_person):
+    data = {
+        "title": "Co-écrit",
+        "body": "Du contenu.",
+        "post_type": "NORMAL",
+        "authors": [str(person.pk), str(other_person.pk)],
+    }
+    data.update(_empty_attachment_formset_data())
+    response = auth_client.post(reverse("blogpost-create"), data)
+    assert response.status_code == 302
+    post = BlogPost.objects.get(title="Co-écrit")
+    assert set(post.authors.all()) == {person, other_person}
 
 
 @pytest.mark.django_db
