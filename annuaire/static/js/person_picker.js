@@ -4,6 +4,7 @@
 
     const searchUrl = picker.dataset.searchUrl;
     const fieldName = picker.dataset.fieldName || 'persons';
+    const singleSelect = picker.dataset.singleSelect === 'true';
     const input = picker.querySelector('.person-picker-input');
     const resultsList = picker.querySelector('.person-picker-results');
     const selectedZone = picker.querySelector('.person-picker-selected');
@@ -61,6 +62,9 @@
 
     function addPerson(id, name) {
         if (selectedIds.has(String(id))) return;
+        if (singleSelect) {
+            Array.from(selectedIds).forEach((existingId) => removePerson(existingId));
+        }
         selectedIds.add(String(id));
 
         const badge = document.createElement('span');

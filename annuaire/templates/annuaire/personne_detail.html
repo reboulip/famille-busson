@@ -15,6 +15,7 @@
                 {{ person.first_name }} {{ person.last_name }}
                 {% if can_edit %}
                     <a href="{% url 'person-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier le profil</a>
+                    <a href="{% url 'person-relations-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les relations</a>
                 {% endif %}
             </h1>
             <p>

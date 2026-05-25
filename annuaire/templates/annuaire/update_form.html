@@ -15,21 +15,11 @@
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
-            {{ formsets|length }}
-            {% for subform in formsets %}
-                <fieldset class="form-group">
-                    {{ subform.management_form }}
-                    <legend class="formset-legend">{{ subform.legend }}</legend>
-                    {% for inline_form in subform.forms %}
-                        <div class="formset-entry">
-                            {{ inline_form.media }}
-                            {{ inline_form }}
-                        </div>
-                    {% endfor %}
-                </fieldset>
-            {% endfor %}
             <div class="form-group">
                 <button class='btn btn-outline-primary' type="submit">Enregistrer</button>
+                {% if form.instance.pk %}
+                    <a href="{% url 'person-relations-edit' form.instance.pk %}" class="btn btn-outline-secondary ms-2">Modifier les relations</a>
+                {% endif %}
             </div>
         </form>
     </div>
