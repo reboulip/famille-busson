@@ -1,8 +1,9 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load static %}
 {% block content %}
     <div class="form">
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" id="blogpost-form" data-empty-prefix="__prefix__">
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend>
@@ -12,18 +13,39 @@
                 {{ form|crispy }}
             </fieldset>
 
-            {% for subform in formsets %}
-                <fieldset class="form-group">
-                    {{ subform.management_form }}
+            {% with subform=formsets.0 %}
+                <fieldset class="form-group attachments-fieldset">
                     <legend class="formset-legend">Pièces jointes</legend>
-                    {% for inline_form in subform.forms %}
-                        <div class="formset-entry">
-                            {{ inline_form.media }}
-                            {{ inline_form|crispy }}
+                    {{ subform.management_form }}
+
+                    <div class="attachment-formset-rows" hidden>
+                        {% for inline_form in subform.forms %}
+                            <div class="attachment-row" data-existing="{% if inline_form.instance.pk %}1{% else %}0{% endif %}">
+                                {{ inline_form.id }}
+                                {{ inline_form.file }}
+                                {{ inline_form.caption }}
+                                {{ inline_form.DELETE }}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="attachment-badges" id="attachment-badges" aria-live="polite"></div>
+
+                    <button type="button" class="btn btn-outline-secondary mt-2" id="add-attachment-btn">
+                        + Ajouter une pièce jointe
+                    </button>
+                    <input type="file" id="attachment-picker" hidden>
+
+                    <template id="attachment-row-template">
+                        <div class="attachment-row" data-existing="0">
+                            <input type="file" name="{{ subform.prefix }}-__prefix__-file" id="id_{{ subform.prefix }}-__prefix__-file">
+                            <input type="text" name="{{ subform.prefix }}-__prefix__-caption" id="id_{{ subform.prefix }}-__prefix__-caption" maxlength="255">
+                            <input type="hidden" name="{{ subform.prefix }}-__prefix__-id" id="id_{{ subform.prefix }}-__prefix__-id">
+                            <input type="checkbox" name="{{ subform.prefix }}-__prefix__-DELETE" id="id_{{ subform.prefix }}-__prefix__-DELETE">
                         </div>
-                    {% endfor %}
+                    </template>
                 </fieldset>
-            {% endfor %}
+            {% endwith %}
 
             <div class="form-group">
                 <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
@@ -35,4 +57,5 @@
             </div>
         </form>
     </div>
+    <script src="{% static 'js/publication_attachments.js' %}"></script>
 {% endblock content %}

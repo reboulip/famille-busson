@@ -1,6 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -100,15 +101,15 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         context = self.get_context_data()
         attachment_formset = context['formsets'][0]
-        self.object = form.save()
-        profile = getattr(self.request.user, 'profile', None)
-        if profile is not None and not self.object.authors.filter(pk=profile.pk).exists():
-            self.object.authors.add(profile)
-        attachment_formset.instance = self.object
-        if attachment_formset.is_valid():
-            attachment_formset.save()
-        else:
+        if not attachment_formset.is_valid():
             return self.form_invalid(form)
+        with transaction.atomic():
+            self.object = form.save()
+            profile = getattr(self.request.user, 'profile', None)
+            if profile is not None and not self.object.authors.filter(pk=profile.pk).exists():
+                self.object.authors.add(profile)
+            attachment_formset.instance = self.object
+            attachment_formset.save()
         return redirect('blogpost-detail', pk=self.object.pk)
 
 
@@ -130,12 +131,12 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
     def form_valid(self, form):
         context = self.get_context_data()
         attachment_formset = context['formsets'][0]
-        self.object = form.save()
-        attachment_formset.instance = self.object
-        if attachment_formset.is_valid():
-            attachment_formset.save()
-        else:
+        if not attachment_formset.is_valid():
             return self.form_invalid(form)
+        with transaction.atomic():
+            self.object = form.save()
+            attachment_formset.instance = self.object
+            attachment_formset.save()
         return redirect('blogpost-detail', pk=self.object.pk)
 
 
