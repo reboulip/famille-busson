@@ -208,6 +208,66 @@ def test_blogpost_create_invalid_returns_200(auth_client, person):
     assert response.context["form"].errors
 
 
+@pytest.mark.django_db
+def test_blogpost_create_with_invalid_attachment_formset_does_not_create_post(auth_client, person):
+    """Regression for #17: an invalid attachment formset must not leak a saved BlogPost."""
+    data = {
+        "title": "Doit ne pas être créé",
+        "body": "x",
+        "post_type": "NORMAL",
+        "authors": [person.pk],
+        "attachments-TOTAL_FORMS": "1",
+        "attachments-INITIAL_FORMS": "0",
+        "attachments-MIN_NUM_FORMS": "0",
+        "attachments-MAX_NUM_FORMS": "1000",
+        "attachments-0-caption": "Légende sans fichier",
+    }
+    response = auth_client.post(reverse("blogpost-create"), data)
+    assert response.status_code == 200
+    assert not BlogPost.objects.filter(title="Doit ne pas être créé").exists()
+
+
+@pytest.mark.django_db
+def test_blogpost_create_without_attachment_creates_post(auth_client, person):
+    """PJ is optional: a publication can be created without any attachment."""
+    data = {
+        "title": "Sans pièce jointe",
+        "body": "x",
+        "post_type": "NORMAL",
+        "authors": [person.pk],
+    }
+    data.update(_empty_attachment_formset_data())
+    response = auth_client.post(reverse("blogpost-create"), data)
+    assert response.status_code == 302
+    post = BlogPost.objects.get(title="Sans pièce jointe")
+    assert post.attachments.count() == 0
+
+
+@pytest.mark.django_db
+def test_blogpost_update_with_invalid_attachment_formset_does_not_modify_post(
+    auth_client, blog_post, person,
+):
+    """Regression for #17: invalid formset must not partially apply BlogPost edits."""
+    original_title = blog_post.title
+    data = {
+        "title": "Titre tampon",
+        "body": "Nouveau contenu.",
+        "post_type": "NORMAL",
+        "authors": [person.pk],
+        "attachments-TOTAL_FORMS": "1",
+        "attachments-INITIAL_FORMS": "0",
+        "attachments-MIN_NUM_FORMS": "0",
+        "attachments-MAX_NUM_FORMS": "1000",
+        "attachments-0-caption": "Légende sans fichier",
+    }
+    response = auth_client.post(
+        reverse("blogpost-edit", kwargs={"pk": blog_post.pk}), data,
+    )
+    assert response.status_code == 200
+    blog_post.refresh_from_db()
+    assert blog_post.title == original_title
+
+
 # ---------------------------------------------------------------------------
 # BlogPostUpdateView
 # ---------------------------------------------------------------------------
