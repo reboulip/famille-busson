@@ -349,6 +349,27 @@ h2 {
     font-size: 0.65rem;
 }
 
+.attachment-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.9rem;
+    padding: 6px 10px;
+}
+
+.attachment-badge .btn-close {
+    font-size: 0.65rem;
+}
+
+.attachment-badge-caption {
+    max-width: 200px;
+    height: auto;
+}
+
+.attachment-badge-edit {
+    text-decoration: none;
+    line-height: 1;
+}
+
 .presence-current {
     background-color: #d1e7dd;
     font-weight: 500;

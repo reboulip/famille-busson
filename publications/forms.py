@@ -28,6 +28,6 @@ AttachmentFormSet = forms.inlineformset_factory(
     BlogPost,
     Attachment,
     fields=['file', 'caption'],
-    extra=3,
+    extra=0,
     can_delete=True,
 )
