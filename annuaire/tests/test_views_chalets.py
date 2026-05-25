@@ -31,6 +31,38 @@ def test_chalet_list_context_has_chalets(auth_client, chalet):
     assert chalet in response.context["chalets"]
 
 
+@pytest.mark.django_db
+def test_chalet_list_context_has_presences_json(auth_client, presence):
+    response = auth_client.get(reverse("chalet-list"))
+    data = json.loads(response.context["presences_json"])
+    assert any(
+        item["person"] == str(presence.person)
+        and item["chalet"] == presence.chalet.name
+        and item["start"] == presence.start_date.isoformat()
+        and item["end"] == presence.end_date.isoformat()
+        for item in data
+    )
+
+
+@pytest.mark.django_db
+def test_chalet_detail_context_has_presences_json_filtered_to_chalet(
+    auth_client, chalet, person, other_person,
+):
+    PresencePSV.objects.create(
+        person=person, chalet=chalet,
+        start_date=datetime.date(2026, 7, 1), end_date=datetime.date(2026, 7, 5),
+    )
+    other_chalet = chalet.__class__.objects.create(name="Autre", address="X")
+    PresencePSV.objects.create(
+        person=other_person, chalet=other_chalet,
+        start_date=datetime.date(2026, 8, 1), end_date=datetime.date(2026, 8, 5),
+    )
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    data = json.loads(response.context["presences_json"])
+    assert all(item["chalet"] == chalet.name for item in data)
+    assert len(data) == 1
+
+
 # ---------------------------------------------------------------------------
 # ChaletDetailView
 # ---------------------------------------------------------------------------

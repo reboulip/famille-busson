@@ -373,6 +373,23 @@ class ChaletListView(LoginRequiredMixin, ListView):
     template_name = 'annuaire/chalet_list.html'
     context_object_name = 'chalets'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        presences = (
+            PresencePSV.objects.select_related('person', 'chalet')
+            .order_by('start_date')
+        )
+        context['presences_json'] = json.dumps([
+            {
+                'person': str(p.person),
+                'chalet': p.chalet.name,
+                'start': p.start_date.isoformat(),
+                'end': p.end_date.isoformat(),
+            }
+            for p in presences
+        ])
+        return context
+
 
 class ChaletCreateView(StaffRequiredMixin, CreateView):
     model = Chalet
@@ -409,10 +426,20 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
             .select_related('person')
             .order_by('start_date')
         )
+        all_presences = list(all_presences)
         context['past_presences'] = [p for p in all_presences if p.end_date < today]
         context['current_presences'] = [p for p in all_presences if p.start_date <= today <= p.end_date]
         context['future_presences'] = [p for p in all_presences if p.start_date > today]
         context['presence_form'] = AddPresenceForm()
+        context['presences_json'] = json.dumps([
+            {
+                'person': str(p.person),
+                'chalet': self.object.name,
+                'start': p.start_date.isoformat(),
+                'end': p.end_date.isoformat(),
+            }
+            for p in all_presences
+        ])
         user = self.request.user
         profile = getattr(user, 'profile', None)
         context['can_edit_chalet'] = (
