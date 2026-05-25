@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
@@ -8,10 +10,25 @@ from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
 
+from annuaire.models import Person
 from annuaire.views import StaffRequiredMixin
 
 from .forms import AttachmentFormSet, BlogPostForm, CommentForm
 from .models import BlogPost, Comment
+
+
+def _authors_initial_json(view):
+    """Build the JSON payload used by the person-picker to pre-populate authors."""
+    request = view.request
+    if request.method == 'POST':
+        ids = [int(pk) for pk in request.POST.getlist('authors') if pk.isdigit()]
+        persons = list(Person.objects.filter(pk__in=ids).order_by('last_name', 'first_name'))
+    elif getattr(view, 'object', None) is not None:
+        persons = list(view.object.authors.all().order_by('last_name', 'first_name'))
+    else:
+        profile = getattr(request.user, 'profile', None)
+        persons = [profile] if profile is not None else []
+    return json.dumps([{'id': p.pk, 'name': str(p)} for p in persons])
 
 
 class AuthorOrStaffRequiredMixin(LoginRequiredMixin):
@@ -96,6 +113,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
             context['formsets'] = [AttachmentFormSet(self.request.POST, self.request.FILES)]
         else:
             context['formsets'] = [AttachmentFormSet()]
+        context['authors_initial_json'] = _authors_initial_json(self)
         return context
 
     def form_valid(self, form):
@@ -126,6 +144,7 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
             ]
         else:
             context['formsets'] = [AttachmentFormSet(instance=self.object)]
+        context['authors_initial_json'] = _authors_initial_json(self)
         return context
 
     def form_valid(self, form):
