@@ -10,7 +10,9 @@
       "PowerShell(uv *)",
       "PowerShell(where *)",
       "Skill(update-config)",
-      "Skill(update-config:*)"
+      "Skill(update-config:*)",
+      "WebSearch",
+      "WebFetch"
     ],
     "deny": [
       "Bash(git push * main)",
