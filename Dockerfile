@@ -18,15 +18,14 @@ RUN uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
 
-# Pinned (not auto-assigned) so the UID is deterministic across builds -- the media
-# volume is a host bind mount (/srv/bubu/data/media), and this UID must be able to
-# write to it. If it doesn't match the VPS's `deploy` user's UID, uploads silently
-# fail (PermissionError) since the host directory is owner-only (go-rwx). Verify with
-# `id deploy` on the VPS and `chown -R 1000:1000 /srv/bubu/data/media` if they differ.
+# appuser runs the app itself (migrate/collectstatic/gunicorn), but the container
+# starts as root (no USER here) -- docker-entrypoint.sh chowns the bind-mounted
+# media volume to appuser before dropping to it via runuser, since the volume's
+# host-side ownership can't be relied on to match this UID ahead of time.
 RUN chmod +x docker-entrypoint.sh \
     && useradd --create-home --uid 1000 appuser \
-    && chown -R appuser:appuser /app
-USER appuser
+    && chown -R appuser:appuser /app \
+    && command -v runuser
 
 EXPOSE 8000
 
