@@ -152,7 +152,12 @@ STORAGES = {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
     'staticfiles': {
-        'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        # ManifestStaticFilesStorage requires collectstatic to have run (it resolves
+        # every {% static %} tag through staticfiles.json) -- fine in prod where the
+        # entrypoint always runs collectstatic first, but breaks dev/tests, which never
+        # do. Plain StaticFilesStorage resolves straight from each app's static/ dir.
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage' if DEBUG
+        else 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
 
