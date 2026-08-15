@@ -1,5 +1,6 @@
 import json
 import pytest
+from django.core import mail
 from django.urls import reverse
 from annuaire.models import Account
 
@@ -90,6 +91,47 @@ def test_bulk_create_invalid_email_shows_form_error(staff_client, db):
     assert response.status_code == 200
     assert response.context["form"].errors
     assert not Account.objects.filter(email="notanemail").exists()
+
+
+@pytest.mark.django_db
+def test_bulk_create_sends_credentials_email_for_new_account(staff_client, db):
+    response = staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
+    assert len(mail.outbox) == 1
+    sent = mail.outbox[0]
+    assert sent.to == ["new@example.com"]
+    temp_password = response.context["results"][0]["temp_password"]
+    assert temp_password in sent.body
+
+
+@pytest.mark.django_db
+def test_bulk_create_sends_reset_email_with_distinct_subject(staff_client, account):
+    staff_client.post(reverse("bulk-account-create"), {"emails": account.email})
+    assert len(mail.outbox) == 1
+    assert "réinitialisé" in mail.outbox[0].subject
+
+
+@pytest.mark.django_db
+def test_bulk_create_marks_results_email_sent(staff_client, db):
+    response = staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
+    assert response.context["results"][0]["email_sent"] is True
+
+
+@pytest.mark.django_db
+def test_bulk_create_email_failure_still_creates_account_and_shows_password(staff_client, db, monkeypatch):
+    import annuaire.views as annuaire_views
+
+    def _raise(*args, **kwargs):
+        raise Exception("SMTP down")
+
+    monkeypatch.setattr(annuaire_views, "send_mail", _raise)
+    response = staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
+
+    assert Account.objects.filter(email="new@example.com").exists()
+    result = response.context["results"][0]
+    assert result["email_sent"] is False
+    assert result["temp_password"]  # still shown on screen as a fallback
+    msgs = [str(m) for m in response.context["messages"]]
+    assert any("Échec de l'envoi" in m for m in msgs)
 
 
 # ---------------------------------------------------------------------------
