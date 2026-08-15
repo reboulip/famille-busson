@@ -1,0 +1,9 @@
+{
+  "name": "run-famille-busson-driver",
+  "private": true,
+  "type": "module",
+  "description": "Playwright driver for the run-famille-busson agent skill. Not part of the Django app itself.",
+  "dependencies": {
+    "playwright": "1.62.1"
+  }
+}
