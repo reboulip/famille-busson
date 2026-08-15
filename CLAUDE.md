@@ -64,8 +64,11 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   (run tests + commit / run tests + report / commit without tests), stating which test
   files apply. Never commit or run tests without that explicit choice. Detailed test
   scope rules live in `/test-select`.
-- **Migrations:** gitignored and never committed — run `makemigrations`/`migrate` locally
-  after model changes (details in `dev-commands`).
+- **Migrations:** committed to git — run `makemigrations` after model changes and include
+  the generated file(s) in your commit (details in `dev-commands`). Required for
+  production: the Docker image is built from a fresh `git checkout`, so an uncommitted
+  migration never reaches the deployed Postgres database. Run `migrate` locally too, to
+  apply it to your dev SQLite DB.
 
 ## 8. Branch Model
 | Branch | Role | How to merge in |

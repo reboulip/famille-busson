@@ -29,7 +29,8 @@ All commands run from the repo root.
 - Always ask for user approval before performing a destructive action like wiping the DB.
 
 ## Migrations & gitignored paths
-- `migrations/` is in `.gitignore` and is **never committed**. After cloning or pulling
-  model changes, always run `makemigrations` then `migrate`. Never assume migrations
-  exist in the repo.
-- Also gitignored: `db.sqlite3`, `.env`, `/static/`, `/media/`.
+- `migrations/` is committed to git — after changing a model, run `makemigrations` then
+  `migrate`, and include the generated migration file(s) in your commit. Production's
+  Docker image is built from a fresh `git checkout`, so an uncommitted migration never
+  reaches the deployed database (see `CLAUDE.md` §7).
+- Gitignored: `db.sqlite3`, `.env`, `/static/`, `/media/`.
