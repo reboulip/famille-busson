@@ -9,7 +9,7 @@ try {
     if (-not $path) { exit 0 }
     if ($path -notmatch '[\\/]models\.py$') { exit 0 }
 
-    $msg = "You edited a models.py file. Run 'uv run python manage.py makemigrations' then 'migrate', and weigh the impact on the Custom User Model (annuaire.Account / Person). Migrations are gitignored -- never commit them."
+    $msg = "You edited a models.py file. Run 'uv run python manage.py makemigrations' then 'migrate', and weigh the impact on the Custom User Model (annuaire.Account / Person). Migrations are committed to git -- include the new migration file(s) in your commit."
     $out = @{
         hookSpecificOutput = @{
             hookEventName     = 'PostToolUse'
