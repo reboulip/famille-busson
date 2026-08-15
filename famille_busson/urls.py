@@ -14,15 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include
 from django.views.generic.base import RedirectView
-from django.conf.urls.static import static
+from django.views.static import serve as static_serve
 from famille_busson import settings
+
+
+def healthz(request):
+    return HttpResponse('ok')
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('healthz', healthz),
     path('annuaire/', include('annuaire.urls')),
     path('publications/', include('publications.urls')),
-    path('', RedirectView.as_view(pattern_name='home'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) \
-  + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    path('', RedirectView.as_view(pattern_name='home')),
+    # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
+    path('media/<path:path>', static_serve, {'document_root': settings.MEDIA_ROOT}),
+]

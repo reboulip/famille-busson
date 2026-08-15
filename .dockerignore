@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+.pytest_cache
+.claude
+__pycache__
+*.pyc
+db.sqlite3
+.coverage
+test-report.html
+media/
+static/
+.env
+README.md
+ROADMAP.md
+CLAUDE.md
