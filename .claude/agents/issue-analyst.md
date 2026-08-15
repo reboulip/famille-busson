@@ -28,7 +28,7 @@ files, create branches, or commit. Another agent implements your plan.
 - **Approach:** the concrete change, step by step.
 - **Files to change:** bullet list of paths (existing or new).
 - **Test plan:** which test file(s) the change touches, and the new test(s) required (every
-  new view needs tests — see the `running-tests` skill).
+  new view needs tests).
 - **Risks / unknowns:** anything that could complicate implementation.
 
 Keep it scannable. Do not include raw file dumps or long logs — only the distilled plan.
