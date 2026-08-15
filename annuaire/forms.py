@@ -3,8 +3,13 @@ from django import forms
 from .models import Person, Relation, Account, PresencePSV, Chalet
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
+from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+
+
+# Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
+PROFILE_PHOTO_MAX_SIZE_MB = 5
 
 
 class ProfileEditForm(forms.ModelForm):
@@ -14,6 +19,18 @@ class ProfileEditForm(forms.ModelForm):
         widgets = {
             'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
         }
+
+    def clean_profile_photo(self):
+        photo = self.cleaned_data.get('profile_photo')
+        max_bytes = PROFILE_PHOTO_MAX_SIZE_MB * 1024 * 1024
+        # Only newly uploaded files have a real size to check -- an already-stored
+        # FieldFile (untouched on this edit) or the "clear" checkbox's False both skip.
+        if isinstance(photo, UploadedFile) and photo.size > max_bytes:
+            raise ValidationError(
+                f"La photo est trop volumineuse ({photo.size / (1024 * 1024):.1f} Mo). "
+                f"Taille maximale : {PROFILE_PHOTO_MAX_SIZE_MB} Mo."
+            )
+        return photo
 
 
 RelationEditFormSet = forms.inlineformset_factory(Person, Relation, fk_name='person1', extra=1,

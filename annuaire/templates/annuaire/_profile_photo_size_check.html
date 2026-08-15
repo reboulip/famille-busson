@@ -1,0 +1,22 @@
+<script>
+    // Keep MAX_BYTES in sync with PROFILE_PHOTO_MAX_SIZE_MB in annuaire/forms.py.
+    (function () {
+        var MAX_BYTES = 5 * 1024 * 1024;
+        var input = document.getElementById('id_profile_photo');
+        if (!input) return;
+        var form = input.closest('form');
+        var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+
+        var warning = document.createElement('div');
+        warning.className = 'alert alert-warning mt-2 d-none';
+        warning.textContent = 'Cette photo dépasse 5 Mo et sera refusée par le serveur. Choisissez une image plus légère.';
+        input.insertAdjacentElement('afterend', warning);
+
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            var tooBig = !!(file && file.size > MAX_BYTES);
+            warning.classList.toggle('d-none', !tooBig);
+            if (submitBtn) submitBtn.disabled = tooBig;
+        });
+    })();
+</script>

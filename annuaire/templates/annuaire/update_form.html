@@ -2,7 +2,7 @@
 {% load crispy_forms_filters %}
 {% block content %}
     <div class="form">
-        <form method="POST">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
             <fieldset class="form-group">
                 <legend>
@@ -23,4 +23,5 @@
             </div>
         </form>
     </div>
+    {% include "annuaire/_profile_photo_size_check.html" %}
 {% endblock content %}
