@@ -235,6 +235,36 @@ def test_profile_update_post_invalid_returns_200_with_errors(auth_client, person
     assert response.status_code == 200
 
 
+@pytest.mark.django_db
+def test_profile_update_form_has_multipart_enctype(auth_client, person):
+    # Without this, browsers silently drop file input content on submit -- the
+    # Django test client isn't affected (it always encodes files correctly
+    # regardless of the template), so only an HTML assertion catches this.
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    assert 'enctype="multipart/form-data"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_profile_update_photo_too_large_returns_form_error(auth_client, person, monkeypatch):
+    import io
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    from PIL import Image
+    import annuaire.forms as annuaire_forms
+
+    monkeypatch.setattr(annuaire_forms, "PROFILE_PHOTO_MAX_SIZE_MB", 0)
+    # Must be a genuinely valid image -- ImageField's Pillow validation runs before
+    # the custom size check and rejects hand-crafted/corrupt bytes first.
+    buf = io.BytesIO()
+    Image.new("RGB", (1, 1), color="white").save(buf, format="PNG")
+    tiny_png = SimpleUploadedFile("photo.png", buf.getvalue(), content_type="image/png")
+
+    data = {"first_name": person.first_name, "last_name": person.last_name, "profile_photo": tiny_png}
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 200
+    assert "trop volumineuse" in response.content.decode()
+
+
 # ---------------------------------------------------------------------------
 # ProfileCreateView
 # ---------------------------------------------------------------------------

@@ -169,6 +169,32 @@ WHITENOISE_AUTOREFRESH = DEBUG
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Django's default LOGGING only sends the 'console' handler output when DEBUG=True
+# (RequireDebugTrue filter) -- in prod (DEBUG=False) that made every 500 invisible in
+# `docker logs`, since ADMINS/mail_admins isn't configured either. Force errors to
+# console unconditionally so gunicorn's stdout (captured by Docker) always has them.
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
