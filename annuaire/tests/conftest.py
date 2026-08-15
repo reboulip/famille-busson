@@ -59,9 +59,12 @@ def chalet(db):
 
 @pytest.fixture
 def presence(db, person, chalet):
+    # Relative to today, not a hardcoded date -- a fixed future date eventually
+    # becomes past and starts failing test_chalet_detail_context_has_future_presences.
+    today = datetime.date.today()
     return PresencePSV.objects.create(
         person=person,
         chalet=chalet,
-        start_date=datetime.date(2026, 7, 1),
-        end_date=datetime.date(2026, 7, 14),
+        start_date=today + datetime.timedelta(days=30),
+        end_date=today + datetime.timedelta(days=43),
     )

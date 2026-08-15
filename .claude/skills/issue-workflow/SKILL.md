@@ -5,12 +5,9 @@ description: Work one or more GitHub issues from branch to develop. Use when ask
 
 # Issue → develop workflow
 
-## Branch model
-| Branch | Role | Direct push? |
-|--------|------|-------------|
-| `main` | Stable releases | Never — PR only, one commit per issue |
-| `develop` | Integration branch | Yes (via squash-merge of issue branches, no PR) |
-| `<type>/issue-<N>/<summary>` | One issue = one branch | Yes (your own branch) |
+> See `CLAUDE.md`'s **Branch Model** section for the full branch table and merge rules
+> (`main` / `develop` / `<type>/issue-<N>/<summary>` / `hotfix/*`). This skill covers the
+> issue → `develop` half only; `develop` → `main` is `release-workflow`.
 
 ## Process one issue (the canonical sub-procedure)
 1. Fetch the issue details: `gh issue view <number>`.
@@ -25,8 +22,8 @@ description: Work one or more GitHub issues from branch to develop. Use when ask
    git checkout develop && git pull origin develop
    git checkout -b <type>/issue-<number>/<short-summary>
    ```
-5. Implement, run the relevant tests (see the `running-tests` skill for scope rules),
-   commit on the branch.
+5. Implement, run the relevant tests (`Skill("test-select")` picks the scope), commit
+   on the branch.
 6. If tests fail, fix on the branch and re-run. **Never merge a red branch into `develop`.**
 7. If tests are green, **squash-merge directly into `develop`** locally — no PR:
    ```

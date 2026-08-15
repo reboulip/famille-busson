@@ -201,8 +201,8 @@ def test_update_presence_get_prefills_dates(auth_client, chalet, presence):
         reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
     )
     content = response.content.decode()
-    assert 'value="2026-07-01"' in content
-    assert 'value="2026-07-14"' in content
+    assert f'value="{presence.start_date.isoformat()}"' in content
+    assert f'value="{presence.end_date.isoformat()}"' in content
 
 
 @pytest.mark.django_db

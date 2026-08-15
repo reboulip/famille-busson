@@ -1,6 +1,6 @@
 ---
 name: release-workflow
-description: Cut a release from develop to main. Use ONLY when the user explicitly asks to release / open the PR to main ("release time", "ouvre la PR vers main"). Cherry-picks the new issue commits onto a release branch off main, opens a PR, rebase-merges it (one commit per issue), and closes each shipped issue with a French permalink comment. Never start this unprompted.
+description: Cut a release from develop to main. Use ONLY when the user explicitly asks to release / open the PR to main ("release time", "ouvre la PR vers main"). Bumps the SemVer version per CLAUDE.md's Releases convention, opens a plain (no-squash) develop -> main PR per the Branch Model, waits for CI, merges, closes each shipped issue with a French permalink comment, and verifies the tag/GitHub Release that CI cuts automatically on merge. Never start this unprompted.
 ---
 
 # Release: develop → main
@@ -8,62 +8,86 @@ description: Cut a release from develop to main. Use ONLY when the user explicit
 Triggered **explicitly** by the user ("ouvre la PR vers main", "release time", etc.).
 **Never start this on your own.**
 
-**Goal: each shipped issue is exactly one commit on `main`** (`feat:` / `fix:` / … with the
-issue number in the subject), so `git log main` is a clean release history aligned 1-to-1
-with closed issues.
+See `CLAUDE.md`'s **Branch Model** section for the branch table/merge rules and its
+**Releases** section for the versioning convention. `develop`'s own history is already
+one squash-commit per issue (each issue branch squash-merges into `develop` — see
+`issue-workflow`), so a plain, non-squash PR from `develop` to `main` carries that
+per-issue history over as-is. No cherry-picking, no rebase.
 
-**Why not a direct `develop → main` PR?** `main` was built from squash-merges, so develop's
-history holds many commits whose content already shipped to `main` as squashes. A direct
-`develop → main` rebase-and-merge replays those already-shipped commits (conflicts /
-duplicates), and a squash collapses every issue into one indistinguishable blob.
-Cherry-picking the relevant commits onto a release branch sidesteps both.
+The generic `/release` skill doesn't fully fit here: famille-busson is a
+continuously-deployed web app with no published package/artifact, so there's no
+build-and-publish step — only a version bump + tag + GitHub Release for tracking what
+shipped. Tag/Release creation itself is automated by `.github/workflows/release.yml` on
+push to `main` (see `CLAUDE.md`'s Releases section) — this skill's job is the version
+*decision* and the PR, not the tagging mechanics.
 
 ## Steps
-1. Identify the develop commits to ship (typically the new issue commits since the last
-   release, plus any chore/docs commits the user explicitly approved for `main`).
-2. Create a release branch from up-to-date `main`:
+
+### 1. Determine and commit the version bump (on `develop`, before opening the PR)
+1. Read the current `version` from `pyproject.toml`.
+2. Inspect the commits shipping in this release (`git log origin/main..develop --oneline`)
+   and classify by their `<type>:` prefix:
+   - Any `feat:` commit → **minor** bump (`X.Y.Z` → `X.(Y+1).0`).
+   - No `feat:` but any `fix:` commit → **patch** bump (`X.Y.Z` → `X.Y.(Z+1)`).
+   - Only `chore:`/`docs:`/`refactor:`/`test:` commits → **ask the user** whether this is
+     worth a release at all (no user-facing change) before bumping; default to patch if
+     they say yes.
+3. Edit `pyproject.toml`'s `version` field to the new value.
+4. Commit directly on `develop` and push:
    ```
-   git checkout main && git pull origin main
-   git checkout -b release/<short-summary>          # e.g. release/issues-3-4-5-6
+   git commit -am "chore: bump version to X.Y.Z"
+   git push origin develop
    ```
-3. Cherry-pick the chosen develop commits in chronological order (oldest first). After each
-   `git cherry-pick <sha>`, immediately `git commit --amend -m "<type>: <summary> (#<n>)"`
-   to drop any trailing PR-number suffix GitHub added on squash-merge.
-4. Push the release branch: `git push -u origin release/<short-summary>`.
-5. Open the PR to `main`:
+
+### 2. Open, wait, merge
+5. Confirm CI on `develop` is green (`gh run list --branch develop --limit 1`).
+6. Open the PR:
    ```
-   gh pr create --base main --head release/<short-summary> --title "release: <short summary>" --body "<table of shipped issues>"
+   gh pr create --base main --head develop --title "release: <short summary of what's shipping>" --body "<table of shipped issues, #N + one-line title>"
    ```
-6. Wait for CI to go green (poll with `gh pr checks <N> --watch --interval 15`, no manual
+7. Wait for CI to go green (poll with `gh pr checks <N> --watch --interval 15`, no manual
    prompts to the user). The repo does not allow auto-merge, so polling is required.
-7. **Rebase-merge** (NOT squash): `gh pr merge <N> --rebase`. This replays each cherry-picked
-   commit onto `main` individually, preserving the one-commit-per-issue mapping. The repo
-   allows rebase merges.
-8. Fetch and capture each issue's commit SHA on `main`:
+   **If a check fails, investigate the root cause — do not just retry.** Fix on `develop`,
+   push, and re-arm the wait (never force-push, never skip hooks).
+8. **Merge without squashing** — this is what preserves `develop`'s per-issue commits
+   individually on `main`: `gh pr merge <N> --merge`.
+
+### 3. Issue closing + verification
+9. Fetch and capture each shipped issue's commit SHA on `main`:
    ```
    git fetch origin && git log origin/main --oneline -<N>
    ```
-9. Close each shipped issue with a **French** comment linking its specific `main` SHA. Post
-   the body via `--body-file`, then close (`gh issue close` has no `--body-file`):
-   ```
-   gh issue comment <issue-number> --body-file <path-to-comment-file>
-   gh issue close <issue-number> --reason completed
-   ```
-   Comment body template:
-   ```
-   Livré sur `main` en [<sha>](https://github.com/reboulip/famille-busson/commit/<sha>) — `<commit-message>`.
+   Match each SHA back to its issue by the `(#<N>)` suffix in the subject line.
+10. Close each shipped issue with a **French** comment linking its specific `main` SHA.
+    Post the body via `--body-file`, then close (`gh issue close` has no `--body-file`):
+    ```
+    gh issue comment <issue-number> --body-file <path-to-comment-file>
+    gh issue close <issue-number> --reason completed
+    ```
+    Comment body template:
+    ```
+    Livré sur `main` en [<sha>](https://github.com/reboulip/famille-busson/commit/<sha>) — `<commit-message>`.
 
-   *Message généré par Claude.*
-   ```
-10. Local cleanup: `git checkout main && git pull origin main`, then delete the local
-    release branch (GitHub auto-deletes the remote branch on merge).
+    *Message généré par Claude.*
+    ```
+11. **Verify the automated tag/release.** The merge to `main` triggers
+    `.github/workflows/release.yml`, which tags `v<version>` and creates the GitHub
+    Release. Watch it to completion (`gh run list --workflow=release.yml --limit 1`) and
+    confirm: `gh release view v<version>`. If it didn't fire or failed, don't hand-create
+    the tag/release yourself — investigate the workflow run first (see `CLAUDE.md`'s
+    Releases section for what it does).
+12. Local cleanup: `git checkout main && git pull origin main`, then `git checkout develop`
+    (return to the branch the session started on).
 
-**End result:** `main` gains exactly one commit per shipped issue; each closed issue carries
-a permalink to its commit; the release branch is ephemeral and gone after merge.
+**End result:** `main` gains exactly `develop`'s new per-issue commits plus the version
+bump, unchanged; a `v<version>` tag and GitHub Release exist; each closed issue carries a
+permalink to its commit on `main`.
 
-## Merge strategy
-- develop → main: cherry-pick the new issue commits onto a `release/<summary>` branch off
-  `main`, open a PR, **rebase-merge** so each commit lands individually. Never squash this PR
-  (collapses issues into one commit) and never rebase-merge straight from `develop` (replays
-  pre-release commits already squashed on `main`).
-- Commit message format: `<type>: <summary> (#<issue-number>)`.
+## Hotfix variant
+For an urgent fix that can't wait for the normal issue → `develop` → `main` cycle (per
+`CLAUDE.md`'s Branch Model): branch `hotfix/<name>` from `main`, fix, bump the **patch**
+version in `pyproject.toml` as part of the same branch (so the merge to `main` still
+carries a version bump for the release workflow to tag), PR back to `main` (no squash),
+merge, then immediately merge `main` back into `develop` so the fix and the version bump
+aren't lost on the next release (`git checkout develop && git pull && git merge main &&
+git push`).

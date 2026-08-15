@@ -1,3 +1,7 @@
+# run-famille-busson driver artifacts
+.shots/
+.claude/skills/run-famille-busson/node_modules/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
