@@ -4,10 +4,15 @@ on:
   push:
     branches: [develop, main]
   pull_request:
-    branches: [develop, main]
+    branches: [main]
 
 jobs:
   test:
+    # Skip only the redundant case: a develop -> main release PR's head commit was
+    # already fully tested by the push-to-develop run above (release-workflow's CI
+    # check leans on that run rather than waiting for a new one). hotfix/* -> main
+    # PRs have no push-trigger coverage of their own, so they still need this.
+    if: github.event_name != 'pull_request' || github.head_ref != 'develop'
     runs-on: ubuntu-latest
 
     steps:
