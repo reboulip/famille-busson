@@ -74,3 +74,19 @@ Items différés lors de la création de l'app `publications` :
 
 - **Sélecteur multi-auteurs** — `BlogPostForm.authors` utilise un `SelectMultiple` standard, peu pratique pour beaucoup de personnes. `person_picker.js` ne supporte qu'une instance par page ; le généraliser permettrait de réutiliser le picker existant.
 - **Nettoyage des fichiers orphelins** — Django ne supprime pas les fichiers de `MEDIA_ROOT` quand une ligne est supprimée. Le même problème existe déjà pour `Person.profile_photo` et `Chalet.photo` ; à traiter en une seule fois pour les trois modèles.
+
+---
+
+## Sécurité (priorité moyenne)
+
+### Mot de passe en clair dans l'email de création/réinitialisation de compte
+`BulkAccountCreateView` envoie le mot de passe temporaire en clair par email
+(voir `_send_account_credentials_email` dans `views.py`). Acceptable en
+première version — corrige un besoin urgent (aucun email n'était envoyé du
+tout) — mais un mot de passe en clair dans un email n'est jamais idéal
+(boîte mail compromise, transit non chiffré selon le fournisseur, etc.).
+
+À terme, remplacer par un lien de réinitialisation à usage unique et durée de
+vie limitée (token signé, ex. `django.contrib.auth.tokens.PasswordResetTokenGenerator`
+ou équivalent), sur le modèle du flux `django.contrib.auth` standard, plutôt
+que le mot de passe lui-même.

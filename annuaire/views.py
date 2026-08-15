@@ -1,5 +1,8 @@
 import json
+import logging
 import secrets
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -105,6 +108,34 @@ class SignupView(FormView):
             return super().form_valid(form)
 
 
+def _send_account_credentials_email(request, email, temp_password, is_reset):
+    """Best-effort: one recipient's SMTP failure must not lose the others'
+    accounts (already created) or hide their passwords (still shown on screen
+    regardless -- see bulk_account_create.html)."""
+    login_url = request.build_absolute_uri(reverse_lazy('login'))
+    subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
+    intro = (
+        "Le mot de passe de votre compte sur le site de la famille Busson a été réinitialisé."
+        if is_reset
+        else "Un compte a été créé pour vous sur le site de la famille Busson."
+    )
+    message = (
+        f"Bonjour,\n\n"
+        f"{intro}\n\n"
+        f"Adresse : {email}\n"
+        f"Mot de passe temporaire : {temp_password}\n\n"
+        f"Connectez-vous ici : {login_url}\n"
+        f"Un changement de mot de passe vous sera demandé lors de votre première connexion.\n\n"
+        f"À bientôt !"
+    )
+    try:
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+        return True
+    except Exception:
+        logging.getLogger('django').exception("Failed to send account credentials email to %s", email)
+        return False
+
+
 class BulkAccountCreateView(StaffRequiredMixin, FormView):
     template_name = 'annuaire/bulk_account_create.html'
     form_class = BulkAccountCreateForm
@@ -113,26 +144,42 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         emails = form.cleaned_data['emails']
         results = []
         reset_emails = []
+        failed_emails = []
 
         for email in emails:
             temp_password = secrets.token_urlsafe(12)
             existing = Account.objects.filter(email=email).first()
+            is_reset = bool(existing)
             if existing:
                 existing.set_password(temp_password)
                 existing.must_change_password = True
                 existing.save()
-                results.append({'email': email, 'status': 'reset', 'temp_password': temp_password})
                 reset_emails.append(email)
             else:
                 account = Account(email=email, must_change_password=True)
                 account.set_password(temp_password)
                 account.save()
-                results.append({'email': email, 'status': 'created', 'temp_password': temp_password})
+
+            email_sent = _send_account_credentials_email(self.request, email, temp_password, is_reset)
+            if not email_sent:
+                failed_emails.append(email)
+            results.append({
+                'email': email,
+                'status': 'reset' if is_reset else 'created',
+                'temp_password': temp_password,
+                'email_sent': email_sent,
+            })
 
         if reset_emails:
             messages.warning(
                 self.request,
                 "Mot de passe réinitialisé pour : " + ", ".join(reset_emails),
+            )
+        if failed_emails:
+            messages.error(
+                self.request,
+                "Échec de l'envoi de l'email pour : " + ", ".join(failed_emails)
+                + " — communiquez le mot de passe temporaire manuellement.",
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
