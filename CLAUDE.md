@@ -92,8 +92,36 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 
 ## 9. Toolchain
 - **Test command:** `uv run --group test pytest` (see `/test-select` and `dev-commands`).
-- **Full test suite runtime:** ~<TBD>s for <TBD> tests (measure and fill in — grows as
-  the app grows; re-measure occasionally). `/test-select` uses this figure to decide
-  whether to just run the full suite instead of computing a scoped subset.
+- **Full test suite runtime:** ~1490s (~25 min) for 214 tests (measured 2026-08-15,
+  no-cov) — **abnormally slow for this test count; likely a real bug (hanging
+  connection, sleep, or network call in a fixture/test), not just test-count growth.**
+  Re-measure after investigating rather than accepting this as the new normal.
+  `/test-select` uses this figure for its cheap-suite escape hatch — well past the
+  ~120s threshold, so it will always compute a scoped subset here rather than just
+  running everything.
 - No linter/formatter is configured yet (no ruff/black/flake8 in `pyproject.toml`) —
   follow PEP 8 by hand per section 4 until one is added.
+
+## 10. Releases
+famille-busson is a continuously-deployed web app, not a published package — there's no
+PyPI/npm artifact, so versioning exists purely to mark **what shipped and when**, not to
+gate a build/publish step.
+
+- **Scheme:** SemVer (`vX.Y.Z`), tracked in `pyproject.toml`'s `version` field.
+- **Bump convention (part of `release-workflow`, done on `develop` before opening the
+  develop → main PR):** any `feat:` commit shipping → **minor**; else any `fix:` → **patch**;
+  `chore:`/`docs:`/`refactor:`/`test:` only → ask the user whether it's release-worthy.
+  Commit message: `chore: bump version to X.Y.Z`.
+- **Tag + GitHub Release are automatic:** `.github/workflows/release.yml` triggers on
+  every push to `main`. It reads `pyproject.toml`'s `version`; if `v<version>` isn't
+  already tagged, it tags the merge commit and creates a GitHub Release with
+  auto-generated notes. It never commits back to `main` (only pushes a tag), so it needs
+  no exception to `main`'s branch-protection rules (PR + green `test` check) — the
+  default `GITHUB_TOKEN` with `contents: write` is enough. If a push to `main` carries no
+  version bump (shouldn't happen via `release-workflow`, but possible via a hand-pushed
+  hotfix), the workflow silently no-ops rather than re-tagging.
+- **Hotfixes** bump the patch version on the `hotfix/*` branch itself, so the PR into
+  `main` still carries a version change for the workflow to tag (see `release-workflow`'s
+  Hotfix variant).
+- No build/publish step, no changelog file — the GitHub Release's auto-generated notes
+  (grouped by merged PRs since the last tag) are the changelog.
