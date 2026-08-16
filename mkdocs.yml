@@ -1,0 +1,31 @@
+site_name: Famille Busson — Documentation
+site_description: Data model and project documentation for the Famille Busson site.
+repo_url: https://github.com/reboulip/famille-busson
+docs_dir: docs
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - tables
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+nav:
+  - Home: README.md
+  - Data model: data_model.md
+  - Deployment: deployment.md
+  - Permissions: permissions.md
+  - Roadmap archive: ROADMAP_ARCHIVE.md

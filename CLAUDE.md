@@ -47,9 +47,10 @@
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
 
 ## 5. Signals — auto-sync logic (do not bypass)
-Two signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
+Three signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
 1. **`Account` post-save:** when a new `Account` is created, finds a `Person` with the same email and links them via the `OneToOneField` (`Person.account`). Creating an `Account` manually in tests must account for this.
 2. **`Relation` post-save:** automatically creates or updates the inverse `Relation` (parent ↔ enfant, conjoint ↔ conjoint). **Never create inverse `Relation` objects manually.**
+3. **`Relation` post-delete:** automatically deletes the matching inverse `Relation` too. Deleting a `Relation` directly (e.g. `Relation.objects.filter(...).delete()`), not just through `DeleteRelationView`, removes both sides.
 
 ## 6. Frontend — Bootstrap 5 / Crispy Forms
 Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMPLATE_PACK = 'bootstrap5'`). Use Bootstrap 5 classes in all templates. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).
@@ -128,3 +129,12 @@ gate a build/publish step.
   Hotfix variant).
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
+
+## 11. Documentation
+- **`docs/`** holds project documentation. `docs/README.md` indexes it.
+- **`docs/data_model.md`** — ER diagram + field tables for `annuaire`/`publications`
+  models. **Auto-generated, never edit by hand** — regenerate with
+  `uv run python manage.py generate_data_model_docs` (see `dev-commands`) after any
+  `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
+- **`ROADMAP.md`** tracks pending work only. Shipped items move to
+  **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `release-workflow`).

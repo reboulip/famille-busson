@@ -1,0 +1,13 @@
+repos:
+  - repo: local
+    hooks:
+      - id: generate-data-model-docs
+        name: Regenerate docs/data_model.md
+        description: >
+          Keeps docs/data_model.md in sync with annuaire/models.py and
+          publications/models.py. If this hook modifies the file, review the
+          diff, `git add docs/data_model.md`, and commit again.
+        entry: uv run python manage.py generate_data_model_docs
+        language: system
+        files: ^(annuaire|publications)/models\.py$
+        pass_filenames: false

@@ -33,32 +33,41 @@ push to `main` (see `CLAUDE.md`'s Releases section) — this skill's job is the 
      worth a release at all (no user-facing change) before bumping; default to patch if
      they say yes.
 3. Edit `pyproject.toml`'s `version` field to the new value.
-4. Commit directly on `develop` and push:
+4. **Archive shipped roadmap items.** In `ROADMAP.md`, find every item that is done
+   (struck-through / marked ✅) — these are the ones shipping in this release. Move each
+   one into `docs/ROADMAP_ARCHIVE.md` under a new `## vX.Y.Z` heading (English prose,
+   same level of detail as the original entry), and delete it from `ROADMAP.md`.
+   `ROADMAP.md` should only ever contain pending work once this step is done — if
+   everything in it is done, it's fine for the file to end up with no sections left
+   below the header note. Skip this step if `ROADMAP.md` has nothing marked done.
+5. Commit directly on `develop` and push:
    ```
    git commit -am "chore: bump version to X.Y.Z"
    git push origin develop
    ```
+   (the roadmap archive move can ride in the same commit — it's routine housekeeping,
+   not worth a separate one).
 
 ### 2. Open, wait, merge
-5. Confirm CI on `develop` is green (`gh run list --branch develop --limit 1`).
-6. Open the PR:
+6. Confirm CI on `develop` is green (`gh run list --branch develop --limit 1`).
+7. Open the PR:
    ```
    gh pr create --base main --head develop --title "release: <short summary of what's shipping>" --body "<table of shipped issues, #N + one-line title>"
    ```
-7. Wait for CI to go green (poll with `gh pr checks <N> --watch --interval 15`, no manual
+8. Wait for CI to go green (poll with `gh pr checks <N> --watch --interval 15`, no manual
    prompts to the user). The repo does not allow auto-merge, so polling is required.
    **If a check fails, investigate the root cause — do not just retry.** Fix on `develop`,
    push, and re-arm the wait (never force-push, never skip hooks).
-8. **Merge without squashing** — this is what preserves `develop`'s per-issue commits
+9. **Merge without squashing** — this is what preserves `develop`'s per-issue commits
    individually on `main`: `gh pr merge <N> --merge`.
 
 ### 3. Issue closing + verification
-9. Fetch and capture each shipped issue's commit SHA on `main`:
-   ```
-   git fetch origin && git log origin/main --oneline -<N>
-   ```
-   Match each SHA back to its issue by the `(#<N>)` suffix in the subject line.
-10. Close each shipped issue with a **French** comment linking its specific `main` SHA.
+10. Fetch and capture each shipped issue's commit SHA on `main`:
+    ```
+    git fetch origin && git log origin/main --oneline -<N>
+    ```
+    Match each SHA back to its issue by the `(#<N>)` suffix in the subject line.
+11. Close each shipped issue with a **French** comment linking its specific `main` SHA.
     Post the body via `--body-file`, then close (`gh issue close` has no `--body-file`):
     ```
     gh issue comment <issue-number> --body-file <path-to-comment-file>
@@ -70,13 +79,13 @@ push to `main` (see `CLAUDE.md`'s Releases section) — this skill's job is the 
 
     *Message généré par Claude.*
     ```
-11. **Verify the automated tag/release.** The merge to `main` triggers
+12. **Verify the automated tag/release.** The merge to `main` triggers
     `.github/workflows/release.yml`, which tags `v<version>` and creates the GitHub
     Release. Watch it to completion (`gh run list --workflow=release.yml --limit 1`) and
     confirm: `gh release view v<version>`. If it didn't fire or failed, don't hand-create
     the tag/release yourself — investigate the workflow run first (see `CLAUDE.md`'s
     Releases section for what it does).
-12. Local cleanup: `git checkout main && git pull origin main`, then `git checkout develop`
+13. Local cleanup: `git checkout main && git pull origin main`, then `git checkout develop`
     (return to the branch the session started on).
 
 **End result:** `main` gains exactly `develop`'s new per-issue commits plus the version

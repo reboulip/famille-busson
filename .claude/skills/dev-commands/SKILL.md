@@ -28,6 +28,21 @@ All commands run from the repo root.
 - Full dev DB reset: `rm db.sqlite3 && uv run python manage.py migrate && uv run python manage.py populate_dev_data`
 - Always ask for user approval before performing a destructive action like wiping the DB.
 
+## Data model docs
+`uv run python manage.py generate_data_model_docs`
+
+- Regenerates `docs/data_model.md` (ER diagram + field tables) from the current
+  `annuaire`/`publications` model definitions. A pre-commit hook (see below) runs this
+  automatically whenever `models.py` changes, so manual runs are only needed to preview.
+
+## Pre-commit hooks (one-time setup per clone)
+`uv run pre-commit install`
+
+- Installs `.pre-commit-config.yaml`'s hooks into `.git/hooks/`. Currently one hook:
+  regenerates `docs/data_model.md` whenever `annuaire/models.py` or
+  `publications/models.py` is staged. If it changes the file, the commit aborts —
+  review the diff, `git add docs/data_model.md`, and commit again.
+
 ## Migrations & gitignored paths
 - `migrations/` is committed to git — after changing a model, run `makemigrations` then
   `migrate`, and include the generated migration file(s) in your commit. Production's
