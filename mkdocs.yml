@@ -26,4 +26,6 @@ markdown_extensions:
 nav:
   - Home: README.md
   - Data model: data_model.md
+  - Deployment: deployment.md
+  - Permissions: permissions.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

@@ -47,9 +47,10 @@
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
 
 ## 5. Signals — auto-sync logic (do not bypass)
-Two signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
+Three signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
 1. **`Account` post-save:** when a new `Account` is created, finds a `Person` with the same email and links them via the `OneToOneField` (`Person.account`). Creating an `Account` manually in tests must account for this.
 2. **`Relation` post-save:** automatically creates or updates the inverse `Relation` (parent ↔ enfant, conjoint ↔ conjoint). **Never create inverse `Relation` objects manually.**
+3. **`Relation` post-delete:** automatically deletes the matching inverse `Relation` too. Deleting a `Relation` directly (e.g. `Relation.objects.filter(...).delete()`), not just through `DeleteRelationView`, removes both sides.
 
 ## 6. Frontend — Bootstrap 5 / Crispy Forms
 Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMPLATE_PACK = 'bootstrap5'`). Use Bootstrap 5 classes in all templates. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).
