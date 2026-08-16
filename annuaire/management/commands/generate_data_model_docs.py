@@ -3,10 +3,9 @@ from pathlib import Path
 from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand
-from django.db.models import ManyToManyField
+from django.db.models import Field, ManyToManyField, Model
 
 DOC_APP_LABELS = ['annuaire', 'publications']
-OUTPUT_PATH = Path(settings.BASE_DIR) / 'docs' / 'data_model.md'
 
 MERMAID_CARDINALITY = {
     'OneToOneField': '||--o|',
@@ -19,7 +18,13 @@ MERMAID_CARDINALITY = {
 TARGET_FIRST = {'OneToOneField', 'ForeignKey'}
 
 
-def describe_field(field):
+def get_output_path() -> Path:
+    # Resolved at call time (not import time) so tests can override
+    # settings.BASE_DIR and write to a tmp_path instead of the tracked file.
+    return Path(settings.BASE_DIR) / 'docs' / 'data_model.md'
+
+
+def describe_field(field: Field) -> str:
     notes = []
     if field.primary_key:
         notes.append('PK')
@@ -57,11 +62,11 @@ def describe_field(field):
     return ', '.join(notes)
 
 
-def model_fields(model):
+def model_fields(model: type[Model]) -> list[Field]:
     return list(model._meta.fields) + list(model._meta.many_to_many)
 
 
-def render_mermaid(models):
+def render_mermaid(models: list[type[Model]]) -> str:
     lines = ['```mermaid', 'erDiagram']
     for model in models:
         for field in model_fields(model):
@@ -76,7 +81,7 @@ def render_mermaid(models):
     return '\n'.join(lines)
 
 
-def render_model_section(model):
+def render_model_section(model: type[Model]) -> str:
     meta = model._meta
     lines = [
         f'### `{model.__name__}`',
@@ -100,8 +105,8 @@ class Command(BaseCommand):
         f'({", ".join(DOC_APP_LABELS)} apps). Run after any models.py change.'
     )
 
-    def handle(self, *args, **options):
-        all_models = []
+    def handle(self, *args, **options) -> None:
+        all_models: list[type[Model]] = []
         sections = []
         for label in DOC_APP_LABELS:
             models = list(apps.get_app_config(label).get_models())
@@ -120,6 +125,7 @@ class Command(BaseCommand):
             *sections,
         ]) + '\n'
 
-        OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-        OUTPUT_PATH.write_text(content, encoding='utf-8')
-        self.stdout.write(self.style.SUCCESS(f'Wrote {OUTPUT_PATH}'))
+        output_path = get_output_path()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+        output_path.write_text(content, encoding='utf-8')
+        self.stdout.write(self.style.SUCCESS(f'Wrote {output_path}'))

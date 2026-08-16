@@ -22,9 +22,9 @@ All of the ownership checks (`ProfileUpdateView`, `_get_person_for_relations_edi
 
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
-| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `PersonRelationsView` (read) | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
+| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ProfileUpdateView` | `person-edit` | `get_object()` override | Owner of the profile, or staff/superuser. |
-| `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. |
+| `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
 | `BulkAccountCreateView`, `ChaletCreateView` | `accounts-bulk-create`, `chalet-create` | `StaffRequiredMixin` | Staff only. |
 | `ChaletUpdateView`, `ChaletOwnersUpdateView` | `chalet-edit`, `chalet-owners-edit` | `ChaletOwnerOrStaffMixin` | Chalet owner, or staff/superuser. |
 | `BlogPostListView`, `BlogPostDetailView` (read + comment) | `publications` | `LoginRequiredMixin` | Any logged-in user with a completed profile can comment; posting requires a `Person` profile. |
@@ -34,9 +34,11 @@ All of the ownership checks (`ProfileUpdateView`, `_get_person_for_relations_edi
 
 ## Superuser vs staff
 
-Most staff-gated checks (`StaffRequiredMixin`, the ownership `get_object()` overrides in
-`annuaire`) treat `is_staff` and `is_superuser` as equally privileged (`user.is_staff or
-user.is_superuser`). `AuthorOrStaffRequiredMixin` in `publications` only checks
-`is_staff` — in practice this project always sets `is_superuser` alongside `is_staff`
-(see `AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a
-staff-false/superuser-true account would be blocked from editing others' posts there.
+The ownership `get_object()` overrides in `annuaire` (`ProfileUpdateView`,
+`_get_person_for_relations_edit`, `ChaletOwnerOrStaffMixin`) treat `is_staff` and
+`is_superuser` as equally privileged (`user.is_staff or user.is_superuser`).
+`StaffRequiredMixin` and `AuthorOrStaffRequiredMixin` only check `is_staff` — in
+practice this project always sets `is_superuser` alongside `is_staff` (see
+`AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a
+staff-false/superuser-true account would be blocked from `BulkAccountCreateView`,
+`ChaletCreateView`, `CommentDeleteView`, and editing others' blog posts.
