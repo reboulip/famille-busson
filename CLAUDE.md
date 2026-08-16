@@ -128,3 +128,12 @@ gate a build/publish step.
   Hotfix variant).
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
+
+## 11. Documentation
+- **`docs/`** holds project documentation. `docs/README.md` indexes it.
+- **`docs/data_model.md`** — ER diagram + field tables for `annuaire`/`publications`
+  models. **Auto-generated, never edit by hand** — regenerate with
+  `uv run python manage.py generate_data_model_docs` (see `dev-commands`) after any
+  `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
+- **`ROADMAP.md`** tracks pending work only. Shipped items move to
+  **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `release-workflow`).

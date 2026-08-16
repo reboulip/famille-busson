@@ -28,6 +28,12 @@ All commands run from the repo root.
 - Full dev DB reset: `rm db.sqlite3 && uv run python manage.py migrate && uv run python manage.py populate_dev_data`
 - Always ask for user approval before performing a destructive action like wiping the DB.
 
+## Data model docs
+`uv run python manage.py generate_data_model_docs`
+
+- Regenerates `docs/data_model.md` (ER diagram + field tables) from the current
+  `annuaire`/`publications` model definitions. Run it after any `models.py` change.
+
 ## Migrations & gitignored paths
 - `migrations/` is committed to git — after changing a model, run `makemigrations` then
   `migrate`, and include the generated migration file(s) in your commit. Production's
