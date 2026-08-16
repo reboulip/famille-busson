@@ -54,7 +54,8 @@ def describe_field(field: Field) -> str:
     elif getattr(field, 'auto_now', False):
         notes.append('auto_now')
     elif field.has_default():
-        notes.append(f'default={field.default!r}')
+        default_repr = field.default.__name__ if callable(field.default) else repr(field.default)
+        notes.append(f'default={default_repr}')
 
     if not field.primary_key and not isinstance(field, ManyToManyField):
         notes.append('optional' if field.blank else 'required')

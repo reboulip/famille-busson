@@ -14,9 +14,13 @@ Authorization is spread across a handful of mixins/helpers in `annuaire/views.py
 | `ChaletOwnerOrStaffMixin` | `annuaire/views.py` | Staff/superuser, or the requesting user's `profile` is in the chalet's `owners`. |
 | `AuthorOrStaffRequiredMixin` | `publications/views.py` | `is_staff`, or the requesting user's `profile` is in the post's `authors`. |
 
-All of the ownership checks (`ProfileUpdateView`, `_get_person_for_relations_edit`,
-`ChaletOwnerOrStaffMixin`) raise `django.core.exceptions.PermissionDenied` directly from
-`get_object()` — see `CLAUDE.md` §4's "Ownership checks go in `get_object()`" convention.
+`ProfileUpdateView` and `ChaletOwnerOrStaffMixin` raise
+`django.core.exceptions.PermissionDenied` directly from `get_object()` — see
+`CLAUDE.md` §4's "Ownership checks go in `get_object()`" convention.
+`_get_person_for_relations_edit()` doesn't follow that convention: it's a plain
+module-level function, called from `get()`/`post()` on `PersonRelationsView`,
+`AddRelationView`, `UpdateRelationView` and `DeleteRelationView` — none of which define
+a `get_object()` — but it raises the same `PermissionDenied` and gates the same way.
 
 ## By view
 
@@ -25,7 +29,7 @@ All of the ownership checks (`ProfileUpdateView`, `_get_person_for_relations_edi
 | `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ProfileUpdateView` | `person-edit` | `get_object()` override | Owner of the profile, or staff/superuser. |
 | `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
-| `BulkAccountCreateView`, `ChaletCreateView` | `accounts-bulk-create`, `chalet-create` | `StaffRequiredMixin` | Staff only. |
+| `BulkAccountCreateView`, `ChaletCreateView` | `bulk-account-create`, `chalet-create` | `StaffRequiredMixin` | Staff only. |
 | `ChaletUpdateView`, `ChaletOwnersUpdateView` | `chalet-edit`, `chalet-owners-edit` | `ChaletOwnerOrStaffMixin` | Chalet owner, or staff/superuser. |
 | `BlogPostListView`, `BlogPostDetailView` (read + comment) | `publications` | `LoginRequiredMixin` | Any logged-in user with a completed profile can comment; posting requires a `Person` profile. |
 | `BlogPostCreateView` | `blogpost-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile. |
@@ -34,9 +38,10 @@ All of the ownership checks (`ProfileUpdateView`, `_get_person_for_relations_edi
 
 ## Superuser vs staff
 
-The ownership `get_object()` overrides in `annuaire` (`ProfileUpdateView`,
-`_get_person_for_relations_edit`, `ChaletOwnerOrStaffMixin`) treat `is_staff` and
-`is_superuser` as equally privileged (`user.is_staff or user.is_superuser`).
+The ownership checks in `annuaire` (`ProfileUpdateView.get_object()`,
+`_get_person_for_relations_edit()`, `ChaletOwnerOrStaffMixin.get_object()`) treat
+`is_staff` and `is_superuser` as equally privileged (`user.is_staff or
+user.is_superuser`).
 `StaffRequiredMixin` and `AuthorOrStaffRequiredMixin` only check `is_staff` — in
 practice this project always sets `is_superuser` alongside `is_staff` (see
 `AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a
