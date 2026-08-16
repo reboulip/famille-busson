@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+    <!-- Mountain -->
+    <polygon points="16,3 29,29 3,29" fill="#4A6B85"/>
+    <!-- Snow cap -->
+    <polygon points="16,3 20,10.5 18,9.5 22,13.5 10,13.5 14,9.5 12,10.5" fill="#FFFFFF"/>
+    <!-- Pine trees -->
+    <g fill="#2F5233">
+        <polygon points="7,15 10,20.5 4,20.5"/>
+        <polygon points="7,19 10,25 4,25"/>
+        <rect x="6.3" y="25" width="1.4" height="3"/>
+
+        <polygon points="25,15 28,20.5 22,20.5"/>
+        <polygon points="25,19 28,25 22,25"/>
+        <rect x="24.3" y="25" width="1.4" height="3"/>
+    </g>
+</svg>
