@@ -26,6 +26,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
+| `home` | `home` | `@login_required` | Any logged-in user. |
 | `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ProfileUpdateView` | `person-edit` | `get_object()` override | Owner of the profile, or staff/superuser. |
 | `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
@@ -35,6 +36,14 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | `BlogPostCreateView` | `blogpost-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile. |
 | `BlogPostUpdateView`, `BlogPostDeleteView` | `blogpost-edit`, `blogpost-delete` | `AuthorOrStaffRequiredMixin` | An author of that post, or staff. |
 | `CommentDeleteView` | `comment-delete` | `StaffRequiredMixin` | **Staff only — not the comment's own author.** Asymmetric with blog post deletion, where authors can delete their own posts. |
+
+## Public (unauthenticated) surface
+
+Every view is gated except: `login` (`CustomLoginView`), `signup` (`SignupView`),
+`logout`, `healthz` (`famille_busson/urls.py`), and `/media/<path>` (served with no
+auth check — see the roadmap's "Restrict access to uploaded media files" item).
+`home` was the last unauthenticated view in `annuaire`/`publications` until it was
+gated; nothing new should be added to this list without a deliberate decision.
 
 ## Superuser vs staff
 

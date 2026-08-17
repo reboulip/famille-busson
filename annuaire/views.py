@@ -32,6 +32,7 @@ from .forms import (
 from .models import Account, Chalet, Person, PresencePSV, Relation
 
 
+@login_required
 def home(request):
     from publications.models import BlogPost, Comment
 
@@ -91,7 +92,7 @@ class CustomLoginView(LoginView):
         else:
             return redirect("profile-create")
 
-    def get_success_url(self):
+    def get_default_redirect_url(self):
         return reverse_lazy("home")
 
 

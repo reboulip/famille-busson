@@ -15,9 +15,25 @@
   `django.contrib.auth.tokens.PasswordResetTokenGenerator` or equivalent), modeled on
   Django's standard `django.contrib.auth` flow, instead of the password itself.
   (priority: medium)
-- [ ] B · Require authentication for the home page — the `home` view
+- [x] B · Require authentication for the home page — the `home` view
   (`annuaire/views.py`) has no `@login_required`, so it's visible to unauthenticated
   users; restrict it like the rest of the app. (priority: high) [#34]
+- [ ] C · Self-service "mot de passe oublié" flow — once A ships the
+  password-reset-confirm view/template, add Django's `PasswordResetView`/
+  `PasswordResetDoneView` (project templates, reusing the `password_reset_confirm`
+  URL name) so a user who forgets their password can request a new link themselves
+  instead of relying on staff re-running the bulk account tool. (priority: medium)
+- [ ] D · Restrict access to uploaded media files — `/media/<path>` is served with no
+  authentication check (`famille_busson/urls.py`), so `Person.profile_photo`,
+  `Chalet.photo`, and blog `Attachment` files stay readable by anyone with the URL,
+  even after B removes anonymous access to the rest of the app. Add an authenticated
+  serve view (or an X-Sendfile/X-Accel handoff) gating access the same way every
+  other view is gated. (priority: high)
+- [ ] E · Adopt `LoginRequiredMiddleware` as defense-in-depth — Django's built-in
+  middleware (5.1+) that requires an explicit `@login_not_required` opt-out on every
+  public view, so a future new view can't silently repeat the bug fixed in B.
+  Requires opting out `CustomLoginView`, `SignupView`, `healthz`, the root redirect,
+  and (once D ships) the media serve view. (priority: medium)
 
 ---
 
@@ -50,9 +66,11 @@
 
 Items deferred when the `publications` app was created:
 
-- [ ] A · Multi-author picker — `BlogPostForm.authors` uses a plain `SelectMultiple`,
-  which is impractical with many people. `person_picker.js` only supports one instance
-  per page; generalizing it would let it be reused here. (priority: low)
+- [ ] A · Multi-author picker — generalize `person_picker.js`
+  (`annuaire/static/js/`, currently `document.querySelector` — one instance per page)
+  into `querySelectorAll`-based support for multiple instances, and extract the
+  duplicated picker markup (currently copy-pasted across 4 templates, including
+  `BlogPostForm.authors`) into a shared template include. (priority: low)
 - [ ] B · Orphaned file cleanup — Django doesn't delete files under `MEDIA_ROOT` when a
   row referencing them is deleted. The same issue already exists for
   `Person.profile_photo` and `Chalet.photo`; worth handling for all three models at
