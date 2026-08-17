@@ -7,13 +7,16 @@ from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.views import LoginView, PasswordResetConfirmView
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, UpdateView, View
 
 from .forms import (
@@ -119,11 +122,16 @@ class SignupView(FormView):
             return super().form_valid(form)
 
 
-def _send_account_credentials_email(request, email, temp_password, is_reset):
+def _build_password_reset_url(request, account):
+    uid = urlsafe_base64_encode(force_bytes(account.pk))
+    token = default_token_generator.make_token(account)
+    return request.build_absolute_uri(reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}))
+
+
+def _send_account_setup_email(request, email, reset_url, is_reset):
     """Best-effort: one recipient's SMTP failure must not lose the others'
-    accounts (already created) or hide their passwords (still shown on screen
+    accounts (already created) or hide their reset link (still shown on screen
     regardless -- see bulk_account_create.html)."""
-    login_url = request.build_absolute_uri(reverse_lazy("login"))
     subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
     intro = (
         "Le mot de passe de votre compte sur le site de la famille Busson a été réinitialisé."
@@ -133,17 +141,16 @@ def _send_account_credentials_email(request, email, temp_password, is_reset):
     message = (
         f"Bonjour,\n\n"
         f"{intro}\n\n"
-        f"Adresse : {email}\n"
-        f"Mot de passe temporaire : {temp_password}\n\n"
-        f"Connectez-vous ici : {login_url}\n"
-        f"Un changement de mot de passe vous sera demandé lors de votre première connexion.\n\n"
+        f"Adresse : {email}\n\n"
+        f"Choisissez votre mot de passe ici : {reset_url}\n"
+        f"Ce lien est à usage unique et expire dans 7 jours.\n\n"
         f"À bientôt !"
     )
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
         return True
     except Exception:
-        logging.getLogger("django").exception("Failed to send account credentials email to %s", email)
+        logging.getLogger("django").exception("Failed to send account setup email to %s", email)
         return False
 
 
@@ -158,28 +165,24 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         failed_emails = []
 
         for email in emails:
-            temp_password = secrets.token_urlsafe(12)
             existing = Account.objects.filter(email=email).first()
             is_reset = bool(existing)
-            if existing:
-                existing.set_password(temp_password)
-                existing.must_change_password = True
-                existing.save()
+            account = existing or Account(email=email)
+            account.set_password(secrets.token_urlsafe(32))
+            account.save()
+            if is_reset:
                 reset_emails.append(email)
-            else:
-                account = Account(email=email, must_change_password=True)
-                account.set_password(temp_password)
-                account.save()
 
-            email_sent = _send_account_credentials_email(self.request, email, temp_password, is_reset)
+            reset_url = _build_password_reset_url(self.request, account)
+            email_sent = _send_account_setup_email(self.request, email, reset_url, is_reset)
             if not email_sent:
                 failed_emails.append(email)
             results.append(
                 {
                     "email": email,
                     "status": "reset" if is_reset else "created",
-                    "temp_password": temp_password,
                     "email_sent": email_sent,
+                    "reset_url": reset_url,
                 }
             )
 
@@ -264,6 +267,19 @@ class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
             context["form"] = self.get_form()
         context["password_hints"] = password_validators_help_texts()
         return context
+
+
+class AccountPasswordResetConfirmView(PasswordResetConfirmView):
+    template_name = "annuaire/password_reset_confirm.html"
+    post_reset_login = True
+    success_url = reverse_lazy("my-profile")
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.user.must_change_password:
+            self.user.must_change_password = False
+            self.user.save(update_fields=["must_change_password"])
+        return response
 
 
 class ProfileCreateView(LoginRequiredMixin, CreateView):

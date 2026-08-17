@@ -2,6 +2,7 @@ from django.contrib.auth.views import LogoutView
 from django.urls import path
 
 from .views import (
+    AccountPasswordResetConfirmView,
     AddPresenceView,
     AddRelationView,
     BulkAccountCreateView,
@@ -41,6 +42,11 @@ urlpatterns = [
     path("accounts/check-emails/", check_emails_ajax, name="check-emails-ajax"),
     path("persons/search/", person_search_ajax, name="person-search-ajax"),
     path("password/change/", ForcedPasswordChangeView.as_view(), name="password-change-forced"),
+    path(
+        "password/reset/<uidb64>/<token>/",
+        AccountPasswordResetConfirmView.as_view(),
+        name="password_reset_confirm",
+    ),
     path("annuaire/", DirectoryListView.as_view(), name="directory"),
     path("personne/<int:pk>/", ProfileDetailView.as_view(), name="personne-detail"),
     path("personne/<int:pk>/update", ProfileUpdateView.as_view(), name="person-edit"),

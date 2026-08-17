@@ -1,10 +1,19 @@
 import pytest
+from django.contrib.auth.tokens import default_token_generator
 from django.test import Client
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 LOGIN_URL = "/annuaire/login/"
 CHANGE_URL = "/annuaire/password/change/"
 STRONG_PASSWORD = "V3ryStr0ng!Pass"
+
+
+def _reset_confirm_url(account):
+    uid = urlsafe_base64_encode(force_bytes(account.pk))
+    token = default_token_generator.make_token(account)
+    return reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
 
 
 # ---------------------------------------------------------------------------
@@ -125,3 +134,70 @@ def test_forced_change_mismatched_passwords_returns_error(auth_client):
     )
     assert response.status_code == 200
     assert response.context["form"].errors
+
+
+# ---------------------------------------------------------------------------
+# AccountPasswordResetConfirmView
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_reset_confirm_valid_link_sets_password_and_logs_in(account, person):
+    url = _reset_confirm_url(account)
+    c = Client()
+    get_response = c.get(url)
+    assert get_response.status_code == 302
+    set_password_response = c.post(
+        get_response["Location"],
+        {"new_password1": STRONG_PASSWORD, "new_password2": STRONG_PASSWORD},
+    )
+    assert set_password_response.status_code == 302
+    assert set_password_response["Location"] == reverse("my-profile")
+
+    account.refresh_from_db()
+    assert account.check_password(STRONG_PASSWORD)
+
+    # post_reset_login=True: no further login needed
+    protected_response = c.get(reverse("directory"))
+    assert protected_response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_reset_confirm_clears_must_change_password_flag(account, person):
+    account.must_change_password = True
+    account.save()
+    url = _reset_confirm_url(account)
+    c = Client()
+    get_response = c.get(url)
+    c.post(
+        get_response["Location"],
+        {"new_password1": STRONG_PASSWORD, "new_password2": STRONG_PASSWORD},
+    )
+    account.refresh_from_db()
+    assert account.must_change_password is False
+
+
+@pytest.mark.django_db
+def test_reset_confirm_invalid_token_shows_expired_message(account):
+    bad_url = reverse("password_reset_confirm", kwargs={"uidb64": "invalid", "token": "invalid-token"})
+    c = Client()
+    response = c.get(bad_url)
+    assert response.status_code == 200
+    assert not response.context["validlink"]
+
+
+@pytest.mark.django_db
+def test_reset_confirm_url_is_exempt_from_forced_password_change_redirect(account, person):
+    # A user who is already logged in and flagged must_change_password (e.g. an
+    # admin-reset account) must still be able to follow their own reset link
+    # rather than being bounced to /password/change/ by the forced-change
+    # middleware.
+    account.must_change_password = True
+    account.save()
+    c = Client()
+    c.login(username=account.email, password="testpass123!")
+    account.refresh_from_db()
+    url = _reset_confirm_url(account)
+    response = c.get(url)
+    assert response.status_code in (200, 302)
+    assert CHANGE_URL not in response.get("Location", "")

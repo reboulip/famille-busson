@@ -6,7 +6,7 @@
 
 ## Security
 
-- [ ] A · Replace plaintext password in the account creation/reset email —
+- [x] A · Replace plaintext password in the account creation/reset email —
   `BulkAccountCreateView._send_account_credentials_email` sends the temporary password
   in plaintext by email. Acceptable for a first version — it fixes an urgent need (no
   email was being sent at all) — but a plaintext password in an email is never ideal

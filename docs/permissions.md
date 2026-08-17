@@ -40,10 +40,18 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 ## Public (unauthenticated) surface
 
 Every view is gated except: `login` (`CustomLoginView`), `signup` (`SignupView`),
-`logout`, `healthz` (`famille_busson/urls.py`), and `/media/<path>` (served with no
-auth check — see the roadmap's "Restrict access to uploaded media files" item).
-`home` was the last unauthenticated view in `annuaire`/`publications` until it was
-gated; nothing new should be added to this list without a deliberate decision.
+`logout`, `healthz` (`famille_busson/urls.py`), `password_reset_confirm`
+(`AccountPasswordResetConfirmView` — must be reachable by a signed-out user
+following an emailed link), and `/media/<path>` (served with no auth check — see
+the roadmap's "Restrict access to uploaded media files" item). `home` was the last
+unauthenticated view in `annuaire`/`publications` until it was gated; nothing new
+should be added to this list without a deliberate decision.
+
+`password_reset_confirm` is additionally listed in
+`ForcePasswordChangeMiddleware.EXEMPT_URL_PREFIXES`
+(`annuaire/middleware.py`) — an already-authenticated user flagged
+`must_change_password` must still be able to follow their own reset link instead
+of being bounced to `/password/change/`.
 
 ## Superuser vs staff
 

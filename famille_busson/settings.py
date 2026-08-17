@@ -126,6 +126,9 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
 LOGIN_URL = "/annuaire/login/"
+# Django's default (3 days) is too tight for an invite/reset email that may sit
+# unread over a weekend.
+PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60 * 24 * 7)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
