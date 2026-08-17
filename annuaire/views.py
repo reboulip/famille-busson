@@ -8,7 +8,7 @@ from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.views import LoginView, PasswordResetConfirmView
+from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -280,6 +280,17 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
             self.user.must_change_password = False
             self.user.save(update_fields=["must_change_password"])
         return response
+
+
+class AccountPasswordResetView(PasswordResetView):
+    template_name = "annuaire/password_reset.html"
+    email_template_name = "annuaire/password_reset_email.txt"
+    subject_template_name = "annuaire/password_reset_subject.txt"
+    success_url = reverse_lazy("password-reset-done")
+
+
+class AccountPasswordResetDoneView(PasswordResetDoneView):
+    template_name = "annuaire/password_reset_done.html"
 
 
 class ProfileCreateView(LoginRequiredMixin, CreateView):

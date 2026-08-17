@@ -3,6 +3,8 @@ from django.urls import path
 
 from .views import (
     AccountPasswordResetConfirmView,
+    AccountPasswordResetDoneView,
+    AccountPasswordResetView,
     AddPresenceView,
     AddRelationView,
     BulkAccountCreateView,
@@ -42,6 +44,8 @@ urlpatterns = [
     path("accounts/check-emails/", check_emails_ajax, name="check-emails-ajax"),
     path("persons/search/", person_search_ajax, name="person-search-ajax"),
     path("password/change/", ForcedPasswordChangeView.as_view(), name="password-change-forced"),
+    path("password/reset/", AccountPasswordResetView.as_view(), name="password-reset"),
+    path("password/reset/done/", AccountPasswordResetDoneView.as_view(), name="password-reset-done"),
     path(
         "password/reset/<uidb64>/<token>/",
         AccountPasswordResetConfirmView.as_view(),

@@ -18,7 +18,7 @@
 - [x] B · Require authentication for the home page — the `home` view
   (`annuaire/views.py`) has no `@login_required`, so it's visible to unauthenticated
   users; restrict it like the rest of the app. (priority: high) [#34]
-- [ ] C · Self-service "mot de passe oublié" flow — once A ships the
+- [x] C · Self-service "mot de passe oublié" flow — once A ships the
   password-reset-confirm view/template, add Django's `PasswordResetView`/
   `PasswordResetDoneView` (project templates, reusing the `password_reset_confirm`
   URL name) so a user who forgets their password can request a new link themselves

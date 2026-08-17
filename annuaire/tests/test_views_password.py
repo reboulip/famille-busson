@@ -1,5 +1,8 @@
+import re
+
 import pytest
 from django.contrib.auth.tokens import default_token_generator
+from django.core import mail
 from django.test import Client
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -201,3 +204,62 @@ def test_reset_confirm_url_is_exempt_from_forced_password_change_redirect(accoun
     response = c.get(url)
     assert response.status_code in (200, 302)
     assert CHANGE_URL not in response.get("Location", "")
+
+
+# ---------------------------------------------------------------------------
+# AccountPasswordResetView / AccountPasswordResetDoneView (self-service)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_password_reset_get_returns_200(client):
+    response = client.get(reverse("password-reset"))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_password_reset_post_valid_email_sends_link_and_redirects(client, account):
+    response = client.post(reverse("password-reset"), {"email": account.email})
+    assert response.status_code == 302
+    assert response["Location"] == reverse("password-reset-done")
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == [account.email]
+
+
+@pytest.mark.django_db
+def test_password_reset_post_unknown_email_still_redirects_no_email_sent(client, db):
+    response = client.post(reverse("password-reset"), {"email": "nobody@example.com"})
+    assert response.status_code == 302
+    assert response["Location"] == reverse("password-reset-done")
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
+def test_password_reset_done_get_returns_200(client):
+    response = client.get(reverse("password-reset-done"))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_password_reset_full_round_trip_lets_user_log_in_with_new_password(client, account, person):
+    client.post(reverse("password-reset"), {"email": account.email})
+    assert len(mail.outbox) == 1
+    body = mail.outbox[0].body
+
+    match = re.search(r"https?://[^\s]+(/annuaire/password/reset/\S+/)", body)
+    assert match is not None, f"reset link not found in email body:\n{body}"
+    confirm_path = match.group(1)
+
+    c = Client()
+    get_response = c.get(confirm_path)
+    assert get_response.status_code == 302
+    set_password_response = c.post(
+        get_response["Location"],
+        {"new_password1": STRONG_PASSWORD, "new_password2": STRONG_PASSWORD},
+    )
+    assert set_password_response.status_code == 302
+
+    fresh_client = Client()
+    login_response = fresh_client.post(reverse("login"), {"username": account.email, "password": STRONG_PASSWORD})
+    assert login_response.status_code == 302
+    assert login_response["Location"] == reverse("home")
