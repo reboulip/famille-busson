@@ -1,11 +1,12 @@
 import pytest
 from django.urls import reverse
-from annuaire.models import Account, Person
 
+from annuaire.models import Account, Person
 
 # ---------------------------------------------------------------------------
 # home
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_home_accessible_unauthenticated(client):
@@ -29,6 +30,7 @@ def test_home_context_has_recent_persons(client, person):
 # ---------------------------------------------------------------------------
 # CustomLoginView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_login_get_returns_200(client):
@@ -66,6 +68,7 @@ def test_already_authenticated_user_redirected(auth_client):
 # ---------------------------------------------------------------------------
 # SignupView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_signup_get_returns_200(client):

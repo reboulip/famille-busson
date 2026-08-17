@@ -1,6 +1,20 @@
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.3
+    hooks:
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
+
   - repo: local
     hooks:
+      - id: ty
+        name: ty (type check)
+        entry: uv run ty check --exit-zero-on-warning
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: generate-data-model-docs
         name: Regenerate docs/data_model.md
         description: >

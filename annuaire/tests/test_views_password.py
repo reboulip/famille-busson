@@ -1,8 +1,6 @@
 import pytest
-from django.urls import reverse
 from django.test import Client
-from annuaire.models import Account, Person
-
+from django.urls import reverse
 
 LOGIN_URL = "/annuaire/login/"
 CHANGE_URL = "/annuaire/password/change/"
@@ -12,6 +10,7 @@ STRONG_PASSWORD = "V3ryStr0ng!Pass"
 # ---------------------------------------------------------------------------
 # ForcePasswordChangeMiddleware
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_middleware_redirects_must_change_user(account, person):
@@ -61,6 +60,7 @@ def test_middleware_no_effect_on_anonymous(client):
 # ---------------------------------------------------------------------------
 # ForcedPasswordChangeView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_forced_change_requires_login(client):

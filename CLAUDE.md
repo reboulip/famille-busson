@@ -103,8 +103,16 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   `/test-select` uses this figure for its cheap-suite escape hatch — well past the
   ~120s threshold, so it will always compute a scoped subset here rather than just
   running everything.
-- No linter/formatter is configured yet (no ruff/black/flake8 in `pyproject.toml`) —
-  follow PEP 8 by hand per section 4 until one is added.
+- **Lint / format / type check:** `ruff` (check + format) and `ty` (type checker), both
+  configured in `pyproject.toml` (`[tool.ruff]`, `[tool.ty]`) and run via pre-commit
+  (`.pre-commit-config.yaml`, installed with `uv run pre-commit install`) and in CI
+  (`.github/workflows/tests.yml`'s `lint` job). `ty` runs with `--exit-zero-on-warning` —
+  it only gates on error-level diagnostics, because Django's descriptor-based fields
+  (`Manager`, `FieldFile`, etc.) trigger near-100% false-positive `unresolved-attribute`/
+  `invalid-assignment`/`unsupported-operator` warnings without `django-stubs`, which `ty`
+  doesn't yet support. `DJ001` (`null=True` on string fields) is deliberately excluded
+  from ruff's ruleset — the existing schema uses it pervasively and fixing it means a data
+  migration, not a lint autofix.
 
 ## 10. Releases
 famille-busson is a continuously-deployed web app, not a published package — there's no

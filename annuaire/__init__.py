@@ -1,1 +1,1 @@
-default_app_config = 'annuaire.apps.AnnuaireConfig'
+default_app_config = "annuaire.apps.AnnuaireConfig"

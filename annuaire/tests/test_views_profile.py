@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
-from annuaire.models import Person, Relation
 
+from annuaire.models import Person, Relation
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -9,6 +9,7 @@ LOGIN_URL = "/annuaire/login/"
 # ---------------------------------------------------------------------------
 # my_profile
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_my_profile_requires_login(client):
@@ -36,6 +37,7 @@ def test_my_profile_no_profile_redirects_to_create(client, account):
 # edit_my_profile
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_edit_my_profile_requires_login(client):
     response = client.get(reverse("edit-my-profile"))
@@ -61,6 +63,7 @@ def test_edit_my_profile_no_profile_redirects_to_create(client, account):
 # ---------------------------------------------------------------------------
 # DirectoryListView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_directory_requires_login(client):
@@ -98,6 +101,7 @@ def test_directory_search_no_results(auth_client, person):
 # ---------------------------------------------------------------------------
 # ProfileDetailView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_profile_detail_requires_login(client, person):
@@ -166,6 +170,7 @@ def test_profile_detail_can_edit_true_for_staff(staff_client, other_person):
 # ---------------------------------------------------------------------------
 # ProfileUpdateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_profile_update_requires_login(client, person):
@@ -247,8 +252,10 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
 @pytest.mark.django_db
 def test_profile_update_photo_too_large_returns_form_error(auth_client, person, monkeypatch):
     import io
+
     from django.core.files.uploadedfile import SimpleUploadedFile
     from PIL import Image
+
     import annuaire.forms as annuaire_forms
 
     monkeypatch.setattr(annuaire_forms, "PROFILE_PHOTO_MAX_SIZE_MB", 0)
@@ -268,6 +275,7 @@ def test_profile_update_photo_too_large_returns_form_error(auth_client, person, 
 # ---------------------------------------------------------------------------
 # ProfileCreateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_profile_create_requires_login(client):
@@ -299,6 +307,7 @@ def test_profile_create_post_creates_person_and_links_account(client, account):
     )
     assert response.status_code == 302
     from annuaire.models import Person
+
     person = Person.objects.get(account=account)
     assert person.first_name == "Alice"
     assert reverse("personne-detail", kwargs={"pk": person.pk}) in response["Location"]
@@ -315,6 +324,7 @@ def test_profile_create_post_invalid_returns_200_with_errors(client, account):
 # ---------------------------------------------------------------------------
 # PersonRelationsView (GET)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_person_relations_requires_login(client, person):
@@ -360,6 +370,7 @@ def test_person_relations_lists_existing(auth_client, person, other_person):
 # ---------------------------------------------------------------------------
 # AddRelationView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_add_relation_creates_relation_and_inverse(auth_client, person, other_person):
@@ -407,6 +418,7 @@ def test_add_relation_forbidden_for_other_user(auth_client, other_person, person
 # UpdateRelationView
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_update_relation_changes_type(auth_client, person, other_person):
     relation = Relation.objects.create(person1=person, person2=other_person, relationship_type=2)
@@ -433,6 +445,7 @@ def test_update_relation_404_for_other_person_relation(auth_client, person, othe
 # ---------------------------------------------------------------------------
 # DeleteRelationView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_delete_relation_removes_both_sides(auth_client, person, other_person):

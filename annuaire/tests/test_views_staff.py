@@ -1,9 +1,10 @@
 import json
+
 import pytest
 from django.core import mail
 from django.urls import reverse
-from annuaire.models import Account
 
+from annuaire.models import Account
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -11,6 +12,7 @@ LOGIN_URL = "/annuaire/login/"
 # ---------------------------------------------------------------------------
 # BulkAccountCreateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_bulk_create_requires_login(client):
@@ -137,6 +139,7 @@ def test_bulk_create_email_failure_still_creates_account_and_shows_password(staf
 # ---------------------------------------------------------------------------
 # check_emails_ajax
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_check_emails_ajax_returns_existing(staff_client, account):
