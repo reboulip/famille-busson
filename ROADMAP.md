@@ -39,13 +39,13 @@
 
 ## Frontend / UX
 
-- [ ] A · Responsive design for mobile navigation — replace the always-visible custom
+- [x] A · Responsive design for mobile navigation — replace the always-visible custom
   `.sidebar` in `annuaire/templates/annuaire/base.html` with a Bootstrap 5 offcanvas
   pattern: vendor `bootstrap.bundle.min.js`, add a hamburger toggle below the `lg`
   breakpoint, add media queries to `main.css` so desktop layout is unchanged above it.
   Scoped to the single shared base template — applies to every view. Draft plan already
   posted on the issue. (priority: medium) [#31]
-- [ ] B · Site favicon — minimalistic SVG mountain-and-trees favicon; already built and
+- [x] B · Site favicon — minimalistic SVG mountain-and-trees favicon; already built and
   wired into `base.html` (`<link rel="icon">`) on unmerged branch
   `claude/issue-33-20260816-0830` — open a PR from it rather than redoing the work.
   (priority: low) [#33]
