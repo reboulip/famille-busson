@@ -18,6 +18,7 @@ from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, UpdateView, View
+from django.views.static import serve as static_serve
 
 from .forms import (
     AddPresenceForm,
@@ -33,6 +34,11 @@ from .forms import (
     UpdateRelationForm,
 )
 from .models import Account, Chalet, Person, PresencePSV, Relation
+
+
+@login_required
+def media_serve(request, path):
+    return static_serve(request, path, document_root=settings.MEDIA_ROOT)
 
 
 @login_required

@@ -18,9 +18,8 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import include, path
 from django.views.generic.base import RedirectView
-from django.views.static import serve as static_serve
 
-from famille_busson import settings
+from annuaire.views import media_serve
 
 
 def healthz(request):
@@ -34,5 +33,7 @@ urlpatterns = [
     path("publications/", include("publications.urls")),
     path("", RedirectView.as_view(pattern_name="home")),
     # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
-    path("media/<path:path>", static_serve, {"document_root": settings.MEDIA_ROOT}),
+    # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)
+    # must not be readable by anyone who guesses/obtains the URL.
+    path("media/<path:path>", media_serve),
 ]

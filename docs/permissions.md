@@ -42,10 +42,20 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 Every view is gated except: `login` (`CustomLoginView`), `signup` (`SignupView`),
 `logout`, `healthz` (`famille_busson/urls.py`), `password_reset_confirm`
 (`AccountPasswordResetConfirmView` — must be reachable by a signed-out user
-following an emailed link), and `/media/<path>` (served with no auth check — see
-the roadmap's "Restrict access to uploaded media files" item). `home` was the last
-unauthenticated view in `annuaire`/`publications` until it was gated; nothing new
-should be added to this list without a deliberate decision.
+following an emailed link), `password-reset` (`AccountPasswordResetView`) and
+`password-reset-done` (`AccountPasswordResetDoneView`) — the self-service "mot de
+passe oublié" request form linked from the login page and its "check your email"
+confirmation, both of which follow Django's stock no-user-enumeration behavior:
+requesting a reset for an unregistered email still redirects to the confirmation
+page without sending anything or revealing whether the account exists. `home` was
+the last unauthenticated view in `annuaire`/`publications` until it was gated;
+nothing new should be added to this list without a deliberate decision.
+
+`/media/<path>` is now gated too, via `media_serve`
+(`annuaire/views.py`, wired in `famille_busson/urls.py`) — an `@login_required`
+wrapper around `django.views.static.serve` so uploaded files
+(`Person.profile_photo`, `Chalet.photo`, blog `Attachment.file`) are no longer
+readable by anyone who obtains the URL.
 
 `password_reset_confirm` is additionally listed in
 `ForcePasswordChangeMiddleware.EXEMPT_URL_PREFIXES`

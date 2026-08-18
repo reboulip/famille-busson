@@ -23,7 +23,7 @@
   `PasswordResetDoneView` (project templates, reusing the `password_reset_confirm`
   URL name) so a user who forgets their password can request a new link themselves
   instead of relying on staff re-running the bulk account tool. (priority: medium)
-- [ ] D · Restrict access to uploaded media files — `/media/<path>` is served with no
+- [x] D · Restrict access to uploaded media files — `/media/<path>` is served with no
   authentication check (`famille_busson/urls.py`), so `Person.profile_photo`,
   `Chalet.photo`, and blog `Attachment` files stay readable by anyone with the URL,
   even after B removes anonymous access to the rest of the app. Add an authenticated
