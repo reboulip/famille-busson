@@ -96,13 +96,15 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 
 ## 9. Toolchain
 - **Test command:** `uv run --group test pytest` (see `/test-select` and `dev-commands`).
-- **Full test suite runtime:** ~1490s (~25 min) for 214 tests (measured 2026-08-15,
-  no-cov) — **abnormally slow for this test count; likely a real bug (hanging
-  connection, sleep, or network call in a fixture/test), not just test-count growth.**
-  Re-measure after investigating rather than accepting this as the new normal.
-  `/test-select` uses this figure for its cheap-suite escape hatch — well past the
-  ~120s threshold, so it will always compute a scoped subset here rather than just
-  running everything.
+- **Full test suite runtime:** ~12s for 237 tests (measured 2026-08-18, with cov). The
+  previous ~1490s figure (2026-08-15) was caused by Django's default PBKDF2 password
+  hasher — deliberately slow for production security — running on every
+  `Account.objects.create_user(...)` call across the suite, worst-case in
+  `test_management_populate.py` (~22 accounts hashed per test, 13 tests). Fixed via a
+  root `conftest.py` `pytest_configure` hook that swaps in `MD5PasswordHasher` for the
+  test session only; production hashing is untouched. `/test-select`'s cheap-suite
+  escape hatch (~120s threshold) now applies normally — the full suite is fast enough
+  to just run outright in most cases.
 - **Lint / format / type check:** `ruff` (check + format) and `ty` (type checker), both
   configured in `pyproject.toml` (`[tool.ruff]`, `[tool.ty]`) and run via pre-commit
   (`.pre-commit-config.yaml`, installed with `uv run pre-commit install`) and in CI
