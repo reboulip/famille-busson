@@ -29,7 +29,7 @@
   even after B removes anonymous access to the rest of the app. Add an authenticated
   serve view (or an X-Sendfile/X-Accel handoff) gating access the same way every
   other view is gated. (priority: high)
-- [ ] E · Adopt `LoginRequiredMiddleware` as defense-in-depth — Django's built-in
+- [x] E · Adopt `LoginRequiredMiddleware` as defense-in-depth — Django's built-in
   middleware (5.1+) that requires an explicit `@login_not_required` opt-out on every
   public view, so a future new view can't silently repeat the bug fixed in B.
   Requires opting out `CustomLoginView`, `SignupView`, `healthz`, the root redirect,

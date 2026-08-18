@@ -3,6 +3,17 @@
 Authorization is spread across a handful of mixins/helpers in `annuaire/views.py` and
 `publications/views.py` rather than one central place. This page collects them.
 
+**Every view is login-required by default.** `django.contrib.auth.middleware.LoginRequiredMiddleware`
+(`famille_busson/settings.py`'s `MIDDLEWARE`, after `AuthenticationMiddleware`)
+redirects any anonymous request to a view that hasn't explicitly opted out. A view
+must carry `@login_not_required` (function views) or
+`@method_decorator(login_not_required, name="dispatch")` (class-based views) to
+stay public — see the "Public (unauthenticated) surface" section below for the
+full, deliberate list. This inverts the old implicit default: a new view that
+forgets both `@login_required`/`LoginRequiredMixin` **and** `@login_not_required`
+now fails closed (login-required) instead of silently becoming public, which is
+what let SEC-B's bug (`home` unauthenticated) happen in the first place.
+
 ## The guards
 
 | Guard | Where | Rule |
@@ -47,9 +58,23 @@ following an emailed link), `password-reset` (`AccountPasswordResetView`) and
 passe oublié" request form linked from the login page and its "check your email"
 confirmation, both of which follow Django's stock no-user-enumeration behavior:
 requesting a reset for an unregistered email still redirects to the confirmation
-page without sending anything or revealing whether the account exists. `home` was
-the last unauthenticated view in `annuaire`/`publications` until it was gated;
-nothing new should be added to this list without a deliberate decision.
+page without sending anything or revealing whether the account exists. `healthz`
+and the root `/` redirect (`famille_busson/urls.py`) are also public, each
+decorated `@login_not_required`. `home` was the last unauthenticated view in
+`annuaire`/`publications` until it was gated; nothing new should be added to this
+list without a deliberate decision — and since `LoginRequiredMiddleware` now fails
+closed, a new view that's meant to be public won't work at all until it's
+explicitly decorated and added here.
+
+Django's own auth views (`LoginView`, `PasswordResetView`,
+`PasswordResetDoneView`, `PasswordResetConfirmView`) already carry
+`login_not_required` in Django 5.1+, so `CustomLoginView` and this project's three
+`AccountPasswordReset*` subclasses inherit the exemption automatically — they are
+not separately decorated in `annuaire/views.py`. `SignupView` has no such
+built-in exemption and is decorated explicitly. Django's `LogoutView` is used
+directly (no project subclass) and is **not** decorated — an anonymous `GET` to
+`/logout/` bounces to login, which is harmless since only an authenticated user
+ever sees a logout control.
 
 `/media/<path>` is now gated too, via `media_serve`
 (`annuaire/views.py`, wired in `famille_busson/urls.py`) — an `@login_required`

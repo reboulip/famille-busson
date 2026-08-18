@@ -15,15 +15,22 @@ Including another URLconf
 """
 
 from django.contrib import admin
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django.urls import include, path
-from django.views.generic.base import RedirectView
 
 from annuaire.views import media_serve
 
 
+@login_not_required
 def healthz(request):
     return HttpResponse("ok")
+
+
+@login_not_required
+def root_redirect(request):
+    return redirect("home")
 
 
 urlpatterns = [
@@ -31,7 +38,7 @@ urlpatterns = [
     path("healthz", healthz),
     path("annuaire/", include("annuaire.urls")),
     path("publications/", include("publications.urls")),
-    path("", RedirectView.as_view(pattern_name="home")),
+    path("", root_redirect),
     # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
     # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)
     # must not be readable by anyone who guesses/obtains the URL.

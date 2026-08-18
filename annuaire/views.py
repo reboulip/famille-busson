@@ -5,7 +5,7 @@ import secrets
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_not_required, login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, UpdateView, View
@@ -105,6 +106,7 @@ class CustomLoginView(LoginView):
         return reverse_lazy("home")
 
 
+@method_decorator(login_not_required, name="dispatch")
 class SignupView(FormView):
     template_name = "annuaire/signup.html"
     form_class = SignupForm
