@@ -47,10 +47,12 @@
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
 
 ## 5. Signals — auto-sync logic (do not bypass)
-Three signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
+Signals are registered via each app's `AppConfig.ready()`: `annuaire/signals.py` via
+`DirectoryConfig.ready()`, `publications/signals.py` via `PublicationsConfig.ready()`.
 1. **`Account` post-save:** when a new `Account` is created, finds a `Person` with the same email and links them via the `OneToOneField` (`Person.account`). Creating an `Account` manually in tests must account for this.
 2. **`Relation` post-save:** automatically creates or updates the inverse `Relation` (parent ↔ enfant, conjoint ↔ conjoint). **Never create inverse `Relation` objects manually.**
 3. **`Relation` post-delete:** automatically deletes the matching inverse `Relation` too. Deleting a `Relation` directly (e.g. `Relation.objects.filter(...).delete()`), not just through `DeleteRelationView`, removes both sides.
+4. **Orphaned file cleanup:** `annuaire/file_cleanup.py`'s `register_file_cleanup(model, *field_names)` connects `post_delete` + `pre_save` receivers that delete the file behind a `FileField`/`ImageField` when its row is deleted, or when the field is replaced/cleared. Registered for `Person.profile_photo`, `Chalet.photo` (both in `annuaire/signals.py`) and `publications.Attachment.file` (in `publications/signals.py`).
 
 ## 6. Frontend — Bootstrap 5 / Crispy Forms
 Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMPLATE_PACK = 'bootstrap5'`). Use Bootstrap 5 classes in all templates. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).

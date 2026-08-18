@@ -11,6 +11,18 @@ from .models import Account, Chalet, Person, PresencePSV, Relation
 PROFILE_PHOTO_MAX_SIZE_MB = 5
 
 
+class AddressAutocompleteInput(forms.TextInput):
+    """Progressive enhancement: plain text input, upgraded client-side by
+    address_picker.js with Base Adresse Nationale suggestions."""
+
+    class Media:
+        js = ["js/address_picker.js"]
+
+    def __init__(self, attrs=None):
+        defaults = {"autocomplete": "off", "class": "address-picker-input", "data-address-limit": "5"}
+        super().__init__({**defaults, **(attrs or {})})
+
+
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Person
@@ -26,6 +38,10 @@ class ProfileEditForm(forms.ModelForm):
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "postal_address": AddressAutocompleteInput,
+        }
+        help_texts = {
+            "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
         }
 
     def clean_profile_photo(self):

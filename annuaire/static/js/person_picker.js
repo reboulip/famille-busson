@@ -1,7 +1,6 @@
-(function () {
-    const picker = document.querySelector('.person-picker');
-    if (!picker) return;
+document.querySelectorAll('.person-picker').forEach(initPicker);
 
+function initPicker(picker) {
     const searchUrl = picker.dataset.searchUrl;
     const fieldName = picker.dataset.fieldName || 'persons';
     const singleSelect = picker.dataset.singleSelect === 'true';
@@ -159,4 +158,4 @@
     }
 
     initFromDataset();
-})();
+}

@@ -588,3 +588,46 @@ h2 {
 .presence-past {
     color: #6c757d;
 }
+
+.address-picker {
+    position: relative;
+}
+
+.address-picker-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0 0 4px 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.address-picker-result,
+.address-picker-empty {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.address-picker-context {
+    display: block;
+    color: #6c757d;
+}
+
+.address-picker-empty {
+    color: #6c757d;
+    cursor: default;
+    font-style: italic;
+}
+
+.address-picker-result:hover,
+.address-picker-result.highlighted {
+    background: #e9ecef;
+}

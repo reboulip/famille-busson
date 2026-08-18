@@ -54,7 +54,7 @@
 
 ## Annuaire — profile improvements
 
-- [ ] A · Address picker for a person's address — autocomplete field in the profile
+- [x] A · Address picker for a person's address — autocomplete field in the profile
   create/update views: user types, an address API returns candidates, selecting one
   saves a standard one-liner address format. Proposed API: France's free BAN
   (api-adresse.data.gouv.fr, no key required) — flag if non-French addresses need to be
@@ -66,12 +66,12 @@
 
 Items deferred when the `publications` app was created:
 
-- [ ] A · Multi-author picker — generalize `person_picker.js`
+- [x] A · Multi-author picker — generalize `person_picker.js`
   (`annuaire/static/js/`, currently `document.querySelector` — one instance per page)
   into `querySelectorAll`-based support for multiple instances, and extract the
   duplicated picker markup (currently copy-pasted across 4 templates, including
   `BlogPostForm.authors`) into a shared template include. (priority: low)
-- [ ] B · Orphaned file cleanup — Django doesn't delete files under `MEDIA_ROOT` when a
+- [x] B · Orphaned file cleanup — Django doesn't delete files under `MEDIA_ROOT` when a
   row referencing them is deleted. The same issue already exists for
   `Person.profile_photo` and `Chalet.photo`; worth handling for all three models at
   once. (priority: low)

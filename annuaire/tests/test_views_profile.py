@@ -249,6 +249,64 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
     assert 'enctype="multipart/form-data"' in response.content.decode()
 
 
+# ---------------------------------------------------------------------------
+# Address autocomplete (ANN-A)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_profile_update_renders_address_picker(auth_client, person):
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "js/address_picker.js" in content
+    assert "address-picker-input" in content
+
+
+@pytest.mark.django_db
+def test_profile_create_renders_address_picker(client, account):
+    client.login(username=account.email, password="testpass123!")
+    response = client.get(reverse("profile-create"))
+    content = response.content.decode()
+    assert "js/address_picker.js" in content
+    assert "address-picker-input" in content
+
+
+def test_profile_edit_form_address_widget_attrs():
+    from annuaire.forms import ProfileEditForm
+
+    widget = ProfileEditForm().fields["postal_address"].widget
+    assert widget.attrs["autocomplete"] == "off"
+    assert "address-picker-input" in widget.attrs["class"]
+
+
+@pytest.mark.django_db
+def test_profile_update_saves_ban_formatted_address(auth_client, person):
+    data = {
+        "first_name": person.first_name,
+        "last_name": person.last_name,
+        "postal_address": "8 Boulevard du Port, 80000 Amiens",
+    }
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    person.refresh_from_db()
+    assert person.postal_address == "8 Boulevard du Port, 80000 Amiens"
+
+
+@pytest.mark.django_db
+def test_profile_update_saves_free_text_foreign_address(auth_client, person):
+    data = {
+        "first_name": person.first_name,
+        "last_name": person.last_name,
+        "postal_address": "10 Downing Street, London SW1A 2AA, UK",
+    }
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    person.refresh_from_db()
+    assert person.postal_address == "10 Downing Street, London SW1A 2AA, UK"
+
+
 @pytest.mark.django_db
 def test_profile_update_photo_too_large_returns_form_error(auth_client, person, monkeypatch):
     import io
