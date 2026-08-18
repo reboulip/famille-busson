@@ -23,6 +23,8 @@ credentials included).
 - [`docs/data_model.md`](docs/data_model.md) — data model (ER diagram + field tables),
   auto-generated from `models.py`.
 - [`docs/deployment.md`](docs/deployment.md) — how this ships to production.
+- [`docs/permissions.md`](docs/permissions.md) — who can do what: the mixins/`get_object()`
+  overrides that gate each view.
 - [`docs/ROADMAP_ARCHIVE.md`](docs/ROADMAP_ARCHIVE.md) — shipped roadmap items.
 - [`ROADMAP.md`](ROADMAP.md) — pending work.
 
