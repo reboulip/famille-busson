@@ -2,6 +2,9 @@
 .shots/
 .claude/skills/run-famille-busson/node_modules/
 
+# dev-pipeline sprint scratch state (forecast briefs, sprint-brief.md)
+.claude/tmp/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
