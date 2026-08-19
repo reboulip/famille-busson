@@ -1,27 +1,51 @@
-import secrets
 from django import forms
-from .models import Person, Relation, Account, PresencePSV, Chalet
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import authenticate, password_validation
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
 
+from .models import Account, Chalet, Person, PresencePSV, Relation
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
 
 
+class AddressAutocompleteInput(forms.TextInput):
+    """Progressive enhancement: plain text input, upgraded client-side by
+    address_picker.js with Base Adresse Nationale suggestions."""
+
+    class Media:
+        js = ["js/address_picker.js"]
+
+    def __init__(self, attrs=None):
+        defaults = {"autocomplete": "off", "class": "address-picker-input", "data-address-limit": "5"}
+        super().__init__({**defaults, **(attrs or {})})
+
+
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = Person
-        fields = ['first_name', 'last_name', 'profile_photo', 'email', 'phone_number', 'postal_address', 'birth_date', 'description']
+        fields = [
+            "first_name",
+            "last_name",
+            "profile_photo",
+            "email",
+            "phone_number",
+            "postal_address",
+            "birth_date",
+            "description",
+        ]
         widgets = {
-            'birth_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "postal_address": AddressAutocompleteInput,
+        }
+        help_texts = {
+            "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
         }
 
     def clean_profile_photo(self):
-        photo = self.cleaned_data.get('profile_photo')
+        photo = self.cleaned_data.get("profile_photo")
         max_bytes = PROFILE_PHOTO_MAX_SIZE_MB * 1024 * 1024
         # Only newly uploaded files have a real size to check -- an already-stored
         # FieldFile (untouched on this edit) or the "clear" checkbox's False both skip.
@@ -33,41 +57,42 @@ class ProfileEditForm(forms.ModelForm):
         return photo
 
 
-RelationEditFormSet = forms.inlineformset_factory(Person, Relation, fk_name='person1', extra=1,
-                                                  fields=['person2', 'relationship_type', 'start_date'])
+RelationEditFormSet = forms.inlineformset_factory(
+    Person, Relation, fk_name="person1", extra=1, fields=["person2", "relationship_type", "start_date"]
+)
 
 
 class AddRelationForm(forms.ModelForm):
     person2 = forms.ModelChoiceField(
         queryset=Person.objects.all(),
         widget=forms.HiddenInput,
-        label='Personne',
-        error_messages={'required': "Choisissez une personne dans la recherche."},
+        label="Personne",
+        error_messages={"required": "Choisissez une personne dans la recherche."},
     )
 
     class Meta:
         model = Relation
-        fields = ['person2', 'relationship_type', 'start_date']
+        fields = ["person2", "relationship_type", "start_date"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
 
 class UpdateRelationForm(forms.ModelForm):
     class Meta:
         model = Relation
-        fields = ['relationship_type', 'start_date']
+        fields = ["relationship_type", "start_date"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
 
 class CustomAuthenticationForm(AuthenticationForm):
-    password = forms.CharField(label='Mot de passe', strip=False, widget=forms.PasswordInput)
+    password = forms.CharField(label="Mot de passe", strip=False, widget=forms.PasswordInput)
 
     def clean(self):
-        email = self.cleaned_data.get('username')
-        password = self.cleaned_data.get('password')
+        email = self.cleaned_data.get("username")
+        password = self.cleaned_data.get("password")
 
         if email and password:
             self.user_cache = authenticate(self.request, email=email, password=password)
@@ -79,40 +104,40 @@ class CustomAuthenticationForm(AuthenticationForm):
         return self.cleaned_data
 
     def get_user(self) -> Account:
-        email = self.cleaned_data.get('username')
+        email = self.cleaned_data.get("username")
         account = Account.objects.get(email=email)
         return account
 
 
 class SignupForm(forms.Form):
-    email = forms.EmailField(label='Email')
+    email = forms.EmailField(label="Email")
     password = forms.CharField(
-        label='Mot de passe',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Ton mot de passe'}),
+        label="Mot de passe",
+        widget=forms.PasswordInput(attrs={"placeholder": "Ton mot de passe"}),
         strip=False,
     )
     password_confirm = forms.CharField(
-        label='Confirmez le mot de passe',
-        widget=forms.PasswordInput(attrs={'placeholder': 'Confirme ton mot de passe'}),
+        label="Confirmez le mot de passe",
+        widget=forms.PasswordInput(attrs={"placeholder": "Confirme ton mot de passe"}),
         strip=False,
     )
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
+        email = self.cleaned_data.get("email")
         if Account.objects.filter(email=email).exists():
             raise forms.ValidationError("Un compte avec cet email existe déjà.")
         return email
 
     def clean_password(self):
-        password = self.cleaned_data.get('password')
-        email = self.cleaned_data.get('email')
+        password = self.cleaned_data.get("password")
+        email = self.cleaned_data.get("email")
         password_validation.validate_password(password, email)
         return password
 
     def clean(self):
         cleaned_data = super().clean()
-        password = cleaned_data.get('password')
-        password_confirm = cleaned_data.get('password_confirm')
+        password = cleaned_data.get("password")
+        password_confirm = cleaned_data.get("password_confirm")
 
         if password and password_confirm:
             if password != password_confirm:
@@ -122,51 +147,51 @@ class SignupForm(forms.Form):
 
 class AddPresenceForm(forms.Form):
     persons = forms.ModelMultipleChoiceField(
-        queryset=Person.objects.all().order_by('last_name', 'first_name'),
-        label='Personnes',
+        queryset=Person.objects.all().order_by("last_name", "first_name"),
+        label="Personnes",
         widget=forms.MultipleHiddenInput,
     )
     start_date = forms.DateField(
         label="Date d'arrivée",
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        widget=forms.DateInput(attrs={"type": "date"}),
     )
     end_date = forms.DateField(
-        label='Date de départ',
-        widget=forms.DateInput(attrs={'type': 'date'}),
+        label="Date de départ",
+        widget=forms.DateInput(attrs={"type": "date"}),
     )
 
 
 class PresenceForm(forms.ModelForm):
     class Meta:
         model = PresencePSV
-        fields = ['person', 'start_date', 'end_date']
+        fields = ["person", "start_date", "end_date"]
         widgets = {
-            'start_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
-            'end_date': forms.DateInput(attrs={'type': 'date'}, format='%Y-%m-%d'),
+            "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
 
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ['name', 'address', 'gps_coordinates', 'photo']
+        fields = ["name", "address", "gps_coordinates", "photo"]
 
 
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ['name', 'address', 'gps_coordinates', 'photo']
+        fields = ["name", "address", "gps_coordinates", "photo"]
 
 
 class BulkAccountCreateForm(forms.Form):
     emails = forms.CharField(
-        label='Adresses email',
-        widget=forms.Textarea(attrs={'rows': 8, 'placeholder': 'Une adresse email par ligne'}),
-        help_text='Entrez une adresse email par ligne.',
+        label="Adresses email",
+        widget=forms.Textarea(attrs={"rows": 8, "placeholder": "Une adresse email par ligne"}),
+        help_text="Entrez une adresse email par ligne.",
     )
 
     def clean_emails(self):
-        raw = self.cleaned_data.get('emails', '')
+        raw = self.cleaned_data.get("emails", "")
         lines = [line.strip() for line in raw.splitlines() if line.strip()]
         if not lines:
             raise forms.ValidationError("Veuillez saisir au moins une adresse email.")
@@ -185,12 +210,12 @@ class BulkAccountCreateForm(forms.Form):
 
 class ForcedPasswordChangeForm(forms.Form):
     new_password = forms.CharField(
-        label='Nouveau mot de passe',
+        label="Nouveau mot de passe",
         strip=False,
         widget=forms.PasswordInput,
     )
     new_password_confirm = forms.CharField(
-        label='Confirmez le nouveau mot de passe',
+        label="Confirmez le nouveau mot de passe",
         strip=False,
         widget=forms.PasswordInput,
     )
@@ -200,14 +225,14 @@ class ForcedPasswordChangeForm(forms.Form):
         super().__init__(*args, **kwargs)
 
     def clean_new_password(self):
-        password = self.cleaned_data.get('new_password')
+        password = self.cleaned_data.get("new_password")
         password_validation.validate_password(password, self.user)
         return password
 
     def clean(self):
         cleaned_data = super().clean()
-        p1 = cleaned_data.get('new_password')
-        p2 = cleaned_data.get('new_password_confirm')
+        p1 = cleaned_data.get("new_password")
+        p2 = cleaned_data.get("new_password_confirm")
         if p1 and p2 and p1 != p2:
             raise forms.ValidationError("Les mots de passe ne correspondent pas.")
         return cleaned_data

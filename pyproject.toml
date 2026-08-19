@@ -1,6 +1,6 @@
 [project]
 name = "famille-busson"
-version = "0.2.7"
+version = "0.3.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -33,6 +33,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pre-commit>=4.6.2",
+    "ruff>=0.16.3",
+    "ty>=0.0.72",
 ]
 docs = [
     "mkdocs>=1.6.1",
@@ -59,3 +61,36 @@ omit = ["*/migrations/*", "*/tests/*", "manage.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = false
+
+[tool.ruff]
+target-version = "py313"
+line-length = 119
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "DJ"]
+ignore = [
+    # null=True on string fields is pervasive in the existing schema; fixing it
+    # means a data migration (NULL -> ''), which is a deliberate follow-up, not
+    # a lint autofix.
+    "DJ001",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# pytest fixture re-export idiom: importing a fixture by name so pytest picks
+# it up, then shadowing that name as a parameter in another fixture, looks
+# like a redefinition to pyflakes but is the documented cross-conftest pattern.
+"**/conftest.py" = ["F811"]
+
+[tool.ty.environment]
+python-version = "3.13"
+
+[tool.ty.rules]
+# Django's descriptor-based fields (Manager, FieldFile, IntegerField/BooleanField
+# instance access, etc.) don't match their declared class-level types without
+# django-stubs, which ty does not yet support -- these rules would otherwise be
+# near-100% false positives on any Django model/view.
+unresolved-attribute = "warn"
+invalid-assignment = "warn"
+unsupported-operator = "warn"
+no-matching-overload = "warn"

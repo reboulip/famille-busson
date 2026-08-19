@@ -1,18 +1,17 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from publications.models import Attachment, BlogPost, Comment
-
 from annuaire.tests.conftest import (  # noqa: F401 — re-exported as fixtures
-    client,
     account,
-    person,
+    auth_client,
+    client,
     other_account,
     other_person,
-    auth_client,
+    person,
     staff_account,
     staff_client,
 )
+from publications.models import Attachment, BlogPost, Comment
 
 
 @pytest.fixture
@@ -25,7 +24,9 @@ def blog_post(db, person):
 @pytest.fixture
 def bc_post(db, person):
     post = BlogPost.objects.create(
-        title="Annonce BC", body="Une annonce Busson connection.", post_type='BC',
+        title="Annonce BC",
+        body="Une annonce Busson connection.",
+        post_type="BC",
     )
     post.authors.add(person)
     return post
@@ -46,9 +47,9 @@ def comment(db, blog_post, person):
 @pytest.fixture
 def image_attachment(db, blog_post):
     uploaded = SimpleUploadedFile(
-        name='photo.png',
-        content=b'\x89PNG\r\n\x1a\nfake-png-bytes',
-        content_type='image/png',
+        name="photo.png",
+        content=b"\x89PNG\r\n\x1a\nfake-png-bytes",
+        content_type="image/png",
     )
     return Attachment.objects.create(post=blog_post, file=uploaded, caption="Une image")
 
@@ -56,8 +57,8 @@ def image_attachment(db, blog_post):
 @pytest.fixture
 def pdf_attachment(db, blog_post):
     uploaded = SimpleUploadedFile(
-        name='doc.pdf',
-        content=b'%PDF-fake',
-        content_type='application/pdf',
+        name="doc.pdf",
+        content=b"%PDF-fake",
+        content_type="application/pdf",
     )
     return Attachment.objects.create(post=blog_post, file=uploaded, caption="Un PDF")

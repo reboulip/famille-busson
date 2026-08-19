@@ -1,7 +1,9 @@
 import datetime
+
 import pytest
 from django.test import Client
-from annuaire.models import Account, Person, Chalet, PresencePSV, Relation
+
+from annuaire.models import Account, Chalet, Person, PresencePSV
 
 
 @pytest.fixture

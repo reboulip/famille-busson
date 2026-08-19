@@ -9,7 +9,7 @@ from publications.models import Attachment, BlogPost, Comment
 def test_attachment_marks_image_extensions(blog_post, filename):
     attachment = Attachment.objects.create(
         post=blog_post,
-        file=SimpleUploadedFile(filename, b'bytes'),
+        file=SimpleUploadedFile(filename, b"bytes"),
     )
     assert attachment.is_image is True
 
@@ -19,7 +19,7 @@ def test_attachment_marks_image_extensions(blog_post, filename):
 def test_attachment_marks_non_image_extensions(blog_post, filename):
     attachment = Attachment.objects.create(
         post=blog_post,
-        file=SimpleUploadedFile(filename, b'bytes'),
+        file=SimpleUploadedFile(filename, b"bytes"),
     )
     assert attachment.is_image is False
 
@@ -31,7 +31,7 @@ def test_blogpost_str_returns_title(blog_post):
 
 @pytest.mark.django_db
 def test_blogpost_default_type_is_normal(blog_post):
-    assert blog_post.post_type == 'NORMAL'
+    assert blog_post.post_type == "NORMAL"
 
 
 @pytest.mark.django_db
@@ -59,4 +59,4 @@ def test_comment_str_handles_anonymous(db, blog_post):
 
 @pytest.mark.django_db
 def test_attachment_filename_property(image_attachment):
-    assert image_attachment.filename.endswith('.png')
+    assert image_attachment.filename.endswith(".png")

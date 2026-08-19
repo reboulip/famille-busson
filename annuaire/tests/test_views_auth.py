@@ -1,34 +1,47 @@
 import pytest
 from django.urls import reverse
-from annuaire.models import Account, Person
 
+from annuaire.models import Account, Person
 
 # ---------------------------------------------------------------------------
 # home
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
-def test_home_accessible_unauthenticated(client):
+def test_home_requires_login(client):
     response = client.get(reverse("home"))
-    assert response.status_code == 200
+    assert response.status_code == 302
+    assert reverse("login") in response["Location"]
 
 
 @pytest.mark.django_db
-def test_home_uses_correct_template(client):
-    response = client.get(reverse("home"))
+def test_home_uses_correct_template(auth_client):
+    response = auth_client.get(reverse("home"))
     assert "annuaire/home.html" in [t.name for t in response.templates]
 
 
 @pytest.mark.django_db
-def test_home_context_has_recent_persons(client, person):
-    response = client.get(reverse("home"))
+def test_home_context_has_recent_persons(auth_client, person):
+    response = auth_client.get(reverse("home"))
     assert "recent_persons" in response.context
     assert person in response.context["recent_persons"]
+
+
+@pytest.mark.django_db
+def test_login_post_valid_honors_next_redirect(client, person):
+    response = client.post(
+        reverse("login") + "?next=" + reverse("directory"),
+        {"username": "alice@example.com", "password": "testpass123!"},
+    )
+    assert response.status_code == 302
+    assert response["Location"] == reverse("directory")
 
 
 # ---------------------------------------------------------------------------
 # CustomLoginView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_login_get_returns_200(client):
@@ -66,6 +79,7 @@ def test_already_authenticated_user_redirected(auth_client):
 # ---------------------------------------------------------------------------
 # SignupView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_signup_get_returns_200(client):

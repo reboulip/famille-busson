@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import datetime
 import random
-from io import BytesIO
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -23,30 +22,69 @@ from django.db import transaction
 from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
 from publications.models import Attachment, BlogPost, Comment
 
-
 FIRST_NAMES = [
-    "Alice", "Antoine", "Baptiste", "Camille", "Claire", "Élise", "Émile",
-    "Étienne", "Fanny", "Gabriel", "Hugo", "Inès", "Julien", "Laura",
-    "Lucas", "Manon", "Margaux", "Mathieu", "Nina", "Olivier", "Paul",
-    "Pauline", "Quentin", "Romain", "Sophie", "Théo", "Valentine",
-    "Victor", "Yann", "Zoé",
+    "Alice",
+    "Antoine",
+    "Baptiste",
+    "Camille",
+    "Claire",
+    "Élise",
+    "Émile",
+    "Étienne",
+    "Fanny",
+    "Gabriel",
+    "Hugo",
+    "Inès",
+    "Julien",
+    "Laura",
+    "Lucas",
+    "Manon",
+    "Margaux",
+    "Mathieu",
+    "Nina",
+    "Olivier",
+    "Paul",
+    "Pauline",
+    "Quentin",
+    "Romain",
+    "Sophie",
+    "Théo",
+    "Valentine",
+    "Victor",
+    "Yann",
+    "Zoé",
 ]
 
 LAST_NAMES = [
-    "Busson", "Bernard", "Dubois", "Lefevre", "Martin", "Moreau",
-    "Petit", "Robert", "Roux", "Simon",
+    "Busson",
+    "Bernard",
+    "Dubois",
+    "Lefevre",
+    "Martin",
+    "Moreau",
+    "Petit",
+    "Robert",
+    "Roux",
+    "Simon",
 ]
 
 CHALET_NAMES = [
-    "Chalet des Cimes", "Chalet du Lac", "Chalet des Mélèzes",
-    "Chalet Edelweiss", "Chalet du Vieux Pont", "Chalet Belle Vue",
+    "Chalet des Cimes",
+    "Chalet du Lac",
+    "Chalet des Mélèzes",
+    "Chalet Edelweiss",
+    "Chalet du Vieux Pont",
+    "Chalet Belle Vue",
     "Chalet des Aiguilles",
 ]
 
 CHALET_ADDRESSES = [
-    "Route des Alpes, Verbier", "Chemin du Lac 7, Annecy",
-    "Rue des Mélèzes 3, Megève", "Place de la Mairie, Chamonix",
-    "Route du Col 12, Tignes", "Avenue du Mont-Blanc, Courchevel",
+    "Route des Alpes, Verbier",
+    "Chemin du Lac 7, Annecy",
+    "Rue des Mélèzes 3, Megève",
+    "Place de la Mairie, Chamonix",
+    "Route du Col 12, Tignes",
+    "Avenue du Mont-Blanc, Courchevel",
     "Sentier des Cascades, Méribel",
 ]
 
@@ -124,11 +162,14 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--no-clear', action='store_true',
+            "--no-clear",
+            action="store_true",
             help="Don't wipe existing data before populating.",
         )
         parser.add_argument(
-            '--seed', type=int, default=42,
+            "--seed",
+            type=int,
+            default=42,
             help="Random seed (default: 42) for reproducible runs.",
         )
 
@@ -150,13 +191,15 @@ class Command(BaseCommand):
         self._create_comments(posts, persons)
 
         regular = persons[0].account
-        self.stdout.write(self.style.SUCCESS(
-            "\nDone. Test credentials:"
-            f"\n  · Admin (superuser):     {admin.email} / admin"
-            f"\n  · Staff (non-superuser): {staff.email} / staff"
-            f"\n  · Regular user:          {regular.email} / dev"
-            "\n(All other regular accounts also use password 'dev'.)"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                "\nDone. Test credentials:"
+                f"\n  · Admin (superuser):     {admin.email} / admin"
+                f"\n  · Staff (non-superuser): {staff.email} / staff"
+                f"\n  · Regular user:          {regular.email} / dev"
+                "\n(All other regular accounts also use password 'dev'.)"
+            )
+        )
 
     # ------------------------------------------------------------------ helpers
 
@@ -177,7 +220,8 @@ class Command(BaseCommand):
             self.stdout.write(f"  · admin {admin.email} already exists, skipping")
         except Account.DoesNotExist:
             admin = Account.objects.create_superuser(
-                email="admin@example.com", password="admin",
+                email="admin@example.com",
+                password="admin",
             )
             admin.must_change_password = False
             admin.save()
@@ -192,14 +236,17 @@ class Command(BaseCommand):
             self.stdout.write(f"  · staff {staff.email} already exists, skipping")
         except Account.DoesNotExist:
             staff = Account.objects.create_user(
-                email="staff@example.com", password="staff", is_staff=True,
+                email="staff@example.com",
+                password="staff",
+                is_staff=True,
             )
             staff.must_change_password = False
             staff.save()
             # Give the staff member a Person profile too, so they can author posts
             # and comments like a normal member.
             Person.objects.create(
-                first_name="Sandrine", last_name="Staff",
+                first_name="Sandrine",
+                last_name="Staff",
                 email="staff@example.com",
                 description="Membre du personnel (compte de test, non-superuser).",
             )
@@ -232,18 +279,22 @@ class Command(BaseCommand):
                 random.randint(1, 28),
             )
             person = Person.objects.create(
-                first_name=first, last_name=last, email=email,
+                first_name=first,
+                last_name=last,
+                email=email,
                 phone_number=f"+33 6 {random.randint(10, 99)} {random.randint(10, 99)} "
-                             f"{random.randint(10, 99)} {random.randint(10, 99)}",
+                f"{random.randint(10, 99)} {random.randint(10, 99)}",
                 postal_address=f"{random.randint(1, 99)} rue de la République, "
-                               f"{random.choice(['Lyon', 'Paris', 'Annecy', 'Grenoble'])}",
+                f"{random.choice(['Lyon', 'Paris', 'Annecy', 'Grenoble'])}",
                 birth_date=birth_date,
-                description=random.choice([
-                    "Passionné de randonnée et de bonne cuisine.",
-                    "Adore les longues soirées au coin du feu.",
-                    "Skieur du dimanche, lecteur tous les jours.",
-                    "",
-                ]),
+                description=random.choice(
+                    [
+                        "Passionné de randonnée et de bonne cuisine.",
+                        "Adore les longues soirées au coin du feu.",
+                        "Skieur du dimanche, lecteur tous les jours.",
+                        "",
+                    ]
+                ),
             )
             # Create the account separately so the signal links it to the person.
             account = Account.objects.create_user(email=email, password="dev")
@@ -258,8 +309,7 @@ class Command(BaseCommand):
         names = random.sample(CHALET_NAMES, k=self.N_CHALETS)
         addresses = random.sample(CHALET_ADDRESSES, k=self.N_CHALETS)
         return [
-            Chalet.objects.create(name=name, address=address)
-            for name, address in zip(names, addresses)
+            Chalet.objects.create(name=name, address=address) for name, address in zip(names, addresses, strict=True)
         ]
 
     def _create_presences(self, persons: list[Person], chalets: list[Chalet]):
@@ -278,10 +328,7 @@ class Command(BaseCommand):
     def _create_relations(self, persons: list[Person]):
         """Create directional Relations; the post-save signal auto-creates the
         inverse, so DB row count is roughly doubled."""
-        self.stdout.write(
-            f"Creating {self.N_RELATIONS} directional relations "
-            f"(signal will mirror them)…"
-        )
+        self.stdout.write(f"Creating {self.N_RELATIONS} directional relations (signal will mirror them)…")
         seen_pairs: set[tuple[int, int]] = set()
         created = 0
         attempts = 0
@@ -297,12 +344,15 @@ class Command(BaseCommand):
             start_date = None
             if rel_type in (0, 1):
                 start_date = datetime.date(
-                    random.randint(1980, 2020), random.randint(1, 12),
+                    random.randint(1980, 2020),
+                    random.randint(1, 12),
                     random.randint(1, 28),
                 )
             Relation.objects.create(
-                person1=p1, person2=p2,
-                relationship_type=rel_type, start_date=start_date,
+                person1=p1,
+                person2=p2,
+                relationship_type=rel_type,
+                start_date=start_date,
             )
             created += 1
 
@@ -313,12 +363,12 @@ class Command(BaseCommand):
         # If we want more posts than unique titles, top up by suffixing.
         while len(titles) < self.N_POSTS:
             titles.append(f"{random.choice(POST_TITLES)} (suite)")
-        for i, title in enumerate(titles):
+        for title in titles:
             body_parts = random.sample(POST_BODIES, k=random.randint(1, 3))
             post = BlogPost.objects.create(
                 title=title,
                 body="\n\n".join(body_parts),
-                post_type=random.choices(['NORMAL', 'BC'], weights=[3, 1])[0],
+                post_type=random.choices(["NORMAL", "BC"], weights=[3, 1])[0],
             )
             n_authors = random.choices([1, 2, 3], weights=[6, 3, 1])[0]
             post.authors.set(random.sample(persons, k=n_authors))
@@ -330,14 +380,11 @@ class Command(BaseCommand):
         # ~2/3 images, ~1/3 non-image files.
         n_images = (self.N_ATTACHMENTS * 2) // 3
         n_files = self.N_ATTACHMENTS - n_images
-        targets = (
-            [('image', i) for i in range(n_images)]
-            + [('file', i) for i in range(n_files)]
-        )
+        targets = [("image", i) for i in range(n_images)] + [("file", i) for i in range(n_files)]
         random.shuffle(targets)
         for kind, idx in targets:
             post = random.choice(posts)
-            if kind == 'image':
+            if kind == "image":
                 name = f"photo_{post.pk}_{idx}.png"
                 content = ContentFile(TINY_PNG, name=name)
                 caption = random.choice(["", "Vue depuis le balcon", "Souvenir", "Tous ensemble"])

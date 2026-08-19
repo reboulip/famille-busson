@@ -47,10 +47,12 @@
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
 
 ## 5. Signals — auto-sync logic (do not bypass)
-Three signals are registered in `annuaire/signals.py` via `AnnuaireConfig.ready()`:
+Signals are registered via each app's `AppConfig.ready()`: `annuaire/signals.py` via
+`DirectoryConfig.ready()`, `publications/signals.py` via `PublicationsConfig.ready()`.
 1. **`Account` post-save:** when a new `Account` is created, finds a `Person` with the same email and links them via the `OneToOneField` (`Person.account`). Creating an `Account` manually in tests must account for this.
 2. **`Relation` post-save:** automatically creates or updates the inverse `Relation` (parent ↔ enfant, conjoint ↔ conjoint). **Never create inverse `Relation` objects manually.**
 3. **`Relation` post-delete:** automatically deletes the matching inverse `Relation` too. Deleting a `Relation` directly (e.g. `Relation.objects.filter(...).delete()`), not just through `DeleteRelationView`, removes both sides.
+4. **Orphaned file cleanup:** `annuaire/file_cleanup.py`'s `register_file_cleanup(model, *field_names)` connects `post_delete` + `pre_save` receivers that delete the file behind a `FileField`/`ImageField` when its row is deleted, or when the field is replaced/cleared. Registered for `Person.profile_photo`, `Chalet.photo` (both in `annuaire/signals.py`) and `publications.Attachment.file` (in `publications/signals.py`).
 
 ## 6. Frontend — Bootstrap 5 / Crispy Forms
 Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMPLATE_PACK = 'bootstrap5'`). Use Bootstrap 5 classes in all templates. Do not introduce Bootstrap 4-only patterns (`form-row`, `custom-select`, etc.).
@@ -96,15 +98,25 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 
 ## 9. Toolchain
 - **Test command:** `uv run --group test pytest` (see `/test-select` and `dev-commands`).
-- **Full test suite runtime:** ~1490s (~25 min) for 214 tests (measured 2026-08-15,
-  no-cov) — **abnormally slow for this test count; likely a real bug (hanging
-  connection, sleep, or network call in a fixture/test), not just test-count growth.**
-  Re-measure after investigating rather than accepting this as the new normal.
-  `/test-select` uses this figure for its cheap-suite escape hatch — well past the
-  ~120s threshold, so it will always compute a scoped subset here rather than just
-  running everything.
-- No linter/formatter is configured yet (no ruff/black/flake8 in `pyproject.toml`) —
-  follow PEP 8 by hand per section 4 until one is added.
+- **Full test suite runtime:** ~12s for 237 tests (measured 2026-08-18, with cov). The
+  previous ~1490s figure (2026-08-15) was caused by Django's default PBKDF2 password
+  hasher — deliberately slow for production security — running on every
+  `Account.objects.create_user(...)` call across the suite, worst-case in
+  `test_management_populate.py` (~22 accounts hashed per test, 13 tests). Fixed via a
+  root `conftest.py` `pytest_configure` hook that swaps in `MD5PasswordHasher` for the
+  test session only; production hashing is untouched. `/test-select`'s cheap-suite
+  escape hatch (~120s threshold) now applies normally — the full suite is fast enough
+  to just run outright in most cases.
+- **Lint / format / type check:** `ruff` (check + format) and `ty` (type checker), both
+  configured in `pyproject.toml` (`[tool.ruff]`, `[tool.ty]`) and run via pre-commit
+  (`.pre-commit-config.yaml`, installed with `uv run pre-commit install`) and in CI
+  (`.github/workflows/tests.yml`'s `lint` job). `ty` runs with `--exit-zero-on-warning` —
+  it only gates on error-level diagnostics, because Django's descriptor-based fields
+  (`Manager`, `FieldFile`, etc.) trigger near-100% false-positive `unresolved-attribute`/
+  `invalid-assignment`/`unsupported-operator` warnings without `django-stubs`, which `ty`
+  doesn't yet support. `DJ001` (`null=True` on string fields) is deliberately excluded
+  from ruff's ruleset — the existing schema uses it pervasively and fixing it means a data
+  migration, not a lint autofix.
 
 ## 10. Releases
 famille-busson is a continuously-deployed web app, not a published package — there's no

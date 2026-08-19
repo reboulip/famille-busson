@@ -3,6 +3,59 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `release-workflow` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.3.0
+
+### Security
+- **Replace plaintext password in the account creation/reset email** —
+  `BulkAccountCreateView._send_account_credentials_email` sent the temporary password in
+  plaintext by email. Replaced with a single-use, time-limited password reset link
+  (`django.contrib.auth.tokens.PasswordResetTokenGenerator`-based), modeled on Django's
+  standard `django.contrib.auth` flow.
+- **Require authentication for the home page** — the `home` view (`annuaire/views.py`)
+  had no `@login_required`, making it visible to unauthenticated users; now restricted
+  like the rest of the app. [#34]
+- **Self-service "mot de passe oublié" flow** — added Django's `PasswordResetView`/
+  `PasswordResetDoneView` (project templates, reusing the `password_reset_confirm` URL
+  name) so a user who forgets their password can request a new link themselves instead
+  of relying on staff re-running the bulk account tool.
+- **Restrict access to uploaded media files** — `/media/<path>` was served with no
+  authentication check (`famille_busson/urls.py`), so `Person.profile_photo`,
+  `Chalet.photo`, and blog `Attachment` files stayed readable by anyone with the URL.
+  Added an authenticated serve view gating access the same way every other view is
+  gated.
+- **Adopt `LoginRequiredMiddleware` as defense-in-depth** — Django's built-in middleware
+  (5.1+) that requires an explicit `@login_not_required` opt-out on every public view,
+  so a future new view can't silently repeat the home-page bug. Opted out
+  `CustomLoginView`, `SignupView`, `healthz`, the root redirect, and the media serve
+  view.
+
+### Frontend / UX
+- **Responsive design for mobile navigation** — replaced the always-visible custom
+  `.sidebar` in `annuaire/templates/annuaire/base.html` with a Bootstrap 5 offcanvas
+  pattern: vendored `bootstrap.bundle.min.js`, added a hamburger toggle below the `lg`
+  breakpoint, added media queries to `main.css` so the desktop layout is unchanged above
+  it. [#31]
+- **Site favicon** — minimalistic SVG mountain-and-trees favicon, wired into
+  `base.html` (`<link rel="icon">`). [#33]
+
+### Annuaire — profile improvements
+- **Address picker for a person's address** — autocomplete field in the profile
+  create/update views using France's free BAN API (api-adresse.data.gouv.fr, no key
+  required): user types, candidates are returned, selecting one saves a standard
+  one-liner address format. [#32]
+
+### Publications — future improvements
+- **Multi-author picker** — generalized `person_picker.js` (`annuaire/static/js/`) from
+  a single `document.querySelector` instance to `querySelectorAll`-based support for
+  multiple instances, and extracted the duplicated picker markup (previously
+  copy-pasted across 4 templates, including `BlogPostForm.authors`) into a shared
+  template include.
+- **Orphaned file cleanup** — Django doesn't delete files under `MEDIA_ROOT` when a row
+  referencing them is deleted. Fixed for `Person.profile_photo`, `Chalet.photo`, and
+  `publications.Attachment.file` via `annuaire/file_cleanup.py`'s
+  `register_file_cleanup(model, *field_names)`, connected as `post_delete` + `pre_save`
+  receivers.
+
 ## Backfilled 2026-08-16 (shipped before this file existed)
 
 The entries below were already implemented and released prior to `docs/` being set up,

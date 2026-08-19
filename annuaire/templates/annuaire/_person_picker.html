@@ -1,0 +1,12 @@
+<div class="person-picker"
+     data-search-url="{% url 'person-search-ajax' %}"
+     {% if field_name %}data-field-name="{{ field_name }}"{% endif %}
+     {% if single_select %}data-single-select="true"{% endif %}
+     {% if initial_json %}data-initial-selection='{{ initial_json|escape }}'{% endif %}>
+    <input type="text" id="{{ input_id }}" class="form-control person-picker-input"
+           placeholder="{{ placeholder|default:'Tapez au moins 2 lettres pour chercher…' }}"
+           autocomplete="off" aria-label="{{ aria_label|default:'Chercher une personne' }}">
+    <ul class="person-picker-results" role="listbox" hidden></ul>
+    <div class="person-picker-selected mt-2" aria-live="polite"></div>
+    <div class="person-picker-hidden-inputs"></div>
+</div>

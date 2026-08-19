@@ -1,12 +1,28 @@
 body {
-    display: flex;
     font-family: 'Helvetica';
 }
 
+.layout {
+    display: flex;
+}
+
 .sidebar {
-    width: 200px;
     background-color: #f4f4f4;
     padding: 15px;
+}
+
+@media (min-width: 992px) {
+    .sidebar {
+        width: 200px;
+        flex-shrink: 0;
+    }
+}
+
+/* .navbar-toggler-icon's background-image reads a custom property that
+   Bootstrap only defines on .navbar -- our toggle button has no .navbar
+   ancestor, so the icon glyph is invisible without setting it directly. */
+[data-bs-toggle="offcanvas"] .navbar-toggler-icon {
+    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
 }
 
 .sidebar ul {
@@ -572,4 +588,47 @@ h2 {
 
 .presence-past {
     color: #6c757d;
+}
+
+.address-picker {
+    position: relative;
+}
+
+.address-picker-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0 0 4px 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.address-picker-result,
+.address-picker-empty {
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.address-picker-context {
+    display: block;
+    color: #6c757d;
+}
+
+.address-picker-empty {
+    color: #6c757d;
+    cursor: default;
+    font-style: italic;
+}
+
+.address-picker-result:hover,
+.address-picker-result.highlighted {
+    background: #e9ecef;
 }

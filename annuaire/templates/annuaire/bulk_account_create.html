@@ -12,7 +12,6 @@
         <tr>
             <th>Email</th>
             <th>Statut</th>
-            <th>Mot de passe temporaire</th>
             <th>Email</th>
         </tr>
     </thead>
@@ -21,19 +20,18 @@
         <tr class="{% if row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
             <td>{{ row.email }}</td>
             <td>{% if row.status == 'created' %}Créé{% else %}Réinitialisé{% endif %}</td>
-            <td><code>{{ row.temp_password }}</code></td>
             <td>
                 {% if row.email_sent %}
                     <span class="badge text-bg-success">Envoyé</span>
                 {% else %}
                     <span class="badge text-bg-danger">Échec</span>
+                    <br><small>Lien à transmettre manuellement : <code>{{ row.reset_url }}</code></small>
                 {% endif %}
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<p class="text-muted small">⚠️ Notez ces mots de passe maintenant, ils ne seront plus affichés.</p>
 <hr>
 <h2 class="mt-4">Créer d'autres comptes</h2>
 {% endif %}

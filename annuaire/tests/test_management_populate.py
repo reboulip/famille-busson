@@ -1,13 +1,13 @@
-import pytest
 from io import StringIO
 
+import pytest
 from django.core.management import call_command
 
 from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
 from publications.models import Attachment, BlogPost, Comment
 
-
 # ------------------------------------------------------------------ helpers
+
 
 @pytest.fixture(autouse=True)
 def use_tmp_media(tmp_path, settings):
@@ -22,6 +22,7 @@ def run_populate(**kwargs):
 
 
 # ------------------------------------------------------------------ counts
+
 
 @pytest.mark.django_db
 class TestPopulateDevDataCounts:
@@ -49,6 +50,7 @@ class TestPopulateDevDataCounts:
 
 
 # ------------------------------------------------------------------ account properties
+
 
 @pytest.mark.django_db
 class TestPopulateDevDataAccounts:
@@ -80,14 +82,13 @@ class TestPopulateDevDataAccounts:
 
     def test_regular_accounts_use_dev_password(self):
         run_populate()
-        regular = Account.objects.exclude(
-            email__in=["admin@example.com", "staff@example.com"]
-        ).first()
+        regular = Account.objects.exclude(email__in=["admin@example.com", "staff@example.com"]).first()
         assert regular.check_password("dev")
         assert not regular.must_change_password
 
 
 # ------------------------------------------------------------------ flags
+
 
 @pytest.mark.django_db
 class TestPopulateDevDataFlags:
@@ -110,9 +111,7 @@ class TestPopulateDevDataFlags:
 
     def test_no_clear_skips_existing_admin(self):
         # Pre-create admin so it exists before the command runs
-        existing = Account.objects.create_superuser(
-            email="admin@example.com", password="admin"
-        )
+        existing = Account.objects.create_superuser(email="admin@example.com", password="admin")
         run_populate(no_clear=True)
         # Admin must not be duplicated
         assert Account.objects.filter(email="admin@example.com").count() == 1
@@ -120,22 +119,16 @@ class TestPopulateDevDataFlags:
         assert Account.objects.get(email="admin@example.com").pk == existing.pk
 
     def test_no_clear_skips_existing_staff(self):
-        existing = Account.objects.create_user(
-            email="staff@example.com", password="staff", is_staff=True
-        )
+        existing = Account.objects.create_user(email="staff@example.com", password="staff", is_staff=True)
         run_populate(no_clear=True)
         assert Account.objects.filter(email="staff@example.com").count() == 1
         assert Account.objects.get(email="staff@example.com").pk == existing.pk
 
     def test_seed_reproducibility(self):
         run_populate(seed=99)
-        names_first = sorted(
-            Person.objects.values_list("first_name", "last_name")
-        )
+        names_first = sorted(Person.objects.values_list("first_name", "last_name"))
         run_populate(seed=99)  # clears and repopulates with same seed
-        names_second = sorted(
-            Person.objects.values_list("first_name", "last_name")
-        )
+        names_second = sorted(Person.objects.values_list("first_name", "last_name"))
         assert names_first == names_second
 
     def test_different_seeds_produce_different_data(self):

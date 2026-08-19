@@ -3,13 +3,13 @@ from django.urls import reverse
 
 from publications.models import Comment
 
-
 LOGIN_URL = "/annuaire/login/"
 
 
 # ---------------------------------------------------------------------------
 # Comment creation (via BlogPostDetailView POST)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_comment_post_requires_login(client, blog_post):
@@ -36,6 +36,7 @@ def test_comment_post_creates_comment_with_request_user_profile(auth_client, blo
 @pytest.mark.django_db
 def test_comment_post_redirects_user_without_profile_to_profile_create(client, blog_post):
     from annuaire.models import Account
+
     Account.objects.create_user(email="profileless@example.com", password="testpass123!")
     client.login(username="profileless@example.com", password="testpass123!")
     response = client.post(
@@ -60,6 +61,7 @@ def test_comment_post_invalid_re_renders_detail(auth_client, blog_post):
 # ---------------------------------------------------------------------------
 # CommentDeleteView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_comment_delete_requires_login(client, comment):

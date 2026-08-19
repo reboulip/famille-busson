@@ -13,24 +13,34 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpResponse
-from django.urls import path, include
-from django.views.generic.base import RedirectView
-from django.views.static import serve as static_serve
-from famille_busson import settings
+from django.shortcuts import redirect
+from django.urls import include, path
+
+from annuaire.views import media_serve
 
 
+@login_not_required
 def healthz(request):
-    return HttpResponse('ok')
+    return HttpResponse("ok")
+
+
+@login_not_required
+def root_redirect(request):
+    return redirect("home")
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('healthz', healthz),
-    path('annuaire/', include('annuaire.urls')),
-    path('publications/', include('publications.urls')),
-    path('', RedirectView.as_view(pattern_name='home')),
+    path("admin/", admin.site.urls),
+    path("healthz", healthz),
+    path("annuaire/", include("annuaire.urls")),
+    path("publications/", include("publications.urls")),
+    path("", root_redirect),
     # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
-    path('media/<path:path>', static_serve, {'document_root': settings.MEDIA_ROOT}),
+    # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)
+    # must not be readable by anyone who guesses/obtains the URL.
+    path("media/<path:path>", media_serve),
 ]

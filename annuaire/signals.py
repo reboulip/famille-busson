@@ -1,6 +1,11 @@
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
-from .models import Account, Person, Relation
+
+from .file_cleanup import register_file_cleanup
+from .models import Account, Chalet, Person, Relation
+
+register_file_cleanup(Person, "profile_photo")
+register_file_cleanup(Chalet, "photo")
 
 
 @receiver(post_save, sender=Account)
@@ -39,6 +44,4 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
 
 @receiver(post_delete, sender=Relation)
 def delete_inverse_relation(sender, instance: Relation, **kwargs):
-    Relation.objects.filter(
-        person1=instance.person2, person2=instance.person1
-    ).delete()
+    Relation.objects.filter(person1=instance.person2, person2=instance.person1).delete()

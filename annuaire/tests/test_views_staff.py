@@ -1,9 +1,10 @@
 import json
+
 import pytest
 from django.core import mail
 from django.urls import reverse
-from annuaire.models import Account
 
+from annuaire.models import Account
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -11,6 +12,7 @@ LOGIN_URL = "/annuaire/login/"
 # ---------------------------------------------------------------------------
 # BulkAccountCreateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_bulk_create_requires_login(client):
@@ -43,14 +45,14 @@ def test_bulk_create_creates_new_accounts(staff_client, db):
 
 
 @pytest.mark.django_db
-def test_bulk_create_sets_must_change_password(staff_client, db):
+def test_bulk_create_does_not_force_password_change(staff_client, db):
     staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
     account = Account.objects.get(email="new@example.com")
-    assert account.must_change_password is True
+    assert account.must_change_password is False
 
 
 @pytest.mark.django_db
-def test_bulk_create_temp_password_is_usable(staff_client, db):
+def test_bulk_create_password_is_usable_but_undisclosed(staff_client, db):
     staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
     account = Account.objects.get(email="new@example.com")
     assert account.has_usable_password()
@@ -62,7 +64,6 @@ def test_bulk_create_reset_existing_account(staff_client, account):
     staff_client.post(reverse("bulk-account-create"), {"emails": account.email})
     account.refresh_from_db()
     assert account.password != old_hash
-    assert account.must_change_password is True
 
 
 @pytest.mark.django_db
@@ -94,13 +95,22 @@ def test_bulk_create_invalid_email_shows_form_error(staff_client, db):
 
 
 @pytest.mark.django_db
-def test_bulk_create_sends_credentials_email_for_new_account(staff_client, db):
+def test_bulk_create_sends_reset_link_email_for_new_account(staff_client, db):
     response = staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
     assert len(mail.outbox) == 1
     sent = mail.outbox[0]
     assert sent.to == ["new@example.com"]
-    temp_password = response.context["results"][0]["temp_password"]
-    assert temp_password in sent.body
+    reset_url = response.context["results"][0]["reset_url"]
+    assert reset_url in sent.body
+
+
+@pytest.mark.django_db
+def test_bulk_create_never_puts_a_password_in_the_email(staff_client, db):
+    staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
+    account = Account.objects.get(email="new@example.com")
+    sent = mail.outbox[0]
+    assert account.password not in sent.body
+    assert "Mot de passe" not in sent.body
 
 
 @pytest.mark.django_db
@@ -117,7 +127,7 @@ def test_bulk_create_marks_results_email_sent(staff_client, db):
 
 
 @pytest.mark.django_db
-def test_bulk_create_email_failure_still_creates_account_and_shows_password(staff_client, db, monkeypatch):
+def test_bulk_create_email_failure_still_creates_account_and_shows_reset_link(staff_client, db, monkeypatch):
     import annuaire.views as annuaire_views
 
     def _raise(*args, **kwargs):
@@ -129,7 +139,7 @@ def test_bulk_create_email_failure_still_creates_account_and_shows_password(staf
     assert Account.objects.filter(email="new@example.com").exists()
     result = response.context["results"][0]
     assert result["email_sent"] is False
-    assert result["temp_password"]  # still shown on screen as a fallback
+    assert result["reset_url"]  # still shown on screen as a fallback
     msgs = [str(m) for m in response.context["messages"]]
     assert any("Échec de l'envoi" in m for m in msgs)
 
@@ -137,6 +147,7 @@ def test_bulk_create_email_failure_still_creates_account_and_shows_password(staf
 # ---------------------------------------------------------------------------
 # check_emails_ajax
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_check_emails_ajax_returns_existing(staff_client, account):

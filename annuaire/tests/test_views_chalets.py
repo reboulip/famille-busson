@@ -1,9 +1,10 @@
 import datetime
 import json
+
 import pytest
 from django.urls import reverse
-from annuaire.models import Person, PresencePSV
 
+from annuaire.models import Person, PresencePSV
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -11,6 +12,7 @@ LOGIN_URL = "/annuaire/login/"
 # ---------------------------------------------------------------------------
 # ChaletListView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_chalet_list_requires_login(client):
@@ -46,16 +48,23 @@ def test_chalet_list_context_has_presences_json(auth_client, presence):
 
 @pytest.mark.django_db
 def test_chalet_detail_context_has_presences_json_filtered_to_chalet(
-    auth_client, chalet, person, other_person,
+    auth_client,
+    chalet,
+    person,
+    other_person,
 ):
     PresencePSV.objects.create(
-        person=person, chalet=chalet,
-        start_date=datetime.date(2026, 7, 1), end_date=datetime.date(2026, 7, 5),
+        person=person,
+        chalet=chalet,
+        start_date=datetime.date(2026, 7, 1),
+        end_date=datetime.date(2026, 7, 5),
     )
     other_chalet = chalet.__class__.objects.create(name="Autre", address="X")
     PresencePSV.objects.create(
-        person=other_person, chalet=other_chalet,
-        start_date=datetime.date(2026, 8, 1), end_date=datetime.date(2026, 8, 5),
+        person=other_person,
+        chalet=other_chalet,
+        start_date=datetime.date(2026, 8, 1),
+        end_date=datetime.date(2026, 8, 5),
     )
     response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
     data = json.loads(response.context["presences_json"])
@@ -66,6 +75,7 @@ def test_chalet_detail_context_has_presences_json_filtered_to_chalet(
 # ---------------------------------------------------------------------------
 # ChaletDetailView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_chalet_detail_requires_login(client, chalet):
@@ -95,7 +105,8 @@ def test_chalet_detail_context_has_future_presences(auth_client, chalet, presenc
 @pytest.mark.django_db
 def test_chalet_detail_context_has_past_presence(auth_client, chalet, person):
     past = PresencePSV.objects.create(
-        person=person, chalet=chalet,
+        person=person,
+        chalet=chalet,
         start_date=datetime.date(2025, 1, 1),
         end_date=datetime.date(2025, 1, 14),
     )
@@ -106,9 +117,11 @@ def test_chalet_detail_context_has_past_presence(auth_client, chalet, person):
 @pytest.mark.django_db
 def test_chalet_detail_context_has_current_presence(auth_client, chalet, person):
     import datetime as dt
+
     today = dt.date.today()
     current = PresencePSV.objects.create(
-        person=person, chalet=chalet,
+        person=person,
+        chalet=chalet,
         start_date=today - dt.timedelta(days=1),
         end_date=today + dt.timedelta(days=1),
     )
@@ -125,6 +138,7 @@ def test_chalet_detail_context_has_presence_form(auth_client, chalet):
 # ---------------------------------------------------------------------------
 # AddPresenceView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_add_presence_requires_login(client, chalet):
@@ -178,28 +192,23 @@ def test_add_presence_invalid_post_redirects_with_error(auth_client, chalet):
 # UpdatePresenceView
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_update_presence_requires_login(client, chalet, presence):
-    response = client.get(
-        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = client.get(reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     assert response.status_code == 302
     assert LOGIN_URL in response["Location"]
 
 
 @pytest.mark.django_db
 def test_update_presence_get_returns_200(auth_client, chalet, presence):
-    response = auth_client.get(
-        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = auth_client.get(reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
 def test_update_presence_get_prefills_dates(auth_client, chalet, presence):
-    response = auth_client.get(
-        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = auth_client.get(reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     content = response.content.decode()
     assert f'value="{presence.start_date.isoformat()}"' in content
     assert f'value="{presence.end_date.isoformat()}"' in content
@@ -207,9 +216,7 @@ def test_update_presence_get_prefills_dates(auth_client, chalet, presence):
 
 @pytest.mark.django_db
 def test_update_presence_invalid_pk_returns_404(auth_client, chalet):
-    response = auth_client.get(
-        reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": 99999})
-    )
+    response = auth_client.get(reverse("presence-edit", kwargs={"pk": chalet.pk, "presence_pk": 99999}))
     assert response.status_code == 404
 
 
@@ -232,44 +239,38 @@ def test_update_presence_post_valid_updates_and_redirects(auth_client, chalet, p
 # DeletePresenceView
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_delete_presence_requires_login(client, chalet, presence):
-    response = client.post(
-        reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = client.post(reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     assert response.status_code == 302
     assert LOGIN_URL in response["Location"]
 
 
 @pytest.mark.django_db
 def test_delete_presence_get_redirects_to_chalet(auth_client, chalet, presence):
-    response = auth_client.get(
-        reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = auth_client.get(reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     assert response.status_code == 302
     assert reverse("chalet-detail", kwargs={"pk": chalet.pk}) in response["Location"]
 
 
 @pytest.mark.django_db
 def test_delete_presence_post_deletes_and_redirects(auth_client, chalet, presence):
-    response = auth_client.post(
-        reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk})
-    )
+    response = auth_client.post(reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": presence.pk}))
     assert response.status_code == 302
     assert not PresencePSV.objects.filter(pk=presence.pk).exists()
 
 
 @pytest.mark.django_db
 def test_delete_presence_invalid_pk_returns_404(auth_client, chalet):
-    response = auth_client.post(
-        reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": 99999})
-    )
+    response = auth_client.post(reverse("presence-delete", kwargs={"pk": chalet.pk, "presence_pk": 99999}))
     assert response.status_code == 404
 
 
 # ---------------------------------------------------------------------------
 # ChaletCreateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_chalet_create_requires_login(client):
@@ -293,6 +294,7 @@ def test_chalet_create_get_returns_200(staff_client):
 @pytest.mark.django_db
 def test_chalet_create_post_creates_chalet(staff_client, db):
     from annuaire.models import Chalet
+
     response = staff_client.post(
         reverse("chalet-create"),
         {"name": "Chalet Nouveau", "address": "Route du Col 12, Verbier"},
@@ -312,6 +314,7 @@ def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, db):
 # ---------------------------------------------------------------------------
 # ChaletUpdateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_chalet_update_requires_login(client, chalet):
@@ -373,6 +376,7 @@ def test_chalet_detail_can_edit_chalet_true_for_owner(auth_client, chalet, perso
 # person_search_ajax
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_person_search_requires_login(client):
     response = client.get(reverse("person-search-ajax"), {"q": "ali"})
@@ -428,6 +432,7 @@ def test_person_search_limits_to_ten(auth_client, db):
 # ChaletOwnersUpdateView
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.django_db
 def test_chalet_owners_edit_requires_login(client, chalet):
     response = client.get(reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}))
@@ -481,7 +486,8 @@ def test_chalet_owners_edit_post_replaces_owners(staff_client, chalet, person, o
 def test_chalet_owners_edit_post_empty_clears_owners(staff_client, chalet, person):
     chalet.owners.add(person)
     response = staff_client.post(
-        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}), {},
+        reverse("chalet-owners-edit", kwargs={"pk": chalet.pk}),
+        {},
     )
     assert response.status_code == 302
     assert chalet.owners.count() == 0

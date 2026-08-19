@@ -4,8 +4,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
-from publications.models import Attachment, BlogPost
-
+from publications.models import BlogPost
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -13,16 +12,17 @@ LOGIN_URL = "/annuaire/login/"
 def _empty_attachment_formset_data(initial=0, total=3):
     """Return management-form fields for AttachmentFormSet with no submitted rows."""
     return {
-        'attachments-TOTAL_FORMS': str(total),
-        'attachments-INITIAL_FORMS': str(initial),
-        'attachments-MIN_NUM_FORMS': '0',
-        'attachments-MAX_NUM_FORMS': '1000',
+        "attachments-TOTAL_FORMS": str(total),
+        "attachments-INITIAL_FORMS": str(initial),
+        "attachments-MIN_NUM_FORMS": "0",
+        "attachments-MAX_NUM_FORMS": "1000",
     }
 
 
 # ---------------------------------------------------------------------------
 # BlogPostListView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_blogpost_list_requires_login(client):
@@ -57,6 +57,7 @@ def test_blogpost_list_orders_newest_first(auth_client, person):
 # ---------------------------------------------------------------------------
 # BlogPostDetailView (GET)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_blogpost_detail_requires_login(client, blog_post):
@@ -103,25 +104,22 @@ def test_blogpost_detail_can_edit_true_for_staff(staff_client, blog_post):
 
 @pytest.mark.django_db
 def test_blogpost_detail_renders_image_inline(auth_client, image_attachment):
-    response = auth_client.get(
-        reverse("blogpost-detail", kwargs={"pk": image_attachment.post.pk})
-    )
-    assert b'<img' in response.content
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": image_attachment.post.pk}))
+    assert b"<img" in response.content
     assert image_attachment.file.url.encode() in response.content
 
 
 @pytest.mark.django_db
 def test_blogpost_detail_renders_pdf_as_download_link(auth_client, pdf_attachment):
-    response = auth_client.get(
-        reverse("blogpost-detail", kwargs={"pk": pdf_attachment.post.pk})
-    )
-    assert b'download' in response.content
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": pdf_attachment.post.pk}))
+    assert b"download" in response.content
     assert pdf_attachment.file.url.encode() in response.content
 
 
 # ---------------------------------------------------------------------------
 # BlogPostCreateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_blogpost_create_requires_login(client):
@@ -178,7 +176,7 @@ def test_blogpost_create_with_bc_type(auth_client, person):
     }
     data.update(_empty_attachment_formset_data())
     auth_client.post(reverse("blogpost-create"), data)
-    assert BlogPost.objects.get(title="BC announcement").post_type == 'BC'
+    assert BlogPost.objects.get(title="BC announcement").post_type == "BC"
 
 
 @pytest.mark.django_db
@@ -278,7 +276,9 @@ def test_blogpost_create_supports_multiple_authors(auth_client, person, other_pe
 
 @pytest.mark.django_db
 def test_blogpost_update_with_invalid_attachment_formset_does_not_modify_post(
-    auth_client, blog_post, person,
+    auth_client,
+    blog_post,
+    person,
 ):
     """Regression for #17: invalid formset must not partially apply BlogPost edits."""
     original_title = blog_post.title
@@ -294,7 +294,8 @@ def test_blogpost_update_with_invalid_attachment_formset_does_not_modify_post(
         "attachments-0-caption": "Légende sans fichier",
     }
     response = auth_client.post(
-        reverse("blogpost-edit", kwargs={"pk": blog_post.pk}), data,
+        reverse("blogpost-edit", kwargs={"pk": blog_post.pk}),
+        data,
     )
     assert response.status_code == 200
     blog_post.refresh_from_db()
@@ -304,6 +305,7 @@ def test_blogpost_update_with_invalid_attachment_formset_does_not_modify_post(
 # ---------------------------------------------------------------------------
 # BlogPostUpdateView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_blogpost_update_requires_login(client, blog_post):
@@ -340,7 +342,8 @@ def test_blogpost_update_post_updates_fields(auth_client, blog_post, person):
     }
     data.update(_empty_attachment_formset_data())
     response = auth_client.post(
-        reverse("blogpost-edit", kwargs={"pk": blog_post.pk}), data,
+        reverse("blogpost-edit", kwargs={"pk": blog_post.pk}),
+        data,
     )
     assert response.status_code == 302
     blog_post.refresh_from_db()
@@ -351,6 +354,7 @@ def test_blogpost_update_post_updates_fields(auth_client, blog_post, person):
 # ---------------------------------------------------------------------------
 # BlogPostDeleteView
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.django_db
 def test_blogpost_delete_requires_login(client, blog_post):
