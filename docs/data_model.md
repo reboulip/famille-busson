@@ -10,6 +10,7 @@ erDiagram
     Account }o--o{ Group : "groups"
     Account }o--o{ Permission : "user_permissions"
     Account ||--o| Person : "account"
+    Person ||--o| Settings : "person"
     Person ||--o{ Relation : "person1"
     Person ||--o{ Relation : "person2"
     Chalet }o--o{ Person : "owners"
@@ -56,6 +57,17 @@ erDiagram
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
 | `description` | TextField | Infos utiles | optional |
+
+### `Settings`
+
+*App:* `annuaire` · *verbose name:* Paramètres de notification / Paramètres de notification · *table:* `annuaire_settings`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `person` | OneToOneField | Profil | → Person (on_delete=CASCADE), related_name='settings', unique, required |
+| `notify_on_birthday` | BooleanField | Recevoir un rappel pour les anniversaires | default=False, optional |
+| `notify_on_new_blog_post` | BooleanField | Recevoir une notification pour les nouveaux articles | default=False, optional |
 
 ### `Relation`
 
