@@ -44,12 +44,31 @@ class Person(models.Model):
     email = models.EmailField(blank=True, null=True, verbose_name="Adresse électronique")
     profile_photo = models.ImageField(upload_to="photos/", blank=True, null=True, verbose_name="Photo de profil")
     postal_address = models.CharField(max_length=255, blank=True, null=True, verbose_name="Adresse postale")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Latitude")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Settings(models.Model):
+    person = models.OneToOneField(Person, related_name="settings", on_delete=models.CASCADE, verbose_name="Profil")
+    notify_on_birthday = models.BooleanField(
+        default=False, blank=True, verbose_name="Recevoir un rappel pour les anniversaires"
+    )
+    notify_on_new_blog_post = models.BooleanField(
+        default=False, blank=True, verbose_name="Recevoir une notification pour les nouveaux articles"
+    )
+
+    class Meta:
+        verbose_name = "Paramètres de notification"
+        verbose_name_plural = "Paramètres de notification"
+
+    def __str__(self):
+        return f"Paramètres de {self.person}"
 
 
 class Relation(models.Model):

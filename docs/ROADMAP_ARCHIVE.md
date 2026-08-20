@@ -3,6 +3,41 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `release-workflow` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.4.0
+
+### Annuaire — administration
+- **Resilient bulk account creation** — `BulkAccountCreateView` was failing partway
+  through batches of ~30+ accounts, most likely because it opened a fresh SMTP
+  connection per email, pushing the request past the provider's per-request timeout.
+  Now reuses a single connection across the batch, cycling it periodically (and after
+  any failed send), and isolates per-account creation failures so one bad row no longer
+  500s the rest of the batch. [#41]
+
+### Annuaire — profile improvements
+- **Removed postal address from directory list cards** — `annuaire_list.html` cards now
+  show only the profile picture and name; the address stays visible on the profile
+  detail page. [#43]
+
+### Annuaire — carte
+- **Interactive map view of member locations** — new "Carte" view (`/annuaire/carte/`)
+  plotting each member's geocoded address as a marker, using Leaflet + OpenStreetMap
+  tiles, vendored under `annuaire/static/vendor/leaflet/` (no API key, no CDN). The BAN
+  address picker now also captures and stores the coordinates the API always returned
+  but previously discarded (`Person.latitude`/`longitude`); a one-time
+  `geocode_person_addresses` management command backfills coordinates for members who
+  already had an address on file. Profiles with no address, or one that couldn't be
+  geocoded, are excluded from the map instead of breaking the view. [#44]
+
+### Notifications — abonnements
+- **Per-profile notification subscriptions** — new `Settings` model (one-to-one with
+  `Person`) with opt-in checkboxes for birthday reminders and new-blog-post
+  notifications, exposed on the profile creation form. New-post notifications fire via a
+  `BlogPost` post_save signal; birthday reminders are sent by a new
+  `send_birthday_reminders` management command meant to run daily via cron/systemd (no
+  in-app scheduler exists in this project). Both reuse a shared, connection-cycling
+  resilient-send helper (`annuaire/email_utils.py`) extracted from the bulk-account-
+  creation fix above. [#39]
+
 ## v0.3.0
 
 ### Security

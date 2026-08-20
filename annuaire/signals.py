@@ -2,7 +2,7 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .file_cleanup import register_file_cleanup
-from .models import Account, Chalet, Person, Relation
+from .models import Account, Chalet, Person, Relation, Settings
 
 register_file_cleanup(Person, "profile_photo")
 register_file_cleanup(Chalet, "photo")
@@ -17,6 +17,12 @@ def link_account_to_person(sender, instance, created, **kwargs):
             person.save()
         except Person.DoesNotExist:
             pass
+
+
+@receiver(post_save, sender=Person)
+def create_settings_for_person(sender, instance, created, **kwargs):
+    if created:
+        Settings.objects.get_or_create(person=instance)
 
 
 @receiver(post_save, sender=Relation)

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 import pytest
 from django.urls import reverse
 
@@ -96,6 +98,15 @@ def test_directory_search_filters_by_name(auth_client, person, other_person):
 def test_directory_search_no_results(auth_client, person):
     response = auth_client.get(reverse("directory") + "?q=zzznomatch")
     assert list(response.context["persons"]) == []
+
+
+@pytest.mark.django_db
+def test_directory_does_not_show_postal_address(auth_client, person):
+    person.postal_address = "8 Boulevard du Port, 80000 Amiens"
+    person.save()
+    response = auth_client.get(reverse("directory"))
+    assert person.first_name.encode() in response.content
+    assert b"Boulevard du Port" not in response.content
 
 
 # ---------------------------------------------------------------------------
@@ -379,6 +390,66 @@ def test_profile_create_post_invalid_returns_200_with_errors(client, account):
     assert response.context["form"].errors
 
 
+@pytest.mark.django_db
+def test_profile_create_saves_notification_opt_ins(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(
+        reverse("profile-create"),
+        {
+            "first_name": "Alice",
+            "last_name": "Busson",
+            "notify_on_birthday": "on",
+            "notify_on_new_blog_post": "on",
+        },
+    )
+    assert response.status_code == 302
+    from annuaire.models import Person
+
+    person = Person.objects.get(account=account)
+    assert person.settings.notify_on_birthday is True
+    assert person.settings.notify_on_new_blog_post is True
+
+
+@pytest.mark.django_db
+def test_profile_create_address_widget_has_coordinate_targets(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.get(reverse("profile-create"))
+    content = response.content.decode()
+    assert 'data-lat-target="id_latitude"' in content
+    assert 'data-lon-target="id_longitude"' in content
+
+
+@pytest.mark.django_db
+def test_profile_create_saves_coordinates_from_hidden_fields(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(
+        reverse("profile-create"),
+        {
+            "first_name": "Alice",
+            "last_name": "Busson",
+            "postal_address": "8 Boulevard du Port, 80000 Amiens",
+            "latitude": "49.031624",
+            "longitude": "2.062821",
+        },
+    )
+    assert response.status_code == 302
+    person = Person.objects.get(account=account)
+    assert person.latitude == Decimal("49.031624")
+    assert person.longitude == Decimal("2.062821")
+
+
+@pytest.mark.django_db
+def test_profile_create_without_opt_ins_defaults_to_false(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(reverse("profile-create"), {"first_name": "Alice", "last_name": "Busson"})
+    assert response.status_code == 302
+    from annuaire.models import Person
+
+    person = Person.objects.get(account=account)
+    assert person.settings.notify_on_birthday is False
+    assert person.settings.notify_on_new_blog_post is False
+
+
 # ---------------------------------------------------------------------------
 # PersonRelationsView (GET)
 # ---------------------------------------------------------------------------
@@ -535,3 +606,56 @@ def test_delete_relation_404_for_other_person_relation(auth_client, person, othe
         reverse("person-relation-delete", kwargs={"pk": person.pk, "rid": relation.pk}),
     )
     assert response.status_code == 404
+
+
+# ---------------------------------------------------------------------------
+# MapListView
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_carte_requires_login(client):
+    response = client.get(reverse("carte"))
+    assert response.status_code == 302
+    assert LOGIN_URL in response["Location"]
+
+
+@pytest.mark.django_db
+def test_carte_returns_200(auth_client):
+    response = auth_client.get(reverse("carte"))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_carte_includes_persons_with_coordinates(auth_client, person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    assert person in response.context["persons"]
+
+
+@pytest.mark.django_db
+def test_carte_excludes_persons_without_coordinates(auth_client, person):
+    response = auth_client.get(reverse("carte"))
+    assert person not in response.context["persons"]
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_count(auth_client, person, other_person):
+    other_person.latitude = Decimal("49.0")
+    other_person.longitude = Decimal("2.0")
+    other_person.save()
+    response = auth_client.get(reverse("carte"))
+    assert response.context["unresolved_count"] == 1
+
+
+@pytest.mark.django_db
+def test_carte_persons_json_includes_name_and_profile_link(auth_client, person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert person.first_name in content
+    assert reverse("personne-detail", kwargs={"pk": person.pk}) in content

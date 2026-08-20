@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
 function initAddressPicker(input) {
     const searchUrl = input.dataset.searchUrl || 'https://api-adresse.data.gouv.fr/search/';
     const limit = input.dataset.addressLimit || '5';
+    const latTarget = input.dataset.latTarget ? document.getElementById(input.dataset.latTarget) : null;
+    const lonTarget = input.dataset.lonTarget ? document.getElementById(input.dataset.lonTarget) : null;
 
     const wrapper = document.createElement('div');
     wrapper.className = 'address-picker';
@@ -64,9 +66,15 @@ function initAddressPicker(input) {
                 li.appendChild(context);
             }
             li.dataset.address = composeAddress(props);
+            const coordinates = feature.geometry && feature.geometry.coordinates;
+            if (coordinates) {
+                // BAN returns [longitude, latitude].
+                li.dataset.lon = coordinates[0];
+                li.dataset.lat = coordinates[1];
+            }
             li.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                selectAddress(li.dataset.address);
+                selectAddress(li);
             });
             resultsList.appendChild(li);
         });
@@ -83,8 +91,12 @@ function initAddressPicker(input) {
         });
     }
 
-    function selectAddress(address) {
-        input.value = address;
+    function selectAddress(li) {
+        input.value = li.dataset.address;
+        if (latTarget && lonTarget) {
+            latTarget.value = li.dataset.lat || '';
+            lonTarget.value = li.dataset.lon || '';
+        }
         closeDropdown();
     }
 
@@ -100,6 +112,10 @@ function initAddressPicker(input) {
     }
 
     input.addEventListener('input', () => {
+        // Typing invalidates any coordinates captured from a previous selection --
+        // otherwise the map could show a stale pin for text that no longer matches it.
+        if (latTarget) latTarget.value = '';
+        if (lonTarget) lonTarget.value = '';
         clearTimeout(debounceTimer);
         const q = input.value.trim();
         if (q.length < 3) {
@@ -124,7 +140,7 @@ function initAddressPicker(input) {
         } else if (e.key === 'Enter') {
             if (highlightedIndex >= 0 && items[highlightedIndex]) {
                 e.preventDefault();
-                selectAddress(items[highlightedIndex].dataset.address);
+                selectAddress(items[highlightedIndex]);
             }
         } else if (e.key === 'Escape') {
             closeDropdown();

@@ -1,0 +1,21 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+{% endblock extra_css %}
+{% block content %}
+    <h1>Carte</h1>
+
+    {% if unresolved_count %}
+        <p class="search-result-count">
+            {{ unresolved_count }} profil{{ unresolved_count|pluralize }} sans adresse géolocalisée
+            {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
+        </p>
+    {% endif %}
+
+    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}'></div>
+{% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'js/map_init.js' %}"></script>
+{% endblock extra_js %}

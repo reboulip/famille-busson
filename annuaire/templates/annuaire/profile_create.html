@@ -9,6 +9,10 @@
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
+            <fieldset class="form-group">
+                <legend>Notifications</legend>
+                {{ settings_form|crispy }}
+            </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
             </div>

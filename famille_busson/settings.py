@@ -216,3 +216,8 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@bubu.reboulip.fr")
+
+# Base URL used to build absolute links in emails sent outside a request context
+# (birthday reminders, blog post notifications) -- request.build_absolute_uri() isn't
+# available there. Production sets this to the real domain.
+SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")

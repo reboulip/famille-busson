@@ -38,7 +38,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
 | `home` | `home` | `@login_required` | Any logged-in user. |
-| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
+| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ProfileUpdateView` | `person-edit` | `get_object()` override | Owner of the profile, or staff/superuser. |
 | `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
 | `BulkAccountCreateView`, `ChaletCreateView` | `bulk-account-create`, `chalet-create` | `StaffRequiredMixin` | Staff only. |

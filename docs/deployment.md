@@ -53,7 +53,39 @@ volumes above.
 VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` container
 directly, while `DATABASE_URL` is what Django (`famille_busson/settings.py`, via
 `django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
-to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP.
+to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP. `SITE_BASE_URL`
+(default `http://localhost:8000`) is used to build absolute links in emails sent outside
+a request context — birthday reminders and blog post notifications — and should be set
+to `https://bubu.reboulip.fr` in production.
+
+## Scheduled tasks
+
+There is no in-app scheduler. `send_birthday_reminders` (`annuaire/management/commands/
+send_birthday_reminders.py`) emails subscribed members for each person whose birthday is
+today, but only when it's actually run — it must be scheduled on the VPS via cron or a
+systemd timer, set up by hand outside this repo's CI/CD. A daily cron entry running it
+inside the `web` container from `/srv/bubu` (where `docker-compose.yml` lives, see
+above):
+
+```
+0 8 * * * cd /srv/bubu && docker compose exec -T web python manage.py send_birthday_reminders
+```
+
+## One-time setup
+
+Some features ship with a manual backfill step that only needs to run once on the VPS,
+after the deploy that introduces them — unlike the recurring jobs above. Run it by hand,
+the same way as a scheduled command (`docker compose exec` from `/srv/bubu`), but just
+once:
+
+```
+cd /srv/bubu && docker compose exec -T web python manage.py geocode_person_addresses
+```
+
+Geocodes every existing `Person.postal_address` that doesn't yet have coordinates (via
+the BAN API), so members who already had an address on file before the "Carte" view
+(`/annuaire/carte/`) shipped show up on it right away, instead of only after their next
+profile edit. Safe to re-run — skips anyone who already has coordinates.
 
 ## Deploying
 
