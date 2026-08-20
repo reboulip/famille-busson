@@ -19,7 +19,7 @@
 
 ## Annuaire — profile improvements
 
-- [ ] A · Remove postal address from directory list cards — `annuaire_list.html` cards
+- [x] A · Remove postal address from directory list cards — `annuaire_list.html` cards
   currently show profile picture, full name, and physical address; drop the address to
   make cards smaller. Address stays visible on the profile detail page. (priority:
   low) [#43]

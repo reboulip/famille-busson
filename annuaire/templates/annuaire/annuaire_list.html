@@ -23,7 +23,6 @@
                      alt="{{ person.first_name }} {{ person.last_name }}" class="personne-card-photo">
                 <div class="personne-card-info">
                     <strong>{{ person.first_name }} {{ person.last_name }}</strong>
-                    {% if person.postal_address %}<span>{{ person.postal_address }}</span>{% endif %}
                 </div>
             </a>
         {% empty %}

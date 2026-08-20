@@ -98,6 +98,15 @@ def test_directory_search_no_results(auth_client, person):
     assert list(response.context["persons"]) == []
 
 
+@pytest.mark.django_db
+def test_directory_does_not_show_postal_address(auth_client, person):
+    person.postal_address = "8 Boulevard du Port, 80000 Amiens"
+    person.save()
+    response = auth_client.get(reverse("directory"))
+    assert person.first_name.encode() in response.content
+    assert b"Boulevard du Port" not in response.content
+
+
 # ---------------------------------------------------------------------------
 # ProfileDetailView
 # ---------------------------------------------------------------------------
