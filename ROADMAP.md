@@ -6,7 +6,7 @@
 
 ## Annuaire — administration
 
-- [ ] A · Fix bulk account creation failing past ~30 accounts —
+- [x] A · Fix bulk account creation failing past ~30 accounts —
   `BulkAccountCreateView` returns an internal server error partway through large
   batches (reproduced 3x at ~30 accounts). Likely an email-send timeout or provider
   rate limit hit while sending credentials/reset emails in a loop. Investigate the

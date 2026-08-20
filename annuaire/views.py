@@ -10,7 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied
-from django.core.mail import send_mail
+from django.core.mail import get_connection, send_mail
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -136,7 +136,7 @@ def _build_password_reset_url(request, account):
     return request.build_absolute_uri(reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}))
 
 
-def _send_account_setup_email(request, email, reset_url, is_reset):
+def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
     """Best-effort: one recipient's SMTP failure must not lose the others'
     accounts (already created) or hide their reset link (still shown on screen
     regardless -- see bulk_account_create.html)."""
@@ -155,7 +155,7 @@ def _send_account_setup_email(request, email, reset_url, is_reset):
         f"À bientôt !"
     )
     try:
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, connection=connection)
         return True
     except Exception:
         logging.getLogger("django").exception("Failed to send account setup email to %s", email)
@@ -166,33 +166,68 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
     template_name = "annuaire/bulk_account_create.html"
     form_class = BulkAccountCreateForm
 
+    # Sending each email over a fresh, unshared SMTP connection is what pushed a
+    # ~30-account batch past the provider's per-request timeout. Reuse one
+    # connection across the batch, cycling it periodically so a long-lived
+    # connection doesn't itself get dropped/rate-limited by the provider.
+    _EMAILS_PER_CONNECTION = 15
+
     def form_valid(self, form):
         emails = form.cleaned_data["emails"]
         results = []
         reset_emails = []
         failed_emails = []
+        errored_emails = []
 
-        for email in emails:
-            existing = Account.objects.filter(email=email).first()
-            is_reset = bool(existing)
-            account = existing or Account(email=email)
-            account.set_password(secrets.token_urlsafe(32))
-            account.save()
-            if is_reset:
-                reset_emails.append(email)
+        connection = get_connection()
+        connection.open()
+        sent_since_reconnect = 0
 
-            reset_url = _build_password_reset_url(self.request, account)
-            email_sent = _send_account_setup_email(self.request, email, reset_url, is_reset)
-            if not email_sent:
-                failed_emails.append(email)
-            results.append(
-                {
-                    "email": email,
-                    "status": "reset" if is_reset else "created",
-                    "email_sent": email_sent,
-                    "reset_url": reset_url,
-                }
-            )
+        try:
+            for email in emails:
+                try:
+                    existing = Account.objects.filter(email=email).first()
+                    is_reset = bool(existing)
+                    account = existing or Account(email=email)
+                    account.set_password(secrets.token_urlsafe(32))
+                    account.save()
+                except Exception:
+                    logging.getLogger("django").exception("Failed to create account for %s", email)
+                    errored_emails.append(email)
+                    results.append({"email": email, "status": "error", "email_sent": False, "reset_url": None})
+                    continue
+
+                if is_reset:
+                    reset_emails.append(email)
+
+                if sent_since_reconnect >= self._EMAILS_PER_CONNECTION:
+                    connection.close()
+                    connection = get_connection()
+                    connection.open()
+                    sent_since_reconnect = 0
+
+                reset_url = _build_password_reset_url(self.request, account)
+                email_sent = _send_account_setup_email(self.request, email, reset_url, is_reset, connection=connection)
+                sent_since_reconnect += 1
+                if not email_sent:
+                    failed_emails.append(email)
+                    # the connection may be in a broken state after a failed send;
+                    # force a fresh one so one bad send doesn't take the rest of the
+                    # batch down with it
+                    connection.close()
+                    connection = get_connection()
+                    connection.open()
+                    sent_since_reconnect = 0
+                results.append(
+                    {
+                        "email": email,
+                        "status": "reset" if is_reset else "created",
+                        "email_sent": email_sent,
+                        "reset_url": reset_url,
+                    }
+                )
+        finally:
+            connection.close()
 
         if reset_emails:
             messages.warning(
@@ -205,6 +240,11 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
                 "Échec de l'envoi de l'email pour : "
                 + ", ".join(failed_emails)
                 + " — communiquez le mot de passe temporaire manuellement.",
+            )
+        if errored_emails:
+            messages.error(
+                self.request,
+                "Échec de la création du compte pour : " + ", ".join(errored_emails),
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))

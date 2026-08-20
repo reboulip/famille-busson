@@ -17,11 +17,15 @@
     </thead>
     <tbody>
         {% for row in results %}
-        <tr class="{% if row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
+        <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
             <td>{{ row.email }}</td>
-            <td>{% if row.status == 'created' %}Créé{% else %}Réinitialisé{% endif %}</td>
             <td>
-                {% if row.email_sent %}
+                {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% else %}Échec de création{% endif %}
+            </td>
+            <td>
+                {% if row.status == 'error' %}
+                    <span class="text-muted">—</span>
+                {% elif row.email_sent %}
                     <span class="badge text-bg-success">Envoyé</span>
                 {% else %}
                     <span class="badge text-bg-danger">Échec</span>

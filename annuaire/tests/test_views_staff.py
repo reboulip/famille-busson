@@ -144,6 +144,49 @@ def test_bulk_create_email_failure_still_creates_account_and_shows_reset_link(st
     assert any("Échec de l'envoi" in m for m in msgs)
 
 
+@pytest.mark.django_db
+def test_bulk_create_handles_more_than_thirty_accounts(staff_client, db):
+    emails = [f"bulk{i}@example.com" for i in range(35)]
+    response = staff_client.post(reverse("bulk-account-create"), {"emails": "\n".join(emails)})
+
+    assert response.status_code == 200
+    assert Account.objects.filter(email__in=emails).count() == 35
+    assert len(mail.outbox) == 35
+    assert all(r["email_sent"] for r in response.context["results"])
+
+
+@pytest.mark.django_db
+def test_bulk_create_isolates_account_creation_failure(staff_client, db, monkeypatch):
+    from annuaire.models import Account as AccountModel
+
+    original_save = AccountModel.save
+
+    def _save(self, *args, **kwargs):
+        if self.email == "bad@example.com":
+            raise Exception("DB down")
+        return original_save(self, *args, **kwargs)
+
+    monkeypatch.setattr(AccountModel, "save", _save)
+
+    response = staff_client.post(
+        reverse("bulk-account-create"),
+        {"emails": "good1@example.com\nbad@example.com\ngood2@example.com"},
+    )
+
+    assert Account.objects.filter(email="good1@example.com").exists()
+    assert Account.objects.filter(email="good2@example.com").exists()
+    assert not Account.objects.filter(email="bad@example.com").exists()
+
+    results = {r["email"]: r for r in response.context["results"]}
+    assert results["bad@example.com"]["status"] == "error"
+    assert results["bad@example.com"]["email_sent"] is False
+    assert results["good1@example.com"]["email_sent"] is True
+    assert results["good2@example.com"]["email_sent"] is True
+
+    msgs = [str(m) for m in response.context["messages"]]
+    assert any("Échec de la création du compte" in m for m in msgs)
+
+
 # ---------------------------------------------------------------------------
 # check_emails_ajax
 # ---------------------------------------------------------------------------
