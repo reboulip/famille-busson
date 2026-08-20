@@ -90,6 +90,14 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   into `develop` so the hotfix isn't lost on the next release.
 - Never push directly to `main`.
 
+### Phase-grouped issues (carve-out)
+When several GH issues are grouped under one `ROADMAP.md` phase heading (see §11), they
+may ship as **one combined branch and one combined squash-merge** covering the whole
+phase, instead of one branch per issue — at the user's discretion per phase, not the
+default. Branch name: `<type>/phase-<name>/<summary>`. Commit message:
+`<type>: <summary> (#<issue-1>, #<issue-2>, ...)`. Absent an explicit choice to combine,
+the default one-branch-per-issue rule above still applies.
+
 ### Hard rules (all git work, run directly in the main session)
 - Never force-push (`--force`, `-f`).
 - Never skip hooks (`--no-verify`).
@@ -117,6 +125,13 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   doesn't yet support. `DJ001` (`null=True` on string fields) is deliberately excluded
   from ruff's ruleset — the existing schema uses it pervasively and fixing it means a data
   migration, not a lint autofix.
+- **First git/gh operation on a fresh container:** this dev container starts with no
+  `~/.ssh/known_hosts` (and `~/.ssh` itself is root-owned, so `dev` can't create the file
+  there) and no git identity configured (`user.name`/`user.email` unset). Before the
+  first `git fetch`/`push` over SSH, use a job-tmp `known_hosts` via
+  `GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=<tmp-path> -o StrictHostKeyChecking=accept-new"`.
+  Before the first commit, set `git config user.name`/`user.email` (match the GitHub
+  account, e.g. via `gh api user`). Neither persists across a fresh container instance.
 
 ## 10. Releases
 famille-busson is a continuously-deployed web app, not a published package — there's no
@@ -150,3 +165,11 @@ gate a build/publish step.
   `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
 - **`ROADMAP.md`** tracks pending work only. Shipped items move to
   **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `release-workflow`).
+- **`ROADMAP.md` heading convention:** `##` headings are phase/batch groupings (mirroring
+  `docs/ROADMAP_ARCHIVE.md`'s `## vX.Y.Z` pattern) — grouping several related-or-just-
+  convenient items, not necessarily one theme. Optional `###` subheadings mark themes
+  within a phase. New GH-issue-triage items (see `gh-issues`) should by default land
+  under the current open phase heading rather than each minting a new `##` heading; open
+  a new phase heading only when the batch is large/urgent enough to warrant its own
+  (e.g. a hotfix-flavored batch). Items carry a `[#N]` GH back-reference. See §8 for
+  whether a phase's issues ship as separate or combined branches.
