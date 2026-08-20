@@ -49,7 +49,7 @@
 
 ## Notifications — abonnements
 
-- [ ] A · Per-profile notification subscriptions — new `Settings` model, one-to-one
+- [x] A · Per-profile notification subscriptions — new `Settings` model, one-to-one
   with `Person`, with opt-in checkboxes for birthday reminders (an email sent to
   subscribed users on someone's birthday) and new blog post notifications (an email
   sent to subscribed users on each new `BlogPost`). Exposed in the profile creation

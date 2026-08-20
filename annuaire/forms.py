@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 
-from .models import Account, Chalet, Person, PresencePSV, Relation
+from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
@@ -55,6 +55,12 @@ class ProfileEditForm(forms.ModelForm):
                 f"Taille maximale : {PROFILE_PHOTO_MAX_SIZE_MB} Mo."
             )
         return photo
+
+
+class FormSettings(forms.ModelForm):
+    class Meta:
+        model = Settings
+        fields = ["notify_on_birthday", "notify_on_new_blog_post"]
 
 
 RelationEditFormSet = forms.inlineformset_factory(

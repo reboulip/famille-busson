@@ -388,6 +388,38 @@ def test_profile_create_post_invalid_returns_200_with_errors(client, account):
     assert response.context["form"].errors
 
 
+@pytest.mark.django_db
+def test_profile_create_saves_notification_opt_ins(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(
+        reverse("profile-create"),
+        {
+            "first_name": "Alice",
+            "last_name": "Busson",
+            "notify_on_birthday": "on",
+            "notify_on_new_blog_post": "on",
+        },
+    )
+    assert response.status_code == 302
+    from annuaire.models import Person
+
+    person = Person.objects.get(account=account)
+    assert person.settings.notify_on_birthday is True
+    assert person.settings.notify_on_new_blog_post is True
+
+
+@pytest.mark.django_db
+def test_profile_create_without_opt_ins_defaults_to_false(client, account):
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.post(reverse("profile-create"), {"first_name": "Alice", "last_name": "Busson"})
+    assert response.status_code == 302
+    from annuaire.models import Person
+
+    person = Person.objects.get(account=account)
+    assert person.settings.notify_on_birthday is False
+    assert person.settings.notify_on_new_blog_post is False
+
+
 # ---------------------------------------------------------------------------
 # PersonRelationsView (GET)
 # ---------------------------------------------------------------------------

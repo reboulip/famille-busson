@@ -29,6 +29,7 @@ from .forms import (
     ChaletUpdateForm,
     CustomAuthenticationForm,
     ForcedPasswordChangeForm,
+    FormSettings,
     PresenceForm,
     ProfileEditForm,
     SignupForm,
@@ -351,10 +352,29 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
             return redirect("my-profile")
         return super().dispatch(request, *args, **kwargs)
 
-    def form_valid(self, form):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if "settings_form" not in context:
+            context["settings_form"] = FormSettings()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = None
+        form = self.get_form()
+        settings_form = FormSettings(request.POST)
+        if form.is_valid() and settings_form.is_valid():
+            return self.forms_valid(form, settings_form)
+        return self.render_to_response(self.get_context_data(form=form, settings_form=settings_form))
+
+    def forms_valid(self, form, settings_form):
         person = form.save(commit=False)
         person.account = self.request.user
         person.save()
+        # Settings is auto-created by the Person post_save signal (see
+        # annuaire/signals.py); layer the submitted opt-ins on top of it.
+        person.settings.notify_on_birthday = settings_form.cleaned_data["notify_on_birthday"]
+        person.settings.notify_on_new_blog_post = settings_form.cleaned_data["notify_on_new_blog_post"]
+        person.settings.save()
         return redirect("personne-detail", pk=person.pk)
 
 
