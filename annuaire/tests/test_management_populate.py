@@ -34,8 +34,8 @@ class TestPopulateDevDataCounts:
         assert Account.objects.count() == 22
         assert Chalet.objects.count() == 5
         assert PresencePSV.objects.count() == 50
-        # 30 directional relations created + 30 inverse relations via signal
-        assert Relation.objects.count() == 60
+        # 15 directional relations created + 15 inverse relations via signal
+        assert Relation.objects.count() == 30
         assert BlogPost.objects.count() == 30
         assert Attachment.objects.count() == 15
         assert Comment.objects.count() == 100
@@ -50,6 +50,36 @@ class TestPopulateDevDataCounts:
 
 
 # ------------------------------------------------------------------ account properties
+
+
+@pytest.mark.django_db
+class TestPopulateDevDataFamily:
+    """_create_relations wires one coherent, deterministic 3-generation family
+    (see its docstring) instead of fully random pairs -- these guard that the
+    result is actually legible, not just present."""
+
+    def test_family_has_a_three_generation_chain(self):
+        run_populate()
+        # Someone with both parents recorded AND a child of their own recorded --
+        # proof of a real chain, not just isolated parent/child pairs.
+        middle_generation = [
+            person
+            for person in Person.objects.all()
+            if Relation.objects.filter(person1=person, relationship_type=2).count() == 2
+            and Relation.objects.filter(person1=person, relationship_type=3).exists()
+        ]
+        assert middle_generation, "expected at least one person with both a parent and a child on record"
+
+    def test_some_persons_remain_unrelated(self):
+        run_populate()
+        # 10 of the 20 regular persons are wired into the family; the other 10,
+        # plus the staff person (never passed to _create_relations at all),
+        # should have no Relation rows on either side.
+        related_ids = set(Relation.objects.values_list("person1_id", flat=True)) | set(
+            Relation.objects.values_list("person2_id", flat=True)
+        )
+        unrelated_count = Person.objects.exclude(pk__in=related_ids).count()
+        assert unrelated_count == 11
 
 
 @pytest.mark.django_db

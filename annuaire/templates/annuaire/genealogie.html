@@ -1,0 +1,8 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Généalogie</h1>
+
+    <div id="genealogie-chart" class="genealogie-container" data-graph='{{ graph_json|escape }}'
+         data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'></div>
+{% endblock content %}
