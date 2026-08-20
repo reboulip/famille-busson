@@ -1,8 +1,16 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'vendor/family-chart/family-chart.css' %}">
+{% endblock extra_css %}
 {% block content %}
     <h1>Généalogie</h1>
 
     <div id="genealogie-chart" class="genealogie-container" data-graph='{{ graph_json|escape }}'
          data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'></div>
 {% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'vendor/d3/d3.min.js' %}"></script>
+    <script src="{% static 'vendor/family-chart/family-chart.min.js' %}"></script>
+    <script src="{% static 'js/family_tree.js' %}"></script>
+{% endblock extra_js %}

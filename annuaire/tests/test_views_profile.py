@@ -179,6 +179,20 @@ def test_profile_detail_can_edit_true_for_staff(staff_client, other_person):
 
 
 @pytest.mark.django_db
+def test_profile_detail_shows_family_tree_link_for_own_profile(auth_client, person):
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    assert reverse("genealogie-person", kwargs={"pk": person.pk}) in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_profile_detail_shows_family_tree_link_for_other_profile(auth_client, other_person):
+    # Viewing the tree is a read action, unlike "Modifier le profil" -- available
+    # regardless of can_edit.
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": other_person.pk}))
+    assert reverse("genealogie-person", kwargs={"pk": other_person.pk}) in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_profile_detail_does_not_display_gender(auth_client, person):
     # Gender is collected only as a technical requirement for the family tree feature
     # (the family-chart JS library needs it) -- it must never surface on the profile
