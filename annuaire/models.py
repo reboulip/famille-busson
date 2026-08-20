@@ -44,6 +44,8 @@ class Person(models.Model):
     email = models.EmailField(blank=True, null=True, verbose_name="Adresse électronique")
     profile_photo = models.ImageField(upload_to="photos/", blank=True, null=True, verbose_name="Photo de profil")
     postal_address = models.CharField(max_length=255, blank=True, null=True, verbose_name="Adresse postale")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Latitude")
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")

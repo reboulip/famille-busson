@@ -363,6 +363,14 @@ h2 {
     font-size: .85em;
 }
 
+.map-container {
+    height: 70vh;
+    min-height: 320px;
+    margin-top: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;

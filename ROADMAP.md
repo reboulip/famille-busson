@@ -28,7 +28,7 @@
 
 ## Annuaire — carte
 
-- [ ] A · Interactive map view of member locations — new "Carte" view plotting each
+- [x] A · Interactive map view of member locations — new "Carte" view plotting each
   profile's address (already geocoded via the BAN address picker) on a map. Handle
   profiles with no address or an address the picker couldn't resolve. Gated behind
   authentication like every other view. (priority: medium) [#44]

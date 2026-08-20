@@ -13,13 +13,21 @@ PROFILE_PHOTO_MAX_SIZE_MB = 5
 
 class AddressAutocompleteInput(forms.TextInput):
     """Progressive enhancement: plain text input, upgraded client-side by
-    address_picker.js with Base Adresse Nationale suggestions."""
+    address_picker.js with Base Adresse Nationale suggestions. Also populates the
+    hidden latitude/longitude fields named below when a suggestion is picked, since
+    the BAN API returns coordinates in the same response (see #44)."""
 
     class Media:
         js = ["js/address_picker.js"]
 
     def __init__(self, attrs=None):
-        defaults = {"autocomplete": "off", "class": "address-picker-input", "data-address-limit": "5"}
+        defaults = {
+            "autocomplete": "off",
+            "class": "address-picker-input",
+            "data-address-limit": "5",
+            "data-lat-target": "id_latitude",
+            "data-lon-target": "id_longitude",
+        }
         super().__init__({**defaults, **(attrs or {})})
 
 
@@ -33,12 +41,16 @@ class ProfileEditForm(forms.ModelForm):
             "email",
             "phone_number",
             "postal_address",
+            "latitude",
+            "longitude",
             "birth_date",
             "description",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "postal_address": AddressAutocompleteInput,
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
         }
         help_texts = {
             "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",

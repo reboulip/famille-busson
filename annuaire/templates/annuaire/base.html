@@ -8,6 +8,7 @@
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    {% block extra_css %}{% endblock extra_css %}
 </head>
 <body>
     <button class="btn btn-outline-secondary d-lg-none m-2" type="button"
@@ -39,6 +40,7 @@
                         <li>
                             <ul>
                                 <li><a href="{% url 'directory' %}">Annuaire</a></li>
+                                <li><a href="{% url 'carte' %}">Carte</a></li>
                                 <li><a href="{% url 'chalet-list' %}">Chalets</a></li>
                             </ul>
                         </li>

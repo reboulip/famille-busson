@@ -396,6 +396,37 @@ class DirectoryListView(LoginRequiredMixin, ListView):
         return context
 
 
+class MapListView(LoginRequiredMixin, ListView):
+    model = Person
+    template_name = "annuaire/carte.html"
+    context_object_name = "persons"
+
+    def get_queryset(self):
+        return (
+            Person.objects.exclude(latitude__isnull=True)
+            .exclude(longitude__isnull=True)
+            .order_by("last_name", "first_name")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["unresolved_count"] = Person.objects.filter(
+            Q(latitude__isnull=True) | Q(longitude__isnull=True)
+        ).count()
+        context["persons_json"] = json.dumps(
+            [
+                {
+                    "name": f"{person.first_name} {person.last_name}",
+                    "lat": float(person.latitude),
+                    "lon": float(person.longitude),
+                    "url": reverse("personne-detail", kwargs={"pk": person.pk}),
+                }
+                for person in context["persons"]
+            ]
+        )
+        return context
+
+
 class ProfileDetailView(LoginRequiredMixin, DetailView):
     model = Person
     template_name = "annuaire/personne_detail.html"
