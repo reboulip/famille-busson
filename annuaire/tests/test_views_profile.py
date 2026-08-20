@@ -178,6 +178,19 @@ def test_profile_detail_can_edit_true_for_staff(staff_client, other_person):
     assert response.context["can_edit"] is True
 
 
+@pytest.mark.django_db
+def test_profile_detail_does_not_display_gender(auth_client, person):
+    # Gender is collected only as a technical requirement for the family tree feature
+    # (the family-chart JS library needs it) -- it must never surface on the profile
+    # page itself, to avoid turning it into a personal/identity question.
+    person.gender = "M"
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "Homme" not in content
+    assert "Genre" not in content
+
+
 # ---------------------------------------------------------------------------
 # ProfileUpdateView
 # ---------------------------------------------------------------------------
@@ -258,6 +271,29 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
     # regardless of the template), so only an HTML assertion catches this.
     response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
     assert 'enctype="multipart/form-data"' in response.content.decode()
+
+
+# ---------------------------------------------------------------------------
+# Gender field (family tree prerequisite, #40)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_profile_update_post_valid_updates_gender(auth_client, person):
+    data = {"first_name": person.first_name, "last_name": person.last_name, "gender": "F"}
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    person.refresh_from_db()
+    assert person.gender == "F"
+
+
+@pytest.mark.django_db
+def test_profile_update_form_includes_gender_help_text(auth_client, person):
+    # The field must explain *why* it's asked -- a technical requirement for the
+    # family tree feature, not a personal/identity question.
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    assert "arbre généalogique" in response.content.decode()
 
 
 # ---------------------------------------------------------------------------
