@@ -71,6 +71,22 @@ above):
 0 8 * * * cd /srv/bubu && docker compose exec -T web python manage.py send_birthday_reminders
 ```
 
+## One-time setup
+
+Some features ship with a manual backfill step that only needs to run once on the VPS,
+after the deploy that introduces them — unlike the recurring jobs above. Run it by hand,
+the same way as a scheduled command (`docker compose exec` from `/srv/bubu`), but just
+once:
+
+```
+cd /srv/bubu && docker compose exec -T web python manage.py geocode_person_addresses
+```
+
+Geocodes every existing `Person.postal_address` that doesn't yet have coordinates (via
+the BAN API), so members who already had an address on file before the "Carte" view
+(`/annuaire/carte/`) shipped show up on it right away, instead of only after their next
+profile edit. Safe to re-run — skips anyone who already has coordinates.
+
 ## Deploying
 
 Nothing manual: pushing to `main` triggers `build-and-deploy.yml`, which builds/pushes

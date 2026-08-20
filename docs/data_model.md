@@ -54,6 +54,8 @@ erDiagram
 | `email` | CharField | Adresse électronique | max_length=254, optional |
 | `profile_photo` | FileField | Photo de profil | max_length=100, optional |
 | `postal_address` | CharField | Adresse postale | max_length=255, optional |
+| `latitude` | DecimalField | Latitude | optional |
+| `longitude` | DecimalField | Longitude | optional |
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
 | `description` | TextField | Infos utiles | optional |

@@ -1,9 +1,9 @@
 # famille-busson
 
 Private family website for the Busson family: a member directory (`annuaire`) with
-family relations, chalet listings and PSV presence scheduling, and a small blog
-(`publications`) for posts, comments and attachments. Django 6 / Python 3.13, deployed
-continuously to a single VPS.
+family relations, chalet listings, PSV presence scheduling and a map of member
+locations, and a small blog (`publications`) for posts, comments and attachments. Django
+6 / Python 3.13, deployed continuously to a single VPS.
 
 ## Quickstart
 
