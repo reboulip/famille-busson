@@ -379,6 +379,41 @@ h2 {
     border-radius: 8px;
 }
 
+.genealogie-layout {
+    gap: 16px;
+}
+
+.genealogie-branch-picker {
+    max-width: 400px;
+    margin-top: 16px;
+}
+
+.genealogie-detail {
+    flex: 0 0 320px;
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    align-self: flex-start;
+}
+
+.genealogie-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.genealogie-detail-avatar {
+    width: 4em;
+    height: 4em;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.genealogie-chip {
+    margin: 0 4px 4px 0;
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;

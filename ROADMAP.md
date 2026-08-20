@@ -6,7 +6,7 @@
 
 ## Généalogie — arbre interactif
 
-- [ ] A · Interactive family tree view — new dedicated page building a genealogy graph
+- [x] A · Interactive family tree view — new dedicated page building a genealogy graph
   from `Relation` records (parent/enfant, conjoint/conjoint), using a JS graph library
   (to be evaluated). Supports incremental exploration from a given profile and a
   full-graph overview (or overview of each disconnected component if the family graph

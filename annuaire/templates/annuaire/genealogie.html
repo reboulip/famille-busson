@@ -6,8 +6,13 @@
 {% block content %}
     <h1>Généalogie</h1>
 
-    <div id="genealogie-chart" class="genealogie-container" data-graph='{{ graph_json|escape }}'
-         data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'></div>
+    <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+
+    <div class="d-lg-flex genealogie-layout">
+        <div id="genealogie-chart" class="genealogie-container flex-grow-1" data-graph='{{ graph_json|escape }}'
+             data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'></div>
+        <aside id="genealogie-detail" class="genealogie-detail" hidden></aside>
+    </div>
 {% endblock content %}
 {% block extra_js %}
     <script src="{% static 'vendor/d3/d3.min.js' %}"></script>

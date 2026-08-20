@@ -20,6 +20,24 @@ def test_genealogie_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_genealogie_renders_detail_panel_and_branch_picker_markup(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    assert 'id="genealogie-detail"' in content
+    assert 'id="genealogie-branch-picker"' in content
+
+
+@pytest.mark.django_db
+def test_genealogie_loads_d3_before_family_chart(auth_client, person):
+    # family-chart's UMD bundle reads a global `d3` at load time -- d3 must be
+    # the earlier <script> tag, or the library throws on load in a real browser.
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    assert content.index("vendor/d3/d3.min.js") < content.index("vendor/family-chart/family-chart.min.js")
+    assert content.index("vendor/family-chart/family-chart.min.js") < content.index("js/family_tree.js")
+
+
+@pytest.mark.django_db
 def test_genealogie_person_requires_login(client, person):
     response = client.get(reverse("genealogie-person", kwargs={"pk": person.pk}))
     assert response.status_code == 302
