@@ -93,6 +93,8 @@ erDiagram
 | `name` | CharField | Nom | max_length=100, required |
 | `address` | CharField | Adresse | max_length=255, required |
 | `gps_coordinates` | CharField | Coordonnées GPS | max_length=100, optional |
+| `latitude` | DecimalField | Latitude | optional |
+| `longitude` | DecimalField | Longitude | optional |
 | `photo` | FileField | Photo | max_length=100, optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_chalets' |
 

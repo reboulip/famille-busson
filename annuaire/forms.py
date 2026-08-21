@@ -192,9 +192,15 @@ class PresenceForm(forms.ModelForm):
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "photo", "owners"]
+        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo", "owners"]
         widgets = {
+            "address": AddressAutocompleteInput,
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
             "owners": forms.MultipleHiddenInput,
+        }
+        help_texts = {
+            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
         }
 
     def __init__(self, *args, current_person=None, **kwargs):
@@ -207,7 +213,15 @@ class ChaletForm(forms.ModelForm):
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "photo"]
+        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo"]
+        widgets = {
+            "address": AddressAutocompleteInput,
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
+        }
+        help_texts = {
+            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+        }
 
 
 class BulkAccountCreateForm(forms.Form):

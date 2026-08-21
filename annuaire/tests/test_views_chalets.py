@@ -316,6 +316,16 @@ def test_chalet_create_get_returns_200(staff_client, staff_person):
 
 
 @pytest.mark.django_db
+def test_chalet_create_form_renders_hidden_coordinate_fields(auth_client):
+    # Guard against the address picker silently losing coordinates -- omitting
+    # these hidden fields means address_picker.js has nothing to write into.
+    response = auth_client.get(reverse("chalet-create"))
+    content = response.content.decode()
+    assert 'id="id_latitude"' in content
+    assert 'id="id_longitude"' in content
+
+
+@pytest.mark.django_db
 def test_chalet_create_post_creates_chalet(staff_client, staff_person, db):
     from annuaire.models import Chalet
 
