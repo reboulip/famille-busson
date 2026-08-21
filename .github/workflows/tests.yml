@@ -31,7 +31,7 @@ jobs:
 
   test:
     # Skip only the redundant case: a develop -> main release PR's head commit was
-    # already fully tested by the push-to-develop run above (release-workflow's CI
+    # already fully tested by the push-to-develop run above (the /release skill's CI
     # check leans on that run rather than waiting for a new one). hotfix/* -> main
     # PRs have no push-trigger coverage of their own, so they still need this.
     if: github.event_name != 'pull_request' || github.head_ref != 'develop'

@@ -14,5 +14,5 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
 - [`permissions.md`](permissions.md) — who can do what: the mixins/`get_object()`
   overrides that gate each view, by view.
 - [`ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) — history of roadmap items already shipped
-  to production. Items are moved here from `ROADMAP.md` at release time (see
-  `release-workflow`) so `ROADMAP.md` only ever shows pending work.
+  to production. Items are moved here from `ROADMAP.md` at release time (see the
+  `/release` skill) so `ROADMAP.md` only ever shows pending work.

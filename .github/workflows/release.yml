@@ -1,13 +1,13 @@
 name: Release
 
 # Tags v<version> from pyproject.toml and creates a GitHub Release whenever a version
-# bump lands on main (see CLAUDE.md's Releases section and the release-workflow skill,
-# which bumps pyproject.toml's version as part of every develop -> main / hotfix PR).
-# No package is built or published -- this is a continuously-deployed web app, so the
+# bump lands on main (see CLAUDE.md's Releases section and the /release skill, which
+# bumps pyproject.toml's version as part of every develop -> main / hotfix PR). No
+# package is built or published -- this is a continuously-deployed web app, so the
 # tag + release exist purely to mark what shipped. It also closes each GH issue shipped
-# in the new commit range, with a French permalink comment -- this used to be a manual
-# step in the release-workflow skill, but doing it here means it happens regardless of
-# which process (or human) actually pushed the version bump to main.
+# in the new commit range, with a French permalink comment -- doing this here (rather
+# than in a skill) means it happens regardless of which process or human pushed the
+# version bump to main.
 
 on:
   push:

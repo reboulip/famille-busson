@@ -7,7 +7,7 @@ description: Work one or more GitHub issues from branch to develop. Use when ask
 
 > See `CLAUDE.md`'s **Branch Model** section for the full branch table and merge rules
 > (`main` / `develop` / `<type>/issue-<N>/<summary>` / `hotfix/*`). This skill covers the
-> issue → `develop` half only; `develop` → `main` is `release-workflow`.
+> issue → `develop` half only; `develop` → `main` is the `/release` skill.
 
 ## Process one issue (the canonical sub-procedure)
 1. Fetch the issue details: `gh issue view <number>`.
@@ -53,11 +53,12 @@ description: Work one or more GitHub issues from branch to develop. Use when ask
 
    *Message généré par Claude.*
    ```
-   Do **not** close the issue here — closing happens in the `release-workflow` once the
-   commit ships to `main`.
+   Do **not** close the issue here — `.github/workflows/release.yml` closes it
+   automatically, with its own French permalink comment, once the commit ships to `main`
+   (see `CLAUDE.md`'s Releases section).
 
 The user reviews `develop` and triggers the release-to-main flow explicitly (see the
-`release-workflow` skill). Never push directly to `main`.
+`/release` skill). Never push directly to `main`.
 
 ## Batch / parallel orchestration
 For several issues at once, parallelize the **analysis** (read-only, safe to fan out) and
@@ -102,4 +103,4 @@ keep **implementation serial** (one merge into `develop` at a time → no races)
 ## Merge strategy
 - Issue → develop: local squash-merge (no PR) — one issue = one commit on `develop`.
 - Commit message format: `<type>: <summary> (#<issue-number>)`.
-- develop → main is a separate, explicit step — see the `release-workflow` skill.
+- develop → main is a separate, explicit step — see the `/release` skill.
