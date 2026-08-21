@@ -135,6 +135,28 @@ def test_profile_detail_404_on_invalid_pk(auth_client):
 
 
 @pytest.mark.django_db
+def test_profile_detail_contact_info_each_on_its_own_line(auth_client, person):
+    person.phone_number = "+33 6 12 34 56 78"
+    person.postal_address = "1 rue de la République, Lyon"
+    person.birth_date = "1990-01-01"
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert content.count('class="contact-line') == 4
+    assert " - ☎️" not in content
+
+
+@pytest.mark.django_db
+def test_profile_detail_phone_link_uses_tel_scheme(auth_client, person):
+    person.phone_number = "+33 6 12 34 56 78"
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert 'href="tel:+33 6 12 34 56 78"' in content
+    assert "sip:" not in content
+
+
+@pytest.mark.django_db
 def test_profile_detail_context_has_person(auth_client, person):
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
     assert response.context["person"] == person

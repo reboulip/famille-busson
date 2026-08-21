@@ -19,19 +19,19 @@
                     <a href="{% url 'person-relations-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les relations</a>
                 {% endif %}
             </h1>
-            <p>
-                📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email }}>">{{ person.email }}</a>
-                {% if person.phone_number %}
-                - ☎️ <a href="sip:{{ person.phone_number }}">{{ person.phone_number }}</a>
-                {% endif %}
+            <p class="contact-line mb-1">
+                📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email|urlencode }}>">{{ person.email }}</a>
             </p>
+            {% if person.phone_number %}
+                <p class="contact-line mb-1">☎️ <a href="tel:{{ person.phone_number }}">{{ person.phone_number }}</a></p>
+            {% endif %}
             {% if person.postal_address %}
-                <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">
+                <p class="contact-line mb-1">🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">
                     {{ person.postal_address}}
                     </a>
                 </p>
             {% endif %}
-            {% if person.birth_date %}<p>🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
+            {% if person.birth_date %}<p class="contact-line mb-1">🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
         </div>
     </div>
     {% if person.description %}

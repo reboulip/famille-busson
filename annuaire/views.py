@@ -48,11 +48,18 @@ def media_serve(request, path):
 
 @login_required
 def home(request):
+    import datetime
+
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
     recent_posts = BlogPost.objects.prefetch_related("authors").order_by("-created_at")[:5]
     recent_comments = Comment.objects.select_related("post", "author").order_by("-created_at")[:5]
+    chalets = Chalet.objects.all().order_by("name")[:6]
+    today = datetime.date.today()
+    upcoming_presences = (
+        PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
+    )
     return render(
         request,
         "annuaire/home.html",
@@ -60,6 +67,8 @@ def home(request):
             "recent_persons": recent_persons,
             "recent_posts": recent_posts,
             "recent_comments": recent_comments,
+            "chalets": chalets,
+            "upcoming_presences": upcoming_presences,
         },
     )
 

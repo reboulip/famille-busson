@@ -23,12 +23,35 @@
             </div>
         </div>
 
-        <div class="tile tile-placeholder">
+        <div class="tile">
             <div class="tile-header">
                 <h2>Chalets PSV</h2>
                 <a href="{% url 'chalet-list' %}" class="tile-link">Voir tout →</a>
             </div>
-            <p>Gérez les réservations et présences aux chalets.</p>
+            <div class="annuaire-mini-grid">
+                {% for chalet in chalets %}
+                    <a href="{% url 'chalet-detail' chalet.pk %}" class="personne-mini-card" title="{{ chalet.name }}">
+                        {% if chalet.photo %}
+                            <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="personne-mini-photo">
+                        {% else %}
+                            <div class="chalet-photo-placeholder mini">🏔️</div>
+                        {% endif %}
+                        <span class="personne-mini-nom">{{ chalet.name }}</span>
+                    </a>
+                {% empty %}
+                    <p>Aucun chalet pour l'instant.</p>
+                {% endfor %}
+            </div>
+            {% for presence in upcoming_presences %}
+                <div class="home-presence-item">
+                    <a href="{% url 'chalet-detail' presence.chalet.pk %}">
+                        <strong>{{ presence.person }}</strong> à {{ presence.chalet.name }}
+                    </a>
+                    <span class="muted">— du {{ presence.start_date|date:"j F" }} au {{ presence.end_date|date:"j F" }}</span>
+                </div>
+            {% empty %}
+                <p>Aucune présence à venir.</p>
+            {% endfor %}
         </div>
 
         <div class="tile">

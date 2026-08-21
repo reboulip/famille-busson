@@ -600,6 +600,17 @@ h2 {
     margin-bottom: 0;
 }
 
+.chalet-photo-placeholder.mini {
+    width: 60px;
+    height: 60px;
+    font-size: 1.6em;
+    margin-bottom: 0;
+}
+
+.home-presence-item {
+    margin-bottom: 8px;
+}
+
 /* Tableau présences */
 .presence-table {
     width: 100%;

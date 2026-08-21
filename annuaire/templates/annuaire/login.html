@@ -15,3 +15,6 @@
     <p>Tu n'as pas encore créé ton compte ? <a href="{% url 'signup' %}">C'est par ici</a>.</p>
     <p>Mot de passe oublié ? <a href="{% url 'password-reset' %}">Réinitialise-le ici</a>.</p>
 {% endblock %}
+{% block extra_js %}
+    <script src="{% static 'js/password_toggle.js' %}"></script>
+{% endblock extra_js %}

@@ -29,6 +29,20 @@ def test_home_context_has_recent_persons(auth_client, person):
 
 
 @pytest.mark.django_db
+def test_home_context_has_chalets(auth_client, chalet):
+    response = auth_client.get(reverse("home"))
+    assert "chalets" in response.context
+    assert chalet in response.context["chalets"]
+
+
+@pytest.mark.django_db
+def test_home_context_has_upcoming_presences(auth_client, presence):
+    response = auth_client.get(reverse("home"))
+    assert "upcoming_presences" in response.context
+    assert presence in response.context["upcoming_presences"]
+
+
+@pytest.mark.django_db
 def test_login_post_valid_honors_next_redirect(client, person):
     response = client.post(
         reverse("login") + "?next=" + reverse("directory"),
@@ -47,6 +61,12 @@ def test_login_post_valid_honors_next_redirect(client, person):
 def test_login_get_returns_200(client):
     response = client.get(reverse("login"))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_login_page_includes_password_toggle_script(client):
+    response = client.get(reverse("login"))
+    assert "js/password_toggle.js" in response.content.decode()
 
 
 @pytest.mark.django_db

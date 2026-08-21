@@ -18,7 +18,7 @@
 - [x] 1.2b · Add chalets to the Carte view — extend the carte's avatar-marker approach
   (item 1.4) to chalet markers. (priority: medium) [#54] (split from 1.2, requires:
   1.2a, 1.4)
-- [ ] 1.3 · Populate the home page Chalets card — currently empty even when chalets
+- [x] 1.3 · Populate the home page Chalets card — currently empty even when chalets
   and presences exist; populate it the same way as the other home page cards.
   (priority: medium) [#55]
 
@@ -27,17 +27,17 @@
   correctly but profile pictures don't render. (priority: medium) [#49]
 
 ### Cluster: Profil et authentification
-- [ ] 1.5 · Line breaks between contact info types — annuaire profile display should
+- [x] 1.5 · Line breaks between contact info types — annuaire profile display should
   systematically break to a new line between each type of contact info (email,
   phone, etc.), including on mobile. (priority: low) [#47]
-- [ ] 1.6 · Show/hide password toggle at login — let a user reveal the password they
+- [x] 1.6 · Show/hide password toggle at login — let a user reveal the password they
   just typed on the login form for verification, via a standard show/hide toggle.
   (priority: low) [#50]
 
 ### Cluster: Navigation
-- [ ] 1.7 · Link to GitHub issues from the site — add a link so members can report
+- [x] 1.7 · Link to GitHub issues from the site — add a link so members can report
   bugs directly. (priority: low) [#51]
-- [ ] 1.8 · Home page link in the navigation bar — currently no way to get back to
+- [x] 1.8 · Home page link in the navigation bar — currently no way to get back to
   the home page from elsewhere in the site; add a nav link. (priority: low) [#56]
 
 ### Cluster: Généalogie — arbre interactif

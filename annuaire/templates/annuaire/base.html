@@ -26,6 +26,8 @@
             <div class="offcanvas-body">
                 <div class="sidebar">
                     <ul>
+                        <li><a href="{% url 'home' %}">Accueil</a></li>
+
                         {% if user.is_authenticated %}
                             <li class="sidebar-title sidebar-profile">
                                 <a href="{% url 'my-profile' %}">
@@ -65,6 +67,13 @@
                                 </ul>
                             </li>
                         {% endif %}
+
+                        <li class="sidebar-title">Aide</li>
+                        <li>
+                            <ul>
+                                <li><a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug</a></li>
+                            </ul>
+                        </li>
 
                         {% if user.is_authenticated %}
                             <li class="sidebar-title">
