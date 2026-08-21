@@ -68,3 +68,15 @@
   with author vs. reader roles (SCI project-group members are authors, SCI
   shareholders are readers). Needs a groups/roles/permissions design pass first — no
   such model exists yet. (priority: tbd) [#57]
+
+### Cluster: Chalets
+- [ ] 2.3 · Add owner-or-staff chalet deletion — no `ChaletDeleteView` exists; let a
+  chalet's owners or staff delete it, gated by the existing `ChaletOwnerOrStaffMixin`.
+  Needs a decision on cascade behavior for any `PresencePSV` rows tied to the chalet.
+  (priority: low) [#62]
+
+### Cluster: Profil et authentification
+- [ ] 2.4 · Extend the password show/hide toggle to other password forms — wire the
+  existing `password_toggle.js` (already page-agnostic) into `signup.html`,
+  `password_reset_confirm.html`, and `password_change_forced.html` via `{% block
+  extra_js %}`. (priority: low) [#64]
