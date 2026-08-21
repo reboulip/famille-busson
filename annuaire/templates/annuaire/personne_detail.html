@@ -13,6 +13,7 @@
         <div>
             <h1>
                 {{ person.first_name }} {{ person.last_name }}
+                <a href="{% url 'genealogie-person' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Voir dans l'arbre</a>
                 {% if can_edit %}
                     <a href="{% url 'person-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier le profil</a>
                     <a href="{% url 'person-relations-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les relations</a>

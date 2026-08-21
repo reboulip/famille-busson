@@ -155,7 +155,7 @@ class Command(BaseCommand):
     N_PERSONS = 20
     N_CHALETS = 5
     N_PRESENCES = 50
-    N_RELATIONS = 30
+    N_RELATIONS = 15  # directional relations wiring the family below; the signal mirrors each
     N_POSTS = 30
     N_ATTACHMENTS = 15
     N_COMMENTS = 100
@@ -295,6 +295,7 @@ class Command(BaseCommand):
                         "",
                     ]
                 ),
+                gender=random.choice(["M", "F"]),
             )
             # Create the account separately so the signal links it to the person.
             account = Account.objects.create_user(email=email, password="dev")
@@ -326,35 +327,65 @@ class Command(BaseCommand):
             )
 
     def _create_relations(self, persons: list[Person]):
-        """Create directional Relations; the post-save signal auto-creates the
-        inverse, so DB row count is roughly doubled."""
-        self.stdout.write(f"Creating {self.N_RELATIONS} directional relations (signal will mirror them)…")
-        seen_pairs: set[tuple[int, int]] = set()
-        created = 0
-        attempts = 0
-        # 0=mariage, 1=conjoint, 2=parent, 3=enfant
-        while created < self.N_RELATIONS and attempts < self.N_RELATIONS * 10:
-            attempts += 1
-            p1, p2 = random.sample(persons, 2)
-            pair_key = tuple(sorted([p1.pk, p2.pk]))
-            if pair_key in seen_pairs:
-                continue
-            seen_pairs.add(pair_key)
-            rel_type = random.choice([0, 1, 2])  # we never seed enfant; signal handles
-            start_date = None
-            if rel_type in (0, 1):
-                start_date = datetime.date(
-                    random.randint(1980, 2020),
-                    random.randint(1, 12),
-                    random.randint(1, 28),
-                )
-            Relation.objects.create(
-                person1=p1,
-                person2=p2,
-                relationship_type=rel_type,
-                start_date=start_date,
-            )
-            created += 1
+        """Wire one coherent 3-generation family from a handful of the seeded
+        persons (indices below), and leave everyone else unrelated. A fully
+        random pairing (the previous approach) produced parent-cycles and people
+        who were simultaneously a parent and spouse of the same person -- fine
+        for the annuaire/carte pages, but unreadable as a family tree. persons[0]
+        (the "regular user" test login, see handle()) is deliberately included,
+        so logging in with that account lands inside a real family instead of on
+        an isolated node. The other seeded persons stay relation-free on
+        purpose, so the family tree's overview has more than one disconnected
+        branch to show."""
+        self.stdout.write("Creating a coherent 3-generation family (signal will mirror each relation)…")
+
+        grandparents = (persons[1], persons[2])
+        children = (persons[0], persons[3], persons[4])
+        children_spouses = (persons[10], persons[11])  # only children[0] and children[1] marry
+        grandchildren = (persons[5], persons[6], persons[7])
+
+        birth_years = {
+            grandparents[0].pk: 1948,
+            grandparents[1].pk: 1950,
+            children[0].pk: 1975,
+            children[1].pk: 1978,
+            children[2].pk: 1981,
+            children_spouses[0].pk: 1976,
+            children_spouses[1].pk: 1979,
+            grandchildren[0].pk: 2005,
+            grandchildren[1].pk: 2008,
+            grandchildren[2].pk: 2010,
+        }
+        for member in (*grandparents, *children, *children_spouses, *grandchildren):
+            member.birth_date = datetime.date(birth_years[member.pk], random.randint(1, 12), random.randint(1, 28))
+            member.save()
+
+        def parent_of(child: Person, parent: Person) -> None:
+            Relation.objects.create(person1=child, person2=parent, relationship_type=2)
+
+        def spouses(person_a: Person, person_b: Person, start_year: int) -> None:
+            start_date = datetime.date(start_year, random.randint(1, 12), random.randint(1, 28))
+            Relation.objects.create(person1=person_a, person2=person_b, relationship_type=1, start_date=start_date)
+
+        spouses(grandparents[0], grandparents[1], start_year=1970)
+        for child in children:
+            parent_of(child, grandparents[0])
+            parent_of(child, grandparents[1])
+
+        spouses(children[0], children_spouses[0], start_year=2000)
+        spouses(children[1], children_spouses[1], start_year=2003)
+
+        parent_of(grandchildren[0], children[0])
+        parent_of(grandchildren[0], children_spouses[0])
+        parent_of(grandchildren[1], children[0])
+        parent_of(grandchildren[1], children_spouses[0])
+        parent_of(grandchildren[2], children[1])
+        parent_of(grandchildren[2], children_spouses[1])
+
+        self.stdout.write(
+            f"  · {grandparents[0]} & {grandparents[1]} → "
+            f"{len(children)} children → {len(grandchildren)} grandchildren"
+        )
 
     def _create_posts(self, persons: list[Person]) -> list[BlogPost]:
         self.stdout.write(f"Creating {self.N_POSTS} blog posts…")

@@ -30,3 +30,10 @@ def test_base_includes_favicon_link(client):
 def test_base_vendors_bootstrap_bundle_js(client):
     response = client.get(reverse("login"))
     assert "js/bootstrap.bundle.min.js" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_includes_genealogie_nav_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert response.status_code == 200
+    assert reverse("genealogie") in response.content.decode()

@@ -18,9 +18,10 @@ from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, UpdateView, View
+from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
+from .family_tree import build_family_chart_data, find_components
 from .forms import (
     AddPresenceForm,
     AddRelationForm,
@@ -424,6 +425,26 @@ class MapListView(LoginRequiredMixin, ListView):
                 for person in context["persons"]
             ]
         )
+        return context
+
+
+class FamilyTreeView(LoginRequiredMixin, TemplateView):
+    template_name = "annuaire/genealogie.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        data = build_family_chart_data()
+        context["graph_json"] = json.dumps(data)
+        context["components_json"] = json.dumps(find_components(data))
+
+        pk = kwargs.get("pk")
+        if pk is not None:
+            person = get_object_or_404(Person, pk=pk)
+            context["main_id"] = str(person.pk)
+        else:
+            profile = getattr(self.request.user, "profile", None)
+            context["main_id"] = str(profile.pk) if profile else None
+
         return context
 
 

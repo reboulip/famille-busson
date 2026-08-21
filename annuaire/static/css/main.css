@@ -371,6 +371,71 @@ h2 {
     border-radius: 8px;
 }
 
+.genealogie-container {
+    height: 70vh;
+    min-height: 320px;
+    margin-top: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    /* Anchors family-chart's .f3-nav-cont search bar (position: absolute in its
+       own CSS) to this container instead of the page's top-left corner. */
+    position: relative;
+}
+
+.genealogie-chart-mount {
+    /* f3.createChart() overwrites whatever className it's given, so the .f3
+       class family-chart's own CSS requires (e.g. ".f3 div.card-image-circle
+       img") has to live on an outer element it never touches -- this div is
+       the one actually passed to createChart, sized to fill that wrapper. */
+    width: 100%;
+    height: 100%;
+}
+
+.genealogie-container svg {
+    /* family-chart sizes its internal drawing to its container but never sets
+       the <svg> element's own box -- without this it falls back to the
+       browser's 300x150 default, showing only a tiny cropped corner of the
+       (correctly laid out) tree. */
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.genealogie-layout {
+    gap: 16px;
+}
+
+.genealogie-branch-picker {
+    max-width: 400px;
+    margin-top: 16px;
+}
+
+.genealogie-detail {
+    flex: 0 0 320px;
+    margin-top: 16px;
+    padding: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    align-self: flex-start;
+}
+
+.genealogie-detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.genealogie-detail-avatar {
+    width: 4em;
+    height: 4em;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.genealogie-chip {
+    margin: 0 4px 4px 0;
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;

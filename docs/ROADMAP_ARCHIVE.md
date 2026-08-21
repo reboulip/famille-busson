@@ -3,6 +3,22 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `release-workflow` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.5.0
+
+### Généalogie — arbre interactif
+- **Interactive family tree view** — new `/annuaire/genealogie/` page building a
+  genealogy graph from `Relation` records, rendered with the `family-chart` JS library
+  (vendored, along with its `d3` dependency, under `annuaire/static/vendor/`). Supports
+  incremental exploration from any profile (`/annuaire/genealogie/<pk>/`, also linked
+  from each profile page) and a branch picker covering every disconnected family
+  component, since the library renders one ego-centric tree at a time rather than a
+  single unified overview. Clicking a card opens an inline detail panel (photo, birth
+  year, parent/spouse/child chips, link to the full profile) without moving the tree; a
+  built-in search finds anyone by name. Added `Person.gender` (nullable, not displayed
+  on the profile page — collected only because the rendering library requires it) and
+  reworked `populate_dev_data`'s relation seeding to build one coherent multi-generation
+  family instead of fully random pairs. [#40]
+
 ## v0.4.0
 
 ### Annuaire — administration

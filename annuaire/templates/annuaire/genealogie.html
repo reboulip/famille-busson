@@ -1,0 +1,23 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'vendor/family-chart/family-chart.css' %}">
+{% endblock extra_css %}
+{% block content %}
+    <h1>Généalogie</h1>
+
+    <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+
+    <div class="d-lg-flex genealogie-layout">
+        <div id="genealogie-chart" class="f3 genealogie-container flex-grow-1" data-graph='{{ graph_json|escape }}'
+             data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'>
+            <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
+        </div>
+        <aside id="genealogie-detail" class="genealogie-detail" hidden></aside>
+    </div>
+{% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'vendor/d3/d3.min.js' %}"></script>
+    <script src="{% static 'vendor/family-chart/family-chart.min.js' %}"></script>
+    <script src="{% static 'js/family_tree.js' %}"></script>
+{% endblock extra_js %}

@@ -45,6 +45,7 @@ class ProfileEditForm(forms.ModelForm):
             "longitude",
             "birth_date",
             "description",
+            "gender",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -54,6 +55,7 @@ class ProfileEditForm(forms.ModelForm):
         }
         help_texts = {
             "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+            "gender": "Utilisé uniquement pour l'affichage de l'arbre généalogique.",
         }
 
     def clean_profile_photo(self):
