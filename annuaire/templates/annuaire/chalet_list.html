@@ -3,9 +3,7 @@
 {% block content %}
     <div class="page-header">
         <h1>Chalets PSV</h1>
-        {% if user.is_staff %}
-            <a href="{% url 'chalet-create' %}" class="btn btn-outline-primary">+ Créer un chalet</a>
-        {% endif %}
+        <a href="{% url 'chalet-create' %}" class="btn btn-outline-primary">+ Créer un chalet</a>
     </div>
 
     <div class="annuaire-grid">

@@ -192,7 +192,16 @@ class PresenceForm(forms.ModelForm):
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "photo"]
+        fields = ["name", "address", "gps_coordinates", "photo", "owners"]
+        widgets = {
+            "owners": forms.MultipleHiddenInput,
+        }
+
+    def __init__(self, *args, current_person=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["owners"].required = False
+        if current_person is not None and not self.is_bound and not self.initial.get("owners"):
+            self.fields["owners"].initial = [current_person.pk]
 
 
 class ChaletUpdateForm(forms.ModelForm):

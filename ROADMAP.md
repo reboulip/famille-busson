@@ -7,7 +7,7 @@
 ## Phase 1
 
 ### Cluster: Chalets en libre-service
-- [ ] 1.1 · Open chalet creation to all accounts — chalet creation is currently
+- [x] 1.1 · Open chalet creation to all accounts — chalet creation is currently
   staff-only; allow any authenticated account to create a chalet, auto-assign the
   creator as an owner, and let additional owners be added at creation time using the
   existing person-picker JS component. (priority: medium) [#48] [#52]
