@@ -483,6 +483,14 @@ h2 {
     overflow-wrap: anywhere;
 }
 
+/* Person.gender was dropped (#59) -- every card now falls into the vendor's
+   card-genderless class, whose default ring color is a near-invisible light
+   gray. Give it a visible, gender-neutral color instead. */
+.f3 div.card-genderless .card-inner {
+    background-color: #adb5bd;
+    border-color: #868e96;
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;

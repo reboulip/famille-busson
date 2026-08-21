@@ -194,11 +194,8 @@ def test_profile_detail_shows_family_tree_link_for_other_profile(auth_client, ot
 
 @pytest.mark.django_db
 def test_profile_detail_does_not_display_gender(auth_client, person):
-    # Gender is collected only as a technical requirement for the family tree feature
-    # (the family-chart JS library needs it) -- it must never surface on the profile
-    # page itself, to avoid turning it into a personal/identity question.
-    person.gender = "M"
-    person.save()
+    # Person.gender was dropped entirely (#59) -- this guard stays as a regression
+    # check that no such field ever resurfaces on the profile display page.
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
     content = response.content.decode()
     assert "Homme" not in content
@@ -285,29 +282,6 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
     # regardless of the template), so only an HTML assertion catches this.
     response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
     assert 'enctype="multipart/form-data"' in response.content.decode()
-
-
-# ---------------------------------------------------------------------------
-# Gender field (family tree prerequisite, #40)
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.django_db
-def test_profile_update_post_valid_updates_gender(auth_client, person):
-    data = {"first_name": person.first_name, "last_name": person.last_name, "gender": "F"}
-    data.update(_empty_formset_data())
-    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
-    assert response.status_code == 302
-    person.refresh_from_db()
-    assert person.gender == "F"
-
-
-@pytest.mark.django_db
-def test_profile_update_form_includes_gender_help_text(auth_client, person):
-    # The field must explain *why* it's asked -- a technical requirement for the
-    # family tree feature, not a personal/identity question.
-    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
-    assert "arbre généalogique" in response.content.decode()
 
 
 # ---------------------------------------------------------------------------

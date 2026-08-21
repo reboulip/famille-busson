@@ -59,7 +59,6 @@ erDiagram
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
 | `description` | TextField | Infos utiles | optional |
-| `gender` | CharField | Genre | max_length=1, choices: M=Homme, F=Femme, optional |
 
 ### `Settings`
 

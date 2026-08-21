@@ -42,7 +42,7 @@
   empty); edges between nodes are missing; selecting a node to show the detail panel
   de-centers the tree; and node labels don't show the full name. (priority: high)
   [#59] (split from 1.9)
-- [ ] 1.9b · Drop `Person.gender` — investigation confirmed the feature works without
+- [x] 1.9b · Drop `Person.gender` — investigation confirmed the feature works without
   it (family-chart only used it cosmetically); approved by the user, drop the field,
   migration, form field, and family-chart payload key, with a generation-depth CSS
   accent replacing the lost card color cue. (priority: high) [#59] (split from 1.9,

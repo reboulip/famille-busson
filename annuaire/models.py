@@ -36,11 +36,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class Person(models.Model):
-    GENDER_CHOICES = [
-        ("M", "Homme"),
-        ("F", "Femme"),
-    ]
-
     last_name = models.CharField(max_length=100, verbose_name="Nom")
     account = models.OneToOneField(
         Account, related_name="profile", on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Compte"
@@ -54,7 +49,6 @@ class Person(models.Model):
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
-    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, blank=True, null=True, verbose_name="Genre")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
