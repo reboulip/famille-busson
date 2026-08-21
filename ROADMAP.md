@@ -37,13 +37,16 @@
   the home page from elsewhere in the site; add a nav link. (priority: low) [#56]
 
 ### Cluster: Généalogie — arbre interactif
-- [ ] 1.9 · Fix genealogy view usability issues — search results render
-  black-on-black; empty parent nodes show a confusing "ADD" placeholder (leave empty
-  or mark "unregistered" instead); edges between nodes are missing; selecting a node
-  to show the detail panel de-centers the tree; and node labels don't show the full
-  name. Also investigate dropping `Person.gender` — the feature appears to work
-  without it, and removing it would be preferable given it was only added for
-  family-chart's technical requirement. (priority: high) [#59]
+- [x] 1.9a · Fix genealogy view rendering/UX bugs — search results render
+  black-on-black; empty parent nodes show a confusing "ADD" placeholder (now left
+  empty); edges between nodes are missing; selecting a node to show the detail panel
+  de-centers the tree; and node labels don't show the full name. (priority: high)
+  [#59] (split from 1.9)
+- [ ] 1.9b · Drop `Person.gender` — investigation confirmed the feature works without
+  it (family-chart only used it cosmetically); approved by the user, drop the field,
+  migration, form field, and family-chart payload key, with a generation-depth CSS
+  accent replacing the lost card color cue. (priority: high) [#59] (split from 1.9,
+  requires: 1.9a)
 
 ## Phase 2
 

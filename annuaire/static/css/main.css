@@ -436,6 +436,53 @@ h2 {
     margin: 0 4px 4px 0;
 }
 
+/* Généalogie — surcharges du thème sombre de family-chart (vendored
+   family-chart.css: it ships a dark UI theme with white text/edges, but the
+   app renders it on Bootstrap's white page. Never edit the vendor CSS
+   directly -- override the specific selectors here instead. Selectors below
+   match family-chart.css as vendored at v1 (see annuaire/static/vendor/family-chart/). */
+
+/* Edges between nodes are drawn stroke:#fff by the vendor JS -- invisible on
+   a white background. */
+.f3 .link {
+    stroke: #6c757d;
+    stroke-width: 1.5px;
+}
+
+/* Search autocomplete: vendor sets a dark background but never sets a text
+   color, so text inherits Bootstrap's near-black body color -- black on
+   near-black. Re-theme the whole widget to the light palette instead of
+   touching --background-color/--text-color, which are load-bearing for the
+   person cards' own white-on-translucent-plate labels. */
+.f3 .f3-autocomplete input,
+.f3 .f3-autocomplete-items,
+.f3 .f3-autocomplete-item > div {
+    background-color: #fff;
+    color: #212529;
+    border-color: #dee2e6;
+}
+
+.f3 .f3-autocomplete-item > div:hover,
+.f3 .f3-autocomplete-item.f3-selected > div {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.f3 .f3-autocomplete-toggle {
+    color: #212529;
+}
+
+.f3 .f3-autocomplete input:focus {
+    outline: 2px solid #0d6efd;
+}
+
+/* Long French names get hard-clipped by the vendor's single-line label. */
+.f3 div.card-image-circle div.card-label {
+    white-space: normal;
+    max-width: 200%;
+    overflow-wrap: anywhere;
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;
