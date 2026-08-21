@@ -4,7 +4,10 @@ name: Release
 # bump lands on main (see CLAUDE.md's Releases section and the release-workflow skill,
 # which bumps pyproject.toml's version as part of every develop -> main / hotfix PR).
 # No package is built or published -- this is a continuously-deployed web app, so the
-# tag + release exist purely to mark what shipped.
+# tag + release exist purely to mark what shipped. It also closes each GH issue shipped
+# in the new commit range, with a French permalink comment -- this used to be a manual
+# step in the release-workflow skill, but doing it here means it happens regardless of
+# which process (or human) actually pushed the version bump to main.
 
 on:
   push:
@@ -12,6 +15,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: release
@@ -49,3 +53,59 @@ jobs:
           git tag -a "$VERSION" -m "$VERSION"
           git push origin "$VERSION"
           gh release create "$VERSION" --title "$VERSION" --generate-notes
+
+      - name: Close issues shipped in this release
+        if: steps.version.outputs.already_tagged == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          VERSION="v${{ steps.version.outputs.version }}"
+          PREV_TAG=$(git tag --sort=-v:refname | grep -vFx "$VERSION" | head -1 || true)
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found; nothing to diff, skipping issue closing."
+            exit 0
+          fi
+          echo "Closing issues shipped in ${PREV_TAG}..${VERSION}"
+
+          # Only feat:/fix: commits represent squash-merged issue work (per CLAUDE.md's
+          # Branch Model, commit message convention "<type>: <summary> (#<issue-number>)").
+          # docs:/chore:/etc. commits (e.g. roadmap-triage commits) may reference an issue
+          # number without actually shipping it, and must NOT trigger a close.
+          declare -A issue_commits
+          while IFS= read -r line; do
+            sha="${line%% *}"
+            subject="${line#* }"
+            case "$subject" in
+              "feat: "*|"fix: "*) ;;
+              *) continue ;;
+            esac
+            refs=$(echo "$subject" | grep -oE '\(#[0-9]+(, #[0-9]+)*\)$' | tr -dc '0-9, ')
+            [ -z "$refs" ] && continue
+            for n in ${refs//,/ }; do
+              issue_commits["$n"]+="${sha} ${subject}"$'\n'
+            done
+          done < <(git log "${PREV_TAG}..${VERSION}" --no-merges --format='%H %s')
+
+          for issue in "${!issue_commits[@]}"; do
+            state=$(gh issue view "$issue" --json state -q .state 2>/dev/null || echo "MISSING")
+            if [ "$state" != "OPEN" ]; then
+              echo "Issue #$issue is not open (state=$state), skipping."
+              continue
+            fi
+            body_file=$(mktemp)
+            {
+              while IFS= read -r commit_line; do
+                [ -z "$commit_line" ] && continue
+                sha="${commit_line%% *}"
+                subject="${commit_line#* }"
+                short_sha="${sha:0:7}"
+                echo "Livré sur \`main\` en [${short_sha}](https://github.com/${GITHUB_REPOSITORY}/commit/${sha}) — \`${subject}\`."
+                echo
+              done <<< "${issue_commits[$issue]}"
+              echo "*Message généré automatiquement par la GitHub Action de release.*"
+            } > "$body_file"
+            gh issue comment "$issue" --body-file "$body_file"
+            gh issue close "$issue" --reason completed
+            rm -f "$body_file"
+          done
