@@ -76,24 +76,28 @@ document.addEventListener('DOMContentLoaded', function () {
         if (centerButton) {
             centerButton.addEventListener('click', () => {
                 chart.updateMainId(centerButton.dataset.centerId);
-                chart.updateTree();
+                chart.updateTree({ tree_position: 'main_to_middle' });
             });
         }
     }
 
-    const chart = f3.createChart(container, graph);
+    const mount = document.getElementById('genealogie-chart-mount') || container;
+    const chart = f3.createChart(mount, graph);
     chart
         .setCardHtml()
         .setCardDisplay([['first name', 'last name'], ['birthday']])
         .setCardImageField('avatar')
         .setStyle('imageCircleRect')
         .setOnCardClick(function (e, d) {
-            showDetail(chart, d);
+            // d is family-chart's TreeDatum -- a D3-hierarchy-style wrapper
+            // (depth/parent/children/x/y for layout) with the original datum
+            // preserved intact under d.data, not spread onto d itself.
+            showDetail(chart, d.data);
         });
     chart.setOrientationVertical();
     chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
     chart.updateMainId(initialMainId);
-    chart.updateTree({ initial: true });
+    chart.updateTree({ initial: true, tree_position: 'fit' });
 
     if (branchPicker && components.length > 1) {
         branchPicker.hidden = false;
@@ -107,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function () {
         branchPicker.addEventListener('change', () => {
             if (!branchPicker.value) return;
             chart.updateMainId(branchPicker.value);
-            chart.updateTree({ initial: true });
+            chart.updateTree({ tree_position: 'fit' });
             if (detailPanel) detailPanel.hidden = true;
         });
     }
