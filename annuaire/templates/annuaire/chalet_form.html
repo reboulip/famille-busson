@@ -1,5 +1,6 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load static %}
 {% block content %}
     <div class="form">
         <form method="POST" enctype="multipart/form-data">
@@ -7,7 +8,19 @@
             <fieldset class="form-group">
                 <legend>{% if object %}Modifier {{ object.name }}{% else %}Créer un chalet{% endif %}</legend>
                 {{ form.media }}
-                {{ form|crispy }}
+                {{ form.name|as_crispy_field }}
+                {{ form.address|as_crispy_field }}
+                {{ form.latitude }}
+                {{ form.longitude }}
+                {{ form.gps_coordinates|as_crispy_field }}
+                {{ form.photo|as_crispy_field }}
+                {% if show_owner_picker %}
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="owner-search-input">Propriétaire(s)</label>
+                        {% include "annuaire/_person_picker.html" with input_id="owner-search-input" field_name="owners" initial_json=owners_initial_json aria_label="Chercher un propriétaire" %}
+                        {% if form.owners.errors %}<div class="text-danger small">{{ form.owners.errors }}</div>{% endif %}
+                    </div>
+                {% endif %}
             </fieldset>
             <div class="form-group">
                 <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
@@ -15,4 +28,7 @@
             </div>
         </form>
     </div>
+    {% if show_owner_picker %}
+        <script src="{% static 'js/person_picker.js' %}"></script>
+    {% endif %}
 {% endblock content %}

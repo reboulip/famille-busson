@@ -280,19 +280,53 @@ def test_chalet_create_requires_login(client):
 
 
 @pytest.mark.django_db
-def test_chalet_create_requires_staff(auth_client):
+def test_chalet_create_allowed_for_any_member(auth_client):
     response = auth_client.get(reverse("chalet-create"))
-    assert response.status_code == 403
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_chalet_create_get_returns_200(staff_client):
+def test_chalet_create_redirects_account_without_profile(client, db):
+    from annuaire.models import Account
+
+    # A fresh email with no matching Person -- the post-save signal (CLAUDE.md
+    # sec. 5) only auto-links when a same-email Person already exists, so this
+    # account genuinely has no profile.
+    Account.objects.create_user(email="noprofile@example.com", password="testpass123!")
+    client.login(username="noprofile@example.com", password="testpass123!")
+    response = client.get(reverse("chalet-create"))
+    assert response.status_code == 302
+    assert reverse("profile-create") in response["Location"]
+
+
+@pytest.fixture
+def staff_person(staff_account):
+    from annuaire.models import Person
+
+    p = Person.objects.create(first_name="Staff", last_name="Member", email=staff_account.email)
+    p.account = staff_account
+    p.save()
+    return p
+
+
+@pytest.mark.django_db
+def test_chalet_create_get_returns_200(staff_client, staff_person):
     response = staff_client.get(reverse("chalet-create"))
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_chalet_create_post_creates_chalet(staff_client, db):
+def test_chalet_create_form_renders_hidden_coordinate_fields(auth_client):
+    # Guard against the address picker silently losing coordinates -- omitting
+    # these hidden fields means address_picker.js has nothing to write into.
+    response = auth_client.get(reverse("chalet-create"))
+    content = response.content.decode()
+    assert 'id="id_latitude"' in content
+    assert 'id="id_longitude"' in content
+
+
+@pytest.mark.django_db
+def test_chalet_create_post_creates_chalet(staff_client, staff_person, db):
     from annuaire.models import Chalet
 
     response = staff_client.post(
@@ -305,10 +339,23 @@ def test_chalet_create_post_creates_chalet(staff_client, db):
 
 
 @pytest.mark.django_db
-def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, db):
+def test_chalet_create_post_invalid_returns_200_with_errors(staff_client, staff_person, db):
     response = staff_client.post(reverse("chalet-create"), {"name": "", "address": ""})
     assert response.status_code == 200
     assert response.context["form"].errors
+
+
+@pytest.mark.django_db
+def test_chalet_create_post_auto_assigns_creator_and_additional_owners(auth_client, person, other_person):
+    from annuaire.models import Chalet
+
+    response = auth_client.post(
+        reverse("chalet-create"),
+        {"name": "Chalet Partagé", "address": "Route du Col 12, Verbier", "owners": [other_person.pk]},
+    )
+    assert response.status_code == 302
+    chalet = Chalet.objects.get(name="Chalet Partagé")
+    assert set(chalet.owners.all()) == {person, other_person}
 
 
 # ---------------------------------------------------------------------------

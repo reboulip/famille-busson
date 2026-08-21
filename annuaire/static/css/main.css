@@ -371,6 +371,30 @@ h2 {
     border-radius: 8px;
 }
 
+.map-marker-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    background-color: #fff;
+}
+
+.map-marker-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.map-marker-avatar-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    background-color: #f0f0f0;
+}
+
 .genealogie-container {
     height: 70vh;
     min-height: 320px;
@@ -434,6 +458,61 @@ h2 {
 
 .genealogie-chip {
     margin: 0 4px 4px 0;
+}
+
+/* Généalogie — surcharges du thème sombre de family-chart (vendored
+   family-chart.css: it ships a dark UI theme with white text/edges, but the
+   app renders it on Bootstrap's white page. Never edit the vendor CSS
+   directly -- override the specific selectors here instead. Selectors below
+   match family-chart.css as vendored at v1 (see annuaire/static/vendor/family-chart/). */
+
+/* Edges between nodes are drawn stroke:#fff by the vendor JS -- invisible on
+   a white background. */
+.f3 .link {
+    stroke: #6c757d;
+    stroke-width: 1.5px;
+}
+
+/* Search autocomplete: vendor sets a dark background but never sets a text
+   color, so text inherits Bootstrap's near-black body color -- black on
+   near-black. Re-theme the whole widget to the light palette instead of
+   touching --background-color/--text-color, which are load-bearing for the
+   person cards' own white-on-translucent-plate labels. */
+.f3 .f3-autocomplete input,
+.f3 .f3-autocomplete-items,
+.f3 .f3-autocomplete-item > div {
+    background-color: #fff;
+    color: #212529;
+    border-color: #dee2e6;
+}
+
+.f3 .f3-autocomplete-item > div:hover,
+.f3 .f3-autocomplete-item.f3-selected > div {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+.f3 .f3-autocomplete-toggle {
+    color: #212529;
+}
+
+.f3 .f3-autocomplete input:focus {
+    outline: 2px solid #0d6efd;
+}
+
+/* Long French names get hard-clipped by the vendor's single-line label. */
+.f3 div.card-image-circle div.card-label {
+    white-space: normal;
+    max-width: 200%;
+    overflow-wrap: anywhere;
+}
+
+/* Person.gender was dropped (#59) -- every card now falls into the vendor's
+   card-genderless class, whose default ring color is a near-invisible light
+   gray. Give it a visible, gender-neutral color instead. */
+.f3 div.card-genderless .card-inner {
+    background-color: #adb5bd;
+    border-color: #868e96;
 }
 
 /* Tuiles page d'accueil */
@@ -519,6 +598,17 @@ h2 {
     height: 100px;
     font-size: 3em;
     margin-bottom: 0;
+}
+
+.chalet-photo-placeholder.mini {
+    width: 60px;
+    height: 60px;
+    font-size: 1.6em;
+    margin-bottom: 0;
+}
+
+.home-presence-item {
+    margin-bottom: 8px;
 }
 
 /* Tableau présences */

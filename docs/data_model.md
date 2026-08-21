@@ -59,7 +59,6 @@ erDiagram
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
 | `description` | TextField | Infos utiles | optional |
-| `gender` | CharField | Genre | max_length=1, choices: M=Homme, F=Femme, optional |
 
 ### `Settings`
 
@@ -94,6 +93,8 @@ erDiagram
 | `name` | CharField | Nom | max_length=100, required |
 | `address` | CharField | Adresse | max_length=255, required |
 | `gps_coordinates` | CharField | Coordonnées GPS | max_length=100, optional |
+| `latitude` | DecimalField | Latitude | optional |
+| `longitude` | DecimalField | Longitude | optional |
 | `photo` | FileField | Photo | max_length=100, optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_chalets' |
 

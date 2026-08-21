@@ -37,3 +37,26 @@ def test_base_includes_genealogie_nav_link(auth_client):
     response = auth_client.get(reverse("directory"))
     assert response.status_code == 200
     assert reverse("genealogie") in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_includes_home_nav_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert response.status_code == 200
+    assert f'href="{reverse("home")}"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_includes_home_nav_link_for_anonymous_user(client):
+    response = client.get(reverse("login"))
+    assert response.status_code == 200
+    assert f'href="{reverse("home")}"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_includes_bug_report_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    content = response.content.decode()
+    assert "https://github.com/reboulip/famille-busson/issues/new" in content
+    assert 'target="_blank"' in content
+    assert 'rel="noopener"' in content

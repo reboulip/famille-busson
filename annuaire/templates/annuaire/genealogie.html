@@ -13,7 +13,9 @@
              data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'>
             <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
         </div>
-        <aside id="genealogie-detail" class="genealogie-detail" hidden></aside>
+        <aside id="genealogie-detail" class="genealogie-detail d-none d-lg-block">
+            <p class="genealogie-detail-empty">Sélectionnez une personne dans l'arbre.</p>
+        </aside>
     </div>
 {% endblock content %}
 {% block extra_js %}

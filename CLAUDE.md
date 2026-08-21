@@ -165,11 +165,21 @@ gate a build/publish step.
   `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
 - **`ROADMAP.md`** tracks pending work only. Shipped items move to
   **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `release-workflow`).
-- **`ROADMAP.md` heading convention:** `##` headings are phase/batch groupings (mirroring
-  `docs/ROADMAP_ARCHIVE.md`'s `## vX.Y.Z` pattern) — grouping several related-or-just-
-  convenient items, not necessarily one theme. Optional `###` subheadings mark themes
-  within a phase. New GH-issue-triage items (see `gh-issues`) should by default land
-  under the current open phase heading rather than each minting a new `##` heading; open
-  a new phase heading only when the batch is large/urgent enough to warrant its own
-  (e.g. a hotfix-flavored batch). Items carry a `[#N]` GH back-reference. See §8 for
-  whether a phase's issues ship as separate or combined branches.
+- **`ROADMAP.md` heading convention (numbered phases, adopted 2026-08-21):** `##`
+  headings are **numbered phases** — `## Phase N` — one phase corresponding to one
+  release/sprint (superseding the earlier `## vX.Y.Z`-mirroring / lettered-item scheme
+  still visible in `docs/ROADMAP_ARCHIVE.md`'s older entries). Within a phase, `###
+  Cluster: <name>` subheadings group related items into **clusters** — a cluster
+  prefigures a `dev-pipeline` wave, but is only a planning-time hint: `dev-pipeline`
+  still computes actual waves from real dependencies and may regroup. Items are numbered
+  `N.1`, `N.2`, `N.3`, ... **continuously across the whole phase** (not reset per
+  cluster), and carry a `[#N]` GH back-reference (`[#N] [#M]` when one item merges
+  several issues). A dependency between items is noted `(requires: N.M)` using this
+  numeric id (not a letter). New GH-issue-triage items (see `gh-issues`) marked
+  *implement* land under the current/next open phase — by default the same phase rather
+  than each minting a new one, unless the batch is large/urgent enough to warrant its own
+  (e.g. a hotfix-flavored batch). Items marked *defer* now also get a placeholder entry
+  under a later, not-yet-scoped phase (e.g. `## Phase 2`) instead of being omitted from
+  `ROADMAP.md` entirely — their scope gets refined at the next triage pass, and that
+  phase can be renumbered/promoted once it has real near-term scope. See §8 for whether
+  a phase's issues ship as separate or combined branches.

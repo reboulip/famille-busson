@@ -45,7 +45,6 @@ class ProfileEditForm(forms.ModelForm):
             "longitude",
             "birth_date",
             "description",
-            "gender",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -55,7 +54,6 @@ class ProfileEditForm(forms.ModelForm):
         }
         help_texts = {
             "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
-            "gender": "Utilisé uniquement pour l'affichage de l'arbre généalogique.",
         }
 
     def clean_profile_photo(self):
@@ -194,13 +192,36 @@ class PresenceForm(forms.ModelForm):
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "photo"]
+        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo", "owners"]
+        widgets = {
+            "address": AddressAutocompleteInput,
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
+            "owners": forms.MultipleHiddenInput,
+        }
+        help_texts = {
+            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+        }
+
+    def __init__(self, *args, current_person=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["owners"].required = False
+        if current_person is not None and not self.is_bound and not self.initial.get("owners"):
+            self.fields["owners"].initial = [current_person.pk]
 
 
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "photo"]
+        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo"]
+        widgets = {
+            "address": AddressAutocompleteInput,
+            "latitude": forms.HiddenInput,
+            "longitude": forms.HiddenInput,
+        }
+        help_texts = {
+            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+        }
 
 
 class BulkAccountCreateForm(forms.Form):

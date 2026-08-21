@@ -12,8 +12,14 @@
             {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
         </p>
     {% endif %}
+    {% if unresolved_chalet_count %}
+        <p class="search-result-count">
+            {{ unresolved_chalet_count }} chalet{{ unresolved_chalet_count|pluralize }} sans adresse géolocalisée
+            {{ unresolved_chalet_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
+        </p>
+    {% endif %}
 
-    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}'></div>
+    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}'></div>
 {% endblock content %}
 {% block extra_js %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>

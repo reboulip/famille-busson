@@ -27,7 +27,6 @@ def build_family_chart_data() -> list[dict]:
         person.pk: {
             "id": str(person.pk),
             "data": {
-                "gender": person.gender or "",
                 "first name": person.first_name,
                 "last name": person.last_name,
                 "birthday": str(person.birth_date.year) if person.birth_date else "",

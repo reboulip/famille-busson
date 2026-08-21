@@ -107,12 +107,9 @@ def test_ids_are_strings(person):
 
 
 @pytest.mark.django_db
-def test_gender_and_url_populated(person):
-    person.gender = "F"
-    person.save()
+def test_url_populated(person):
     data = build_family_chart_data()
     node = data[0]
-    assert node["data"]["gender"] == "F"
     assert node["data"]["url"] == f"/annuaire/personne/{person.pk}/"
 
 

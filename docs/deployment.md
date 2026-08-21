@@ -87,6 +87,16 @@ the BAN API), so members who already had an address on file before the "Carte" v
 (`/annuaire/carte/`) shipped show up on it right away, instead of only after their next
 profile edit. Safe to re-run — skips anyone who already has coordinates.
 
+```
+cd /srv/bubu && docker compose exec -T web python manage.py geocode_chalet_addresses
+```
+
+Same idea, for `Chalet.address`/`Chalet.latitude`/`Chalet.longitude`: geocodes every
+existing chalet address that doesn't yet have coordinates, so chalets that already had
+an address on file before the coordinate fields shipped are backfilled immediately
+instead of only after their next edit. Safe to re-run — skips any chalet that already
+has coordinates.
+
 ## Deploying
 
 Nothing manual: pushing to `main` triggers `build-and-deploy.yml`, which builds/pushes

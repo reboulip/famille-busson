@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 import pytest
@@ -134,6 +135,28 @@ def test_profile_detail_404_on_invalid_pk(auth_client):
 
 
 @pytest.mark.django_db
+def test_profile_detail_contact_info_each_on_its_own_line(auth_client, person):
+    person.phone_number = "+33 6 12 34 56 78"
+    person.postal_address = "1 rue de la République, Lyon"
+    person.birth_date = "1990-01-01"
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert content.count('class="contact-line') == 4
+    assert " - ☎️" not in content
+
+
+@pytest.mark.django_db
+def test_profile_detail_phone_link_uses_tel_scheme(auth_client, person):
+    person.phone_number = "+33 6 12 34 56 78"
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert 'href="tel:+33 6 12 34 56 78"' in content
+    assert "sip:" not in content
+
+
+@pytest.mark.django_db
 def test_profile_detail_context_has_person(auth_client, person):
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
     assert response.context["person"] == person
@@ -194,11 +217,8 @@ def test_profile_detail_shows_family_tree_link_for_other_profile(auth_client, ot
 
 @pytest.mark.django_db
 def test_profile_detail_does_not_display_gender(auth_client, person):
-    # Gender is collected only as a technical requirement for the family tree feature
-    # (the family-chart JS library needs it) -- it must never surface on the profile
-    # page itself, to avoid turning it into a personal/identity question.
-    person.gender = "M"
-    person.save()
+    # Person.gender was dropped entirely (#59) -- this guard stays as a regression
+    # check that no such field ever resurfaces on the profile display page.
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
     content = response.content.decode()
     assert "Homme" not in content
@@ -285,29 +305,6 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
     # regardless of the template), so only an HTML assertion catches this.
     response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
     assert 'enctype="multipart/form-data"' in response.content.decode()
-
-
-# ---------------------------------------------------------------------------
-# Gender field (family tree prerequisite, #40)
-# ---------------------------------------------------------------------------
-
-
-@pytest.mark.django_db
-def test_profile_update_post_valid_updates_gender(auth_client, person):
-    data = {"first_name": person.first_name, "last_name": person.last_name, "gender": "F"}
-    data.update(_empty_formset_data())
-    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
-    assert response.status_code == 302
-    person.refresh_from_db()
-    assert person.gender == "F"
-
-
-@pytest.mark.django_db
-def test_profile_update_form_includes_gender_help_text(auth_client, person):
-    # The field must explain *why* it's asked -- a technical requirement for the
-    # family tree feature, not a personal/identity question.
-    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
-    assert "arbre généalogique" in response.content.decode()
 
 
 # ---------------------------------------------------------------------------
@@ -709,3 +706,47 @@ def test_carte_persons_json_includes_name_and_profile_link(auth_client, person):
     content = response.content.decode()
     assert person.first_name in content
     assert reverse("personne-detail", kwargs={"pk": person.pk}) in content
+
+
+@pytest.mark.django_db
+def test_carte_persons_json_includes_avatar(auth_client, person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert persons[0]["avatar"]
+
+
+@pytest.mark.django_db
+def test_carte_includes_chalets_with_coordinates(auth_client, chalet):
+    chalet.latitude = Decimal("46.096")
+    chalet.longitude = Decimal("7.228")
+    chalet.save()
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets[0]["name"] == chalet.name
+    assert chalets[0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+
+
+@pytest.mark.django_db
+def test_carte_excludes_chalets_without_coordinates(auth_client, chalet):
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets == []
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_chalet_count(auth_client, chalet):
+    response = auth_client.get(reverse("carte"))
+    assert response.context["unresolved_chalet_count"] == 1
+
+
+@pytest.mark.django_db
+def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
+    chalet.latitude = Decimal("46.096")
+    chalet.longitude = Decimal("7.228")
+    chalet.save()
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets[0]["avatar"] == "emoji::🏔️"

@@ -295,7 +295,6 @@ class Command(BaseCommand):
                         "",
                     ]
                 ),
-                gender=random.choice(["M", "F"]),
             )
             # Create the account separately so the signal links it to the person.
             account = Account.objects.create_user(email=email, password="dev")

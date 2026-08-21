@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3>Enfants</h3>
             ${relationChipsHtml(person.rels.children, 'Aucun enfant renseigné.')}
         `;
-        detailPanel.hidden = false;
+        detailPanel.classList.remove('d-none');
 
         detailPanel.querySelectorAll('[data-person-id]').forEach((button) => {
             button.addEventListener('click', () => {
@@ -92,10 +92,15 @@ document.addEventListener('DOMContentLoaded', function () {
             // d is family-chart's TreeDatum -- a D3-hierarchy-style wrapper
             // (depth/parent/children/x/y for layout) with the original datum
             // preserved intact under d.data, not spread onto d itself.
+            // Synthetic placeholder cards (single-parent slots, "add" prompts)
+            // carry no real person data -- clicking them must be a no-op.
+            if (d.data.to_add || d.data.unknown || d.data._new_rel_data) return;
             showDetail(chart, d.data);
         });
     chart.setOrientationVertical();
     chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
+    chart.setSingleParentEmptyCard(false);
+    chart.setCardYSpacing(190);
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 
@@ -112,7 +117,10 @@ document.addEventListener('DOMContentLoaded', function () {
             if (!branchPicker.value) return;
             chart.updateMainId(branchPicker.value);
             chart.updateTree({ tree_position: 'fit' });
-            if (detailPanel) detailPanel.hidden = true;
+            if (detailPanel) {
+                detailPanel.classList.add('d-none');
+                detailPanel.innerHTML = '<p class="genealogie-detail-empty">Sélectionnez une personne dans l\'arbre.</p>';
+            }
         });
     }
 });

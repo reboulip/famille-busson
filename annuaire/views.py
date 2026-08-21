@@ -11,9 +11,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied
 from django.core.mail import get_connection, send_mail
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -46,11 +48,18 @@ def media_serve(request, path):
 
 @login_required
 def home(request):
+    import datetime
+
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
     recent_posts = BlogPost.objects.prefetch_related("authors").order_by("-created_at")[:5]
     recent_comments = Comment.objects.select_related("post", "author").order_by("-created_at")[:5]
+    chalets = Chalet.objects.all().order_by("name")[:6]
+    today = datetime.date.today()
+    upcoming_presences = (
+        PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
+    )
     return render(
         request,
         "annuaire/home.html",
@@ -58,6 +67,8 @@ def home(request):
             "recent_persons": recent_persons,
             "recent_posts": recent_posts,
             "recent_comments": recent_comments,
+            "chalets": chalets,
+            "upcoming_presences": upcoming_presences,
         },
     )
 
@@ -421,8 +432,31 @@ class MapListView(LoginRequiredMixin, ListView):
                     "lat": float(person.latitude),
                     "lon": float(person.longitude),
                     "url": reverse("personne-detail", kwargs={"pk": person.pk}),
+                    "avatar": person.profile_photo.url
+                    if person.profile_photo
+                    else static("default_profile_picture.png"),
                 }
                 for person in context["persons"]
+            ]
+        )
+        chalets = Chalet.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("name")
+        context["unresolved_chalet_count"] = Chalet.objects.filter(
+            Q(latitude__isnull=True) | Q(longitude__isnull=True)
+        ).count()
+        context["chalets_json"] = json.dumps(
+            [
+                {
+                    "name": chalet.name,
+                    "lat": float(chalet.latitude),
+                    "lon": float(chalet.longitude),
+                    "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
+                    # No default chalet photo asset (unlike Person's default avatar) -- the
+                    # "emoji::" sentinel tells map_init.js to render the 🏔️ placeholder used
+                    # everywhere else in the app (chalet_list.html, chalet_detail.html)
+                    # instead of trying to load an image that doesn't exist.
+                    "avatar": chalet.photo.url if chalet.photo else "emoji::🏔️",
+                }
+                for chalet in chalets
             ]
         )
         return context
@@ -600,13 +634,47 @@ class ChaletListView(LoginRequiredMixin, ListView):
         return context
 
 
-class ChaletCreateView(StaffRequiredMixin, CreateView):
+def _owners_initial_json(view):
+    """Build the JSON payload used by the person-picker to pre-populate owners."""
+    request = view.request
+    if request.method == "POST":
+        ids = [int(pk) for pk in request.POST.getlist("owners") if pk.isdigit()]
+        persons = list(Person.objects.filter(pk__in=ids).order_by("last_name", "first_name"))
+    else:
+        profile = getattr(request.user, "profile", None)
+        persons = [profile] if profile is not None else []
+    return json.dumps([{"id": p.pk, "name": str(p)} for p in persons])
+
+
+class ChaletCreateView(LoginRequiredMixin, CreateView):
     model = Chalet
     form_class = ChaletForm
     template_name = "annuaire/chalet_form.html"
 
-    def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.object.pk})
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not hasattr(request.user, "profile"):
+            messages.error(request, "Vous devez compléter votre profil avant de créer un chalet.")
+            return redirect("profile-create")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["current_person"] = getattr(self.request.user, "profile", None)
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["show_owner_picker"] = True
+        context["owners_initial_json"] = _owners_initial_json(self)
+        return context
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            self.object = form.save()
+            profile = getattr(self.request.user, "profile", None)
+            if profile is not None and not self.object.owners.filter(pk=profile.pk).exists():
+                self.object.owners.add(profile)
+        return redirect("chalet-detail", pk=self.object.pk)
 
 
 class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
