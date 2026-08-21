@@ -80,3 +80,21 @@
   existing `password_toggle.js` (already page-agnostic) into `signup.html`,
   `password_reset_confirm.html`, and `password_change_forced.html` via `{% block
   extra_js %}`. (priority: low) [#64]
+
+### Cluster: Généalogie — arbre interactif
+- [ ] 2.5 · Default to the genealogy tree's biggest branch — the genealogy view
+  currently loads centered on the oldest profile by default; load it centered on the
+  branch with the most members instead. (priority: low) [#67]
+- [ ] 2.6 · Sort genealogy tree children by age — order siblings within the tree by
+  birth date, oldest on the left to youngest on the right. (priority: low) [#61]
+
+### Cluster: Navigation
+- [ ] 2.7 · Reword the GitHub issue link — change its label to "Signaler un bug ou
+  proposer une évolution" to also invite feature suggestions, not just bug reports.
+  (priority: low) [#66]
+
+### Cluster: Généalogie — enfants sans compte
+- [ ] 2.8 · Create accountless children on the genealogy tree — let a member add minor
+  children who have no `Account` directly from the tree, filling in the same info as a
+  regular profile (photo, birth date, second parent). Scope to be refined. (priority:
+  tbd) [#60]
