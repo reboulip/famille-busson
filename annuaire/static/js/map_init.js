@@ -16,18 +16,38 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    function buildPopup(person) {
+    function buildAvatarIcon(avatarUrl) {
+        const avatar = document.createElement('div');
+        avatar.className = 'map-marker-avatar';
+        const img = document.createElement('img');
+        img.src = avatarUrl;
+        img.alt = '';
+        avatar.appendChild(img);
+        return L.divIcon({
+            className: 'map-marker-avatar-wrapper',
+            html: avatar,
+            iconSize: [40, 40],
+            iconAnchor: [20, 40],
+            popupAnchor: [0, -40],
+        });
+    }
+
+    function buildPopup(entry) {
         const link = document.createElement('a');
-        link.href = person.url;
-        link.textContent = person.name;
+        link.href = entry.url;
+        link.textContent = entry.name;
         return link;
     }
 
-    const markers = persons.map((person) => {
-        const marker = L.marker([person.lat, person.lon]).addTo(map);
-        marker.bindPopup(buildPopup(person));
-        return marker;
-    });
+    function buildMarkers(entries) {
+        return entries.map((entry) => {
+            const marker = L.marker([entry.lat, entry.lon], { icon: buildAvatarIcon(entry.avatar) }).addTo(map);
+            marker.bindPopup(buildPopup(entry));
+            return marker;
+        });
+    }
+
+    const markers = buildMarkers(persons);
 
     if (markers.length === 1) {
         map.setView(markers[0].getLatLng(), 13);

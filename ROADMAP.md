@@ -23,7 +23,7 @@
   (priority: medium) [#55]
 
 ### Cluster: Carte
-- [ ] 1.4 · Fix missing profile pictures on the carte view — markers display
+- [x] 1.4 · Fix missing profile pictures on the carte view — markers display
   correctly but profile pictures don't render. (priority: medium) [#49]
 
 ### Cluster: Profil et authentification

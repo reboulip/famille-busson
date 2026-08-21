@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 import pytest
@@ -683,3 +684,13 @@ def test_carte_persons_json_includes_name_and_profile_link(auth_client, person):
     content = response.content.decode()
     assert person.first_name in content
     assert reverse("personne-detail", kwargs={"pk": person.pk}) in content
+
+
+@pytest.mark.django_db
+def test_carte_persons_json_includes_avatar(auth_client, person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert persons[0]["avatar"]

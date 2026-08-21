@@ -15,6 +15,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -422,6 +423,9 @@ class MapListView(LoginRequiredMixin, ListView):
                     "lat": float(person.latitude),
                     "lon": float(person.longitude),
                     "url": reverse("personne-detail", kwargs={"pk": person.pk}),
+                    "avatar": person.profile_photo.url
+                    if person.profile_photo
+                    else static("default_profile_picture.png"),
                 }
                 for person in context["persons"]
             ]
