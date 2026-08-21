@@ -694,3 +694,37 @@ def test_carte_persons_json_includes_avatar(auth_client, person):
     response = auth_client.get(reverse("carte"))
     persons = json.loads(response.context["persons_json"])
     assert persons[0]["avatar"]
+
+
+@pytest.mark.django_db
+def test_carte_includes_chalets_with_coordinates(auth_client, chalet):
+    chalet.latitude = Decimal("46.096")
+    chalet.longitude = Decimal("7.228")
+    chalet.save()
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets[0]["name"] == chalet.name
+    assert chalets[0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+
+
+@pytest.mark.django_db
+def test_carte_excludes_chalets_without_coordinates(auth_client, chalet):
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets == []
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_chalet_count(auth_client, chalet):
+    response = auth_client.get(reverse("carte"))
+    assert response.context["unresolved_chalet_count"] == 1
+
+
+@pytest.mark.django_db
+def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
+    chalet.latitude = Decimal("46.096")
+    chalet.longitude = Decimal("7.228")
+    chalet.save()
+    response = auth_client.get(reverse("carte"))
+    chalets = json.loads(response.context["chalets_json"])
+    assert chalets[0]["avatar"] == "emoji::🏔️"

@@ -15,7 +15,7 @@
   API picker for the chalet address field, capture and store GPS coordinates the same
   way. `Chalet.gps_coordinates` (free-text) is kept as-is for now, just unused by the
   new picker. (priority: medium) [#54] (split from 1.2)
-- [ ] 1.2b · Add chalets to the Carte view — extend the carte's avatar-marker approach
+- [x] 1.2b · Add chalets to the Carte view — extend the carte's avatar-marker approach
   (item 1.4) to chalet markers. (priority: medium) [#54] (split from 1.2, requires:
   1.2a, 1.4)
 - [ ] 1.3 · Populate the home page Chalets card — currently empty even when chalets

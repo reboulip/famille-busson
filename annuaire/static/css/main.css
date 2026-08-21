@@ -387,6 +387,14 @@ h2 {
     object-fit: cover;
 }
 
+.map-marker-avatar-emoji {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4em;
+    background-color: #f0f0f0;
+}
+
 .genealogie-container {
     height: 70vh;
     min-height: 320px;

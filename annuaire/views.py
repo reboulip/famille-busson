@@ -430,6 +430,26 @@ class MapListView(LoginRequiredMixin, ListView):
                 for person in context["persons"]
             ]
         )
+        chalets = Chalet.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("name")
+        context["unresolved_chalet_count"] = Chalet.objects.filter(
+            Q(latitude__isnull=True) | Q(longitude__isnull=True)
+        ).count()
+        context["chalets_json"] = json.dumps(
+            [
+                {
+                    "name": chalet.name,
+                    "lat": float(chalet.latitude),
+                    "lon": float(chalet.longitude),
+                    "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
+                    # No default chalet photo asset (unlike Person's default avatar) -- the
+                    # "emoji::" sentinel tells map_init.js to render the 🏔️ placeholder used
+                    # everywhere else in the app (chalet_list.html, chalet_detail.html)
+                    # instead of trying to load an image that doesn't exist.
+                    "avatar": chalet.photo.url if chalet.photo else "emoji::🏔️",
+                }
+                for chalet in chalets
+            ]
+        )
         return context
 
 
