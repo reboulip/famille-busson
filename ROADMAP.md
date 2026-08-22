@@ -26,6 +26,14 @@
   signup-time notification checkboxes in the profile edit form so they can be
   changed afterward. [#71]
 
+### Cluster: Authentification
+- [ ] 3.6 · Magic Link login — passwordless email login reusing the existing
+  one-time-link primitive (`_build_password_reset_url()`, `annuaire/views.py`) and
+  configured email delivery, pointed at `login()` instead of the password-reset
+  flow. Must preserve the closed-signup guard (`Account` only links an existing
+  `Person` by email, never auto-provisioned from the link). OIDC and Passkeys
+  remain out of scope. [#74]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
