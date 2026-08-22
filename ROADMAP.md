@@ -54,24 +54,22 @@
 
 ## Phase 2
 
-> Placeholder phase for deferred items — scope to be refined at a future triage pass
-> before this phase is sprinted.
-
 ### Cluster: Profil et authentification
-- [ ] 2.4 · Extend the password show/hide toggle to other password forms — wire the
-  existing `password_toggle.js` (already page-agnostic) into `signup.html`,
-  `password_reset_confirm.html`, and `password_change_forced.html` via `{% block
-  extra_js %}`. (priority: low) [#64]
+- [x] 2.4 · Extend the password show/hide toggle to other password forms — wire the
+  existing `password_toggle.js` into `signup.html`, `password_reset_confirm.html`, and
+  `password_change_forced.html` via `{% block extra_js %}`; also fixed a latent bug where
+  the toggle's DOM wrapping broke Bootstrap's field-error visibility on these
+  field-error-raising forms. (priority: low) [#64]
 
 ### Cluster: Généalogie — arbre interactif
-- [ ] 2.5 · Default to the genealogy tree's biggest branch — the genealogy view
-  currently loads centered on the oldest profile by default; load it centered on the
-  branch with the most members instead. (priority: low) [#67]
-- [ ] 2.6 · Sort genealogy tree children by age — order siblings within the tree by
-  birth date, oldest on the left to youngest on the right. (priority: low) [#61]
+- [x] 2.5 · Default to the genealogy tree's biggest branch — the bare `/genealogie/`
+  route now always centers on the biggest branch's anchor, replacing the previous
+  own-profile default. (priority: low) [#67]
+- [x] 2.6 · Sort genealogy tree children by age — siblings are ordered oldest-first
+  within each couple's children, unknown birth dates last. (priority: low) [#61]
 
 ### Cluster: Navigation
-- [ ] 2.7 · Reword the GitHub issue link — change its label to "Signaler un bug ou
+- [x] 2.7 · Reword the GitHub issue link — label changed to "Signaler un bug ou
   proposer une évolution" to also invite feature suggestions, not just bug reports.
   (priority: low) [#66]
 
@@ -89,6 +87,13 @@
   by the existing post-save signal), the forced first-connection password-reset flow
   must redirect to edit that existing profile, not to the 2.8a creation view. (priority:
   tbd) [#60] (split from 2.8, requires: 2.8a)
+- [ ] 2.8c · Claim an existing accountless profile during onboarding — when an
+  authenticated account has no linked `Person` (a staff-created account, or a fiche with
+  a missing/stale email), offer a self-service search over accountless profiles from the
+  profile-creation page; selecting one links the account instantly, no approval step. The
+  signup email gate (an email must already match a `Person` to self-register) is
+  unchanged — this is deliberately not exposed on the public signup form. Surfaced during
+  Phase 2 sprint planning (no GH issue). (priority: tbd) (requires: 2.8a, 2.8b)
 
 ## Backlog
 

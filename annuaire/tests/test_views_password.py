@@ -88,6 +88,12 @@ def test_forced_change_get_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_forced_change_page_includes_password_toggle_script(auth_client):
+    response = auth_client.get(reverse("password-change-forced"))
+    assert "js/password_toggle.js" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_forced_change_valid_post_clears_flag_and_redirects(account, person):
     account.must_change_password = True
     account.save()
@@ -178,6 +184,16 @@ def test_reset_confirm_clears_must_change_password_flag(account, person):
     )
     account.refresh_from_db()
     assert account.must_change_password is False
+
+
+@pytest.mark.django_db
+def test_reset_confirm_page_includes_password_toggle_script(account, person):
+    url = _reset_confirm_url(account)
+    c = Client()
+    get_response = c.get(url)
+    assert get_response.status_code == 302
+    response = c.get(get_response["Location"])
+    assert "js/password_toggle.js" in response.content.decode()
 
 
 @pytest.mark.django_db

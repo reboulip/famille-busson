@@ -54,9 +54,18 @@ def test_base_includes_home_nav_link_for_anonymous_user(client):
 
 
 @pytest.mark.django_db
-def test_base_includes_bug_report_link(auth_client):
+def test_base_includes_feedback_link(auth_client):
     response = auth_client.get(reverse("directory"))
     content = response.content.decode()
     assert "https://github.com/reboulip/famille-busson/issues/new" in content
     assert 'target="_blank"' in content
     assert 'rel="noopener"' in content
+    assert "Signaler un bug ou proposer une évolution" in content
+
+
+@pytest.mark.django_db
+def test_base_includes_feedback_link_for_anonymous_user(client):
+    response = client.get(reverse("login"))
+    content = response.content.decode()
+    assert "https://github.com/reboulip/famille-busson/issues/new" in content
+    assert "Signaler un bug ou proposer une évolution" in content

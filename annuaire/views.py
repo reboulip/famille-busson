@@ -468,16 +468,16 @@ class FamilyTreeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = build_family_chart_data()
+        components = find_components(data)
         context["graph_json"] = json.dumps(data)
-        context["components_json"] = json.dumps(find_components(data))
+        context["components_json"] = json.dumps(components)
 
         pk = kwargs.get("pk")
         if pk is not None:
             person = get_object_or_404(Person, pk=pk)
             context["main_id"] = str(person.pk)
         else:
-            profile = getattr(self.request.user, "profile", None)
-            context["main_id"] = str(profile.pk) if profile else None
+            context["main_id"] = components[0]["root_id"] if components else None
 
         return context
 

@@ -156,3 +156,70 @@ def test_multiple_disconnected_components_sorted_by_size(person, other_person):
     data = build_family_chart_data()
     components = find_components(data)
     assert [component["size"] for component in components] == [2, 1]
+
+
+@pytest.mark.django_db
+def test_children_sorted_oldest_first(person):
+    import datetime
+
+    youngest = Person.objects.create(first_name="Youngest", last_name="Busson", birth_date=datetime.date(2010, 1, 1))
+    oldest = Person.objects.create(first_name="Oldest", last_name="Busson", birth_date=datetime.date(2005, 1, 1))
+    middle = Person.objects.create(first_name="Middle", last_name="Busson", birth_date=datetime.date(2008, 1, 1))
+    for child in (youngest, oldest, middle):
+        Relation.objects.create(person1=child, person2=person, relationship_type=2)
+
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(person.pk)]["rels"]["children"] == [str(oldest.pk), str(middle.pk), str(youngest.pk)]
+
+
+@pytest.mark.django_db
+def test_children_with_unknown_birth_date_sorted_last(person):
+    import datetime
+
+    dated = Person.objects.create(first_name="Dated", last_name="Busson", birth_date=datetime.date(2005, 1, 1))
+    undated = Person.objects.create(first_name="Undated", last_name="Busson")
+    for child in (undated, dated):
+        Relation.objects.create(person1=child, person2=person, relationship_type=2)
+
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(person.pk)]["rels"]["children"] == [str(dated.pk), str(undated.pk)]
+
+
+@pytest.mark.django_db
+def test_children_sort_uses_int_pk_not_string_comparison():
+    # Regression guard: child ids are strings ("10" < "9" under lexicographic
+    # comparison), but the tie-break must compare pks numerically.
+    parent = Person.objects.create(first_name="Parent", last_name="Busson")
+    children = [Person.objects.create(first_name=f"Child{i}", last_name="Busson") for i in range(11)]
+    for child in reversed(children):
+        Relation.objects.create(person1=child, person2=parent, relationship_type=2)
+
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(parent.pk)]["rels"]["children"] == [str(child.pk) for child in children]
+
+
+@pytest.mark.django_db
+def test_children_with_no_birth_dates_do_not_raise(person, other_person):
+    Relation.objects.create(person1=other_person, person2=person, relationship_type=2)
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(person.pk)]["rels"]["children"] == [str(other_person.pk)]
+
+
+@pytest.mark.django_db
+def test_children_same_birth_date_tie_broken_by_pk():
+    import datetime
+
+    parent = Person.objects.create(first_name="Parent", last_name="Busson")
+    same_date = datetime.date(2005, 1, 1)
+    first = Person.objects.create(first_name="First", last_name="Busson", birth_date=same_date)
+    second = Person.objects.create(first_name="Second", last_name="Busson", birth_date=same_date)
+    for child in (second, first):
+        Relation.objects.create(person1=child, person2=parent, relationship_type=2)
+
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(parent.pk)]["rels"]["children"] == [str(first.pk), str(second.pk)]
