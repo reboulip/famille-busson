@@ -83,16 +83,19 @@ cd /srv/bubu && docker compose exec -T web python manage.py geocode_person_addre
 ```
 
 Geocodes every existing `Person.postal_address` that doesn't yet have coordinates (via
-the BAN API), so members who already had an address on file before the "Carte" view
-(`/annuaire/carte/`) shipped show up on it right away, instead of only after their next
-profile edit. Safe to re-run — skips anyone who already has coordinates.
+`annuaire/geocoding.py`'s `geocode()` — BAN first, falling back to Photon for addresses
+BAN can't resolve, e.g. outside France), so members who already had an address on file
+before the "Carte" view (`/annuaire/carte/`) shipped show up on it right away, instead of
+only after their next profile edit. Safe to re-run — skips anyone who already has
+coordinates.
 
 ```
 cd /srv/bubu && docker compose exec -T web python manage.py geocode_chalet_addresses
 ```
 
 Same idea, for `Chalet.address`/`Chalet.latitude`/`Chalet.longitude`: geocodes every
-existing chalet address that doesn't yet have coordinates, so chalets that already had
+existing chalet address that doesn't yet have coordinates (same BAN-then-Photon
+`geocode()` fallback as above), so chalets that already had
 an address on file before the coordinate fields shipped are backfilled immediately
 instead of only after their next edit. Safe to re-run — skips any chalet that already
 has coordinates.
