@@ -4,6 +4,22 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
+## Phase 4
+
+> Next phase after this one: Phase 5.
+
+### Cluster: Généalogie — export
+- [ ] 4.1 · Excel export of a genealogy-tree subset (names, emails, phones,
+  addresses) from the centered-tree view. [#79]
+
+### Cluster: Carte
+- [ ] 4.2 · Fix person-search dropdown rendering behind the Carte map
+  (z-index/stacking-context). [#78]
+
+### Cluster: Notifications
+- [ ] 4.3 · Default-check notification/subscription boxes for new profiles;
+  backfill existing accounts to all-checked. [#77]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
