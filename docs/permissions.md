@@ -38,7 +38,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
 | `home` | `home` | `@login_required` | Any logged-in user. |
-| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView`, `FamilyTreeView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
+| `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView`, `FamilyTreeView`, `FamilyTreeExportView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ChaletCreateView` | `chalet-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; the creator is auto-added as an owner. |
 | `PersonCreateView` | `person-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; creates an accountless `Person` and auto-adds the creator as an owner. |
 | `ProfileUpdateView` | `person-edit` | `get_object()` override (`can_edit_person()`) | Owner of the profile, or staff/superuser. Also renders and saves the profile's notification preferences (`FormSettings`) alongside the main form — no separate guard, so anyone who can edit the profile can edit its notification prefs too. |
