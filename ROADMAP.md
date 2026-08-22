@@ -14,7 +14,7 @@
   [#68]
 
 ### Cluster: Adresses
-- [ ] 3.3 · Worldwide address support — extend the BAN-only address autocomplete
+- [x] 3.3 · Worldwide address support — extend the BAN-only address autocomplete
   (`address_picker.js`, `annuaire/forms.py`) so non-French addresses can be entered
   and geocoded. [#73]
 - [x] 3.4 · Drop Chalet.gps_coordinates free-text field — verify production
@@ -27,7 +27,7 @@
   can be changed afterward. [#71]
 
 ### Cluster: Authentification
-- [ ] 3.6 · Magic Link login — passwordless email login reusing the existing
+- [x] 3.6 · Magic Link login — passwordless email login reusing the existing
   one-time-link primitive (`_build_password_reset_url()`, `annuaire/views.py`) and
   configured email delivery, pointed at `login()` instead of the password-reset
   flow. Must preserve the closed-signup guard (`Account` only links an existing

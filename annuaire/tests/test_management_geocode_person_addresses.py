@@ -4,8 +4,6 @@ from io import StringIO
 import pytest
 from django.core.management import call_command
 
-import annuaire.management.commands.geocode_person_addresses as command_module
-
 
 def run_command():
     out = StringIO()
@@ -32,7 +30,7 @@ def test_geocodes_addresses_missing_coordinates(person, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": [{"geometry": {"coordinates": [2.062821, 49.031624]}}]})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -54,7 +52,7 @@ def test_skips_persons_already_geocoded(person, monkeypatch):
         calls.append(params)
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -69,7 +67,7 @@ def test_skips_persons_without_an_address(person, monkeypatch):
         calls.append(params)
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -84,7 +82,7 @@ def test_handles_unresolved_address(person, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     output = run_command()
 
@@ -104,10 +102,29 @@ def test_handles_request_failure_gracefully(person, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         raise requests.RequestException("network down")
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     output = run_command()
 
     person.refresh_from_db()
     assert person.latitude is None
     assert "Non résolu" in output
+
+
+@pytest.mark.django_db
+def test_geocode_returns_latitude_longitude_order_not_swapped(person, monkeypatch):
+    # BAN/Photon GeoJSON returns [longitude, latitude] -- this guards against a
+    # regression that would silently misplace every foreign member on the map.
+    person.postal_address = "8 Boulevard du Port, 80000 Amiens"
+    person.save()
+
+    def fake_get(url, params=None, timeout=None):
+        return _FakeResponse({"features": [{"geometry": {"coordinates": [2.062821, 49.031624]}}]})
+
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
+
+    run_command()
+
+    person.refresh_from_db()
+    assert person.latitude == Decimal("49.031624")
+    assert person.longitude == Decimal("2.062821")

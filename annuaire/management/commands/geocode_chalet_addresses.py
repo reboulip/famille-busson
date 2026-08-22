@@ -1,5 +1,7 @@
 """One-time backfill: geocode every existing Chalet.address that doesn't already
-have coordinates, via the same BAN API address_picker.js uses client-side.
+have coordinates, via the shared annuaire.geocoding module (BAN, France-only,
+with a worldwide Photon fallback) -- the same one address_picker.js's
+server-side endpoint uses.
 
 Usage (from the repo root):
     uv run python manage.py geocode_chalet_addresses
@@ -12,18 +14,15 @@ skips any Chalet that already has coordinates.
 from __future__ import annotations
 
 import time
-from decimal import Decimal
 
-import requests
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
+from annuaire.geocoding import geocode
 from annuaire.models import Chalet
 
-BAN_SEARCH_URL = "https://api-adresse.data.gouv.fr/search/"
-REQUEST_TIMEOUT_SECONDS = 5
-# Be a polite client of a free public API -- no documented rate limit, but there's no
-# reason to hammer it either.
+# Be a polite client of free public APIs -- no documented rate limit, but there's no
+# reason to hammer them either.
 DELAY_BETWEEN_REQUESTS_SECONDS = 0.2
 
 
@@ -44,26 +43,14 @@ class Command(BaseCommand):
         geocoded = 0
         unresolved = 0
         for chalet in candidates:
-            coordinates = self._geocode(chalet.address)
+            coordinates = geocode(chalet.address)
             if coordinates is None:
                 unresolved += 1
                 self.stdout.write(f"Non résolu : {chalet} -- {chalet.address!r}")
                 continue
-            chalet.longitude = Decimal(str(coordinates[0]))
-            chalet.latitude = Decimal(str(coordinates[1]))
+            chalet.latitude, chalet.longitude = coordinates
             chalet.save(update_fields=["latitude", "longitude"])
             geocoded += 1
             time.sleep(DELAY_BETWEEN_REQUESTS_SECONDS)
 
         self.stdout.write(f"{geocoded} adresse(s) géocodée(s), {unresolved} non résolue(s).")
-
-    def _geocode(self, address):
-        try:
-            response = requests.get(BAN_SEARCH_URL, params={"q": address, "limit": 1}, timeout=REQUEST_TIMEOUT_SECONDS)
-            response.raise_for_status()
-            features = response.json().get("features", [])
-        except (requests.RequestException, ValueError):
-            return None
-        if not features:
-            return None
-        return features[0]["geometry"]["coordinates"]

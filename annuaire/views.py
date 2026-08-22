@@ -38,6 +38,7 @@ from .forms import (
     SignupForm,
     UpdateRelationForm,
 )
+from .geocoding import search_addresses
 from .map_data import build_chalet_map_groups, build_person_map_groups
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
@@ -279,6 +280,29 @@ def person_search_ajax(request):
         qs = qs.filter(account__isnull=False)
     qs = qs.order_by("last_name", "first_name")[:10]
     return JsonResponse({"results": [{"id": p.pk, "name": str(p)} for p in qs]})
+
+
+@login_required
+def address_search_ajax(request):
+    q = request.GET.get("q", "").strip()
+    if len(q) < 3:
+        return JsonResponse({"results": []})
+    suggestions = search_addresses(q)
+    return JsonResponse(
+        {
+            "results": [
+                {
+                    "label": s.label,
+                    "context": s.context,
+                    "address": s.address,
+                    "lat": str(s.lat),
+                    "lon": str(s.lon),
+                    "source": s.source,
+                }
+                for s in suggestions
+            ]
+        }
+    )
 
 
 @login_required

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initAddressPicker(input) {
-    const searchUrl = input.dataset.searchUrl || 'https://api-adresse.data.gouv.fr/search/';
+    const searchUrl = input.dataset.searchUrl;
     const limit = input.dataset.addressLimit || '5';
     const latTarget = input.dataset.latTarget ? document.getElementById(input.dataset.latTarget) : null;
     const lonTarget = input.dataset.lonTarget ? document.getElementById(input.dataset.lonTarget) : null;
@@ -32,17 +32,9 @@ function initAddressPicker(input) {
         input.setAttribute('aria-expanded', 'false');
     }
 
-    function composeAddress(properties) {
-        const name = properties.name;
-        const postcode = properties.postcode;
-        const city = properties.city;
-        if (name && postcode && city) return name + ', ' + postcode + ' ' + city;
-        return properties.label;
-    }
-
-    function renderResults(features) {
+    function renderResults(results) {
         resultsList.innerHTML = '';
-        if (features.length === 0) {
+        if (results.length === 0) {
             const li = document.createElement('li');
             li.className = 'address-picker-empty';
             li.textContent = 'Aucun résultat';
@@ -51,27 +43,22 @@ function initAddressPicker(input) {
             highlightedIndex = -1;
             return;
         }
-        features.forEach((feature) => {
-            const props = feature.properties;
+        results.forEach((result) => {
             const li = document.createElement('li');
             li.className = 'address-picker-result';
             li.setAttribute('role', 'option');
             const label = document.createElement('div');
-            label.textContent = props.label;
+            label.textContent = result.label;
             li.appendChild(label);
-            if (props.context) {
+            if (result.context) {
                 const context = document.createElement('small');
                 context.className = 'address-picker-context';
-                context.textContent = props.context;
+                context.textContent = result.context;
                 li.appendChild(context);
             }
-            li.dataset.address = composeAddress(props);
-            const coordinates = feature.geometry && feature.geometry.coordinates;
-            if (coordinates) {
-                // BAN returns [longitude, latitude].
-                li.dataset.lon = coordinates[0];
-                li.dataset.lat = coordinates[1];
-            }
+            li.dataset.address = result.address;
+            li.dataset.lat = result.lat;
+            li.dataset.lon = result.lon;
             li.addEventListener('mousedown', (e) => {
                 e.preventDefault();
                 selectAddress(li);
@@ -104,10 +91,9 @@ function initAddressPicker(input) {
         const url = new URL(searchUrl, window.location.origin);
         url.searchParams.set('q', query);
         url.searchParams.set('limit', limit);
-        url.searchParams.set('autocomplete', '1');
-        fetch(url.toString())
+        fetch(url.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then((r) => r.json())
-            .then((data) => renderResults(data.features || []))
+            .then((data) => renderResults(data.results || []))
             .catch(() => closeDropdown());
     }
 

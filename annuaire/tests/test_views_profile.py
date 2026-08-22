@@ -421,6 +421,7 @@ def test_profile_edit_form_address_widget_attrs():
     widget = ProfileEditForm().fields["postal_address"].widget
     assert widget.attrs["autocomplete"] == "off"
     assert "address-picker-input" in widget.attrs["class"]
+    assert str(widget.attrs["data-search-url"]) == reverse("address-search-ajax")
 
 
 @pytest.mark.django_db
