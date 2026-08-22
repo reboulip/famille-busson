@@ -4,6 +4,28 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
+## Phase 3
+
+### Cluster: Carte
+- [ ] 3.1 · Person search in Carte — select a person, center the map on their
+  address. [#75]
+- [ ] 3.2 · Multiple members at the same address — show all members sharing an
+  address instead of just one (split marker / cluster with names+photos on click).
+  [#68]
+
+### Cluster: Adresses
+- [ ] 3.3 · Worldwide address support — extend the BAN-only address autocomplete
+  (`address_picker.js`, `annuaire/forms.py`) so non-French addresses can be entered
+  and geocoded. [#73]
+- [ ] 3.4 · Drop Chalet.gps_coordinates free-text field — verify production
+  contents, then remove the field, its form usage, and its display on
+  `chalet_detail.html`, with a migration. [#63]
+
+### Cluster: Profil
+- [ ] 3.5 · Editable notification/subscription preferences — expose the
+  signup-time notification checkboxes in the profile edit form so they can be
+  changed afterward. [#71]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
