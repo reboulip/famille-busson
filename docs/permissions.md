@@ -95,9 +95,9 @@ of being bounced to `/password/change/`.
 ## Superuser vs staff
 
 The ownership checks in `annuaire` (`ProfileUpdateView.get_object()`,
-`_get_person_for_relations_edit()`, `ChaletOwnerOrStaffMixin.get_object()`) treat
-`is_staff` and `is_superuser` as equally privileged (`user.is_staff or
-user.is_superuser`).
+`PersonOwnersUpdateView.get_object()`, `_get_person_for_relations_edit()`,
+`ChaletOwnerOrStaffMixin.get_object()`) treat `is_staff` and `is_superuser` as equally
+privileged (`user.is_staff or user.is_superuser`).
 `StaffRequiredMixin` and `AuthorOrStaffRequiredMixin` only check `is_staff` — in
 practice this project always sets `is_superuser` alongside `is_staff` (see
 `AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a
