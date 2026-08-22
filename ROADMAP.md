@@ -17,7 +17,7 @@
   (z-index/stacking-context). [#78]
 
 ### Cluster: Notifications
-- [ ] 4.3 · Default-check notification/subscription boxes for new profiles;
+- [x] 4.3 · Default-check notification/subscription boxes for new profiles;
   backfill existing accounts to all-checked. [#77]
 
 ## Backlog

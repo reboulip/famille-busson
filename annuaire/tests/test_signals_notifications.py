@@ -10,10 +10,10 @@ def test_settings_auto_created_on_person_creation():
 
 
 @pytest.mark.django_db
-def test_settings_defaults_are_opted_out():
+def test_settings_defaults_are_opted_in():
     person = Person.objects.create(first_name="Alice", last_name="Busson")
-    assert person.settings.notify_on_birthday is False
-    assert person.settings.notify_on_new_blog_post is False
+    assert person.settings.notify_on_birthday is True
+    assert person.settings.notify_on_new_blog_post is True
 
 
 @pytest.mark.django_db

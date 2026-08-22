@@ -573,7 +573,9 @@ def test_profile_create_saves_coordinates_from_hidden_fields(client, account):
 
 
 @pytest.mark.django_db
-def test_profile_create_without_opt_ins_defaults_to_false(client, account):
+def test_profile_create_unchecked_boxes_opt_out(client, account):
+    # Unchecked checkboxes are simply absent from POST data -- a ModelForm treats
+    # that as False regardless of the model's own default (now True).
     client.login(username="alice@example.com", password="testpass123!")
     response = client.post(reverse("profile-create"), {"first_name": "Alice", "last_name": "Busson"})
     assert response.status_code == 302
@@ -582,6 +584,19 @@ def test_profile_create_without_opt_ins_defaults_to_false(client, account):
     person = Person.objects.get(account=account)
     assert person.settings.notify_on_birthday is False
     assert person.settings.notify_on_new_blog_post is False
+
+
+@pytest.mark.django_db
+def test_profile_create_form_shows_checked_defaults(client, account):
+    # The unbound FormSettings() gets no explicit `initial=` -- this checks that
+    # the model field's own default=True is what makes the checkboxes render
+    # checked (ModelForm.formfield() copies a non-callable model default into
+    # the form field's own `initial`).
+    client.login(username="alice@example.com", password="testpass123!")
+    response = client.get(reverse("profile-create"))
+    settings_form = response.context["settings_form"]
+    assert settings_form.fields["notify_on_birthday"].initial is True
+    assert settings_form.fields["notify_on_new_blog_post"].initial is True
 
 
 # ---------------------------------------------------------------------------

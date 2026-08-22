@@ -55,10 +55,12 @@ class Command(BaseCommand):
             profile_url = settings.SITE_BASE_URL.rstrip("/") + reverse(
                 "personne-detail", kwargs={"pk": birthday_person.pk}
             )
+            unsubscribe_url = settings.SITE_BASE_URL.rstrip("/") + reverse("edit-my-profile")
             subject = f"Anniversaire de {birthday_person.first_name} {birthday_person.last_name}"
             body = (
                 f"C'est aujourd'hui l'anniversaire de {birthday_person.first_name} "
-                f"{birthday_person.last_name} !\n\n{profile_url}"
+                f"{birthday_person.last_name} !\n\n{profile_url}\n\n"
+                f"Vous pouvez vous désabonner de ces rappels en modifiant votre profil : {unsubscribe_url}"
             )
             for subscriber in subscribers:
                 messages.append((subscriber.person.email, subject, body))

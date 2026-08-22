@@ -19,6 +19,8 @@ def test_sends_reminder_to_subscribed_users_for_todays_birthday(person, other_pe
     other_person.save()
     person.settings.notify_on_birthday = True
     person.settings.save()
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
 
     run_command()
 
@@ -43,6 +45,10 @@ def test_no_email_when_nobody_is_subscribed(person, other_person):
     today = datetime.date.today()
     other_person.birth_date = today.replace(year=1990)
     other_person.save()
+    person.settings.notify_on_birthday = False
+    person.settings.save()
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
 
     run_command()
 
@@ -64,6 +70,8 @@ def test_feb_29_birthday_observed_on_feb_28_in_non_leap_years(person, other_pers
     other_person.save()
     person.settings.notify_on_birthday = True
     person.settings.save()
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
 
     run_command()
 

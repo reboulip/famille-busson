@@ -25,7 +25,12 @@ def notify_subscribers_of_new_post(sender, instance, created, **kwargs):
     if not subscribers:
         return
     post_url = settings.SITE_BASE_URL.rstrip("/") + reverse("blogpost-detail", kwargs={"pk": instance.pk})
+    unsubscribe_url = settings.SITE_BASE_URL.rstrip("/") + reverse("edit-my-profile")
     subject = f"Nouvel article : {instance.title}"
-    body = f"Un nouvel article a été publié sur le site de la famille Busson :\n\n{instance.title}\n\n{post_url}"
+    body = (
+        f"Un nouvel article a été publié sur le site de la famille Busson :\n\n"
+        f"{instance.title}\n\n{post_url}\n\n"
+        f"Vous pouvez vous désabonner de ces notifications en modifiant votre profil : {unsubscribe_url}"
+    )
     messages = [(subscriber.person.email, subject, body) for subscriber in subscribers]
     send_bulk_emails(messages)
