@@ -57,24 +57,6 @@
 > Placeholder phase for deferred items — scope to be refined at a future triage pass
 > before this phase is sprinted.
 
-### Cluster: Profil — adresse secondaire
-- [ ] 2.1 · Secondary address on profile — let a member add a secondary address to
-  their profile, shown on the Carte view, usable to create/locate their chalet.
-  Interacts with the Phase 1 chalets self-service work; scope to be refined.
-  (priority: tbd) [#53]
-
-### Cluster: Groupes et permissions
-- [ ] 2.2 · SCI grand chalet group — new group for grand chalet works/news content,
-  with author vs. reader roles (SCI project-group members are authors, SCI
-  shareholders are readers). Needs a groups/roles/permissions design pass first — no
-  such model exists yet. (priority: tbd) [#57]
-
-### Cluster: Chalets
-- [ ] 2.3 · Add owner-or-staff chalet deletion — no `ChaletDeleteView` exists; let a
-  chalet's owners or staff delete it, gated by the existing `ChaletOwnerOrStaffMixin`.
-  Needs a decision on cascade behavior for any `PresencePSV` rows tied to the chalet.
-  (priority: low) [#62]
-
 ### Cluster: Profil et authentification
 - [ ] 2.4 · Extend the password show/hide toggle to other password forms — wire the
   existing `password_toggle.js` (already page-agnostic) into `signup.html`,
@@ -94,7 +76,34 @@
   (priority: low) [#66]
 
 ### Cluster: Généalogie — enfants sans compte
-- [ ] 2.8 · Create accountless children on the genealogy tree — let a member add minor
-  children who have no `Account` directly from the tree, filling in the same info as a
-  regular profile (photo, birth date, second parent). Scope to be refined. (priority:
-  tbd) [#60]
+- [ ] 2.8a · Accountless profile creation with ownership — let any registered account
+  create a new `Person` profile with no linked `Account`, behind a clear warning that
+  this path is only for people who should not get site access (children, other family
+  members). The creating account becomes the profile's initial owner; an "owners"
+  relation — restricted to profiles with no linked `Account` — lets current owners add
+  or remove other owners. Owners can edit the profile like their own, but cannot delete
+  it — deletion stays admin-only (Django admin). Scope to be refined. (priority: tbd)
+  [#60] (split from 2.8)
+- [ ] 2.8b · First-login redirect when a profile already exists — when an `Account` is
+  later created for someone who already has an accountless `Person` profile (auto-linked
+  by the existing post-save signal), the forced first-connection password-reset flow
+  must redirect to edit that existing profile, not to the 2.8a creation view. (priority:
+  tbd) [#60] (split from 2.8, requires: 2.8a)
+
+## Backlog
+
+> Unscoped items held for a future triage pass — not tied to any phase or sprint.
+> Promote an item into a numbered `## Phase N` (with a proper `N.M` id) once it's ready
+> to be scoped and sprinted.
+
+### Cluster: Profil — adresse secondaire
+- [ ] B.1 · Secondary address on profile — let a member add a secondary address to
+  their profile, shown on the Carte view, usable to create/locate their chalet.
+  Interacts with the Phase 1 chalets self-service work; scope to be refined.
+  (priority: tbd) [#53]
+
+### Cluster: Groupes et permissions
+- [ ] B.2 · SCI grand chalet group — new group for grand chalet works/news content,
+  with author vs. reader roles (SCI project-group members are authors, SCI
+  shareholders are readers). Needs a groups/roles/permissions design pass first — no
+  such model exists yet. (priority: tbd) [#57]

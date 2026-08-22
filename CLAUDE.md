@@ -191,3 +191,11 @@ gate a build/publish step.
   `ROADMAP.md` entirely — their scope gets refined at the next triage pass, and that
   phase can be renumbered/promoted once it has real near-term scope. See §8 for whether
   a phase's issues ship as separate or combined branches.
+- **`## Backlog` (adopted 2026-08-22):** a single, un-numbered heading — always the last
+  section in the file — for items with no phase/sprint target at all, as distinct from a
+  numbered `## Phase N` placeholder (which still means "next up, scope tbd"). Uses the
+  same `### Cluster: <name>` grouping, but items are numbered `B.1`, `B.2`, ...
+  continuously within the Backlog section (not `N.M`) precisely so they carry no phase
+  association and moving items in or out of Backlog never forces renumbering a phase's
+  already-referenced ids. `dev-pipeline` never sprints Backlog items. Promote one into a
+  numbered phase (with a fresh `N.M` id) once it's ready to be scoped and sprinted.
