@@ -8,7 +8,7 @@
 
 ### Cluster: Carte
 - [ ] 3.1 · Person search in Carte — select a person, center the map on their
-  address. [#75]
+  address. (requires: 3.2) [#75]
 - [ ] 3.2 · Multiple members at the same address — show all members sharing an
   address instead of just one (split marker / cluster with names+photos on click).
   [#68]
@@ -17,14 +17,14 @@
 - [ ] 3.3 · Worldwide address support — extend the BAN-only address autocomplete
   (`address_picker.js`, `annuaire/forms.py`) so non-French addresses can be entered
   and geocoded. [#73]
-- [ ] 3.4 · Drop Chalet.gps_coordinates free-text field — verify production
+- [x] 3.4 · Drop Chalet.gps_coordinates free-text field — verify production
   contents, then remove the field, its form usage, and its display on
   `chalet_detail.html`, with a migration. [#63]
 
 ### Cluster: Profil
-- [ ] 3.5 · Editable notification/subscription preferences — expose the
-  signup-time notification checkboxes in the profile edit form so they can be
-  changed afterward. [#71]
+- [x] 3.5 · Editable notification/subscription preferences — expose the
+  profile-creation-time notification checkboxes in the profile edit form so they
+  can be changed afterward. [#71]
 
 ### Cluster: Authentification
 - [ ] 3.6 · Magic Link login — passwordless email login reusing the existing

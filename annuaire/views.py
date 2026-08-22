@@ -39,6 +39,7 @@ from .forms import (
     UpdateRelationForm,
 )
 from .models import Account, Chalet, Person, PresencePSV, Relation
+from .models import Settings as NotificationSettings
 
 
 @login_required
@@ -621,10 +622,26 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
             return reverse_lazy("my-profile")
         return reverse_lazy("personne-detail", kwargs={"pk": self.object.pk})
 
+    def _settings_instance(self):
+        # Person rows created before the Settings model existed have no row
+        # yet -- self-heal on first edit rather than 500ing.
+        return NotificationSettings.objects.get_or_create(person=self.object)[0]
+
     def get_context_data(self, **kwargs):
         data = super().get_context_data(**kwargs)
         data["formsets"] = []
+        data.setdefault("settings_form", FormSettings(instance=self._settings_instance()))
         return data
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        form = self.get_form()
+        settings_form = FormSettings(request.POST, instance=self._settings_instance())
+        if form.is_valid() and settings_form.is_valid():
+            with transaction.atomic():
+                settings_form.save()
+                return self.form_valid(form)
+        return self.render_to_response(self.get_context_data(form=form, settings_form=settings_form))
 
 
 def _get_person_for_relations_edit(request, pk):

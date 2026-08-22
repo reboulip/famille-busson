@@ -91,6 +91,12 @@ def test_chalet_detail_returns_200(auth_client, chalet):
 
 
 @pytest.mark.django_db
+def test_chalet_detail_does_not_render_gps_coordinates(auth_client, chalet):
+    response = auth_client.get(reverse("chalet-detail", kwargs={"pk": chalet.pk}))
+    assert "Coordonnées GPS" not in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_chalet_detail_404_on_invalid_pk(auth_client):
     response = auth_client.get(reverse("chalet-detail", kwargs={"pk": 99999}))
     assert response.status_code == 404
@@ -323,6 +329,12 @@ def test_chalet_create_form_renders_hidden_coordinate_fields(auth_client):
     content = response.content.decode()
     assert 'id="id_latitude"' in content
     assert 'id="id_longitude"' in content
+
+
+@pytest.mark.django_db
+def test_chalet_create_form_does_not_render_gps_coordinates(auth_client):
+    response = auth_client.get(reverse("chalet-create"))
+    assert "Coordonnées GPS" not in response.content.decode()
 
 
 @pytest.mark.django_db

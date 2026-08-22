@@ -192,7 +192,7 @@ class PresenceForm(forms.ModelForm):
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo", "owners"]
+        fields = ["name", "address", "latitude", "longitude", "photo", "owners"]
         widgets = {
             "address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,
@@ -213,7 +213,7 @@ class ChaletForm(forms.ModelForm):
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo"]
+        fields = ["name", "address", "latitude", "longitude", "photo"]
         widgets = {
             "address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,

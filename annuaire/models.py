@@ -102,7 +102,6 @@ class Relation(models.Model):
 class Chalet(models.Model):
     name = models.CharField(max_length=100, verbose_name="Nom")
     address = models.CharField(max_length=255, verbose_name="Adresse")
-    gps_coordinates = models.CharField(max_length=100, blank=True, null=True, verbose_name="Coordonnées GPS")
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Latitude")
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     photo = models.ImageField(upload_to="photos/", blank=True, null=True, verbose_name="Photo")
