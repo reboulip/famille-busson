@@ -116,6 +116,17 @@ class TestPopulateDevDataAccounts:
         assert regular.check_password("dev")
         assert not regular.must_change_password
 
+    def test_some_persons_seeded_with_map_coordinates(self):
+        # Otherwise /annuaire/carte/ is empty in dev -- see ROADMAP Phase 3, item 3.2.
+        run_populate()
+        assert Person.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).count() >= 3
+
+    def test_two_seeded_persons_share_a_map_address(self):
+        run_populate()
+        geolocated = Person.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True)
+        coordinates = [(p.latitude, p.longitude) for p in geolocated]
+        assert len(coordinates) != len(set(coordinates))
+
 
 # ------------------------------------------------------------------ flags
 

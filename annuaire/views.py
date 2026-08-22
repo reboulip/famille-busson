@@ -15,7 +15,6 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes
@@ -38,6 +37,7 @@ from .forms import (
     SignupForm,
     UpdateRelationForm,
 )
+from .map_data import build_chalet_map_groups, build_person_map_groups
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
 
@@ -502,40 +502,11 @@ class MapListView(LoginRequiredMixin, ListView):
         context["unresolved_count"] = Person.objects.filter(
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
-        context["persons_json"] = json.dumps(
-            [
-                {
-                    "name": f"{person.first_name} {person.last_name}",
-                    "lat": float(person.latitude),
-                    "lon": float(person.longitude),
-                    "url": reverse("personne-detail", kwargs={"pk": person.pk}),
-                    "avatar": person.profile_photo.url
-                    if person.profile_photo
-                    else static("default_profile_picture.png"),
-                }
-                for person in context["persons"]
-            ]
-        )
-        chalets = Chalet.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("name")
+        context["persons_json"] = json.dumps(build_person_map_groups())
         context["unresolved_chalet_count"] = Chalet.objects.filter(
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
-        context["chalets_json"] = json.dumps(
-            [
-                {
-                    "name": chalet.name,
-                    "lat": float(chalet.latitude),
-                    "lon": float(chalet.longitude),
-                    "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
-                    # No default chalet photo asset (unlike Person's default avatar) -- the
-                    # "emoji::" sentinel tells map_init.js to render the 🏔️ placeholder used
-                    # everywhere else in the app (chalet_list.html, chalet_detail.html)
-                    # instead of trying to load an image that doesn't exist.
-                    "avatar": chalet.photo.url if chalet.photo else "emoji::🏔️",
-                }
-                for chalet in chalets
-            ]
-        )
+        context["chalets_json"] = json.dumps(build_chalet_map_groups())
         return context
 
 

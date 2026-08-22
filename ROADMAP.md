@@ -9,7 +9,7 @@
 ### Cluster: Carte
 - [ ] 3.1 · Person search in Carte — select a person, center the map on their
   address. (requires: 3.2) [#75]
-- [ ] 3.2 · Multiple members at the same address — show all members sharing an
+- [x] 3.2 · Multiple members at the same address — show all members sharing an
   address instead of just one (split marker / cluster with names+photos on click).
   [#68]
 

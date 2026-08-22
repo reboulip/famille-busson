@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // (there's no default chalet photo asset the way there is a default person avatar).
     const EMOJI_PREFIX = 'emoji::';
 
-    function buildAvatarIcon(avatarUrl) {
+    function buildAvatarElement(avatarUrl) {
         const avatar = document.createElement('div');
         avatar.className = 'map-marker-avatar';
         if (avatarUrl.startsWith(EMOJI_PREFIX)) {
@@ -33,26 +33,70 @@ document.addEventListener('DOMContentLoaded', function () {
             img.alt = '';
             avatar.appendChild(img);
         }
+        return avatar;
+    }
+
+    function buildGroupIcon(group) {
+        if (group.entries.length === 1) {
+            return L.divIcon({
+                className: 'map-marker-avatar-wrapper',
+                html: buildAvatarElement(group.entries[0].avatar),
+                iconSize: [40, 40],
+                iconAnchor: [20, 40],
+                popupAnchor: [0, -40],
+            });
+        }
+        const cluster = document.createElement('div');
+        cluster.className = 'map-marker-cluster';
+        group.entries.slice(0, 3).forEach((entry) => {
+            const avatar = buildAvatarElement(entry.avatar);
+            avatar.classList.add('map-marker-cluster-avatar');
+            cluster.appendChild(avatar);
+        });
+        const badge = document.createElement('div');
+        badge.className = 'map-marker-cluster-badge';
+        badge.textContent = `+${group.entries.length}`;
+        cluster.appendChild(badge);
         return L.divIcon({
             className: 'map-marker-avatar-wrapper',
-            html: avatar,
+            html: cluster,
             iconSize: [40, 40],
             iconAnchor: [20, 40],
             popupAnchor: [0, -40],
         });
     }
 
-    function buildPopup(entry) {
+    function buildEntryLink(entry) {
         const link = document.createElement('a');
         link.href = entry.url;
         link.textContent = entry.name;
         return link;
     }
 
-    function buildMarkers(entries) {
-        return entries.map((entry) => {
-            const marker = L.marker([entry.lat, entry.lon], { icon: buildAvatarIcon(entry.avatar) });
-            marker.bindPopup(buildPopup(entry));
+    function buildGroupPopup(group) {
+        if (group.entries.length === 1) {
+            return buildEntryLink(group.entries[0]);
+        }
+        const wrapper = document.createElement('div');
+        const heading = document.createElement('p');
+        heading.className = 'map-marker-cluster-heading';
+        heading.textContent = `${group.entries.length} membres à cette adresse`;
+        wrapper.appendChild(heading);
+        const list = document.createElement('ul');
+        list.className = 'map-marker-cluster-list';
+        group.entries.forEach((entry) => {
+            const item = document.createElement('li');
+            item.appendChild(buildEntryLink(entry));
+            list.appendChild(item);
+        });
+        wrapper.appendChild(list);
+        return wrapper;
+    }
+
+    function buildMarkers(groups) {
+        return groups.map((group) => {
+            const marker = L.marker([group.lat, group.lon], { icon: buildGroupIcon(group) });
+            marker.bindPopup(buildGroupPopup(group));
             return marker;
         });
     }

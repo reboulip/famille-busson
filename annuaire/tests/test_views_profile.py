@@ -801,7 +801,7 @@ def test_carte_persons_json_includes_avatar(auth_client, person):
     person.save()
     response = auth_client.get(reverse("carte"))
     persons = json.loads(response.context["persons_json"])
-    assert persons[0]["avatar"]
+    assert persons[0]["entries"][0]["avatar"]
 
 
 @pytest.mark.django_db
@@ -811,8 +811,8 @@ def test_carte_includes_chalets_with_coordinates(auth_client, chalet):
     chalet.save()
     response = auth_client.get(reverse("carte"))
     chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["name"] == chalet.name
-    assert chalets[0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+    assert chalets[0]["entries"][0]["name"] == chalet.name
+    assert chalets[0]["entries"][0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
 
 
 @pytest.mark.django_db
@@ -835,4 +835,32 @@ def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
     chalet.save()
     response = auth_client.get(reverse("carte"))
     chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["avatar"] == "emoji::🏔️"
+    assert chalets[0]["entries"][0]["avatar"] == "emoji::🏔️"
+
+
+@pytest.mark.django_db
+def test_carte_groups_persons_at_same_address(auth_client, person, other_person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    other_person.latitude = Decimal("49.031624")
+    other_person.longitude = Decimal("2.062821")
+    other_person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert len(persons) == 1
+    assert len(persons[0]["entries"]) == 2
+
+
+@pytest.mark.django_db
+def test_carte_does_not_group_persons_at_different_addresses(auth_client, person, other_person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    other_person.latitude = Decimal("46.096")
+    other_person.longitude = Decimal("7.228")
+    other_person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert len(persons) == 2
+    assert all(len(group["entries"]) == 1 for group in persons)
