@@ -7,7 +7,7 @@
 ## Phase 3
 
 ### Cluster: Carte
-- [ ] 3.1 · Person search in Carte — select a person, center the map on their
+- [x] 3.1 · Person search in Carte — select a person, center the map on their
   address. (requires: 3.2) [#75]
 - [x] 3.2 · Multiple members at the same address — show all members sharing an
   address instead of just one (split marker / cluster with names+photos on click).
@@ -51,3 +51,9 @@
   with author vs. reader roles (SCI project-group members are authors, SCI
   shareholders are readers). Needs a groups/roles/permissions design pass first — no
   such model exists yet. (priority: tbd) [#57]
+
+### Cluster: Sécurité
+- [ ] B.3 · Throttle unauthenticated email-sending endpoints — rate-limit the
+  password-reset and magic-link request views; needs a shared cache backend first
+  (current `CACHES` setting is unset, defaulting to per-worker `LocMemCache`, which a
+  throttle built on it would trivially bypass). (priority: tbd)

@@ -864,3 +864,11 @@ def test_carte_does_not_group_persons_at_different_addresses(auth_client, person
     persons = json.loads(response.context["persons_json"])
     assert len(persons) == 2
     assert all(len(group["entries"]) == 1 for group in persons)
+
+
+@pytest.mark.django_db
+def test_carte_renders_person_search_box(auth_client):
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert 'id="carte-person-search"' in content
+    assert "Rechercher un membre" in content

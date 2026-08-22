@@ -1,0 +1,12 @@
+{% autoescape off %}Bonjour,
+
+Vous avez demandé un lien de connexion pour votre compte sur le site de la
+famille Busson ({{ email }}).
+
+Connectez-vous ici : {{ protocol }}://{{ domain }}{% url 'magic-link-confirm-token' uidb64=uid token=token %}
+Ce lien est à usage unique et expire dans {{ validity_minutes }} minutes.
+
+Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.
+
+À bientôt !
+{% endautoescape %}

@@ -4,7 +4,7 @@ from django.urls import reverse
 
 class ForcePasswordChangeMiddleware:
     EXEMPT_URL_NAMES = ("password-change-forced", "logout", "login")
-    EXEMPT_URL_PREFIXES = ("/admin/", "/annuaire/password/reset/")
+    EXEMPT_URL_PREFIXES = ("/admin/", "/annuaire/password/reset/", "/annuaire/login/magic/")
 
     def __init__(self, get_response):
         self.get_response = get_response

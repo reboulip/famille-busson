@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_not_required, login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection, send_mail
 from django.db import transaction
 from django.db.models import Q
@@ -17,8 +17,9 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.views.decorators.cache import never_cache
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
@@ -40,6 +41,7 @@ from .forms import (
 from .map_data import build_chalet_map_groups, build_person_map_groups
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
+from .tokens import magic_link_token_generator
 
 
 @login_required
@@ -366,6 +368,87 @@ class AccountPasswordResetView(PasswordResetView):
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
     template_name = "annuaire/password_reset_done.html"
+
+
+class MagicLinkRequestView(PasswordResetView):
+    """Passwordless login entry point: reuses Django's stock PasswordResetForm
+    unmodified, so its get_users() (existing, active, usable-password Account
+    rows only) is what keeps this closed to signup -- a Person with no linked
+    Account never receives a link, let alone gets auto-provisioned one."""
+
+    template_name = "annuaire/magic_link_request.html"
+    email_template_name = "annuaire/magic_link_email.txt"
+    subject_template_name = "annuaire/magic_link_subject.txt"
+    token_generator = magic_link_token_generator
+    success_url = reverse_lazy("magic-link-sent")
+    # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
+    # lazy settings object is already configured by the time views.py imports).
+    extra_email_context = {"validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60}
+
+
+class MagicLinkSentView(PasswordResetDoneView):
+    template_name = "annuaire/magic_link_sent.html"
+
+
+def _get_account_from_uidb64(uidb64):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        return Account.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Account.DoesNotExist, ValidationError):
+        return None
+
+
+@method_decorator(login_not_required, name="dispatch")
+@method_decorator(never_cache, name="dispatch")
+class MagicLinkConfirmView(View):
+    """Two-step magic-link confirmation: the emailed URL (uidb64+token) is only
+    ever GET-requested once to validate the token and stash it in the session,
+    then redirects to the token-less confirm URL, which GET-renders a
+    confirmation button and POST-logs the user in. This keeps the raw token out
+    of the Referer header on the page the "Confirmez votre connexion" button
+    submits to, mirroring PasswordResetConfirmView's own pattern."""
+
+    template_name = "annuaire/magic_link_confirm.html"
+
+    @staticmethod
+    def _session_token_valid(request, uidb64, user):
+        session_token = request.session.get("_magic_login_token")
+        session_uidb64 = request.session.get("_magic_login_uidb64")
+        if user is None or not session_token or session_uidb64 != uidb64:
+            return False
+        return magic_link_token_generator.check_token(user, session_token)
+
+    def get(self, request, uidb64, token=None):
+        user = _get_account_from_uidb64(uidb64)
+        if token is not None:
+            if user is not None and magic_link_token_generator.check_token(user, token):
+                request.session["_magic_login_token"] = token
+                request.session["_magic_login_uidb64"] = uidb64
+                return redirect("magic-link-confirm", uidb64=uidb64)
+            return render(request, self.template_name, {"validlink": False})
+
+        validlink = self._session_token_valid(request, uidb64, user)
+        return render(request, self.template_name, {"validlink": validlink})
+
+    def post(self, request, uidb64):
+        user = _get_account_from_uidb64(uidb64)
+        if not self._session_token_valid(request, uidb64, user):
+            return render(request, self.template_name, {"validlink": False})
+        # login() bypasses backend is_active/usability checks, so this must be
+        # checked explicitly here.
+        if not user.is_active:
+            return render(request, self.template_name, {"validlink": False})
+
+        is_first_login = user.last_login is None
+        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        del request.session["_magic_login_token"]
+        del request.session["_magic_login_uidb64"]
+
+        if user.must_change_password:
+            return redirect("password-change-forced")
+        if is_first_login:
+            return _first_login_redirect(user)
+        return redirect("home")
 
 
 class ProfileCreateView(LoginRequiredMixin, CreateView):

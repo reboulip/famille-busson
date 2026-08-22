@@ -1,0 +1,13 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Vérifiez vos emails</h1>
+        <div class="alert alert-info">
+            Si un compte existe avec cette adresse, vous allez recevoir un email avec un
+            lien de connexion.
+        </div>
+        <a href="{% url 'login' %}" class="btn btn-primary">Retour à la connexion</a>
+    </div>
+</div>
+{% endblock content %}
