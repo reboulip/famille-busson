@@ -41,7 +41,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView`, `FamilyTreeView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ChaletCreateView` | `chalet-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; the creator is auto-added as an owner. |
 | `PersonCreateView` | `person-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; creates an accountless `Person` and auto-adds the creator as an owner. |
-| `ProfileUpdateView` | `person-edit` | `get_object()` override (`can_edit_person()`) | Owner of the profile, or staff/superuser. |
+| `ProfileUpdateView` | `person-edit` | `get_object()` override (`can_edit_person()`) | Owner of the profile, or staff/superuser. Also renders and saves the profile's notification preferences (`FormSettings`) alongside the main form — no separate guard, so anyone who can edit the profile can edit its notification prefs too. |
 | `PersonOwnersUpdateView` | `person-owners-edit` | `get_object()` override (`can_edit_person()` + `account_id is None`) | Owner of an **accountless** `Person`, or staff/superuser. 403 if the profile already has an `Account` — ownership stops being editable once someone can log in as that profile. |
 | `ProfileClaimView` | `profile-claim` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with **no** linked profile; self-service, instant, no approval — links the account to any `Person` with `account__isnull=True`. Deliberately not reachable from the public signup form (see "Public (unauthenticated) surface" below). |
 | `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person` (via `can_edit_person()`), or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
@@ -91,6 +91,20 @@ readable by anyone who obtains the URL.
 (`annuaire/middleware.py`) — an already-authenticated user flagged
 `must_change_password` must still be able to follow their own reset link instead
 of being bounced to `/password/change/`.
+
+The passwordless "magic link" login flow (reachable from the login page) adds four
+more public routes. `magic-link-request` (`MagicLinkRequestView`, a `PasswordResetView`
+subclass reusing Django's stock `PasswordResetForm` unmodified) and `magic-link-sent`
+(`MagicLinkSentView`, a `PasswordResetDoneView` subclass) inherit `login_not_required`
+automatically, the same as the `AccountPasswordReset*` views above. `magic-link-confirm-token`
+(the emailed link itself) and `magic-link-confirm` (the "confirm your login" button page)
+are both served by `MagicLinkConfirmView`, a plain `View` — not a Django auth-view
+subclass, so it has no built-in exemption to inherit and is decorated explicitly with
+`@method_decorator(login_not_required, name="dispatch")`. `ForcePasswordChangeMiddleware.
+EXEMPT_URL_PREFIXES` also lists `/annuaire/login/magic/`, for the same reason as
+`password_reset_confirm`: an already-authenticated user flagged `must_change_password`
+must still be able to complete the magic-link flow instead of being bounced to
+`/password/change/`.
 
 ## Superuser vs staff
 

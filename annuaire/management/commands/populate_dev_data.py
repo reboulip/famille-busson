@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime
 import random
+from decimal import Decimal
 
 from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
@@ -302,6 +303,20 @@ class Command(BaseCommand):
             account.save()
             person.refresh_from_db()
             persons.append(person)
+
+        # Fixed, non-random map coordinates for a few persons so /annuaire/carte/
+        # is demoable in dev -- two sharing one address, to show marker grouping.
+        if len(persons) >= 3:
+            persons[0].latitude = Decimal("48.856600")
+            persons[0].longitude = Decimal("2.352200")
+            persons[0].save(update_fields=["latitude", "longitude"])
+            persons[1].latitude = Decimal("48.856600")
+            persons[1].longitude = Decimal("2.352200")
+            persons[1].save(update_fields=["latitude", "longitude"])
+            persons[2].latitude = Decimal("45.764000")
+            persons[2].longitude = Decimal("4.835700")
+            persons[2].save(update_fields=["latitude", "longitude"])
+
         return persons
 
     def _create_chalets(self) -> list[Chalet]:

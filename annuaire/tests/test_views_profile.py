@@ -4,7 +4,7 @@ from decimal import Decimal
 import pytest
 from django.urls import reverse
 
-from annuaire.models import Person, Relation
+from annuaire.models import Person, Relation, Settings
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -250,6 +250,14 @@ def test_profile_update_other_profile_returns_403(auth_client, other_person):
 
 
 @pytest.mark.django_db
+def test_profile_update_other_profile_post_returns_403(auth_client, other_person):
+    data = {"first_name": other_person.first_name, "last_name": other_person.last_name}
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": other_person.pk}), data)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
 def test_profile_update_staff_can_edit_any_profile(staff_client, other_person):
     response = staff_client.get(reverse("person-edit", kwargs={"pk": other_person.pk}))
     assert response.status_code == 200
@@ -308,6 +316,84 @@ def test_profile_update_form_has_multipart_enctype(auth_client, person):
 
 
 # ---------------------------------------------------------------------------
+# Notification preferences (3.5)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_profile_update_renders_notification_checkboxes(auth_client, person):
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "notify_on_birthday" in content
+    assert "notify_on_new_blog_post" in content
+
+
+@pytest.mark.django_db
+def test_profile_update_prechecks_current_notification_prefs(auth_client, person):
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    assert response.context["settings_form"].initial["notify_on_birthday"] is True
+
+
+@pytest.mark.django_db
+def test_profile_update_post_saves_notification_prefs(auth_client, person):
+    data = {
+        "first_name": person.first_name,
+        "last_name": person.last_name,
+        "notify_on_birthday": "on",
+        "notify_on_new_blog_post": "on",
+    }
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    person.settings.refresh_from_db()
+    assert person.settings.notify_on_birthday is True
+    assert person.settings.notify_on_new_blog_post is True
+
+
+@pytest.mark.django_db
+def test_profile_update_post_unchecked_boxes_unsubscribe(auth_client, person):
+    person.settings.notify_on_birthday = True
+    person.settings.notify_on_new_blog_post = True
+    person.settings.save()
+    data = {"first_name": person.first_name, "last_name": person.last_name}
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    person.settings.refresh_from_db()
+    assert person.settings.notify_on_birthday is False
+    assert person.settings.notify_on_new_blog_post is False
+
+
+@pytest.mark.django_db
+def test_profile_update_post_invalid_leaves_notification_prefs_unchanged(auth_client, person):
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+    data = {"first_name": "", "last_name": "", "notify_on_birthday": "on"}
+    data.update(_empty_formset_data())
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 200
+    person.settings.refresh_from_db()
+    assert person.settings.notify_on_birthday is True
+
+
+@pytest.mark.django_db
+def test_profile_update_heals_missing_settings_row(auth_client, person):
+    Settings.objects.filter(person=person).delete()
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    assert response.status_code == 200
+    assert Settings.objects.filter(person=person).exists()
+
+    data = {"first_name": person.first_name, "last_name": person.last_name, "notify_on_birthday": "on"}
+    data.update(_empty_formset_data())
+    Settings.objects.filter(person=person).delete()
+    response = auth_client.post(reverse("person-edit", kwargs={"pk": person.pk}), data)
+    assert response.status_code == 302
+    assert Settings.objects.get(person=person).notify_on_birthday is True
+
+
+# ---------------------------------------------------------------------------
 # Address autocomplete (ANN-A)
 # ---------------------------------------------------------------------------
 
@@ -335,6 +421,7 @@ def test_profile_edit_form_address_widget_attrs():
     widget = ProfileEditForm().fields["postal_address"].widget
     assert widget.attrs["autocomplete"] == "off"
     assert "address-picker-input" in widget.attrs["class"]
+    assert str(widget.attrs["data-search-url"]) == reverse("address-search-ajax")
 
 
 @pytest.mark.django_db
@@ -715,7 +802,7 @@ def test_carte_persons_json_includes_avatar(auth_client, person):
     person.save()
     response = auth_client.get(reverse("carte"))
     persons = json.loads(response.context["persons_json"])
-    assert persons[0]["avatar"]
+    assert persons[0]["entries"][0]["avatar"]
 
 
 @pytest.mark.django_db
@@ -725,8 +812,8 @@ def test_carte_includes_chalets_with_coordinates(auth_client, chalet):
     chalet.save()
     response = auth_client.get(reverse("carte"))
     chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["name"] == chalet.name
-    assert chalets[0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+    assert chalets[0]["entries"][0]["name"] == chalet.name
+    assert chalets[0]["entries"][0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
 
 
 @pytest.mark.django_db
@@ -749,4 +836,40 @@ def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
     chalet.save()
     response = auth_client.get(reverse("carte"))
     chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["avatar"] == "emoji::🏔️"
+    assert chalets[0]["entries"][0]["avatar"] == "emoji::🏔️"
+
+
+@pytest.mark.django_db
+def test_carte_groups_persons_at_same_address(auth_client, person, other_person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    other_person.latitude = Decimal("49.031624")
+    other_person.longitude = Decimal("2.062821")
+    other_person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert len(persons) == 1
+    assert len(persons[0]["entries"]) == 2
+
+
+@pytest.mark.django_db
+def test_carte_does_not_group_persons_at_different_addresses(auth_client, person, other_person):
+    person.latitude = Decimal("49.031624")
+    person.longitude = Decimal("2.062821")
+    person.save()
+    other_person.latitude = Decimal("46.096")
+    other_person.longitude = Decimal("7.228")
+    other_person.save()
+    response = auth_client.get(reverse("carte"))
+    persons = json.loads(response.context["persons_json"])
+    assert len(persons) == 2
+    assert all(len(group["entries"]) == 1 for group in persons)
+
+
+@pytest.mark.django_db
+def test_carte_renders_person_search_box(auth_client):
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert 'id="carte-person-search"' in content
+    assert "Rechercher un membre" in content

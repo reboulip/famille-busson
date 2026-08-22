@@ -16,7 +16,6 @@
                 {% endif %}
             </h1>
             <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>
-            {% if chalet.gps_coordinates %}<p>📍 {{ chalet.gps_coordinates }}</p>{% endif %}
         </div>
     </div>
 

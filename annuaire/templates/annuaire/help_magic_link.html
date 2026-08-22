@@ -1,0 +1,46 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Comment fonctionne la connexion par lien ?</h1>
+        <p class="text-muted">
+            La connexion par lien (« magic link ») permet de se connecter sans avoir à
+            saisir de mot de passe.
+        </p>
+
+        <ol>
+            <li>
+                Sur la page de connexion, cliquez sur
+                « Recevez un lien de connexion par email ».
+            </li>
+            <li>Saisissez l'adresse email associée à votre compte, puis validez.</li>
+            <li>
+                Si un compte existe avec cette adresse, vous recevez un email contenant
+                un lien de connexion. Ce lien est <strong>à usage unique</strong> et
+                <strong>valable 15 minutes</strong>.
+            </li>
+            <li>Cliquez sur le lien reçu par email : une page de confirmation s'affiche.</li>
+            <li>Cliquez sur le bouton « Confirmez votre connexion » pour terminer la connexion.</li>
+        </ol>
+
+        <h2>Pourquoi une étape de confirmation ?</h2>
+        <p>
+            Certaines messageries ouvrent automatiquement les liens reçus pour vérifier
+            qu'ils sont sûrs. Sans cette étape supplémentaire, un tel lien pourrait être
+            « utilisé » avant même que vous ne cliquiez dessus, et le lien ne
+            fonctionnerait alors plus. Le bouton de confirmation garantit que c'est bien
+            vous qui vous connectez.
+        </p>
+
+        <h2>Le lien a expiré ou ne fonctionne plus</h2>
+        <p>
+            Passé le délai de 15 minutes, ou si le lien a déjà été utilisé, il n'est
+            plus valide. Il suffit d'en redemander un nouveau depuis la page de
+            connexion.
+        </p>
+
+        <a href="{% url 'magic-link-request' %}" class="btn btn-outline-primary">Recevoir un lien de connexion</a>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary ms-2">Retour à la connexion</a>
+    </div>
+</div>
+{% endblock content %}

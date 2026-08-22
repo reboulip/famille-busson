@@ -4,18 +4,29 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
+from django.urls import reverse_lazy
 
 from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
 
+# Base Adresse Nationale is authoritative for France; Photon (OpenStreetMap) is
+# queried server-side as a fallback for addresses BAN can't resolve -- see
+# annuaire/geocoding.py. Same OSM/ODbL attribution the carte already gives its
+# tiles (see annuaire/static/js/map_init.js).
+ADDRESS_HELP_TEXT = (
+    "Suggestions : Base Adresse Nationale (data.gouv.fr) et, pour l'étranger, Photon (OpenStreetMap/ODbL)"
+)
+
 
 class AddressAutocompleteInput(forms.TextInput):
     """Progressive enhancement: plain text input, upgraded client-side by
-    address_picker.js with Base Adresse Nationale suggestions. Also populates the
-    hidden latitude/longitude fields named below when a suggestion is picked, since
-    the BAN API returns coordinates in the same response (see #44)."""
+    address_picker.js with address suggestions from address_search_ajax (BAN,
+    France-only, with a worldwide Photon fallback -- see annuaire/geocoding.py).
+    Also populates the hidden latitude/longitude fields named below when a
+    suggestion is picked, since the search response includes coordinates
+    (see #44)."""
 
     class Media:
         js = ["js/address_picker.js"]
@@ -27,6 +38,7 @@ class AddressAutocompleteInput(forms.TextInput):
             "data-address-limit": "5",
             "data-lat-target": "id_latitude",
             "data-lon-target": "id_longitude",
+            "data-search-url": reverse_lazy("address-search-ajax"),
         }
         super().__init__({**defaults, **(attrs or {})})
 
@@ -53,7 +65,7 @@ class ProfileEditForm(forms.ModelForm):
             "longitude": forms.HiddenInput,
         }
         help_texts = {
-            "postal_address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+            "postal_address": ADDRESS_HELP_TEXT,
         }
 
     def clean_profile_photo(self):
@@ -192,7 +204,7 @@ class PresenceForm(forms.ModelForm):
 class ChaletForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo", "owners"]
+        fields = ["name", "address", "latitude", "longitude", "photo", "owners"]
         widgets = {
             "address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,
@@ -200,7 +212,7 @@ class ChaletForm(forms.ModelForm):
             "owners": forms.MultipleHiddenInput,
         }
         help_texts = {
-            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+            "address": ADDRESS_HELP_TEXT,
         }
 
     def __init__(self, *args, current_person=None, **kwargs):
@@ -213,14 +225,14 @@ class ChaletForm(forms.ModelForm):
 class ChaletUpdateForm(forms.ModelForm):
     class Meta:
         model = Chalet
-        fields = ["name", "address", "gps_coordinates", "latitude", "longitude", "photo"]
+        fields = ["name", "address", "latitude", "longitude", "photo"]
         widgets = {
             "address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,
             "longitude": forms.HiddenInput,
         }
         help_texts = {
-            "address": "Suggestions : Base Adresse Nationale (data.gouv.fr)",
+            "address": ADDRESS_HELP_TEXT,
         }
 
 

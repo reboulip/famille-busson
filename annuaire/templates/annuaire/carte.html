@@ -19,6 +19,11 @@
         </p>
     {% endif %}
 
+    <div class="person-picker mb-2">
+        <input type="text" id="carte-person-search" class="search-input" placeholder="Rechercher un membre…" autocomplete="off">
+        <ul id="carte-person-search-results" class="person-picker-results" hidden></ul>
+    </div>
+
     <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}'></div>
 {% endblock content %}
 {% block extra_js %}

@@ -40,6 +40,12 @@ def test_base_includes_genealogie_nav_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_includes_magic_link_help_nav_link(client):
+    response = client.get(reverse("login"))
+    assert reverse("magic-link-help") in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_base_includes_home_nav_link(auth_client):
     response = auth_client.get(reverse("directory"))
     assert response.status_code == 200

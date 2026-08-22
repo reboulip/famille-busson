@@ -1,0 +1,21 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1>Connexion par lien</h1>
+
+        {% if validlink %}
+        <p class="text-muted">Cliquez ci-dessous pour terminer votre connexion.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary w-100 mt-2">Confirmez votre connexion</button>
+        </form>
+        {% else %}
+        <div class="alert alert-danger">
+            Ce lien de connexion n'est plus valide, il a peut-être déjà été utilisé ou a expiré.
+        </div>
+        <a href="{% url 'login' %}" class="btn btn-primary">Retour à la connexion</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock content %}

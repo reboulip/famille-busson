@@ -130,6 +130,10 @@ LOGIN_URL = "/annuaire/login/"
 # Django's default (3 days) is too tight for an invite/reset email that may sit
 # unread over a weekend.
 PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60 * 24 * 7)
+# Passwordless "magic link" login -- much shorter-lived than a password reset,
+# since it grants an immediate session rather than just a chance to set a
+# password.
+MAGIC_LINK_TIMEOUT = env.int("MAGIC_LINK_TIMEOUT", default=15 * 60)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

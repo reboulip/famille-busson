@@ -4,8 +4,6 @@ from io import StringIO
 import pytest
 from django.core.management import call_command
 
-import annuaire.management.commands.geocode_chalet_addresses as command_module
-
 
 def run_command():
     out = StringIO()
@@ -32,7 +30,7 @@ def test_geocodes_addresses_missing_coordinates(chalet, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": [{"geometry": {"coordinates": [2.062821, 49.031624]}}]})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -54,7 +52,7 @@ def test_skips_chalets_already_geocoded(chalet, monkeypatch):
         calls.append(params)
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -73,7 +71,7 @@ def test_skips_chalets_without_an_address(db, monkeypatch):
         calls.append(params)
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     run_command()
 
@@ -88,7 +86,7 @@ def test_handles_unresolved_address(chalet, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": []})
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     output = run_command()
 
@@ -108,7 +106,7 @@ def test_handles_request_failure_gracefully(chalet, monkeypatch):
     def fake_get(url, params=None, timeout=None):
         raise requests.RequestException("network down")
 
-    monkeypatch.setattr(command_module.requests, "get", fake_get)
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
 
     output = run_command()
 

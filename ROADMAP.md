@@ -21,3 +21,9 @@
   with author vs. reader roles (SCI project-group members are authors, SCI
   shareholders are readers). Needs a groups/roles/permissions design pass first — no
   such model exists yet. (priority: tbd) [#57]
+
+### Cluster: Sécurité
+- [ ] B.3 · Throttle unauthenticated email-sending endpoints — rate-limit the
+  password-reset and magic-link request views; needs a shared cache backend first
+  (current `CACHES` setting is unset, defaulting to per-worker `LocMemCache`, which a
+  throttle built on it would trivially bypass). (priority: tbd)

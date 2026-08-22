@@ -68,24 +68,48 @@ jobs:
           fi
           echo "Closing issues shipped in ${PREV_TAG}..${VERSION}"
 
-          # Only feat:/fix: commits represent squash-merged issue work (per CLAUDE.md's
-          # Branch Model, commit message convention "<type>: <summary> (#<issue-number>)").
-          # docs:/chore:/etc. commits (e.g. roadmap-triage commits) may reference an issue
-          # number without actually shipping it, and must NOT trigger a close.
+          # Only feat:/fix: commits represent shipped issue work (per CLAUDE.md's
+          # Branch Model). docs:/chore:/etc. commits (e.g. roadmap-triage commits) may
+          # reference an issue number without actually shipping it, and must NOT
+          # trigger a close -- gated on the subject-line prefix below.
+          #
+          # Issue refs "(#N)" are looked for on EVERY logical line of the full commit
+          # message (subject + body), not just an end-anchored match on the subject.
+          # This covers two conventions: a single-item commit "<type>: <summary> (#N)"
+          # (ref on the subject line itself) *and* a dev-pipeline wave commit, whose
+          # subject is a theme summary with no ref at all -- refs there live one per
+          # body bullet, e.g. "- 2.4 -- ... (#64)". Missing the second form silently
+          # under-closes every wave-based sprint release.
+          #
+          # A "logical line" first joins each bullet's wrapped continuation lines
+          # (indented, not starting a new "- " item) back into one line, so a ref that
+          # lands on a bullet's last physical line still carries its full description
+          # in the issue comment below, not just the trailing fragment.
           declare -A issue_commits
-          while IFS= read -r line; do
-            sha="${line%% *}"
-            subject="${line#* }"
+          while IFS= read -r sha; do
+            subject=$(git show -s --format='%s' "$sha")
             case "$subject" in
               "feat: "*|"fix: "*) ;;
               *) continue ;;
             esac
-            refs=$(echo "$subject" | grep -oE '\(#[0-9]+(, #[0-9]+)*\)$' | tr -dc '0-9, ')
-            [ -z "$refs" ] && continue
-            for n in ${refs//,/ }; do
-              issue_commits["$n"]+="${sha} ${subject}"$'\n'
-            done
-          done < <(git log "${PREV_TAG}..${VERSION}" --no-merges --format='%H %s')
+            body=$(git show -s --format='%b' "$sha")
+            full="$subject"
+            [ -n "$body" ] && full="${full}"$'\n'"${body}"
+            joined=$(echo "$full" | awk '
+              /^- / { if (para != "") print para; para = $0; next }
+              /^  / && para != "" { line = $0; sub(/^  +/, "", line); para = para " " line; next }
+              { if (para != "") { print para; para = "" }; print }
+              END { if (para != "") print para }
+            ')
+            while IFS= read -r msg_line; do
+              refs=$(echo "$msg_line" | grep -oE '\(#[0-9]+(, *#[0-9]+)*\)' | tr -dc '0-9, ')
+              [ -z "$refs" ] && continue
+              trimmed_line=$(echo "$msg_line" | sed -E 's/^[[:space:]-]*//')
+              for n in ${refs//,/ }; do
+                issue_commits["$n"]+="${sha} ${trimmed_line}"$'\n'
+              done
+            done <<< "$joined"
+          done < <(git log "${PREV_TAG}..${VERSION}" --no-merges --format='%H')
 
           for issue in "${!issue_commits[@]}"; do
             state=$(gh issue view "$issue" --json state -q .state 2>/dev/null || echo "MISSING")
