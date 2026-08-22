@@ -126,6 +126,18 @@ the default one-branch-per-issue rule above still applies.
   doesn't yet support. `DJ001` (`null=True` on string fields) is deliberately excluded
   from ruff's ruleset — the existing schema uses it pervasively and fixing it means a data
   migration, not a lint autofix.
+- **Static-asset build-sanity check:** `DEBUG=False SECRET_KEY=x uv run python manage.py
+  collectstatic --noinput`. Production runs WhiteNoise's
+  `CompressedManifestStaticFilesStorage`, which validates every CSS `url()` reference at
+  collectstatic time — this fails loudly (`MissingFileError`) on a broken/incomplete
+  vendored asset (e.g. a CSS file referencing an image that wasn't vendored alongside it)
+  even though `manage.py runserver`'s dev storage backend never checks this and the
+  feature works fine locally. No CI job runs this today, so it only ever surfaces in prod
+  at container boot (`docker-entrypoint.sh` runs `collectstatic` under `set -euo
+  pipefail`, killing the container before gunicorn starts) — caught this incident only
+  via the reverse proxy going down. Run this command locally, treating a `MissingFileError`
+  like a failed test (fix before merging), any time a change touches
+  `annuaire/static/`, especially anything under a `vendor/` subdirectory.
 - **First git/gh operation on a fresh container:** this dev container starts with no
   `~/.ssh/known_hosts` (and `~/.ssh` itself is root-owned, so `dev` can't create the file
   there) and no git identity configured (`user.name`/`user.email` unset). Before the
