@@ -74,26 +74,25 @@
   (priority: low) [#66]
 
 ### Cluster: Généalogie — enfants sans compte
-- [ ] 2.8a · Accountless profile creation with ownership — let any registered account
+- [x] 2.8a · Accountless profile creation with ownership — any registered account can
   create a new `Person` profile with no linked `Account`, behind a clear warning that
   this path is only for people who should not get site access (children, other family
   members). The creating account becomes the profile's initial owner; an "owners"
   relation — restricted to profiles with no linked `Account` — lets current owners add
   or remove other owners. Owners can edit the profile like their own, but cannot delete
-  it — deletion stays admin-only (Django admin). Scope to be refined. (priority: tbd)
-  [#60] (split from 2.8)
-- [ ] 2.8b · First-login redirect when a profile already exists — when an `Account` is
+  it — deletion stays admin-only (Django admin). (priority: tbd) [#60] (split from 2.8)
+- [x] 2.8b · First-login redirect when a profile already exists — when an `Account` is
   later created for someone who already has an accountless `Person` profile (auto-linked
   by the existing post-save signal), the forced first-connection password-reset flow
-  must redirect to edit that existing profile, not to the 2.8a creation view. (priority:
+  now redirects to edit that existing profile, not to the 2.8a creation view. (priority:
   tbd) [#60] (split from 2.8, requires: 2.8a)
-- [ ] 2.8c · Claim an existing accountless profile during onboarding — when an
-  authenticated account has no linked `Person` (a staff-created account, or a fiche with
-  a missing/stale email), offer a self-service search over accountless profiles from the
-  profile-creation page; selecting one links the account instantly, no approval step. The
-  signup email gate (an email must already match a `Person` to self-register) is
-  unchanged — this is deliberately not exposed on the public signup form. Surfaced during
-  Phase 2 sprint planning (no GH issue). (priority: tbd) (requires: 2.8a, 2.8b)
+- [x] 2.8c · Claim an existing accountless profile during onboarding — an
+  authenticated account with no linked `Person` (a staff-created account, or a fiche with
+  a missing/stale email) can now self-service search over accountless profiles from the
+  profile-creation page and instantly link one, no approval step. The signup email gate
+  (an email must already match a `Person` to self-register) is unchanged — this is
+  deliberately not exposed on the public signup form. Surfaced during Phase 2 sprint
+  planning (no GH issue). (priority: tbd) (requires: 2.8a, 2.8b)
 
 ## Backlog
 

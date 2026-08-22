@@ -38,7 +38,8 @@ class AccountAdmin(UserAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email")
+    list_display = ("first_name", "last_name", "email", "account")
+    filter_horizontal = ("owners",)
 
 
 admin.site.register(Relation)

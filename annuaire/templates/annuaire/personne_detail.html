@@ -17,6 +17,9 @@
                 {% if can_edit %}
                     <a href="{% url 'person-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier le profil</a>
                     <a href="{% url 'person-relations-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les relations</a>
+                    {% if not person.account_id %}
+                        <a href="{% url 'person-owners-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Gérer les propriétaires</a>
+                    {% endif %}
                 {% endif %}
             </h1>
             <p class="contact-line mb-1">

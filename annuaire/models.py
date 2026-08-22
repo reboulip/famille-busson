@@ -49,6 +49,13 @@ class Person(models.Model):
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
+    owners = models.ManyToManyField(
+        "self",
+        symmetrical=False,
+        related_name="managed_profiles",
+        blank=True,
+        verbose_name="Propriétaires",
+    )
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

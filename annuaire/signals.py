@@ -11,12 +11,16 @@ register_file_cleanup(Chalet, "photo")
 @receiver(post_save, sender=Account)
 def link_account_to_person(sender, instance, created, **kwargs):
     if created:
-        try:
-            person = Person.objects.get(email=instance.email)
+        # Person.email is not unique -- an accountless profile's email can collide
+        # with another Person's (e.g. a parent reusing their own address while
+        # creating a child's profile), so .get() would raise MultipleObjectsReturned.
+        # Prefer the oldest still-accountless match; only that one can plausibly be
+        # "the" account-less profile this new Account represents.
+        person = Person.objects.filter(email=instance.email, account__isnull=True).order_by("pk").first()
+        if person is not None:
             person.account = instance
             person.save()
-        except Person.DoesNotExist:
-            pass
+            person.owners.clear()
 
 
 @receiver(post_save, sender=Person)

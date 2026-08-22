@@ -1,5 +1,5 @@
 <div class="person-picker"
-     data-search-url="{% url 'person-search-ajax' %}"
+     data-search-url="{% if search_url %}{{ search_url }}{% else %}{% url 'person-search-ajax' %}{% endif %}"
      {% if field_name %}data-field-name="{{ field_name }}"{% endif %}
      {% if single_select %}data-single-select="true"{% endif %}
      {% if initial_json %}data-initial-selection='{{ initial_json|escape }}'{% endif %}>

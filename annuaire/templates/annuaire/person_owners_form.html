@@ -1,0 +1,19 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Propriétaires de {{ person.first_name }} {{ person.last_name }}</h1>
+
+    <form method="post" class="presence-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="owners-search-input">Propriétaires actuels</label>
+            {% include "annuaire/_person_picker.html" with input_id="owners-search-input" field_name="owners" initial_json=owners_initial_json search_url=person_search_with_account_url aria_label="Chercher un propriétaire" %}
+            <div class="form-text">Seules les personnes ayant un compte peuvent être propriétaires. Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer.</div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
+            <a href="{% url 'personne-detail' person.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}
