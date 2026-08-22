@@ -28,4 +28,5 @@ nav:
   - Data model: data_model.md
   - Deployment: deployment.md
   - Permissions: permissions.md
+  - Authentication: authentication.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

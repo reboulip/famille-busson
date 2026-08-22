@@ -475,6 +475,15 @@ class MagicLinkConfirmView(View):
         return redirect("home")
 
 
+@method_decorator(login_not_required, name="dispatch")
+class MagicLinkHelpView(TemplateView):
+    """Public explainer page for the magic-link flow, linked from the sidebar's
+    Aide section and from the login/request pages -- reachable by an anonymous
+    visitor confused mid-flow, not just by an already-authenticated member."""
+
+    template_name = "annuaire/help_magic_link.html"
+
+
 class ProfileCreateView(LoginRequiredMixin, CreateView):
     model = Person
     form_class = ProfileEditForm

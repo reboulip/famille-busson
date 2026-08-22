@@ -303,3 +303,29 @@ def test_magic_link_confirm_url_is_exempt_from_forced_password_change_redirect(a
     response = c.get(url)
     assert response.status_code in (200, 302)
     assert CHANGE_URL not in response.get("Location", "")
+
+
+# ---------------------------------------------------------------------------
+# Help page
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_magic_link_help_page_accessible_when_anonymous(client):
+    response = client.get(reverse("magic-link-help"))
+    assert response.status_code == 200
+    assert LOGIN_URL not in response.get("Location", "")
+
+
+@pytest.mark.django_db
+def test_magic_link_help_page_explains_the_confirmation_step(client):
+    response = client.get(reverse("magic-link-help"))
+    content = response.content.decode()
+    assert "Confirmez votre connexion" in content
+    assert "15 minutes" in content
+
+
+@pytest.mark.django_db
+def test_magic_link_help_page_links_to_the_request_form(client):
+    response = client.get(reverse("magic-link-help"))
+    assert reverse("magic-link-request") in response.content.decode()

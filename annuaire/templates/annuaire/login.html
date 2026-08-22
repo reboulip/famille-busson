@@ -14,7 +14,7 @@
 
     <p>Tu n'as pas encore créé ton compte ? <a href="{% url 'signup' %}">C'est par ici</a>.</p>
     <p>Mot de passe oublié ? <a href="{% url 'password-reset' %}">Réinitialise-le ici</a>.</p>
-    <p>Pas envie de saisir ton mot de passe ? <a href="{% url 'magic-link-request' %}">Recevez un lien de connexion par email</a>.</p>
+    <p>Pas envie de saisir ton mot de passe ? <a href="{% url 'magic-link-request' %}">Recevez un lien de connexion par email</a> (<a href="{% url 'magic-link-help' %}">comment ça marche ?</a>).</p>
 {% endblock %}
 {% block extra_js %}
     <script src="{% static 'js/password_toggle.js' %}"></script>
