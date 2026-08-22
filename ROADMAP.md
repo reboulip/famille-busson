@@ -9,11 +9,11 @@
 > Next phase after this one: Phase 5.
 
 ### Cluster: Généalogie — export
-- [ ] 4.1 · Excel export of a genealogy-tree subset (names, emails, phones,
+- [x] 4.1 · Excel export of a genealogy-tree subset (names, emails, phones,
   addresses) from the centered-tree view. [#79]
 
 ### Cluster: Carte
-- [ ] 4.2 · Fix person-search dropdown rendering behind the Carte map
+- [x] 4.2 · Fix person-search dropdown rendering behind the Carte map
   (z-index/stacking-context). [#78]
 
 ### Cluster: Notifications
