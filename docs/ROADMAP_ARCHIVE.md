@@ -3,6 +3,32 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.8.0
+
+### Carte
+- **Person search in Carte** — select a person, center the map on their address. [#75]
+- **Multiple members at the same address** — show all members sharing an address
+  instead of just one (split marker / cluster with names+photos on click). [#68]
+
+### Adresses
+- **Worldwide address support** — extended the BAN-only address autocomplete
+  (`address_picker.js`, `annuaire/forms.py`) with a Photon fallback so non-French
+  addresses can be entered and geocoded. [#73]
+- **Dropped `Chalet.gps_coordinates` free-text field** — removed the field, its form
+  usage, and its display on `chalet_detail.html`, with a migration. [#63]
+
+### Profil
+- **Editable notification/subscription preferences** — exposed the
+  profile-creation-time notification checkboxes in the profile edit form so they can be
+  changed afterward. [#71]
+
+### Authentification
+- **Magic Link login** — passwordless email login reusing the existing one-time-link
+  primitive (`_build_password_reset_url()`, `annuaire/views.py`) and configured email
+  delivery, pointed at `login()` instead of the password-reset flow. Preserves the
+  closed-signup guard (`Account` only links an existing `Person` by email, never
+  auto-provisioned from the link). [#74]
+
 ## v0.7.0
 
 ### Profil et authentification
