@@ -3,10 +3,20 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function initPasswordToggle(input) {
+    if (input.dataset.passwordToggle) return;
+    input.dataset.passwordToggle = '1';
+
+    const feedback = input.parentNode.querySelector(':scope > .invalid-feedback');
+
     const wrapper = document.createElement('div');
     wrapper.className = 'input-group';
     input.parentNode.insertBefore(wrapper, input);
     wrapper.appendChild(input);
+
+    if (feedback) {
+        wrapper.classList.add('has-validation');
+        wrapper.appendChild(feedback);
+    }
 
     const button = document.createElement('button');
     button.type = 'button';

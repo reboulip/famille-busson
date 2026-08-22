@@ -271,11 +271,10 @@ def person_search_ajax(request):
     exclude_ids = [int(x) for x in request.GET.get("exclude", "").split(",") if x.isdigit()]
     # Note: icontains is case-insensitive but accent-sensitive on SQLite — "Bus" will not match "Büsson".
     # Revisit with the unaccent extension when moving to PostgreSQL.
-    qs = (
-        Person.objects.filter(Q(first_name__icontains=q) | Q(last_name__icontains=q))
-        .exclude(pk__in=exclude_ids)
-        .order_by("last_name", "first_name")[:10]
-    )
+    qs = Person.objects.filter(Q(first_name__icontains=q) | Q(last_name__icontains=q)).exclude(pk__in=exclude_ids)
+    if request.GET.get("with_account"):
+        qs = qs.filter(account__isnull=False)
+    qs = qs.order_by("last_name", "first_name")[:10]
     return JsonResponse({"results": [{"id": p.pk, "name": str(p)} for p in qs]})
 
 
@@ -292,6 +291,13 @@ def check_emails_ajax(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     existing = list(Account.objects.filter(email__in=emails).values_list("email", flat=True))
     return JsonResponse({"existing": existing})
+
+
+def _first_login_redirect(user):
+    profile = getattr(user, "profile", None)
+    if profile is not None:
+        return redirect("person-edit", pk=profile.pk)
+    return redirect("profile-create")
 
 
 class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
@@ -315,7 +321,7 @@ class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
         user.save()
         update_session_auth_hash(self.request, user)
         messages.success(self.request, "Votre mot de passe a été mis à jour.")
-        return redirect("my-profile")
+        return _first_login_redirect(user)
 
     def form_invalid(self, form):
         return self.render_to_response(self.get_context_data(form=form))
@@ -336,10 +342,17 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
     success_url = reverse_lazy("my-profile")
 
     def form_valid(self, form):
+        # last_login is None only until this reset (post_reset_login=True stamps
+        # it inside super().form_valid) -- capture "is this a first connection"
+        # before that happens, so a routine "mot de passe oublié" reset by an
+        # existing member still lands on my-profile, not the edit page.
+        is_first_login = self.user.last_login is None
         response = super().form_valid(form)
         if self.user.must_change_password:
             self.user.must_change_password = False
             self.user.save(update_fields=["must_change_password"])
+        if is_first_login:
+            return _first_login_redirect(self.user)
         return response
 
 
@@ -388,6 +401,69 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
         person.settings.notify_on_new_blog_post = settings_form.cleaned_data["notify_on_new_blog_post"]
         person.settings.save()
         return redirect("personne-detail", pk=person.pk)
+
+
+class PersonCreateView(LoginRequiredMixin, CreateView):
+    """Create an accountless Person profile (e.g. for a child) -- the creator
+    becomes its initial owner. Distinct from ProfileCreateView, which attaches a
+    new Person to the requesting user's own Account."""
+
+    model = Person
+    form_class = ProfileEditForm
+    template_name = "annuaire/person_create.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not hasattr(request.user, "profile"):
+            messages.error(request, "Vous devez compléter votre profil avant d'ajouter un membre de la famille.")
+            return redirect("profile-create")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        with transaction.atomic():
+            self.object = form.save()
+            self.object.owners.add(self.request.user.profile)
+        return redirect("person-relations-edit", pk=self.object.pk)
+
+
+class ProfileClaimView(LoginRequiredMixin, View):
+    """Self-service, instant link of the requesting Account to an existing
+    accountless Person profile -- for accounts with no linked profile whose
+    signup email didn't match any Person (a staff-created account, or a fiche
+    with a missing/stale email). Deliberately post-authentication only: an
+    authenticated user with no profile can already browse the full directory
+    (DirectoryListView), so this exposes nothing new -- unlike putting the same
+    search on the public signup form, which would replace the site's only
+    signup gate (an email must already match a Person)."""
+
+    template_name = "annuaire/profile_claim.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if hasattr(request.user, "profile"):
+            return redirect("my-profile")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get("q", "")
+        qs = Person.objects.filter(account__isnull=True).order_by("last_name", "first_name")
+        if q:
+            qs = qs.filter(Q(last_name__icontains=q) | Q(first_name__icontains=q))
+        return render(request, self.template_name, {"persons": qs, "query": q})
+
+    def post(self, request, *args, **kwargs):
+        person_pk = request.POST.get("person")
+        with transaction.atomic():
+            updated = Person.objects.filter(pk=person_pk, account__isnull=True).update(account=request.user)
+            if not updated:
+                messages.error(
+                    request, "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà revendiqué."
+                )
+                return redirect("profile-claim")
+            person = Person.objects.get(pk=person_pk)
+            if not person.email:
+                person.email = request.user.email
+                person.save(update_fields=["email"])
+            person.owners.clear()
+        return redirect("person-edit", pk=person.pk)
 
 
 class DirectoryListView(LoginRequiredMixin, ListView):
@@ -468,18 +544,33 @@ class FamilyTreeView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         data = build_family_chart_data()
+        components = find_components(data)
         context["graph_json"] = json.dumps(data)
-        context["components_json"] = json.dumps(find_components(data))
+        context["components_json"] = json.dumps(components)
 
         pk = kwargs.get("pk")
         if pk is not None:
             person = get_object_or_404(Person, pk=pk)
             context["main_id"] = str(person.pk)
         else:
-            profile = getattr(self.request.user, "profile", None)
-            context["main_id"] = str(profile.pk) if profile else None
+            context["main_id"] = components[0]["root_id"] if components else None
 
         return context
+
+
+def can_edit_person(user, person: Person) -> bool:
+    """Staff/superuser, the person's own linked account, or an owner of an
+    accountless profile (owner rights evaporate the moment the profile gets its
+    own Account -- see annuaire/signals.py's link_account_to_person, which also
+    clears the owners rows at that point as defense in depth)."""
+    if user.is_staff or user.is_superuser:
+        return True
+    profile = getattr(user, "profile", None)
+    if profile is None:
+        return False
+    if profile == person:
+        return True
+    return person.account_id is None and person.owners.filter(pk=profile.pk).exists()
 
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):
@@ -508,9 +599,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
         child_relations = Relation.objects.filter(person1=person, relationship_type=3)
         context["children"] = [rel.person2 for rel in child_relations]
 
-        user = self.request.user
-        profile = getattr(user, "profile", None)
-        context["can_edit"] = user.is_staff or user.is_superuser or profile == person
+        context["can_edit"] = can_edit_person(self.request.user, person)
 
         return context
 
@@ -522,11 +611,8 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
-        user = self.request.user
-        if user.is_staff or user.is_superuser:
-            return obj
-        if obj != getattr(user, "profile", None):
-            raise PermissionDenied("Vous ne pouvez pas éditer ce profil car ce n'est pas le vôtre.")
+        if not can_edit_person(self.request.user, obj):
+            raise PermissionDenied("Vous ne pouvez pas éditer ce profil.")
         return obj
 
     def get_success_url(self):
@@ -543,11 +629,8 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 
 def _get_person_for_relations_edit(request, pk):
     person = get_object_or_404(Person, pk=pk)
-    user = request.user
-    if user.is_staff or user.is_superuser:
-        return person
-    if person.account_id != user.pk:
-        raise PermissionDenied("Vous ne pouvez modifier que vos propres relations.")
+    if not can_edit_person(request.user, person):
+        raise PermissionDenied("Vous ne pouvez pas modifier ces relations.")
     return person
 
 
@@ -610,6 +693,39 @@ class DeleteRelationView(LoginRequiredMixin, View):
         relation = get_object_or_404(Relation, pk=kwargs["rid"], person1=person)
         relation.delete()
         return redirect("person-relations-edit", pk=person.pk)
+
+
+class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
+    """Manage an accountless Person's owners. Restricted to profiles with no
+    linked Account -- once a Person has their own Account, owner rights over
+    them are meaningless (can_edit_person gates on account_id is None too)."""
+
+    model = Person
+    template_name = "annuaire/person_owners_form.html"
+    context_object_name = "person"
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if obj.account_id is not None:
+            raise PermissionDenied("Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables.")
+        if not can_edit_person(self.request.user, obj):
+            raise PermissionDenied("Vous n'êtes pas propriétaire de ce profil.")
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        owners = self.object.owners.all().order_by("last_name", "first_name")
+        context["owners"] = owners
+        context["owners_initial_json"] = json.dumps([{"id": p.pk, "name": str(p)} for p in owners])
+        context["person_search_with_account_url"] = reverse("person-search-ajax") + "?with_account=1"
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        owner_ids = [int(pk) for pk in request.POST.getlist("owners") if pk.isdigit()]
+        owners = Person.objects.filter(pk__in=owner_ids, account__isnull=False)
+        self.object.owners.set(owners)
+        return redirect("personne-detail", pk=self.object.pk)
 
 
 class ChaletListView(LoginRequiredMixin, ListView):

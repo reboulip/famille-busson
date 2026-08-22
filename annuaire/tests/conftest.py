@@ -44,6 +44,20 @@ def auth_client(client, account, person):
 
 
 @pytest.fixture
+def accountless_person(db):
+    # Distinct/no email on purpose: link_account_to_person auto-links on Account
+    # post_save by email match, which would silently make ownership tests vacuous
+    # if this reused person/other_person's alice@/bob@example.com.
+    return Person.objects.create(first_name="Charlie", last_name="Busson")
+
+
+@pytest.fixture
+def owned_person(accountless_person, person):
+    accountless_person.owners.add(person)
+    return accountless_person
+
+
+@pytest.fixture
 def staff_account(db):
     return Account.objects.create_user(email="staff@example.com", password="testpass123!", is_staff=True)
 

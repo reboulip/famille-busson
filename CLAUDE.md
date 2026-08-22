@@ -1,12 +1,13 @@
 # Project Context: Famille Busson
 
-> Procedures live in skills, not here. Three are project-specific and live in
+> Procedures live in skills, not here. Two are project-specific and live in
 > `.claude/skills/`: **dev-commands** (server / migrate / shell / uv /
-> populate_dev_data + credentials), **issue-workflow** (GitHub issue → develop) and
-> **release-workflow** (develop → main — famille-busson has no versioned/tagged
-> release, so the generic `/release` skill doesn't fit; this stays project-local).
-> **`/test-select`** is the one **global** skill in play here — installed in
-> `~/.claude/skills/`, shared across every project on this machine, not a
+> populate_dev_data + credentials) and **issue-workflow** (GitHub issue → develop).
+> Releases (develop → main) use the **global** `/release` skill — it reads this file's
+> Branch Model, Releases, and Documentation sections to resolve branch names, the
+> version-bump convention, CI-tag deferral, and the ROADMAP archiving step, so nothing
+> famille-busson-specific is hardcoded in it. **`/test-select`** is also global —
+> installed in `~/.claude/skills/`, shared across every project on this machine, not a
 > famille-busson-specific file — and it replaces the former project-local
 > `running-tests` skill by reading this file (branch model, test command, toolchain)
 > instead of hardcoding it. This file holds only the always-on facts and gotchas.
@@ -85,7 +86,7 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 - **Issue branch → `develop`:** local squash-merge (`git merge --squash`), one commit per
   issue, no PR required. Commit message: `<type>: <summary> (#<issue-number>)`.
 - **`develop` → `main`:** PR only, **no squash** — `develop`'s history (already one
-  squash-commit per issue) is preserved as-is on `main`. See `release-workflow`.
+  squash-commit per issue) is preserved as-is on `main`. See `/release`.
 - **Hotfix → `main`:** PR only, no squash. Immediately after merging, merge `main` back
   into `develop` so the hotfix isn't lost on the next release.
 - Never push directly to `main`.
@@ -139,7 +140,7 @@ PyPI/npm artifact, so versioning exists purely to mark **what shipped and when**
 gate a build/publish step.
 
 - **Scheme:** SemVer (`vX.Y.Z`), tracked in `pyproject.toml`'s `version` field.
-- **Bump convention (part of `release-workflow`, done on `develop` before opening the
+- **Bump convention (part of `/release`, done on `develop` before opening the
   develop → main PR):** any `feat:` commit shipping → **minor**; else any `fix:` → **patch**;
   `chore:`/`docs:`/`refactor:`/`test:` only → ask the user whether it's release-worthy.
   Commit message: `chore: bump version to X.Y.Z`.
@@ -149,10 +150,16 @@ gate a build/publish step.
   auto-generated notes. It never commits back to `main` (only pushes a tag), so it needs
   no exception to `main`'s branch-protection rules (PR + green `test` check) — the
   default `GITHUB_TOKEN` with `contents: write` is enough. If a push to `main` carries no
-  version bump (shouldn't happen via `release-workflow`, but possible via a hand-pushed
+  version bump (shouldn't happen via `/release`, but possible via a hand-pushed
   hotfix), the workflow silently no-ops rather than re-tagging.
+- **Shipped GH issues are closed automatically:** the same `release.yml` run diffs the
+  new tag against the previous one, and for every `feat:`/`fix:` commit in that range
+  bearing a `(#<issue-number>)` suffix, comments a French permalink to its commit on
+  `main` and closes the issue (`docs:`/`chore:`/etc. commits that merely *mention* an
+  issue number, e.g. a roadmap-triage commit, are ignored — only `feat:`/`fix:` commits
+  represent actually-shipped issue work). No skill needs to do this manually.
 - **Hotfixes** bump the patch version on the `hotfix/*` branch itself, so the PR into
-  `main` still carries a version change for the workflow to tag (see `release-workflow`'s
+  `main` still carries a version change for the workflow to tag (see `/release`'s
   Hotfix variant).
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
@@ -164,7 +171,8 @@ gate a build/publish step.
   `uv run python manage.py generate_data_model_docs` (see `dev-commands`) after any
   `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
 - **`ROADMAP.md`** tracks pending work only. Shipped items move to
-  **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `release-workflow`).
+  **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `/release`'s
+  release-time housekeeping step).
 - **`ROADMAP.md` heading convention (numbered phases, adopted 2026-08-21):** `##`
   headings are **numbered phases** — `## Phase N` — one phase corresponding to one
   release/sprint (superseding the earlier `## vX.Y.Z`-mirroring / lettered-item scheme
@@ -183,3 +191,11 @@ gate a build/publish step.
   `ROADMAP.md` entirely — their scope gets refined at the next triage pass, and that
   phase can be renumbered/promoted once it has real near-term scope. See §8 for whether
   a phase's issues ship as separate or combined branches.
+- **`## Backlog` (adopted 2026-08-22):** a single, un-numbered heading — always the last
+  section in the file — for items with no phase/sprint target at all, as distinct from a
+  numbered `## Phase N` placeholder (which still means "next up, scope tbd"). Uses the
+  same `### Cluster: <name>` grouping, but items are numbered `B.1`, `B.2`, ...
+  continuously within the Backlog section (not `N.M`) precisely so they carry no phase
+  association and moving items in or out of Backlog never forces renumbering a phase's
+  already-referenced ids. `dev-pipeline` never sprints Backlog items. Promote one into a
+  numbered phase (with a fresh `N.M` id) once it's ready to be scoped and sprinted.

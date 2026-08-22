@@ -8,6 +8,8 @@ the mariage/conjoint distinction is a display-only nuance the tree doesn't need.
 
 from __future__ import annotations
 
+from datetime import date
+
 from django.templatetags.static import static
 from django.urls import reverse
 
@@ -23,6 +25,7 @@ def build_family_chart_data() -> list[dict]:
     are built from both directions of every Relation row (the post_save signal
     keeps both sides in sync -- see CLAUDE.md), then defensively symmetrized in
     case a row was written outside that signal (bulk_create, fixtures)."""
+    people = list(Person.objects.all())
     nodes: dict[int, dict] = {
         person.pk: {
             "id": str(person.pk),
@@ -35,7 +38,7 @@ def build_family_chart_data() -> list[dict]:
             },
             "rels": {"parents": [], "spouses": [], "children": []},
         }
-        for person in Person.objects.all()
+        for person in people
     }
 
     for rel in Relation.objects.all():
@@ -51,6 +54,7 @@ def build_family_chart_data() -> list[dict]:
             rels["spouses"].append(target_id)
 
     _symmetrize(nodes)
+    _sort_children(nodes, {person.pk: person.birth_date for person in people})
     return list(nodes.values())
 
 
@@ -71,6 +75,20 @@ def _symmetrize(nodes: dict[int, dict]) -> None:
             spouse_node = nodes.get(int(spouse_id))
             if spouse_node and pk_str not in spouse_node["rels"]["spouses"]:
                 spouse_node["rels"]["spouses"].append(pk_str)
+
+
+def _birth_key(pk: int, birth_dates: dict[int, date | None]) -> tuple[bool, date, int]:
+    birth_date = birth_dates.get(pk)
+    return (birth_date is None, birth_date or date.max, pk)
+
+
+def _sort_children(nodes: dict[int, dict], birth_dates: dict[int, date | None]) -> None:
+    """Oldest sibling first (family-chart renders rels.children left-to-right, and
+    re-groups by couple after this order -- age order holds within each couple's
+    children, not globally across half-siblings). Unknown birth dates last, tie-broken
+    by pk for determinism across dev SQLite / prod Postgres."""
+    for node in nodes.values():
+        node["rels"]["children"].sort(key=lambda cid: _birth_key(int(cid), birth_dates))
 
 
 def find_components(data: list[dict]) -> list[dict]:

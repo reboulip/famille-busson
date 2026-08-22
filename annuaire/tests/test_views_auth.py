@@ -108,6 +108,12 @@ def test_signup_get_returns_200(client):
 
 
 @pytest.mark.django_db
+def test_signup_page_includes_password_toggle_script(client):
+    response = client.get(reverse("signup"))
+    assert "js/password_toggle.js" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_signup_unknown_email_shows_error(client, db):
     # Email not in Person table — cannot create account
     response = client.post(

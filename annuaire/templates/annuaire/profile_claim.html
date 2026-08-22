@@ -1,0 +1,38 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="page-header">
+        <h1>Rattacher mon compte à une fiche existante</h1>
+        <form method="get" action="{% url 'profile-claim' %}" class="search-form">
+            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
+            <button type="submit" class="btn btn-outline-primary">Rechercher</button>
+            {% if query %}
+                <a href="{% url 'profile-claim' %}" class="btn btn-outline-secondary">Effacer</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="alert alert-warning">
+        Cette action est <strong>définitive</strong> : une fois votre compte rattaché à
+        une fiche, seul un administrateur pourra le dérattacher. Ne choisissez que votre
+        propre fiche.
+    </div>
+
+    <div class="annuaire-grid">
+        {% for person in persons %}
+            <form method="post" class="personne-card">
+                {% csrf_token %}
+                <input type="hidden" name="person" value="{{ person.pk }}">
+                <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                     alt="{{ person.first_name }} {{ person.last_name }}" class="personne-card-photo">
+                <div class="personne-card-info">
+                    <strong>{{ person.first_name }} {{ person.last_name }}</strong>
+                    {% if person.birth_date %}<div class="text-muted small">Né(e) en {{ person.birth_date|date:"Y" }}</div>{% endif %}
+                </div>
+                <button type="submit" class="btn btn-sm btn-outline-primary mt-2">C'est moi</button>
+            </form>
+        {% empty %}
+            <p>Aucune fiche sans compte trouvée.</p>
+        {% endfor %}
+    </div>
+{% endblock content %}

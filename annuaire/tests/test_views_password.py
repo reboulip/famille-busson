@@ -88,6 +88,12 @@ def test_forced_change_get_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_forced_change_page_includes_password_toggle_script(auth_client):
+    response = auth_client.get(reverse("password-change-forced"))
+    assert "js/password_toggle.js" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_forced_change_valid_post_clears_flag_and_redirects(account, person):
     account.must_change_password = True
     account.save()
@@ -98,9 +104,23 @@ def test_forced_change_valid_post_clears_flag_and_redirects(account, person):
         {"new_password": STRONG_PASSWORD, "new_password_confirm": STRONG_PASSWORD},
     )
     assert response.status_code == 302
-    assert reverse("my-profile") in response["Location"]
+    assert reverse("person-edit", kwargs={"pk": person.pk}) in response["Location"]
     account.refresh_from_db()
     assert account.must_change_password is False
+
+
+@pytest.mark.django_db
+def test_forced_change_valid_post_without_profile_redirects_to_create(account):
+    account.must_change_password = True
+    account.save()
+    c = Client()
+    c.login(username=account.email, password="testpass123!")
+    response = c.post(
+        reverse("password-change-forced"),
+        {"new_password": STRONG_PASSWORD, "new_password_confirm": STRONG_PASSWORD},
+    )
+    assert response.status_code == 302
+    assert reverse("profile-create") in response["Location"]
 
 
 @pytest.mark.django_db
@@ -146,6 +166,9 @@ def test_forced_change_mismatched_passwords_returns_error(auth_client):
 
 @pytest.mark.django_db
 def test_reset_confirm_valid_link_sets_password_and_logs_in(account, person):
+    # `account` has never logged in before (last_login is None) -- this is a
+    # first-connection reset, so it must land on the profile edit page, not
+    # my-profile.
     url = _reset_confirm_url(account)
     c = Client()
     get_response = c.get(url)
@@ -155,7 +178,7 @@ def test_reset_confirm_valid_link_sets_password_and_logs_in(account, person):
         {"new_password1": STRONG_PASSWORD, "new_password2": STRONG_PASSWORD},
     )
     assert set_password_response.status_code == 302
-    assert set_password_response["Location"] == reverse("my-profile")
+    assert set_password_response["Location"] == reverse("person-edit", kwargs={"pk": person.pk})
 
     account.refresh_from_db()
     assert account.check_password(STRONG_PASSWORD)
@@ -163,6 +186,28 @@ def test_reset_confirm_valid_link_sets_password_and_logs_in(account, person):
     # post_reset_login=True: no further login needed
     protected_response = c.get(reverse("directory"))
     assert protected_response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_reset_confirm_routine_reset_by_existing_member_redirects_to_my_profile(account, person):
+    # An existing member (already logged in before, i.e. last_login is not None)
+    # doing a normal "mot de passe oublié" reset must still land on my-profile,
+    # not the first-login edit page.
+    login_client = Client()
+    login_client.login(username=account.email, password="testpass123!")
+    login_client.logout()
+    account.refresh_from_db()
+    assert account.last_login is not None
+
+    url = _reset_confirm_url(account)
+    c = Client()
+    get_response = c.get(url)
+    set_password_response = c.post(
+        get_response["Location"],
+        {"new_password1": STRONG_PASSWORD, "new_password2": STRONG_PASSWORD},
+    )
+    assert set_password_response.status_code == 302
+    assert set_password_response["Location"] == reverse("my-profile")
 
 
 @pytest.mark.django_db
@@ -178,6 +223,16 @@ def test_reset_confirm_clears_must_change_password_flag(account, person):
     )
     account.refresh_from_db()
     assert account.must_change_password is False
+
+
+@pytest.mark.django_db
+def test_reset_confirm_page_includes_password_toggle_script(account, person):
+    url = _reset_confirm_url(account)
+    c = Client()
+    get_response = c.get(url)
+    assert get_response.status_code == 302
+    response = c.get(get_response["Location"])
+    assert "js/password_toggle.js" in response.content.decode()
 
 
 @pytest.mark.django_db

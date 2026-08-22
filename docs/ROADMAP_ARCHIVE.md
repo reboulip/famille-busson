@@ -1,7 +1,93 @@
 # Roadmap Archive
 
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
-time (see the `release-workflow` skill), so `ROADMAP.md` only ever shows pending work.
+time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
+
+## v0.7.0
+
+### Profil et authentification
+- **Password show/hide toggle on every password form** — extended the existing
+  `password_toggle.js` (previously login-only) to `signup.html`,
+  `password_reset_confirm.html` and `password_change_forced.html`. Also fixed a latent
+  bug where the toggle's DOM wrapping broke Bootstrap's `.invalid-feedback` sibling
+  selector, hiding field-level validation errors on these three forms. [#64]
+
+### Généalogie — arbre interactif
+- **Default to the biggest branch** — the bare `/annuaire/genealogie/` route now always
+  centers on the family tree's largest connected branch, instead of the viewer's own
+  profile. [#67]
+- **Sort tree children by age** — siblings render oldest-to-youngest within each couple's
+  children (server-side, unknown birth dates sorted last). [#61]
+
+### Navigation
+- **Reworded the GitHub feedback link** — "Signaler un bug" became "Signaler un bug ou
+  proposer une évolution", inviting feature suggestions alongside bug reports. [#66]
+
+### Généalogie — enfants sans compte
+- **Accountless profiles with ownership** — any member can create a `Person` profile
+  with no linked `Account` (e.g. for a child), behind a warning that this path is only
+  for people who shouldn't get site access. The creator becomes an "owner" of the
+  profile via a new `Person.owners` self-referential relation, restricted to
+  accountless profiles, and can edit it (including relations) like their own; deletion
+  stays admin-only. A new `can_edit_person()` guard in `annuaire/views.py` centralizes
+  what were three separate ownership checks. [#60]
+- **First-login redirect to an existing profile** — when an `Account` is created for
+  someone who already has an accountless `Person` profile (auto-linked by email via the
+  existing signal), the forced first-connection flow now lands on that profile's edit
+  page instead of the profile-creation form. [#60]
+- **Claim an existing profile during onboarding** — an authenticated account with no
+  linked profile (a staff-created account, or a fiche with a missing/stale email) can
+  self-service search accountless profiles from the profile-creation page and instantly
+  link one, no approval step. Deliberately kept off the public signup form — the signup
+  email-match check is the site's only signup gate, and exposing the same search there
+  would have replaced it. Surfaced during Phase 2 sprint planning, no GH issue.
+- Also hardened `link_account_to_person` against `Person.email` not being unique
+  (previously an unhandled `MultipleObjectsReturned` was reachable once accountless
+  profiles made duplicate emails possible), and owners are now cleared — not just
+  permission-gated — the moment a profile gets its own `Account`, closing a stale-
+  ownership path via `Person.account`'s `on_delete=SET_NULL`.
+
+## v0.6.0
+
+### Chalets en libre-service
+- **Open chalet creation to all accounts** — chalet creation was staff-only; any
+  authenticated account can now create a chalet, is auto-assigned as an owner, and can
+  add further owners at creation time via the existing person-picker component. [#48]
+  [#52]
+- **Chalet address picker and GPS coordinates** — the person address BAN API picker is
+  now reused for the chalet address field, capturing and storing GPS coordinates the
+  same way. [#54]
+- **Chalets on the Carte view** — extended the carte's avatar-marker approach to chalet
+  markers. [#54]
+- **Populate the home page Chalets card** — was empty even when chalets and presences
+  existed; now populated the same way as the other home page cards. [#55]
+
+### Carte
+- **Fixed missing profile pictures on the carte view** — markers rendered correctly but
+  profile pictures didn't. [#49]
+
+### Profil et authentification
+- **Line breaks between contact info types** — the annuaire profile display now breaks
+  to a new line between each contact info type (email, phone, etc.), including on
+  mobile. [#47]
+- **Show/hide password toggle at login** — lets a user reveal the password they just
+  typed on the login form for verification. [#50]
+
+### Navigation
+- **Link to GitHub issues from the site** — added a sidebar link so members can report
+  bugs directly. [#51]
+- **Home page link in the navigation bar** — there was previously no way back to the
+  home page from elsewhere on the site. [#56]
+
+### Généalogie — arbre interactif
+- **Fixed genealogy view rendering/UX bugs** — search results rendered black-on-black;
+  empty parent nodes showed a confusing "ADD" placeholder; edges between nodes were
+  missing; selecting a node to show the detail panel de-centered the tree; and node
+  labels didn't show the full name. [#59]
+- **Dropped `Person.gender`** — investigation confirmed the family tree works without it
+  (family-chart only used it cosmetically); removed the field, migration, form field,
+  and family-chart payload key, replacing the lost card color cue with a
+  generation-depth CSS accent. [#59]
 
 ## v0.5.0
 

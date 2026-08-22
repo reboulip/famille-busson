@@ -10,6 +10,7 @@ erDiagram
     Account }o--o{ Group : "groups"
     Account }o--o{ Permission : "user_permissions"
     Account ||--o| Person : "account"
+    Person }o--o{ Person : "owners"
     Person ||--o| Settings : "person"
     Person ||--o{ Relation : "person1"
     Person ||--o{ Relation : "person2"
@@ -59,6 +60,7 @@ erDiagram
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
 | `description` | TextField | Infos utiles | optional |
+| `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='managed_profiles' |
 
 ### `Settings`
 

@@ -1,6 +1,9 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
+    <div class="alert alert-info">
+        Vous êtes déjà dans l'annuaire ? <a href="{% url 'profile-claim' %}">Rattachez votre compte à votre fiche existante</a> plutôt que d'en créer une nouvelle.
+    </div>
     <div class="form">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}

@@ -20,12 +20,12 @@ what let SEC-B's bug (`home` unauthenticated) happen in the first place.
 |---|---|---|
 | `LoginRequiredMixin` | Django | Must be authenticated. Baseline on almost every view. |
 | `StaffRequiredMixin` | `annuaire/views.py` | Must be authenticated **and** `is_staff`. |
-| `ProfileUpdateView.get_object()` | `annuaire/views.py` | Staff/superuser, or the `Person` must be the requesting user's own `profile`. |
-| `_get_person_for_relations_edit()` | `annuaire/views.py` | Staff/superuser, or `person.account == request.user`. Shared by `PersonRelationsView`, `AddRelationView`, `UpdateRelationView`, `DeleteRelationView`. |
+| `can_edit_person()` | `annuaire/views.py` | Staff/superuser; the `Person`'s own linked `Account`; or an owner (`Person.owners`) of a `Person` that has **no** linked `Account` — owner rights evaporate the instant the profile gets one (`account_id is None` is checked live, not cached). Used by `ProfileDetailView` (its `can_edit` context flag), `ProfileUpdateView.get_object()`, `PersonOwnersUpdateView.get_object()`, and `_get_person_for_relations_edit()`. |
+| `_get_person_for_relations_edit()` | `annuaire/views.py` | Delegates to `can_edit_person()`. Shared by `PersonRelationsView`, `AddRelationView`, `UpdateRelationView`, `DeleteRelationView`. |
 | `ChaletOwnerOrStaffMixin` | `annuaire/views.py` | Staff/superuser, or the requesting user's `profile` is in the chalet's `owners`. |
 | `AuthorOrStaffRequiredMixin` | `publications/views.py` | `is_staff`, or the requesting user's `profile` is in the post's `authors`. |
 
-`ProfileUpdateView` and `ChaletOwnerOrStaffMixin` raise
+`ProfileUpdateView`, `PersonOwnersUpdateView` and `ChaletOwnerOrStaffMixin` raise
 `django.core.exceptions.PermissionDenied` directly from `get_object()` — see
 `CLAUDE.md` §4's "Ownership checks go in `get_object()`" convention.
 `_get_person_for_relations_edit()` doesn't follow that convention: it's a plain
@@ -40,8 +40,11 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | `home` | `home` | `@login_required` | Any logged-in user. |
 | `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView`, `FamilyTreeView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ChaletCreateView` | `chalet-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; the creator is auto-added as an owner. |
-| `ProfileUpdateView` | `person-edit` | `get_object()` override | Owner of the profile, or staff/superuser. |
-| `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person`, or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
+| `PersonCreateView` | `person-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; creates an accountless `Person` and auto-adds the creator as an owner. |
+| `ProfileUpdateView` | `person-edit` | `get_object()` override (`can_edit_person()`) | Owner of the profile, or staff/superuser. |
+| `PersonOwnersUpdateView` | `person-owners-edit` | `get_object()` override (`can_edit_person()` + `account_id is None`) | Owner of an **accountless** `Person`, or staff/superuser. 403 if the profile already has an `Account` — ownership stops being editable once someone can log in as that profile. |
+| `ProfileClaimView` | `profile-claim` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with **no** linked profile; self-service, instant, no approval — links the account to any `Person` with `account__isnull=True`. Deliberately not reachable from the public signup form (see "Public (unauthenticated) surface" below). |
+| `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person` (via `can_edit_person()`), or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
 | `BulkAccountCreateView` | `bulk-account-create` | `StaffRequiredMixin` | Staff only. |
 | `ChaletUpdateView`, `ChaletOwnersUpdateView` | `chalet-edit`, `chalet-owners-edit` | `ChaletOwnerOrStaffMixin` | Chalet owner, or staff/superuser. |
 | `BlogPostListView`, `BlogPostDetailView` (read + comment) | `publications` | `LoginRequiredMixin` | Any logged-in user with a completed profile can comment; posting requires a `Person` profile. |
@@ -92,9 +95,9 @@ of being bounced to `/password/change/`.
 ## Superuser vs staff
 
 The ownership checks in `annuaire` (`ProfileUpdateView.get_object()`,
-`_get_person_for_relations_edit()`, `ChaletOwnerOrStaffMixin.get_object()`) treat
-`is_staff` and `is_superuser` as equally privileged (`user.is_staff or
-user.is_superuser`).
+`PersonOwnersUpdateView.get_object()`, `_get_person_for_relations_edit()`,
+`ChaletOwnerOrStaffMixin.get_object()`) treat `is_staff` and `is_superuser` as equally
+privileged (`user.is_staff or user.is_superuser`).
 `StaffRequiredMixin` and `AuthorOrStaffRequiredMixin` only check `is_staff` — in
 practice this project always sets `is_superuser` alongside `is_staff` (see
 `AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a

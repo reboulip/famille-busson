@@ -12,7 +12,7 @@ Three workflows run on `main` (all in `.github/workflows/`):
 
 | Workflow | Trigger | Does |
 |---|---|---|
-| `tests.yml` | push to `develop`/`main`, PRs into `main` | Runs the pytest suite; the gate a `develop` → `main` PR must pass (see `release-workflow`). |
+| `tests.yml` | push to `develop`/`main`, PRs into `main` | Runs the pytest suite; the gate a `develop` → `main` PR must pass (see the `/release` skill). |
 | `build-and-deploy.yml` | push to `main` | Builds the Docker image, pushes it to GHCR, then deploys it to the VPS over SSH. |
 | `release.yml` | push to `main` | Tags `v<version>` (read from `pyproject.toml`) and creates the GitHub Release, if not already tagged (see `CLAUDE.md` §10). |
 
