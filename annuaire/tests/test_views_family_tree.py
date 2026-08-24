@@ -31,6 +31,14 @@ def test_genealogie_renders_detail_panel_and_branch_picker_markup(auth_client, p
 
 
 @pytest.mark.django_db
+def test_genealogie_renders_export_button_with_export_url(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    assert 'id="genealogie-export"' in content
+    assert f'data-export-url="{reverse("genealogie-export")}"' in content
+
+
+@pytest.mark.django_db
 def test_genealogie_loads_d3_before_family_chart(auth_client, person):
     # family-chart's UMD bundle reads a global `d3` at load time -- d3 must be
     # the earlier <script> tag, or the library throws on load in a real browser.
@@ -116,6 +124,16 @@ def test_genealogie_js_disables_single_parent_placeholder():
     # slots (#59) -- the chart must be configured to omit it entirely.
     js_path = Path(__file__).resolve().parent.parent / "static" / "js" / "family_tree.js"
     assert "setSingleParentEmptyCard(false)" in js_path.read_text()
+
+
+def test_genealogie_js_export_excludes_placeholder_cards():
+    # Regression guard (#79) -- the export must only collect real, rendered
+    # person cards, never family-chart's synthetic add/unknown/new-rel slots.
+    js_path = Path(__file__).resolve().parent.parent / "static" / "js" / "family_tree.js"
+    content = js_path.read_text()
+    assert "card-to-add" in content
+    assert "card-unknown" in content
+    assert "card-new-rel" in content
 
 
 @pytest.mark.django_db

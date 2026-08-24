@@ -104,6 +104,29 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 
+    const exportButton = document.getElementById('genealogie-export');
+    if (exportButton) {
+        exportButton.addEventListener('click', () => {
+            // "Currently rendered" = every real (non-placeholder) .card element
+            // family-chart has drawn into the mount right now -- card-to-add/
+            // card-unknown/card-new-rel mark synthetic cards with no real person
+            // behind them (see the same check in setOnCardClick above).
+            const ids = Array.from(mount.querySelectorAll('.card'))
+                .filter(
+                    (card) =>
+                        !card.classList.contains('card-to-add') &&
+                        !card.classList.contains('card-unknown') &&
+                        !card.classList.contains('card-new-rel')
+                )
+                .map((card) => card.dataset.id)
+                .filter(Boolean);
+            if (ids.length === 0) return;
+            const params = new URLSearchParams();
+            ids.forEach((id) => params.append('ids', id));
+            window.location.href = `${exportButton.dataset.exportUrl}?${params.toString()}`;
+        });
+    }
+
     if (branchPicker && components.length > 1) {
         branchPicker.hidden = false;
         const options = ['<option value="">Changer de branche…</option>'].concat(

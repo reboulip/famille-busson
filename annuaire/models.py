@@ -64,10 +64,10 @@ class Person(models.Model):
 class Settings(models.Model):
     person = models.OneToOneField(Person, related_name="settings", on_delete=models.CASCADE, verbose_name="Profil")
     notify_on_birthday = models.BooleanField(
-        default=False, blank=True, verbose_name="Recevoir un rappel pour les anniversaires"
+        default=True, blank=True, verbose_name="Recevoir un rappel pour les anniversaires"
     )
     notify_on_new_blog_post = models.BooleanField(
-        default=False, blank=True, verbose_name="Recevoir une notification pour les nouveaux articles"
+        default=True, blank=True, verbose_name="Recevoir une notification pour les nouveaux articles"
     )
 
     class Meta:

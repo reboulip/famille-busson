@@ -21,6 +21,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
+from annuaire.models import Settings as NotificationSettings
 from publications.models import Attachment, BlogPost, Comment
 
 FIRST_NAMES = [
@@ -184,6 +185,10 @@ class Command(BaseCommand):
         admin = self._create_admin()
         staff = self._create_staff()
         persons = self._create_persons()
+        # Notifications now default to checked -- without this, every _create_posts()
+        # call below would email every one of these dev persons for every post created,
+        # flooding the console backend and slowing down the test suite.
+        NotificationSettings.objects.update(notify_on_new_blog_post=False)
         chalets = self._create_chalets()
         self._create_presences(persons, chalets)
         self._create_relations(persons)

@@ -1,6 +1,7 @@
 import json
 import logging
 import secrets
+from datetime import date
 
 from django.conf import settings
 from django.contrib import messages
@@ -13,7 +14,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection, send_mail
 from django.db import transaction
 from django.db.models import Q
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -23,6 +24,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
+from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
 from .forms import (
     AddPresenceForm,
@@ -644,6 +646,30 @@ class FamilyTreeView(LoginRequiredMixin, TemplateView):
             context["main_id"] = components[0]["root_id"] if components else None
 
         return context
+
+
+class FamilyTreeExportView(LoginRequiredMixin, View):
+    """Excel export of the person cards currently rendered in the centered-tree
+    view. The set of ids is client-supplied (see family_tree.js) rather than
+    server-computed, since which cards are on screen is client-side layout
+    state -- unknown/invalid ids are simply dropped, never a 404/500."""
+
+    def get(self, request, *args, **kwargs):
+        person_ids = []
+        for raw_id in request.GET.getlist("ids"):
+            try:
+                person_ids.append(int(raw_id))
+            except ValueError:
+                continue
+
+        rows = build_export_rows(person_ids)
+        workbook = build_persons_workbook(rows)
+        response = HttpResponse(
+            workbook,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="genealogie-{date.today():%Y-%m-%d}.xlsx"'
+        return response
 
 
 def can_edit_person(user, person: Person) -> bool:

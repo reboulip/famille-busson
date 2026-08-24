@@ -6,7 +6,11 @@
 {% block content %}
     <h1>Généalogie</h1>
 
-    <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+    <div class="d-flex gap-2 align-items-center flex-wrap mb-3">
+        <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+        <button type="button" id="genealogie-export" class="btn btn-outline-success btn-sm"
+                data-export-url="{% url 'genealogie-export' %}">Exporter en Excel</button>
+    </div>
 
     <div class="d-lg-flex genealogie-layout">
         <div id="genealogie-chart" class="f3 genealogie-container flex-grow-1" data-graph='{{ graph_json|escape }}'

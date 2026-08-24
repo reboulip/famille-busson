@@ -8,6 +8,7 @@ function initPicker(picker) {
     const resultsList = picker.querySelector('.person-picker-results');
     const selectedZone = picker.querySelector('.person-picker-selected');
     const hiddenInputsZone = picker.querySelector('.person-picker-hidden-inputs');
+    if (!input || !resultsList) return;
 
     const selectedIds = new Set();
     let highlightedIndex = -1;
