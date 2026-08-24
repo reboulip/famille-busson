@@ -3,6 +3,20 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.9.0
+
+### Généalogie — export
+- **Excel export of a genealogy-tree subset** — export names, emails, phones, and
+  addresses from the centered-tree view. [#79]
+
+### Carte
+- **Fixed person-search dropdown rendering behind the Carte map** — z-index/stacking-
+  context fix. [#78]
+
+### Notifications
+- **Default-check notification/subscription boxes for new profiles** — backfilled
+  existing accounts to all-checked. [#77]
+
 ## v0.8.0
 
 ### Carte
