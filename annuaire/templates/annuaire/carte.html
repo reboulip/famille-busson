@@ -7,10 +7,21 @@
     <h1>Carte</h1>
 
     {% if unresolved_count %}
-        <p class="search-result-count">
-            {{ unresolved_count }} profil{{ unresolved_count|pluralize }} sans adresse géolocalisée
-            {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
-        </p>
+        <details class="unresolved-persons-details">
+            <summary class="search-result-count">
+                {{ unresolved_count }} profil{{ unresolved_count|pluralize }} sans adresse géolocalisée
+                {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
+            </summary>
+            <ul>
+                {% for p in unresolved_persons %}
+                    <li>
+                        <a href="{% url 'personne-detail' p.pk %}">{{ p }}</a>
+                        <br>
+                        <small class="text-body-secondary">{{ p.postal_address|default:"adresse non renseignée" }}</small>
+                    </li>
+                {% endfor %}
+            </ul>
+        </details>
     {% endif %}
     {% if unresolved_chalet_count %}
         <p class="search-result-count">

@@ -49,6 +49,17 @@ def test_genealogie_loads_d3_before_family_chart(auth_client, person):
 
 
 @pytest.mark.django_db
+def test_genealogie_loads_family_chart_css_before_main_css(auth_client, person):
+    # main.css overrides some .f3 selectors from the vendored family-chart.css
+    # (e.g. the long-name label fix) -- same-specificity CSS is decided by
+    # load order, so the override only applies if family-chart.css loads
+    # first.
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    assert content.index("vendor/family-chart/family-chart.css") < content.index("css/main.css")
+
+
+@pytest.mark.django_db
 def test_genealogie_person_requires_login(client, person):
     response = client.get(reverse("genealogie-person", kwargs={"pk": person.pk}))
     assert response.status_code == 302

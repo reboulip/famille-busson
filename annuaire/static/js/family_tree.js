@@ -1,6 +1,17 @@
+// Horizontal distance (px) family-chart puts between sibling/spouse cards
+// (chart.setCardXSpacing() below, vendor default is 250). Also drives the
+// genealogy label's max-width via a CSS custom property -- see the
+// invariant documented next to --genealogie-label-max-width in main.css.
+const CARD_X_SPACING = 160;
+
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('genealogie-chart');
     if (!container) return;
+
+    document.documentElement.style.setProperty(
+        '--genealogie-label-max-width',
+        `${CARD_X_SPACING - 10}px`
+    );
 
     let graph;
     let components;
@@ -22,6 +33,16 @@ document.addEventListener('DOMContentLoaded', function () {
         container.textContent = "Aucune personne à centrer sur l'arbre.";
         return;
     }
+
+    // family-chart decides which side a spouse renders on purely from
+    // data.gender ("M" -> left of the blood descendant, anything else ->
+    // right). Person.gender was deliberately dropped from the server payload
+    // (#59) and must stay gone -- this is a rendering-layout hint applied
+    // client-side only, not real personal data, and every node gets the same
+    // value so it's not encoding anything about any individual.
+    graph.forEach((person) => {
+        person.data.gender = 'M';
+    });
 
     const byId = new Map(graph.map((person) => [person.id, person]));
     const detailPanel = document.getElementById('genealogie-detail');
@@ -85,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const chart = f3.createChart(mount, graph);
     chart
         .setCardHtml()
-        .setCardDisplay([['first name', 'last name'], ['birthday']])
+        .setCardDisplay([['first name'], ['last name'], ['birthday']])
         .setCardImageField('avatar')
         .setStyle('imageCircleRect')
         .setOnCardClick(function (e, d) {
@@ -100,6 +121,9 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.setOrientationVertical();
     chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
     chart.setSingleParentEmptyCard(false);
+    // Keep CARD_X_SPACING (above) >= genealogy label max-width + 10px, or
+    // adjacent labels overlap.
+    chart.setCardXSpacing(CARD_X_SPACING);
     chart.setCardYSpacing(190);
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });

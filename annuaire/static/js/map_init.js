@@ -21,7 +21,32 @@ document.addEventListener('DOMContentLoaded', function () {
     // (there's no default chalet photo asset the way there is a default person avatar).
     const EMOJI_PREFIX = 'emoji::';
 
-    function buildAvatarElement(avatarUrl) {
+    // Co-located groups up to this size spread into individual markers arranged
+    // around the shared point instead of one composite cluster pin; larger
+    // groups keep the cluster pin below (a ring that big would be unreadable
+    // and would swamp neighboring markers at low zoom).
+    const SPREAD_MAX = 8;
+    const SPREAD_RADIUS = 34; // px, first ring
+    const SPREAD_RING_STEP = 26; // px added per additional ring
+    const PER_RING = 6; // markers per ring before overflowing to the next ring
+
+    // Pixel offset for the i-th (of `total`) spread marker in a group, laid
+    // out on concentric rings around the shared point -- varying distance
+    // (ring) and angle so avatars don't overlap.
+    function calculateIconOffset(index, total) {
+        const ring = Math.floor(index / PER_RING);
+        const indexInRing = index % PER_RING;
+        const countInRing = Math.min(PER_RING, total - ring * PER_RING);
+        const radius = SPREAD_RADIUS + ring * SPREAD_RING_STEP;
+        // Stagger each ring's start angle so rings don't align radially.
+        const angle = (2 * Math.PI * indexInRing) / countInRing + ring * (Math.PI / PER_RING);
+        return {
+            dx: Math.round(radius * Math.cos(angle)),
+            dy: Math.round(radius * Math.sin(angle)),
+        };
+    }
+
+    function buildAvatarElement(avatarUrl, entryName) {
         const avatar = document.createElement('div');
         avatar.className = 'map-marker-avatar';
         if (avatarUrl.startsWith(EMOJI_PREFIX)) {
@@ -30,22 +55,30 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             const img = document.createElement('img');
             img.src = avatarUrl;
-            img.alt = '';
+            img.alt = entryName || '';
             avatar.appendChild(img);
         }
         return avatar;
     }
 
-    function buildGroupIcon(group) {
-        if (group.entries.length === 1) {
-            return L.divIcon({
-                className: 'map-marker-avatar-wrapper',
-                html: buildAvatarElement(group.entries[0].avatar),
-                iconSize: [40, 40],
-                iconAnchor: [20, 40],
-                popupAnchor: [0, -40],
-            });
-        }
+    // Single-person marker, optionally shifted by a spread offset (in pixels).
+    // The marker itself always stays at the group's true lat/lon -- only the
+    // icon (and its popup anchor) move, via iconAnchor/popupAnchor, so
+    // fitBounds/search/zoom all keep working against real coordinates.
+    function buildPersonIcon(entry, offset) {
+        const dx = offset ? offset.dx : 0;
+        const dy = offset ? offset.dy : 0;
+        return L.divIcon({
+            className: 'map-marker-avatar-wrapper',
+            html: buildAvatarElement(entry.avatar, entry.name),
+            iconSize: [40, 40],
+            iconAnchor: [20 - dx, 40 - dy],
+            popupAnchor: [dx, dy - 40],
+        });
+    }
+
+    // Composite "+N" cluster pin for groups too large to spread legibly.
+    function buildClusterIcon(group) {
         const cluster = document.createElement('div');
         cluster.className = 'map-marker-cluster';
         group.entries.slice(0, 3).forEach((entry) => {
@@ -73,10 +106,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return link;
     }
 
-    function buildGroupPopup(group) {
-        if (group.entries.length === 1) {
-            return buildEntryLink(group.entries[0]);
-        }
+    // Cluster-pin popup (groups too large to spread): heading + full list.
+    function buildClusterPopup(group) {
         const wrapper = document.createElement('div');
         const heading = document.createElement('p');
         heading.className = 'map-marker-cluster-heading';
@@ -93,12 +124,34 @@ document.addEventListener('DOMContentLoaded', function () {
         return wrapper;
     }
 
+    // Builds a flat marker list from co-location groups. Groups of up to
+    // SPREAD_MAX entries spread into one marker per entry (offset around the
+    // shared point); larger groups keep a single composite cluster marker,
+    // exactly at the group's point. Each marker carries metadata
+    // (_groupIdx/_entryName or _entries) used below to fix up fitBounds and
+    // the person search index now that groups no longer map 1:1 to markers.
     function buildMarkers(groups) {
-        return groups.map((group) => {
-            const marker = L.marker([group.lat, group.lon], { icon: buildGroupIcon(group) });
-            marker.bindPopup(buildGroupPopup(group));
-            return marker;
+        const markers = [];
+        groups.forEach((group, groupIdx) => {
+            const entries = group.entries;
+            if (entries.length > SPREAD_MAX) {
+                const marker = L.marker([group.lat, group.lon], { icon: buildClusterIcon(group) });
+                marker.bindPopup(buildClusterPopup(group));
+                marker._groupIdx = groupIdx;
+                marker._entries = entries;
+                markers.push(marker);
+                return;
+            }
+            entries.forEach((entry, i) => {
+                const offset = entries.length > 1 ? calculateIconOffset(i, entries.length) : null;
+                const marker = L.marker([group.lat, group.lon], { icon: buildPersonIcon(entry, offset) });
+                marker.bindPopup(buildEntryLink(entry));
+                marker._groupIdx = groupIdx;
+                marker._entryName = entry.name;
+                markers.push(marker);
+            });
         });
+        return markers;
     }
 
     const personMarkers = buildMarkers(persons);
@@ -109,7 +162,12 @@ document.addEventListener('DOMContentLoaded', function () {
     L.control.layers(null, { Membres: personsLayer, Chalets: chaletsLayer }).addTo(map);
 
     const allMarkers = personMarkers.concat(chaletMarkers);
-    if (allMarkers.length === 1) {
+    // Spreading can turn one co-located group into several markers at the
+    // *same* lat/lon -- count distinct group points, not markers, or a
+    // spread group of e.g. 3 people would wrongly skip the single-point
+    // branch and hit fitBounds on a zero-area box, which zooms to max.
+    const uniquePointCount = new Set(persons.concat(chalets).map((g) => `${g.lat},${g.lon}`)).size;
+    if (uniquePointCount === 1) {
         map.setView(allMarkers[0].getLatLng(), 13);
     } else {
         const group = L.featureGroup(allMarkers);
@@ -123,11 +181,16 @@ document.addEventListener('DOMContentLoaded', function () {
         return str.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     }
 
+    // Spreading gives most entries their own marker (opens straight to that
+    // person's popup); entries still folded into a cluster (>SPREAD_MAX) fall
+    // back to opening the shared cluster marker/popup.
     const searchIndex = [];
-    persons.forEach((group, groupIdx) => {
-        group.entries.forEach((entry) => {
-            searchIndex.push({ name: entry.name, marker: personMarkers[groupIdx] });
-        });
+    personMarkers.forEach((marker) => {
+        if (marker._entryName) {
+            searchIndex.push({ name: marker._entryName, marker });
+        } else if (marker._entries) {
+            marker._entries.forEach((entry) => searchIndex.push({ name: entry.name, marker }));
+        }
     });
 
     initPersonSearch();

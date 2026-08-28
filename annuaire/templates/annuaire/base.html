@@ -7,6 +7,7 @@
     <title>Famille Busson</title>
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    {% block vendor_css %}{% endblock vendor_css %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock extra_css %}
 </head>

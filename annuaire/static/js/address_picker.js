@@ -19,11 +19,23 @@ function initAddressPicker(input) {
     resultsList.hidden = true;
     wrapper.appendChild(resultsList);
 
+    const warning = document.createElement('div');
+    warning.className = 'address-picker-warning form-text text-warning-emphasis';
+    warning.textContent = "Adresse non géolocalisée — choisissez une suggestion dans la liste pour l'afficher sur la carte.";
+    warning.hidden = true;
+    wrapper.appendChild(warning);
+
     input.setAttribute('aria-autocomplete', 'list');
     input.setAttribute('aria-expanded', 'false');
 
     let highlightedIndex = -1;
     let debounceTimer = null;
+
+    function refreshWarning() {
+        const hasAddress = input.value.trim().length > 0;
+        const hasCoordinates = !!(latTarget && lonTarget && latTarget.value && lonTarget.value);
+        warning.hidden = !(hasAddress && !hasCoordinates);
+    }
 
     function closeDropdown() {
         resultsList.innerHTML = '';
@@ -85,6 +97,7 @@ function initAddressPicker(input) {
             lonTarget.value = li.dataset.lon || '';
         }
         closeDropdown();
+        refreshWarning();
     }
 
     function search(query) {
@@ -136,4 +149,8 @@ function initAddressPicker(input) {
     document.addEventListener('click', (e) => {
         if (!wrapper.contains(e.target)) closeDropdown();
     });
+
+    input.addEventListener('blur', refreshWarning);
+    input.addEventListener('change', refreshWarning);
+    refreshWarning();
 }
