@@ -617,9 +617,11 @@ class MapListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["unresolved_count"] = Person.objects.filter(
-            Q(latitude__isnull=True) | Q(longitude__isnull=True)
-        ).count()
+        unresolved_persons = Person.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True)).order_by(
+            "last_name", "first_name"
+        )
+        context["unresolved_persons"] = unresolved_persons
+        context["unresolved_count"] = unresolved_persons.count()
         context["persons_json"] = json.dumps(build_person_map_groups())
         context["unresolved_chalet_count"] = Chalet.objects.filter(
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
