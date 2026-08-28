@@ -4,6 +4,21 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
+## Phase 5
+
+### Cluster: Carte
+- [ ] 5.1 · Un-geolocated profiles list — on the Carte view, list profiles lacking a
+  geolocated address with links to their profile; also show an "adresse non
+  géolocalisée" notice on the profile form when geocoding fails. [#83]
+- [ ] 5.3 · Spread clustered map markers — when multiple profiles share the same
+  address, offset their markers around the perimeter of a circle centered on the
+  shared point (varying distance/angle) so overlapping profile pictures stay visible.
+
+### Cluster: Généalogie — arbre interactif
+- [ ] 5.2 · Genealogy tree rendering fixes — compact the tree's horizontal width for
+  3-4 generations, position spouses on the correct side of direct descendants, and
+  stop long names from being clipped. [#80] [#81]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
