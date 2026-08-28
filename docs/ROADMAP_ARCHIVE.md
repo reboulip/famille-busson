@@ -3,6 +3,21 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.10.0
+
+### Carte
+- **Un-geolocated profiles list** — on the Carte view, list profiles lacking a
+  geolocated address with links to their profile; also show an "adresse non
+  géolocalisée" notice on the profile form when geocoding fails. [#83]
+- **Spread clustered map markers** — when multiple profiles share the same address,
+  offset their markers around the perimeter of a circle centered on the shared point
+  (varying distance/angle) so overlapping profile pictures stay visible.
+
+### Généalogie — arbre interactif
+- **Genealogy tree rendering fixes** — compact the tree's horizontal width for 3-4
+  generations, position spouses on the correct side of direct descendants, and stop
+  long names from being clipped. [#80] [#81]
+
 ## v0.9.0
 
 ### Généalogie — export
