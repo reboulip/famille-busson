@@ -653,9 +653,18 @@ h2 {
    max-width is a CSS custom property set from family_tree.js (LABEL_MAX_WIDTH,
    itself derived from CARD_X_SPACING there) -- invariant: label max-width
    <= card x-spacing - 10px, or adjacent labels overlap (labels are centered
-   and overflow symmetrically past the card). */
+   and overflow symmetrically past the card).
+   width: max-content is required alongside max-width: the vendor positions
+   this label with only `left: 50%` (no `right`), so as an absolutely
+   positioned box with width left `auto`, the browser's shrink-to-fit sizing
+   derives its width from that offset geometry (~50% of the card) instead of
+   from max-width, collapsing every label to a near-single-character column.
+   Giving it an explicit (non-auto) width opts out of that offset-based
+   sizing -- max-width then clamps it and normal wrapping proceeds as
+   intended. */
 .f3 div.card-image-circle div.card-label {
     white-space: normal;
+    width: max-content;
     max-width: var(--genealogie-label-max-width, 150px);
     overflow-wrap: anywhere;
 }
