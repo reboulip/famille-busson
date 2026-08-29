@@ -6,20 +6,24 @@
 {% block content %}
     <h1>Généalogie</h1>
 
-    <div class="d-flex gap-2 align-items-center flex-wrap mb-3">
-        <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
-        <button type="button" id="genealogie-export" class="btn btn-outline-success btn-sm"
-                data-export-url="{% url 'genealogie-export' %}">Exporter en Excel</button>
-    </div>
-
-    <div class="d-lg-flex genealogie-layout">
-        <div id="genealogie-chart" class="f3 genealogie-container flex-grow-1" data-graph='{{ graph_json|escape }}'
-             data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'>
-            <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
+    <div id="genealogie-panel">
+        <div class="genealogie-toolbar d-flex gap-2 align-items-center flex-wrap mb-3">
+            <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+            <div id="genealogie-search" class="genealogie-search"></div>
+            <button type="button" id="genealogie-export" class="btn btn-outline-success btn-sm"
+                    data-export-url="{% url 'genealogie-export' %}">Exporter en Excel</button>
+            <!-- Fullscreen button added in 6.4 -->
         </div>
-        <aside id="genealogie-detail" class="genealogie-detail d-none d-lg-block">
-            <p class="genealogie-detail-empty">Sélectionnez une personne dans l'arbre.</p>
-        </aside>
+
+        <div class="d-lg-flex genealogie-layout">
+            <div id="genealogie-chart" class="f3 genealogie-container flex-grow-1" data-graph='{{ graph_json|escape }}'
+                 data-main-id="{{ main_id|default:"" }}" data-components='{{ components_json|escape }}'>
+                <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
+            </div>
+            <aside id="genealogie-detail" class="genealogie-detail d-none d-lg-block">
+                <p class="genealogie-detail-empty">Sélectionnez une personne dans l'arbre.</p>
+            </aside>
+        </div>
     </div>
 {% endblock content %}
 {% block extra_js %}

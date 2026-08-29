@@ -110,7 +110,10 @@ document.addEventListener('DOMContentLoaded', function () {
             showDetail(chart, d.data);
         });
     chart.setOrientationVertical();
-    chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
+    chart.setPersonDropdown(personLabel, {
+        cont: document.getElementById('genealogie-search') || undefined,
+        placeholder: 'Rechercher une personne…',
+    });
     chart.setSingleParentEmptyCard(false);
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });

@@ -59,3 +59,28 @@ def test_family_tree_js_publishes_label_max_width_as_a_css_custom_property():
 def test_family_tree_js_splits_first_and_last_name_onto_separate_lines():
     content = FAMILY_TREE_JS.read_text(encoding="utf-8")
     assert "setCardDisplay([['first name'], ['last name']" in content
+
+
+def test_family_tree_js_mounts_search_dropdown_in_toolbar():
+    # 6.3: the search field moves out of the chart overlay into the toolbar's
+    # #genealogie-search mount, via family-chart's supported `cont` option.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "setPersonDropdown(" in content
+    assert "genealogie-search" in content
+
+
+def test_genealogy_autocomplete_overrides_are_scoped_to_search_mount_not_f3():
+    # Moving the widget out of .f3 orphans the vendor's own --background-color/
+    # --text-color custom properties (declared on .f3) -- our override must be
+    # re-scoped to .genealogie-search, or the field silently regresses to
+    # black-on-near-black.
+    content = _strip_comments(MAIN_CSS.read_text(encoding="utf-8"))
+    assert ".genealogie-search .f3-autocomplete input" in content
+    assert ".f3 .f3-autocomplete input" not in content
+
+
+def test_genealogy_autocomplete_results_list_is_positioned_absolute():
+    # The vendor result list is in normal flow -- without this it would grow
+    # the toolbar row and shove the chart down on every keystroke.
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".genealogie-search .f3-autocomplete-items")
+    assert _declared_value(body, "position") == "absolute"

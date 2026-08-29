@@ -15,7 +15,7 @@
   profile has no email address (currently renders a link to "None"). [#85]
 
 ### Cluster: Généalogie — arbre interactif
-- [ ] 6.3 · Align the Excel export button with the search field in the genealogy view.
+- [x] 6.3 · Align the Excel export button with the search field in the genealogy view.
   [#85]
 - [ ] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
   the profile-card panel and the sidebar. [#85]

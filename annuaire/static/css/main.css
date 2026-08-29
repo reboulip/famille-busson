@@ -468,8 +468,11 @@ h2 {
     margin-top: 16px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    /* Anchors family-chart's .f3-nav-cont search bar (position: absolute in its
-       own CSS) to this container instead of the page's top-left corner. */
+    /* family-chart still appends an (empty) .f3-nav-cont here at createChart
+       time even though the search widget itself is now mounted in the
+       toolbar's #genealogie-search (see family_tree.js's setPersonDropdown
+       cont option) -- kept relative in case a future vendor update anchors
+       something else to it. */
     position: relative;
 }
 
@@ -498,7 +501,10 @@ h2 {
 
 .genealogie-branch-picker {
     max-width: 400px;
-    margin-top: 16px;
+}
+
+.genealogie-search {
+    position: relative;
 }
 
 .genealogie-detail {
@@ -544,27 +550,43 @@ h2 {
    color, so text inherits Bootstrap's near-black body color -- black on
    near-black. Re-theme the whole widget to the light palette instead of
    touching --background-color/--text-color, which are load-bearing for the
-   person cards' own white-on-translucent-plate labels. */
-.f3 .f3-autocomplete input,
-.f3 .f3-autocomplete-items,
-.f3 .f3-autocomplete-item > div {
+   person cards' own white-on-translucent-plate labels. Scoped to
+   .genealogie-search (the toolbar mount point, see family_tree.js's
+   setPersonDropdown cont option) rather than .f3 -- the widget now lives
+   outside the chart container, where the vendor's own --background-color/
+   --text-color custom properties (declared on .f3) wouldn't resolve either. */
+.genealogie-search .f3-autocomplete input,
+.genealogie-search .f3-autocomplete-items,
+.genealogie-search .f3-autocomplete-item > div {
     background-color: #fff;
     color: #212529;
     border-color: #dee2e6;
 }
 
-.f3 .f3-autocomplete-item > div:hover,
-.f3 .f3-autocomplete-item.f3-selected > div {
+.genealogie-search .f3-autocomplete-item > div:hover,
+.genealogie-search .f3-autocomplete-item.f3-selected > div {
     background-color: #0d6efd;
     color: #fff;
 }
 
-.f3 .f3-autocomplete-toggle {
+.genealogie-search .f3-autocomplete-toggle {
     color: #212529;
 }
 
-.f3 .f3-autocomplete input:focus {
+.genealogie-search .f3-autocomplete input:focus {
     outline: 2px solid #0d6efd;
+}
+
+/* The vendor result list is in normal flow with a max-height transition --
+   harmless inside the old absolutely-positioned .f3-nav-cont overlay, but in
+   the toolbar's normal-flow row it would grow the row and shove the chart
+   down on every keystroke without this. */
+.genealogie-search .f3-autocomplete-items {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 5;
 }
 
 /* Long French names get hard-clipped by the vendor's single-line label.
