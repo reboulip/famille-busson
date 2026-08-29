@@ -1,8 +1,9 @@
-// Horizontal distance (px) family-chart puts between sibling/spouse cards
-// (chart.setCardXSpacing() below, vendor default is 250). Also drives the
-// genealogy label's max-width via a CSS custom property -- see the
-// invariant documented next to --genealogie-label-max-width in main.css.
-const CARD_X_SPACING = 160;
+// family-chart's vendor default horizontal card spacing is 250px. The
+// genealogy label wraps instead of clipping (see main.css) and needs a
+// max-width derived from that spacing so adjacent labels don't overlap --
+// see the invariant documented next to --genealogie-label-max-width in
+// main.css.
+const LABEL_MAX_WIDTH = 240;
 
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('genealogie-chart');
@@ -10,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.documentElement.style.setProperty(
         '--genealogie-label-max-width',
-        `${CARD_X_SPACING - 10}px`
+        `${LABEL_MAX_WIDTH}px`
     );
 
     let graph;
@@ -33,16 +34,6 @@ document.addEventListener('DOMContentLoaded', function () {
         container.textContent = "Aucune personne à centrer sur l'arbre.";
         return;
     }
-
-    // family-chart decides which side a spouse renders on purely from
-    // data.gender ("M" -> left of the blood descendant, anything else ->
-    // right). Person.gender was deliberately dropped from the server payload
-    // (#59) and must stay gone -- this is a rendering-layout hint applied
-    // client-side only, not real personal data, and every node gets the same
-    // value so it's not encoding anything about any individual.
-    graph.forEach((person) => {
-        person.data.gender = 'M';
-    });
 
     const byId = new Map(graph.map((person) => [person.id, person]));
     const detailPanel = document.getElementById('genealogie-detail');
@@ -121,10 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.setOrientationVertical();
     chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
     chart.setSingleParentEmptyCard(false);
-    // Keep CARD_X_SPACING (above) >= genealogy label max-width + 10px, or
-    // adjacent labels overlap.
-    chart.setCardXSpacing(CARD_X_SPACING);
-    chart.setCardYSpacing(190);
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 
