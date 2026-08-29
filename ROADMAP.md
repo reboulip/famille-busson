@@ -4,6 +4,29 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
+## Phase 6
+
+### Cluster: Annuaire — administration
+- [ ] 6.1 · Bulk account creation: list existing Accounts with no linked Person profile
+  yet (invite link unused) to make re-sending links faster. [#86]
+
+### Cluster: Profil
+- [ ] 6.2 · Suppress the mailto link entirely on the person detail view when the
+  profile has no email address (currently renders a link to "None"). [#85]
+
+### Cluster: Généalogie — arbre interactif
+- [ ] 6.3 · Align the Excel export button with the search field in the genealogy view.
+  [#85]
+- [ ] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
+  the profile-card panel and the sidebar. [#85]
+
+### Cluster: Carte
+- [ ] 6.5 · Collapse the un-geolocated profiles list to one line per profile (account +
+  address) instead of two. [#85]
+- [ ] 6.6 · Center non-square profile pictures within their marker medallion (currently
+  left-aligned, leaving a blank strip e.g. for a 1:2 aspect ratio). [#85]
+- [ ] 6.7 · Increase carte profile-picture marker size by about 50%. [#85]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
