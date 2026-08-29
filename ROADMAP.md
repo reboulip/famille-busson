@@ -7,11 +7,11 @@
 ## Phase 6
 
 ### Cluster: Annuaire — administration
-- [ ] 6.1 · Bulk account creation: list existing Accounts with no linked Person profile
+- [x] 6.1 · Bulk account creation: list existing Accounts with no linked Person profile
   yet (invite link unused) to make re-sending links faster. [#86]
 
 ### Cluster: Profil
-- [ ] 6.2 · Suppress the mailto link entirely on the person detail view when the
+- [x] 6.2 · Suppress the mailto link entirely on the person detail view when the
   profile has no email address (currently renders a link to "None"). [#85]
 
 ### Cluster: Généalogie — arbre interactif
@@ -19,6 +19,14 @@
   [#85]
 - [ ] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
   the profile-card panel and the sidebar. [#85]
+- [ ] 6.8 · Re-fix genealogy tree compact width + spouse-side positioning (reopened —
+  the #80/#81 fix shipped in 25786a3 broke name display and was hotfixed back to vendor
+  defaults, undoing the compaction and spouse-side change along with it). Compact the
+  tree's horizontal width for 3-4 generations and position spouses on the correct side
+  (right) of their direct-descendant children, without re-breaking name/label display.
+  Must be analyzed and verified with an actual UI check in the dev environment before
+  considering it done — do not ship on code-reasoning alone this time. (requires: 6.3,
+  6.4 — same files/DOM region) [#81]
 
 ### Cluster: Carte
 - [ ] 6.5 · Collapse the un-geolocated profiles list to one line per profile (account +
