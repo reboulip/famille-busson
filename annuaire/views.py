@@ -24,6 +24,7 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
+from .email_utils import send_bulk_emails
 from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
 from .forms import (
@@ -155,10 +156,7 @@ def _build_password_reset_url(request, account):
     return request.build_absolute_uri(reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}))
 
 
-def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
-    """Best-effort: one recipient's SMTP failure must not lose the others'
-    accounts (already created) or hide their reset link (still shown on screen
-    regardless -- see bulk_account_create.html)."""
+def _account_setup_email_content(email, reset_url, is_reset):
     subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
     intro = (
         "Le mot de passe de votre compte sur le site de la famille Busson a été réinitialisé."
@@ -173,12 +171,26 @@ def _send_account_setup_email(request, email, reset_url, is_reset, connection=No
         f"Ce lien est à usage unique et expire dans 7 jours.\n\n"
         f"À bientôt !"
     )
+    return subject, message
+
+
+def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
+    """Best-effort: one recipient's SMTP failure must not lose the others'
+    accounts (already created) or hide their reset link (still shown on screen
+    regardless -- see bulk_account_create.html)."""
+    subject, message = _account_setup_email_content(email, reset_url, is_reset)
     try:
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, connection=connection)
         return True
     except Exception:
         logging.getLogger("django").exception("Failed to send account setup email to %s", email)
         return False
+
+
+def _pending_accounts_qs():
+    """Accounts with no linked Person profile yet -- an unused invite, or a
+    staff-created account whose signup email never matched an existing fiche."""
+    return Account.objects.filter(profile__isnull=True, is_active=True).order_by("email")
 
 
 class BulkAccountCreateView(StaffRequiredMixin, FormView):
@@ -190,6 +202,53 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
     # connection across the batch, cycling it periodically so a long-lived
     # connection doesn't itself get dropped/rate-limited by the provider.
     _EMAILS_PER_CONNECTION = 15
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pending_accounts"] = _pending_accounts_qs()
+        return context
+
+    def post(self, request, *args, **kwargs):
+        if request.POST.get("action") == "resend":
+            return self._handle_resend(request)
+        return super().post(request, *args, **kwargs)
+
+    def _handle_resend(self, request):
+        pks = request.POST.getlist("accounts")
+        accounts = list(_pending_accounts_qs().filter(pk__in=pks))
+
+        reset_urls = {}
+        messages_to_send = []
+        for acc in accounts:
+            reset_url = _build_password_reset_url(request, acc)
+            reset_urls[acc.email] = reset_url
+            subject, body = _account_setup_email_content(acc.email, reset_url, is_reset=False)
+            messages_to_send.append((acc.email, subject, body))
+
+        sent, failed = send_bulk_emails(messages_to_send)
+
+        results = [
+            {
+                "email": acc.email,
+                "status": "resent",
+                "email_sent": acc.email in sent,
+                "reset_url": reset_urls[acc.email],
+            }
+            for acc in accounts
+        ]
+
+        if failed:
+            messages.error(
+                self.request,
+                "Échec de l'envoi de l'email pour : " + ", ".join(failed),
+            )
+        if accounts:
+            messages.success(
+                self.request,
+                f"Lien d'invitation renvoyé pour {len(sent)} compte(s).",
+            )
+
+        return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
 
     def form_valid(self, form):
         emails = form.cleaned_data["emails"]

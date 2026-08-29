@@ -188,6 +188,92 @@ def test_bulk_create_isolates_account_creation_failure(staff_client, db, monkeyp
 
 
 # ---------------------------------------------------------------------------
+# BulkAccountCreateView — pending accounts / resend
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_bulk_create_shows_account_with_no_profile_as_pending(staff_client, account):
+    response = staff_client.get(reverse("bulk-account-create"))
+    pending_emails = [a.email for a in response.context["pending_accounts"]]
+    assert account.email in pending_emails
+
+
+@pytest.mark.django_db
+def test_bulk_create_excludes_account_with_linked_profile_from_pending(staff_client, person):
+    response = staff_client.get(reverse("bulk-account-create"))
+    pending_emails = [a.email for a in response.context["pending_accounts"]]
+    assert person.account.email not in pending_emails
+
+
+@pytest.mark.django_db
+def test_bulk_create_pending_list_shows_never_logged_in_badge(staff_client, account):
+    response = staff_client.get(reverse("bulk-account-create"))
+    content = response.content.decode()
+    assert "Jamais connecté" in content
+
+
+@pytest.mark.django_db
+def test_bulk_create_excludes_inactive_account_from_pending(staff_client, db):
+    inactive = Account.objects.create_user(email="inactive@example.com", password="testpass123!", is_active=False)
+    response = staff_client.get(reverse("bulk-account-create"))
+    pending_emails = [a.email for a in response.context["pending_accounts"]]
+    assert inactive.email not in pending_emails
+
+
+@pytest.mark.django_db
+def test_resend_sends_invite_email(staff_client, account):
+    response = staff_client.post(
+        reverse("bulk-account-create"),
+        {"action": "resend", "accounts": [str(account.pk)]},
+    )
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == [account.email]
+    assert response.context["results"][0]["status"] == "resent"
+    assert response.context["results"][0]["email_sent"] is True
+
+
+@pytest.mark.django_db
+def test_resend_does_not_reset_password(staff_client, account):
+    old_hash = account.password
+    staff_client.post(
+        reverse("bulk-account-create"),
+        {"action": "resend", "accounts": [str(account.pk)]},
+    )
+    account.refresh_from_db()
+    assert account.password == old_hash
+
+
+@pytest.mark.django_db
+def test_resend_uses_account_created_wording_not_reset(staff_client, account):
+    staff_client.post(
+        reverse("bulk-account-create"),
+        {"action": "resend", "accounts": [str(account.pk)]},
+    )
+    assert "réinitialisé" not in mail.outbox[0].subject
+
+
+@pytest.mark.django_db
+def test_resend_ignores_pk_of_account_with_linked_profile(staff_client, person):
+    staff_client.post(
+        reverse("bulk-account-create"),
+        {"action": "resend", "accounts": [str(person.account.pk)]},
+    )
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
+def test_resend_shows_status_label_in_results_table(staff_client, account):
+    response = staff_client.post(
+        reverse("bulk-account-create"),
+        {"action": "resend", "accounts": [str(account.pk)]},
+        follow=True,
+    )
+    assert "Renvoyé" in response.content.decode()
+    assert "Échec de création" not in response.content.decode()
+
+
+# ---------------------------------------------------------------------------
 # check_emails_ajax
 # ---------------------------------------------------------------------------
 

@@ -1,9 +1,13 @@
-// family-chart's vendor default horizontal card spacing is 250px. The
-// genealogy label wraps instead of clipping (see main.css) and needs a
-// max-width derived from that spacing so adjacent labels don't overlap --
-// see the invariant documented next to --genealogie-label-max-width in
-// main.css.
-const LABEL_MAX_WIDTH = 240;
+// Compact horizontal card spacing (#81) -- vendor default is 250px. The
+// genealogy label wraps instead of clipping (see main.css) and its max-width
+// is derived from this spacing, not hardcoded separately, so the two can
+// never drift out of the "label max-width <= spacing - 10" invariant that
+// keeps adjacent labels from overlapping (see --genealogie-label-max-width
+// in main.css). 170 was tuned against a deliberately long compound name in
+// the dev-environment check required by #81's reopening -- don't lower it
+// without re-running that check.
+const CARD_X_SPACING = 170;
+const LABEL_MAX_WIDTH = CARD_X_SPACING - 10;
 
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('genealogie-chart');
@@ -93,6 +97,20 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    // Layout-only hint for the vendor's spouse-side/children-sort logic (#81)
+    // -- family-chart places a spouse to the right only when
+    // data.gender === 'M', with no other hook available, and the same flag
+    // drives its children-by-couple sort order. Stamped uniformly so it
+    // fixes both halves of #81's "spouses come from the wrong side" without
+    // meaning anything: never persisted, never sent to the server, never
+    // displayed as a value anywhere (Person.gender was intentionally removed
+    // from the data model, migration 0007, and must stay removed). The
+    // matching main.css override neutralizes the vendor's blue-grey
+    // card-male ring color so nothing on screen looks gendered.
+    graph.forEach((person) => {
+        person.data.gender = 'M';
+    });
+
     const mount = document.getElementById('genealogie-chart-mount') || container;
     const chart = f3.createChart(mount, graph);
     chart
@@ -109,8 +127,12 @@ document.addEventListener('DOMContentLoaded', function () {
             if (d.data.to_add || d.data.unknown || d.data._new_rel_data) return;
             showDetail(chart, d.data);
         });
+    chart.setCardXSpacing(CARD_X_SPACING);
     chart.setOrientationVertical();
-    chart.setPersonDropdown(personLabel, { placeholder: 'Rechercher une personne…' });
+    chart.setPersonDropdown(personLabel, {
+        cont: document.getElementById('genealogie-search') || undefined,
+        placeholder: 'Rechercher une personne…',
+    });
     chart.setSingleParentEmptyCard(false);
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
@@ -135,6 +157,27 @@ document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams();
             ids.forEach((id) => params.append('ids', id));
             window.location.href = `${exportButton.dataset.exportUrl}?${params.toString()}`;
+        });
+    }
+
+    const fullscreenPanel = document.getElementById('genealogie-panel');
+    const fullscreenButton = document.getElementById('genealogie-fullscreen');
+    if (fullscreenPanel && fullscreenButton) {
+        const setFullscreen = (active) => {
+            fullscreenPanel.classList.toggle('genealogie-panel--fullscreen', active);
+            fullscreenButton.textContent = active ? 'Quitter le plein écran' : 'Plein écran';
+            // family-chart has no resize/ResizeObserver handler -- it computes its
+            // fit from getBoundingClientRect() at call time, so the re-fit must
+            // wait a frame for the size/position change to actually reflow.
+            requestAnimationFrame(() => chart.updateTree({ tree_position: 'fit' }));
+        };
+        fullscreenButton.addEventListener('click', () => {
+            setFullscreen(!fullscreenPanel.classList.contains('genealogie-panel--fullscreen'));
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fullscreenPanel.classList.contains('genealogie-panel--fullscreen')) {
+                setFullscreen(false);
+            }
         });
     }
 

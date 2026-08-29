@@ -379,8 +379,10 @@ h2 {
 }
 
 .map-marker-avatar {
-    width: 40px;
-    height: 40px;
+    /* --map-marker-size is published from map_init.js (MARKER_SIZE) -- single
+       source of truth shared by JS icon sizing and this CSS. */
+    width: var(--map-marker-size, 60px);
+    height: var(--map-marker-size, 60px);
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid #fff;
@@ -389,31 +391,42 @@ h2 {
 }
 
 .map-marker-avatar img {
-    width: 100%;
+    /* Leaflet's own CSS (vendor/leaflet/leaflet.css) sets
+       ".leaflet-marker-pane img { width: auto; ... }" at higher specificity
+       than this rule, which left non-square photos at their intrinsic
+       aspect ratio -- flush-left in the circle instead of filling it.
+       !important is what beats it; object-fit alone was a no-op once the
+       box already matched that intrinsic ratio. */
+    width: 100% !important;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 .map-marker-avatar-emoji {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4em;
+    /* Relative to Leaflet's container font-size -- scaled with the medallion
+       (1.4em at the old 40px marker) or the emoji looks lost in the larger
+       circle for chalets, which have no photo to fall back to. */
+    font-size: 2.1em;
     background-color: #f0f0f0;
 }
 
 .map-marker-cluster {
     position: relative;
-    width: 40px;
-    height: 40px;
+    width: var(--map-marker-size, 60px);
+    height: var(--map-marker-size, 60px);
 }
 
 .map-marker-cluster-avatar {
     position: absolute;
     top: 0;
     left: 0;
-    width: 28px;
-    height: 28px;
+    width: calc(var(--map-marker-size, 60px) * 0.7);
+    height: calc(var(--map-marker-size, 60px) * 0.7);
 }
 
 .map-marker-cluster-avatar:nth-child(1) {
@@ -421,14 +434,14 @@ h2 {
 }
 
 .map-marker-cluster-avatar:nth-child(2) {
-    top: 8px;
-    left: 8px;
+    top: calc(var(--map-marker-size, 60px) * 0.2);
+    left: calc(var(--map-marker-size, 60px) * 0.2);
     z-index: 2;
 }
 
 .map-marker-cluster-avatar:nth-child(3) {
-    top: 16px;
-    left: 16px;
+    top: calc(var(--map-marker-size, 60px) * 0.4);
+    left: calc(var(--map-marker-size, 60px) * 0.4);
     z-index: 1;
 }
 
@@ -468,8 +481,11 @@ h2 {
     margin-top: 16px;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
-    /* Anchors family-chart's .f3-nav-cont search bar (position: absolute in its
-       own CSS) to this container instead of the page's top-left corner. */
+    /* family-chart still appends an (empty) .f3-nav-cont here at createChart
+       time even though the search widget itself is now mounted in the
+       toolbar's #genealogie-search (see family_tree.js's setPersonDropdown
+       cont option) -- kept relative in case a future vendor update anchors
+       something else to it. */
     position: relative;
 }
 
@@ -498,7 +514,10 @@ h2 {
 
 .genealogie-branch-picker {
     max-width: 400px;
-    margin-top: 16px;
+}
+
+.genealogie-search {
+    position: relative;
 }
 
 .genealogie-detail {
@@ -508,6 +527,53 @@ h2 {
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     align-self: flex-start;
+}
+
+/* Fullscreen toggle (6.4): a CSS fixed overlay rather than the native
+   Fullscreen API or a Bootstrap modal -- no permission/gesture dance, and it
+   keeps the toolbar (search/export/branch-picker) visible and usable. */
+.genealogie-panel--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: #fff;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.genealogie-panel--fullscreen .genealogie-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.genealogie-panel--fullscreen .genealogie-container {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0;
+}
+
+/* The detail panel floats over the tree instead of taking its own column, so
+   the tree can span the full fullscreen width beneath it while the panel
+   stays reachable on card click. Overrides Bootstrap's d-none/d-lg-block
+   display utilities via higher specificity, not by touching that class
+   string (annuaire/tests/test_views_family_tree.py asserts on it verbatim). */
+.genealogie-panel--fullscreen .genealogie-detail {
+    position: absolute;
+    top: 76px;
+    right: 24px;
+    width: 320px;
+    max-height: calc(100% - 100px);
+    overflow-y: auto;
+    margin-top: 0;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+}
+
+.genealogie-panel--fullscreen .genealogie-detail.d-none {
+    display: block !important;
 }
 
 .genealogie-detail-header {
@@ -544,38 +610,66 @@ h2 {
    color, so text inherits Bootstrap's near-black body color -- black on
    near-black. Re-theme the whole widget to the light palette instead of
    touching --background-color/--text-color, which are load-bearing for the
-   person cards' own white-on-translucent-plate labels. */
-.f3 .f3-autocomplete input,
-.f3 .f3-autocomplete-items,
-.f3 .f3-autocomplete-item > div {
+   person cards' own white-on-translucent-plate labels. Scoped to
+   .genealogie-search (the toolbar mount point, see family_tree.js's
+   setPersonDropdown cont option) rather than .f3 -- the widget now lives
+   outside the chart container, where the vendor's own --background-color/
+   --text-color custom properties (declared on .f3) wouldn't resolve either. */
+.genealogie-search .f3-autocomplete input,
+.genealogie-search .f3-autocomplete-items,
+.genealogie-search .f3-autocomplete-item > div {
     background-color: #fff;
     color: #212529;
     border-color: #dee2e6;
 }
 
-.f3 .f3-autocomplete-item > div:hover,
-.f3 .f3-autocomplete-item.f3-selected > div {
+.genealogie-search .f3-autocomplete-item > div:hover,
+.genealogie-search .f3-autocomplete-item.f3-selected > div {
     background-color: #0d6efd;
     color: #fff;
 }
 
-.f3 .f3-autocomplete-toggle {
+.genealogie-search .f3-autocomplete-toggle {
     color: #212529;
 }
 
-.f3 .f3-autocomplete input:focus {
+.genealogie-search .f3-autocomplete input:focus {
     outline: 2px solid #0d6efd;
 }
 
+/* The vendor result list is in normal flow with a max-height transition --
+   harmless inside the old absolutely-positioned .f3-nav-cont overlay, but in
+   the toolbar's normal-flow row it would grow the row and shove the chart
+   down on every keystroke without this. */
+.genealogie-search .f3-autocomplete-items {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    z-index: 5;
+}
+
 /* Long French names get hard-clipped by the vendor's single-line label.
-   max-width is a CSS custom property set from family_tree.js (LABEL_MAX_WIDTH)
-   -- invariant: label max-width <= card x-spacing - 10px (vendor default
-   spacing is 250px, unchanged here), or adjacent labels overlap (labels are
-   centered and overflow symmetrically past the card). */
+   max-width is a CSS custom property set from family_tree.js (LABEL_MAX_WIDTH,
+   itself derived from CARD_X_SPACING there) -- invariant: label max-width
+   <= card x-spacing - 10px, or adjacent labels overlap (labels are centered
+   and overflow symmetrically past the card). */
 .f3 div.card-image-circle div.card-label {
     white-space: normal;
     max-width: var(--genealogie-label-max-width, 150px);
     overflow-wrap: anywhere;
+}
+
+/* #81: family_tree.js stamps every node with gender='M' as a layout-only hint
+   for the vendor's spouse-side/children-sort logic (never a real, displayed,
+   or persisted value -- see the comment at that stamp). Without this, every
+   avatar ring would render the vendor's --male-color instead of staying
+   neutral. Must not use the .card-genderless selector -- that override was
+   deliberately removed as dead code (#59/#80) and stays removed; this
+   neutralizes card-male instead. */
+.f3 div.card-male .card-inner,
+.f3 div.card-male .person-icon svg {
+    background-color: var(--genderless-color);
 }
 
 /* Tuiles page d'accueil */

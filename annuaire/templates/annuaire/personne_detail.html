@@ -22,9 +22,11 @@
                     {% endif %}
                 {% endif %}
             </h1>
-            <p class="contact-line mb-1">
-                📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email|urlencode }}>">{{ person.email }}</a>
-            </p>
+            {% if person.email %}
+                <p class="contact-line mb-1">
+                    📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email|urlencode }}>">{{ person.email }}</a>
+                </p>
+            {% endif %}
             {% if person.phone_number %}
                 <p class="contact-line mb-1">☎️ <a href="tel:{{ person.phone_number }}">{{ person.phone_number }}</a></p>
             {% endif %}

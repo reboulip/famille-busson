@@ -35,8 +35,26 @@ def test_offsets_icon_anchor_not_real_coordinates():
     # The server contract (map_data.py) is untouched -- markers must stay at
     # the group's true lat/lon; only the icon/popup anchors move.
     assert "L.marker([group.lat, group.lon]" in content
-    assert "iconAnchor: [20 - dx, 40 - dy]" in content
-    assert "popupAnchor: [dx, dy - 40]" in content
+    assert "iconAnchor: [half - dx, MARKER_SIZE - dy]" in content
+    assert "popupAnchor: [dx, dy - MARKER_SIZE]" in content
+
+
+def test_marker_size_is_a_single_constant_published_to_css():
+    # Single source of truth (#85): JS and CSS must agree on marker size via
+    # one shared custom property, not two independently-maintained numbers.
+    content = _content()
+    assert re.search(r"const MARKER_SIZE\s*=\s*\d+", content)
+    assert "setProperty('--map-marker-size'" in content
+
+    css_path = MAP_INIT_JS.resolve().parent.parent / "css" / "main.css"
+    css_content = css_path.read_text(encoding="utf-8")
+    assert "var(--map-marker-size" in css_content
+
+
+def test_icon_sizes_derive_from_marker_size_not_hardcoded():
+    content = _content()
+    assert "iconSize: [MARKER_SIZE, MARKER_SIZE]" in content
+    assert "iconSize: [40, 40]" not in content
 
 
 def test_fit_bounds_counts_unique_group_points_not_flat_markers():

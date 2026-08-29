@@ -157,6 +157,33 @@ def test_profile_detail_phone_link_uses_tel_scheme(auth_client, person):
 
 
 @pytest.mark.django_db
+def test_profile_detail_no_email_suppresses_mailto_line(auth_client, accountless_person):
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": accountless_person.pk}))
+    content = response.content.decode()
+    assert "mailto:" not in content
+    assert "📧" not in content
+    assert content.count('class="contact-line') == 0
+
+
+@pytest.mark.django_db
+def test_profile_detail_empty_string_email_suppresses_mailto_line(auth_client, person):
+    person.email = ""
+    person.save()
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "mailto:" not in content
+    assert "📧" not in content
+
+
+@pytest.mark.django_db
+def test_profile_detail_with_email_shows_mailto_line(auth_client, person):
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert 'href="mailto:' in content
+    assert person.email in content
+
+
+@pytest.mark.django_db
 def test_profile_detail_context_has_person(auth_client, person):
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
     assert response.context["person"] == person
@@ -797,6 +824,23 @@ def test_carte_unresolved_count(auth_client, person, other_person):
     other_person.save()
     response = auth_client.get(reverse("carte"))
     assert response.context["unresolved_count"] == 1
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_list_renders_name_and_address_on_one_line(auth_client, person):
+    person.postal_address = "1 rue de la République, Lyon"
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert "<br>" not in content
+    assert "— 1 rue de la République, Lyon" in content
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_list_shows_placeholder_for_missing_address(auth_client, person):
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert "— adresse non renseignée" in content
 
 
 @pytest.mark.django_db

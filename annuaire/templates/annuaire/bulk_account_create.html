@@ -20,7 +20,7 @@
         <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
             <td>{{ row.email }}</td>
             <td>
-                {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% else %}Échec de création{% endif %}
+                {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% elif row.status == 'resent' %}Renvoyé{% else %}Échec de création{% endif %}
             </td>
             <td>
                 {% if row.status == 'error' %}
@@ -38,6 +38,53 @@
 </table>
 <hr>
 <h2 class="mt-4">Créer d'autres comptes</h2>
+{% endif %}
+
+<h2 class="mt-4">Comptes sans profil</h2>
+{% if pending_accounts %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="resend">
+    <table class="table table-bordered mt-3">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="pending-select-all"></th>
+                <th>Email</th>
+                <th>Dernière connexion</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for acc in pending_accounts %}
+            <tr>
+                <td><input type="checkbox" name="accounts" value="{{ acc.pk }}" class="pending-account-checkbox"></td>
+                <td>{{ acc.email }}</td>
+                <td>
+                    {% if acc.last_login %}
+                        Dernière connexion le {{ acc.last_login|date:"j F Y H:i" }}
+                    {% else %}
+                        <span class="badge text-bg-secondary">Jamais connecté</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <button type="submit" class="btn btn-outline-primary mt-2">Renvoyer le lien d'invitation</button>
+</form>
+<script>
+(function () {
+    const selectAll = document.getElementById('pending-select-all');
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('.pending-account-checkbox').forEach(function (cb) {
+                cb.checked = selectAll.checked;
+            });
+        });
+    }
+})();
+</script>
+{% else %}
+<p>Tous les comptes sont rattachés à un profil.</p>
 {% endif %}
 
 <div id="email-warnings" class="alert alert-warning d-none" role="alert">

@@ -39,6 +39,28 @@ def test_genealogie_renders_export_button_with_export_url(auth_client, person):
 
 
 @pytest.mark.django_db
+def test_genealogie_search_mount_sits_in_the_same_toolbar_as_export_button(auth_client, person):
+    # 6.3: search field and export button live in one toolbar row.
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    toolbar_start = content.index('class="genealogie-toolbar')
+    layout_start = content.index("genealogie-layout")
+    toolbar_html = content[toolbar_start:layout_start]
+    assert 'id="genealogie-search"' in toolbar_html
+    assert 'id="genealogie-export"' in toolbar_html
+
+
+@pytest.mark.django_db
+def test_genealogie_renders_fullscreen_toggle_in_toolbar(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    toolbar_start = content.index('class="genealogie-toolbar')
+    layout_start = content.index("genealogie-layout")
+    toolbar_html = content[toolbar_start:layout_start]
+    assert 'id="genealogie-fullscreen"' in toolbar_html
+
+
+@pytest.mark.django_db
 def test_genealogie_loads_d3_before_family_chart(auth_client, person):
     # family-chart's UMD bundle reads a global `d3` at load time -- d3 must be
     # the earlier <script> tag, or the library throws on load in a real browser.
