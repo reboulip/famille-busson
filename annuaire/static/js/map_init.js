@@ -21,13 +21,19 @@ document.addEventListener('DOMContentLoaded', function () {
     // (there's no default chalet photo asset the way there is a default person avatar).
     const EMOJI_PREFIX = 'emoji::';
 
+    // Single source of truth for marker medallion size (60 = 40 * 1.5), published
+    // as a CSS custom property so main.css's .map-marker-* rules stay in sync
+    // (mirrors family_tree.js's --genealogie-label-max-width precedent).
+    const MARKER_SIZE = 60;
+    document.documentElement.style.setProperty('--map-marker-size', `${MARKER_SIZE}px`);
+
     // Co-located groups up to this size spread into individual markers arranged
     // around the shared point instead of one composite cluster pin; larger
     // groups keep the cluster pin below (a ring that big would be unreadable
     // and would swamp neighboring markers at low zoom).
     const SPREAD_MAX = 8;
-    const SPREAD_RADIUS = 34; // px, first ring
-    const SPREAD_RING_STEP = 26; // px added per additional ring
+    const SPREAD_RADIUS = 51; // px, first ring (1.5x MARKER_SIZE's 34px baseline)
+    const SPREAD_RING_STEP = 39; // px added per additional ring (1.5x baseline)
     const PER_RING = 6; // markers per ring before overflowing to the next ring
 
     // Pixel offset for the i-th (of `total`) spread marker in a group, laid
@@ -68,12 +74,13 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildPersonIcon(entry, offset) {
         const dx = offset ? offset.dx : 0;
         const dy = offset ? offset.dy : 0;
+        const half = MARKER_SIZE / 2;
         return L.divIcon({
             className: 'map-marker-avatar-wrapper',
             html: buildAvatarElement(entry.avatar, entry.name),
-            iconSize: [40, 40],
-            iconAnchor: [20 - dx, 40 - dy],
-            popupAnchor: [dx, dy - 40],
+            iconSize: [MARKER_SIZE, MARKER_SIZE],
+            iconAnchor: [half - dx, MARKER_SIZE - dy],
+            popupAnchor: [dx, dy - MARKER_SIZE],
         });
     }
 
@@ -90,12 +97,13 @@ document.addEventListener('DOMContentLoaded', function () {
         badge.className = 'map-marker-cluster-badge';
         badge.textContent = `+${group.entries.length}`;
         cluster.appendChild(badge);
+        const half = MARKER_SIZE / 2;
         return L.divIcon({
             className: 'map-marker-avatar-wrapper',
             html: cluster,
-            iconSize: [40, 40],
-            iconAnchor: [20, 40],
-            popupAnchor: [0, -40],
+            iconSize: [MARKER_SIZE, MARKER_SIZE],
+            iconAnchor: [half, MARKER_SIZE],
+            popupAnchor: [0, -MARKER_SIZE],
         });
     }
 

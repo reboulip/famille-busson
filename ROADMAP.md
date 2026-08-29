@@ -33,7 +33,7 @@
   address) instead of two. [#85]
 - [x] 6.6 · Center non-square profile pictures within their marker medallion (currently
   left-aligned, leaving a blank strip e.g. for a 1:2 aspect ratio). [#85]
-- [ ] 6.7 · Increase carte profile-picture marker size by about 50%. [#85]
+- [x] 6.7 · Increase carte profile-picture marker size by about 50%. [#85]
 
 ## Backlog
 
