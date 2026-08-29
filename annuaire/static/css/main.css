@@ -637,14 +637,26 @@ h2 {
 }
 
 /* Long French names get hard-clipped by the vendor's single-line label.
-   max-width is a CSS custom property set from family_tree.js (LABEL_MAX_WIDTH)
-   -- invariant: label max-width <= card x-spacing - 10px (vendor default
-   spacing is 250px, unchanged here), or adjacent labels overlap (labels are
-   centered and overflow symmetrically past the card). */
+   max-width is a CSS custom property set from family_tree.js (LABEL_MAX_WIDTH,
+   itself derived from CARD_X_SPACING there) -- invariant: label max-width
+   <= card x-spacing - 10px, or adjacent labels overlap (labels are centered
+   and overflow symmetrically past the card). */
 .f3 div.card-image-circle div.card-label {
     white-space: normal;
     max-width: var(--genealogie-label-max-width, 150px);
     overflow-wrap: anywhere;
+}
+
+/* #81: family_tree.js stamps every node with gender='M' as a layout-only hint
+   for the vendor's spouse-side/children-sort logic (never a real, displayed,
+   or persisted value -- see the comment at that stamp). Without this, every
+   avatar ring would render the vendor's --male-color instead of staying
+   neutral. Must not use the .card-genderless selector -- that override was
+   deliberately removed as dead code (#59/#80) and stays removed; this
+   neutralizes card-male instead. */
+.f3 div.card-male .card-inner,
+.f3 div.card-male .person-icon svg {
+    background-color: var(--genderless-color);
 }
 
 /* Tuiles page d'accueil */

@@ -19,7 +19,7 @@
   [#85]
 - [x] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
   the profile-card panel and the sidebar. [#85]
-- [ ] 6.8 · Re-fix genealogy tree compact width + spouse-side positioning (reopened —
+- [x] 6.8 · Re-fix genealogy tree compact width + spouse-side positioning (reopened —
   the #80/#81 fix shipped in 25786a3 broke name display and was hotfixed back to vendor
   defaults, undoing the compaction and spouse-side change along with it). Compact the
   tree's horizontal width for 3-4 generations and position spouses on the correct side

@@ -109,3 +109,38 @@ def test_family_tree_js_refits_the_chart_after_fullscreen_toggle():
 def test_family_tree_js_exits_fullscreen_on_escape():
     content = FAMILY_TREE_JS.read_text(encoding="utf-8")
     assert "Escape" in content
+
+
+def test_family_tree_js_derives_label_max_width_from_card_x_spacing():
+    # #81: the two must never drift independently, or the "label max-width <=
+    # spacing - 10" invariant silently breaks and labels overlap again.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert re.search(r"const\s+CARD_X_SPACING\s*=\s*\d+", content)
+    assert re.search(r"const\s+LABEL_MAX_WIDTH\s*=\s*CARD_X_SPACING\s*-\s*10", content)
+
+
+def test_family_tree_js_applies_card_x_spacing_to_the_chart():
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "setCardXSpacing(CARD_X_SPACING)" in content
+
+
+def test_family_tree_js_stamps_layout_only_gender_hint_for_spouse_side():
+    # #81: family-chart's spouse-side/children-sort logic has no non-gender
+    # hook. This must stay JS-only -- never persisted, never sent to the
+    # server (Person.gender was intentionally removed from the data model).
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert re.search(r"person\.data\.gender\s*=\s*['\"]M['\"]", content)
+
+
+def test_family_tree_py_never_reintroduces_gender():
+    family_tree_py = Path(__file__).resolve().parent.parent / "family_tree.py"
+    content = family_tree_py.read_text(encoding="utf-8")
+    assert "gender" not in content
+
+
+def test_genealogy_card_male_ring_is_neutralized_without_reviving_genderless_selector():
+    content = _strip_comments(MAIN_CSS.read_text(encoding="utf-8"))
+    match = re.search(r"\.f3 div\.card-male \.card-inner[^{]*\{([^}]*)\}", content)
+    assert match, "No .card-male .card-inner override found in main.css"
+    assert _declared_value(match.group(1), "background-color") == "var(--genderless-color)"
+    assert ".card-genderless" not in content
