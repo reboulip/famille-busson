@@ -3,6 +3,33 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.11.0
+
+### Annuaire — administration
+- **Bulk account creation** — list existing Accounts with no linked Person profile yet
+  (invite link unused) to make re-sending links faster. [#86]
+
+### Profil
+- **Suppress empty mailto link** — no longer renders a link to "None" on the person
+  detail view when the profile has no email address. [#85]
+
+### Généalogie — arbre interactif
+- **Align export button with search field** — the Excel export button now aligns with
+  the search field in the genealogy view toolbar. [#85]
+- **Full-screen toggle** — the interactive genealogy tree can expand full-screen,
+  covering both the profile-card panel and the sidebar. [#85]
+- **Re-fixed compact width + spouse-side positioning** — reopened after the #80/#81 fix
+  broke name display and was hotfixed back to vendor defaults; re-applied the tree's
+  horizontal-width compaction for 3-4 generations and correct spouse-side positioning
+  without re-breaking name/label display. [#81]
+
+### Carte
+- **One-line un-geolocated profiles list** — collapsed to one line per profile (account
+  + address) instead of two. [#85]
+- **Centered marker medallions** — non-square profile pictures are now centered within
+  their marker medallion instead of left-aligned. [#85]
+- **Larger carte markers** — increased profile-picture marker size by about 50%. [#85]
+
 ## v0.10.0
 
 ### Carte
