@@ -17,7 +17,7 @@
 ### Cluster: Généalogie — arbre interactif
 - [x] 6.3 · Align the Excel export button with the search field in the genealogy view.
   [#85]
-- [ ] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
+- [x] 6.4 · Allow the interactive genealogy tree to expand full-screen, covering both
   the profile-card panel and the sidebar. [#85]
 - [ ] 6.8 · Re-fix genealogy tree compact width + spouse-side positioning (reopened —
   the #80/#81 fix shipped in 25786a3 broke name display and was hotfixed back to vendor

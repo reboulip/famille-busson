@@ -84,3 +84,28 @@ def test_genealogy_autocomplete_results_list_is_positioned_absolute():
     # the toolbar row and shove the chart down on every keystroke.
     body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".genealogie-search .f3-autocomplete-items")
     assert _declared_value(body, "position") == "absolute"
+
+
+def test_genealogy_fullscreen_panel_is_a_fixed_overlay():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".genealogie-panel--fullscreen")
+    assert _declared_value(body, "position") == "fixed"
+    assert _declared_value(body, "inset") == "0"
+
+
+def test_genealogy_fullscreen_detail_panel_floats_over_the_tree():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".genealogie-panel--fullscreen .genealogie-detail")
+    assert _declared_value(body, "position") == "absolute"
+
+
+def test_family_tree_js_refits_the_chart_after_fullscreen_toggle():
+    # No resize/ResizeObserver handler exists in the vendored bundle -- the
+    # implementer must explicitly re-fit after every size change.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "genealogie-fullscreen" in content
+    assert "requestAnimationFrame" in content
+    assert "tree_position: 'fit'" in content
+
+
+def test_family_tree_js_exits_fullscreen_on_escape():
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "Escape" in content

@@ -516,6 +516,53 @@ h2 {
     align-self: flex-start;
 }
 
+/* Fullscreen toggle (6.4): a CSS fixed overlay rather than the native
+   Fullscreen API or a Bootstrap modal -- no permission/gesture dance, and it
+   keeps the toolbar (search/export/branch-picker) visible and usable. */
+.genealogie-panel--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: #fff;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+.genealogie-panel--fullscreen .genealogie-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.genealogie-panel--fullscreen .genealogie-container {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0;
+}
+
+/* The detail panel floats over the tree instead of taking its own column, so
+   the tree can span the full fullscreen width beneath it while the panel
+   stays reachable on card click. Overrides Bootstrap's d-none/d-lg-block
+   display utilities via higher specificity, not by touching that class
+   string (annuaire/tests/test_views_family_tree.py asserts on it verbatim). */
+.genealogie-panel--fullscreen .genealogie-detail {
+    position: absolute;
+    top: 76px;
+    right: 24px;
+    width: 320px;
+    max-height: calc(100% - 100px);
+    overflow-y: auto;
+    margin-top: 0;
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1;
+}
+
+.genealogie-panel--fullscreen .genealogie-detail.d-none {
+    display: block !important;
+}
+
 .genealogie-detail-header {
     display: flex;
     align-items: center;

@@ -141,6 +141,27 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const fullscreenPanel = document.getElementById('genealogie-panel');
+    const fullscreenButton = document.getElementById('genealogie-fullscreen');
+    if (fullscreenPanel && fullscreenButton) {
+        const setFullscreen = (active) => {
+            fullscreenPanel.classList.toggle('genealogie-panel--fullscreen', active);
+            fullscreenButton.textContent = active ? 'Quitter le plein écran' : 'Plein écran';
+            // family-chart has no resize/ResizeObserver handler -- it computes its
+            // fit from getBoundingClientRect() at call time, so the re-fit must
+            // wait a frame for the size/position change to actually reflow.
+            requestAnimationFrame(() => chart.updateTree({ tree_position: 'fit' }));
+        };
+        fullscreenButton.addEventListener('click', () => {
+            setFullscreen(!fullscreenPanel.classList.contains('genealogie-panel--fullscreen'));
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fullscreenPanel.classList.contains('genealogie-panel--fullscreen')) {
+                setFullscreen(false);
+            }
+        });
+    }
+
     if (branchPicker && components.length > 1) {
         branchPicker.hidden = false;
         const options = ['<option value="">Changer de branche…</option>'].concat(
