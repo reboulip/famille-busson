@@ -29,9 +29,9 @@
   6.4 — same files/DOM region) [#81]
 
 ### Cluster: Carte
-- [ ] 6.5 · Collapse the un-geolocated profiles list to one line per profile (account +
+- [x] 6.5 · Collapse the un-geolocated profiles list to one line per profile (account +
   address) instead of two. [#85]
-- [ ] 6.6 · Center non-square profile pictures within their marker medallion (currently
+- [x] 6.6 · Center non-square profile pictures within their marker medallion (currently
   left-aligned, leaving a blank strip e.g. for a 1:2 aspect ratio). [#85]
 - [ ] 6.7 · Increase carte profile-picture marker size by about 50%. [#85]
 

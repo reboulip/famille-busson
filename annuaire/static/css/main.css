@@ -389,9 +389,17 @@ h2 {
 }
 
 .map-marker-avatar img {
-    width: 100%;
+    /* Leaflet's own CSS (vendor/leaflet/leaflet.css) sets
+       ".leaflet-marker-pane img { width: auto; ... }" at higher specificity
+       than this rule, which left non-square photos at their intrinsic
+       aspect ratio -- flush-left in the circle instead of filling it.
+       !important is what beats it; object-fit alone was a no-op once the
+       box already matched that intrinsic ratio. */
+    width: 100% !important;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 .map-marker-avatar-emoji {

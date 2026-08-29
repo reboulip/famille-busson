@@ -827,6 +827,23 @@ def test_carte_unresolved_count(auth_client, person, other_person):
 
 
 @pytest.mark.django_db
+def test_carte_unresolved_list_renders_name_and_address_on_one_line(auth_client, person):
+    person.postal_address = "1 rue de la République, Lyon"
+    person.save()
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert "<br>" not in content
+    assert "— 1 rue de la République, Lyon" in content
+
+
+@pytest.mark.django_db
+def test_carte_unresolved_list_shows_placeholder_for_missing_address(auth_client, person):
+    response = auth_client.get(reverse("carte"))
+    content = response.content.decode()
+    assert "— adresse non renseignée" in content
+
+
+@pytest.mark.django_db
 def test_carte_persons_json_includes_name_and_profile_link(auth_client, person):
     person.latitude = Decimal("49.031624")
     person.longitude = Decimal("2.062821")
