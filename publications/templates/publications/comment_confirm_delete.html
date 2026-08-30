@@ -1,10 +1,11 @@
 {% extends "annuaire/base.html" %}
+{% load markdown_extras %}
 {% block content %}
     <div class="form">
         <h1>Supprimer ce commentaire ?</h1>
         <blockquote class="comment-preview">
             <strong>{{ object.author|default:"Anonyme" }}</strong> — {{ object.created_at|date:"j F Y H:i" }}
-            <div>{{ object.body|linebreaks }}</div>
+            <div class="markdown-body">{{ object.body|markdown }}</div>
         </blockquote>
         <form method="POST">
             {% csrf_token %}

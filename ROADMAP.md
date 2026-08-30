@@ -12,7 +12,7 @@
 > for consistency.
 
 ### Cluster: Rendu Markdown
-- [ ] 1.1 · Shared Markdown rendering — sanitized Markdown (Python-Markdown + `nh3`,
+- [x] 1.1 · Shared Markdown rendering — sanitized Markdown (Python-Markdown + `nh3`,
   `nl2br` extension so existing single-newline content renders unchanged) as a shared
   template filter, with a server-side preview endpoint reused by every Markdown field.
 - [ ] 1.2 · Write/Preview widget — reusable Write/Preview tabs wired to 1.1's preview
@@ -60,7 +60,7 @@
   (requires: 3.2)
 - [ ] 5.2 · Content search — extend document search to the extracted-text column.
   (requires: 5.1, 4.2)
-- [ ] 5.3 · CI system dependency — install `tesseract-ocr` (+ `fra` language pack)
+- [x] 5.3 · CI system dependency — install `tesseract-ocr` (+ `fra` language pack)
   in the `Dockerfile` and the `tests.yml` runner so OCR-path tests exercise the real
   binary. (requires: 5.1)
 

@@ -39,6 +39,7 @@ from .views import (
     check_emails_ajax,
     edit_my_profile,
     home,
+    markdown_preview,
     my_profile,
     person_search_ajax,
 )
@@ -56,6 +57,7 @@ urlpatterns = [
     path("accounts/check-emails/", check_emails_ajax, name="check-emails-ajax"),
     path("persons/search/", person_search_ajax, name="person-search-ajax"),
     path("addresses/search/", address_search_ajax, name="address-search-ajax"),
+    path("markdown/preview/", markdown_preview, name="markdown-preview"),
     path("password/change/", ForcedPasswordChangeView.as_view(), name="password-change-forced"),
     path("password/reset/", AccountPasswordResetView.as_view(), name="password-reset"),
     path("password/reset/done/", AccountPasswordResetDoneView.as_view(), name="password-reset-done"),

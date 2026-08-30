@@ -1,5 +1,6 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load markdown_extras %}
 {% block content %}
     <article class="blogpost-detail">
         <header class="blogpost-detail-header">
@@ -19,7 +20,7 @@
             {% endif %}
         </p>
 
-        <div class="blogpost-detail-body">{{ post.body|linebreaks }}</div>
+        <div class="blogpost-detail-body markdown-body">{{ post.body|markdown }}</div>
 
         {% if can_edit %}
             <div class="blogpost-detail-actions">
@@ -58,7 +59,7 @@
                         <a href="{% url 'comment-delete' comment.pk %}" class="btn btn-sm btn-outline-danger ms-2">Supprimer</a>
                     {% endif %}
                 </header>
-                <div class="comment-body">{{ comment.body|linebreaks }}</div>
+                <div class="comment-body markdown-body">{{ comment.body|markdown }}</div>
             </article>
         {% empty %}
             <p>Aucun commentaire pour l'instant.</p>

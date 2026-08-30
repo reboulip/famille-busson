@@ -34,6 +34,13 @@ def test_comment_post_creates_comment_with_request_user_profile(auth_client, blo
 
 
 @pytest.mark.django_db
+def test_comment_body_renders_as_markdown(auth_client, blog_post, person):
+    Comment.objects.create(post=blog_post, author=person, body="**important**")
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
+    assert "<strong>important</strong>" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_comment_post_redirects_user_without_profile_to_profile_create(client, blog_post):
     from annuaire.models import Account
 

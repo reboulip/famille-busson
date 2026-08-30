@@ -21,6 +21,7 @@ from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
@@ -43,6 +44,7 @@ from .forms import (
 )
 from .geocoding import search_addresses
 from .map_data import build_chalet_map_groups, build_person_map_groups
+from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
 from .tokens import magic_link_token_generator
@@ -379,6 +381,15 @@ def check_emails_ajax(request):
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     existing = list(Account.objects.filter(email__in=emails).values_list("email", flat=True))
     return JsonResponse({"existing": existing})
+
+
+@login_required
+@require_POST
+def markdown_preview(request):
+    text = request.POST.get("text", "")
+    if len(text) > MAX_MARKDOWN_LENGTH:
+        return HttpResponse("Texte trop long.", status=400)
+    return HttpResponse(render_markdown(text), content_type="text/html; charset=utf-8")
 
 
 def _first_login_redirect(user):

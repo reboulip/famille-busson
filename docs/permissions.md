@@ -38,6 +38,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
 | `home` | `home` | `@login_required` | Any logged-in user. |
+| `markdown_preview` | `markdown-preview` | `@login_required` + `@require_POST` | Any logged-in user. Sanitized-HTML preview endpoint for Markdown fields (`text` POST param, 400 above `MAX_MARKDOWN_LENGTH`). |
 | `DirectoryListView`, `ProfileDetailView`, `ChaletListView`, `ChaletDetailView`, `AddPresenceView`, `UpdatePresenceView`, `DeletePresenceView`, `ProfileCreateView`, `MapListView`, `FamilyTreeView`, `FamilyTreeExportView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. |
 | `ChaletCreateView` | `chalet-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; the creator is auto-added as an owner. |
 | `PersonCreateView` | `person-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; creates an accountless `Person` and auto-adds the creator as an owner. |

@@ -79,6 +79,24 @@ def test_blogpost_detail_404_on_invalid_pk(auth_client):
 
 
 @pytest.mark.django_db
+def test_blogpost_detail_renders_body_as_markdown(auth_client, db, person):
+    post = BlogPost.objects.create(title="Markdown", body="**gras**")
+    post.authors.add(person)
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": post.pk}))
+    assert "<strong>gras</strong>" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_blogpost_list_excerpt_strips_markdown_markers(auth_client, db, person):
+    post = BlogPost.objects.create(title="Markdown", body="**gras**")
+    post.authors.add(person)
+    response = auth_client.get(reverse("blogpost-list"))
+    content = response.content.decode()
+    assert "**gras**" not in content
+    assert "gras" in content
+
+
+@pytest.mark.django_db
 def test_blogpost_detail_exposes_comment_form(auth_client, blog_post):
     response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
     assert "comment_form" in response.context
