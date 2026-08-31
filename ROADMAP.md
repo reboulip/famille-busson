@@ -54,11 +54,11 @@
   (requires: 4.1, 4.2, 4.3)
 
 ### Cluster: Recherche & traitement différé
-- [ ] 5.1 · Content extraction pipeline — `manage.py` command backfilling PDF text
+- [x] 5.1 · Content extraction pipeline — `manage.py` command backfilling PDF text
   (PyMuPDF) with Tesseract OCR fallback for image-only pages/scans, plus a
   first-page thumbnail; run on a cron schedule like the existing reminder commands.
   (requires: 3.2)
-- [ ] 5.2 · Content search — extend document search to the extracted-text column.
+- [x] 5.2 · Content search — extend document search to the extracted-text column.
   (requires: 5.1, 4.2)
 - [x] 5.3 · CI system dependency — install `tesseract-ocr` (+ `fra` language pack)
   in the `Dockerfile` and the `tests.yml` runner so OCR-path tests exercise the real

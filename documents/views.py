@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import ProtectedError, Q
+from django.db.models import Exists, OuterRef, ProtectedError, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
@@ -61,7 +61,12 @@ class DocumentListView(LoginRequiredMixin, ListView):
         qs = accessible_documents(self.request.user).select_related("category").order_by("-created_at")
         query = self.request.GET.get("q", "")
         if query:
-            qs = qs.filter(Q(title__icontains=query) | Q(description__icontains=query))
+            content_match = Exists(
+                DocumentFile.objects.filter(document=OuterRef("pk"), extracted_text__icontains=query)
+            )
+            qs = qs.annotate(content_match=content_match).filter(
+                Q(title__icontains=query) | Q(description__icontains=query) | Q(content_match=True)
+            )
         category_id = self.request.GET.get("category", "")
         if category_id.isdigit():
             qs = qs.filter(category_id=category_id)
