@@ -15,11 +15,11 @@
 - [x] 1.1 · Shared Markdown rendering — sanitized Markdown (Python-Markdown + `nh3`,
   `nl2br` extension so existing single-newline content renders unchanged) as a shared
   template filter, with a server-side preview endpoint reused by every Markdown field.
-- [ ] 1.2 · Write/Preview widget — reusable Write/Preview tabs wired to 1.1's preview
+- [x] 1.2 · Write/Preview widget — reusable Write/Preview tabs wired to 1.1's preview
   endpoint, applied to `BlogPost.body` and `Comment.body`. (requires: 1.1)
 
 ### Cluster: Gestion des groupes
-- [ ] 2.1 · Group management UI — staff-only screens to create/rename/delete
+- [x] 2.1 · Group management UI — staff-only screens to create/rename/delete
   `auth.Group` and manage membership, reusing the existing `Account.groups` M2M. Lays
   groundwork also needed by Backlog B.2.
 - [ ] 2.2 · Group-deletion guard — refuse to delete a `Group` while any `Category`

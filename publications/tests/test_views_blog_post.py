@@ -153,6 +153,21 @@ def test_blogpost_create_get_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_blogpost_create_get_includes_markdown_editor_widget(auth_client):
+    response = auth_client.get(reverse("blogpost-create"))
+    content = response.content.decode()
+    assert "markdown-editor" in content
+    assert "js/markdown_editor.js" in content
+
+
+@pytest.mark.django_db
+def test_blogpost_detail_comment_form_includes_markdown_editor_media(auth_client, blog_post):
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
+    content = response.content.decode()
+    assert "js/markdown_editor.js" in content
+
+
+@pytest.mark.django_db
 def test_blogpost_create_post_creates_post_and_assigns_author(auth_client, person):
     data = {
         "title": "Mon premier article",

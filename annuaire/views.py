@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_not_required, login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -37,6 +38,7 @@ from .forms import (
     CustomAuthenticationForm,
     ForcedPasswordChangeForm,
     FormSettings,
+    GroupForm,
     PresenceForm,
     ProfileEditForm,
     SignupForm,
@@ -328,6 +330,60 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
+
+
+class GroupListView(StaffRequiredMixin, ListView):
+    model = Group
+    template_name = "annuaire/group_list.html"
+    context_object_name = "groups"
+
+    def get_queryset(self):
+        return Group.objects.all().order_by("name")
+
+
+class GroupCreateView(StaffRequiredMixin, CreateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "annuaire/group_form.html"
+    success_url = reverse_lazy("group-list")
+
+
+class GroupUpdateView(StaffRequiredMixin, UpdateView):
+    model = Group
+    form_class = GroupForm
+    template_name = "annuaire/group_form.html"
+    success_url = reverse_lazy("group-list")
+
+
+class GroupDeleteView(StaffRequiredMixin, DeleteView):
+    model = Group
+    template_name = "annuaire/group_confirm_delete.html"
+    success_url = reverse_lazy("group-list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["member_count"] = self.object.account_set.count()
+        return context
+
+
+class GroupMembersUpdateView(StaffRequiredMixin, DetailView):
+    model = Group
+    template_name = "annuaire/group_members_form.html"
+    context_object_name = "group"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        members = Person.objects.filter(account__groups=self.object).order_by("last_name", "first_name")
+        context["members_initial_json"] = json.dumps([{"id": p.pk, "name": str(p)} for p in members])
+        context["person_search_with_account_url"] = reverse("person-search-ajax") + "?with_account=1"
+        return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        member_ids = [int(pk) for pk in request.POST.getlist("members") if pk.isdigit()]
+        persons = Person.objects.filter(pk__in=member_ids, account__isnull=False)
+        self.object.account_set.set([p.account for p in persons])
+        return redirect("group-list")
 
 
 @login_required

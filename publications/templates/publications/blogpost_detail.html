@@ -67,6 +67,7 @@
 
         <form method="post" class="comment-form mt-3">
             {% csrf_token %}
+            {{ comment_form.media }}
             {{ comment_form|crispy }}
             <button type="submit" class="btn btn-outline-primary">Commenter</button>
         </form>

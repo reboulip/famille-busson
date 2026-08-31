@@ -1,0 +1,32 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <div class="page-header">
+        <h1>Groupes</h1>
+        <a href="{% url 'group-create' %}" class="btn btn-outline-primary">+ Créer un groupe</a>
+    </div>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Membres</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>{{ group.account_set.count }}</td>
+                    <td>
+                        <a href="{% url 'group-members-edit' group.pk %}" class="btn btn-sm btn-outline-secondary">Membres</a>
+                        <a href="{% url 'group-edit' group.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                        <a href="{% url 'group-delete' group.pk %}" class="btn btn-sm btn-outline-danger">Supprimer</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="3">Aucun groupe.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock content %}

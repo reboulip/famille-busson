@@ -40,6 +40,18 @@ def test_base_includes_genealogie_nav_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_includes_group_list_nav_link_for_staff(staff_client):
+    response = staff_client.get(reverse("directory"))
+    assert reverse("group-list") in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_excludes_group_list_nav_link_for_non_staff(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert reverse("group-list") not in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_base_includes_magic_link_help_nav_link(client):
     response = client.get(reverse("login"))
     assert reverse("magic-link-help") in response.content.decode()

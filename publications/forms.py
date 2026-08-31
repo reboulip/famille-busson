@@ -1,5 +1,7 @@
 from django import forms
 
+from annuaire.widgets import MarkdownEditorWidget
+
 from .models import Attachment, BlogPost, Comment
 
 
@@ -9,6 +11,7 @@ class BlogPostForm(forms.ModelForm):
         fields = ["title", "post_type", "body", "authors"]
         widgets = {
             "authors": forms.MultipleHiddenInput,
+            "body": MarkdownEditorWidget,
         }
 
     def __init__(self, *args, current_person=None, **kwargs):
@@ -22,7 +25,7 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ["body"]
         widgets = {
-            "body": forms.Textarea(attrs={"rows": 3, "placeholder": "Votre commentaire…"}),
+            "body": MarkdownEditorWidget(attrs={"rows": 3, "placeholder": "Votre commentaire…"}),
         }
         labels = {"body": ""}
 

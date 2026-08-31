@@ -1,0 +1,18 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <h1>Membres de « {{ group.name }} »</h1>
+    <form method="post" class="presence-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold" for="members-search-input">Membres actuels</label>
+            {% include "annuaire/_person_picker.html" with input_id="members-search-input" field_name="members" initial_json=members_initial_json search_url=person_search_with_account_url aria_label="Chercher un membre" %}
+            <div class="form-text">Seules les personnes ayant un compte peuvent être membres d'un groupe.</div>
+        </div>
+        <div class="form-group">
+            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
+            <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}
