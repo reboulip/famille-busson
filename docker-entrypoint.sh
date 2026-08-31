@@ -10,6 +10,8 @@ if [ "$(id -u)" = '0' ]; then
     # this block instead of looping.
     mkdir -p /app/media
     chown -R appuser:appuser /app/media
+    mkdir -p /app/documents_data
+    chown -R appuser:appuser /app/documents_data
     exec runuser -u appuser -- /app/docker-entrypoint.sh "$@"
 fi
 

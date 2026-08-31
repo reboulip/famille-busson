@@ -1,0 +1,30 @@
+{% extends "annuaire/base.html" %}
+{% load markdown_extras %}
+{% load documents_extras %}
+{% block content %}
+    <h1>{{ category.name }}</h1>
+    {% if not can_access %}
+        <div class="alert alert-warning" role="alert">
+            Cette catégorie est réservée. Groupes autorisés :
+            {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </div>
+    {% else %}
+        {% if category.description %}
+            <div class="markdown-body">{{ category.description|markdown }}</div>
+        {% endif %}
+        {% if user.is_staff %}
+            <div class="mb-3">
+                <a href="{% url 'category-edit' category.pk %}" class="btn btn-outline-secondary">Modifier</a>
+                <a href="{% url 'category-delete' category.pk %}" class="btn btn-outline-danger">Supprimer</a>
+            </div>
+        {% endif %}
+        <h2>Documents</h2>
+        <div class="document-list">
+            {% for document in documents %}
+                {% include "documents/_document_card.html" %}
+            {% empty %}
+                <p>Aucun document dans cette catégorie.</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock content %}

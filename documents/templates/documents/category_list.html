@@ -1,0 +1,16 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <div class="page-header">
+        <h1>Catégories de documents</h1>
+        {% if user.is_staff %}
+            <a href="{% url 'category-create' %}" class="btn btn-outline-primary">+ Nouvelle catégorie</a>
+        {% endif %}
+    </div>
+    <ul class="category-tree">
+        {% for category in root_categories %}
+            {% include "documents/_category_tree_node.html" with category=category %}
+        {% empty %}
+            <p>Aucune catégorie.</p>
+        {% endfor %}
+    </ul>
+{% endblock content %}

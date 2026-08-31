@@ -1,6 +1,6 @@
 [project]
 name = "famille-busson"
-version = "0.11.1"
+version = "0.12.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -20,10 +20,14 @@ dependencies = [
     "gunicorn>=26.0.0",
     "idna>=3.11",
     "jwt>=1.3.1",
+    "markdown>=3.9",
+    "nh3>=0.3.1",
     "openpyxl>=3.1.5",
     "pillow>=11.1.0",
     "psycopg[binary]>=3.3.4",
     "pycparser>=3.0",
+    "pymupdf>=1.28.2",
+    "pytesseract>=0.3.13",
     "requests>=2.32.3",
     "sqlparse>=0.5.5",
     "tzdata>=2025.3",
@@ -52,11 +56,11 @@ test = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "famille_busson.settings"
 pythonpath = ["."]
-testpaths = ["annuaire/tests", "publications/tests"]
-addopts = "-v --tb=short --cov=annuaire --cov=publications --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
+testpaths = ["annuaire/tests", "publications/tests", "documents/tests"]
+addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
 
 [tool.coverage.run]
-source = ["annuaire", "publications"]
+source = ["annuaire", "publications", "documents"]
 omit = ["*/migrations/*", "*/tests/*", "manage.py"]
 
 [tool.coverage.report]

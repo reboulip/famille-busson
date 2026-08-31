@@ -1,0 +1,23 @@
+{% load documents_extras %}
+<li>
+    {% if category|can_access:request.user %}
+        <a href="{% url 'category-detail' category.pk %}">{{ category.name }}</a>
+    {% else %}
+        <span class="category-locked">
+            🔒 {{ category.name }}
+            <small class="text-muted">
+                — Réservé au groupe{{ category|effective_groups|length|pluralize }} :
+                {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </small>
+        </span>
+    {% endif %}
+    {% with children=category.children.all %}
+        {% if children %}
+            <ul>
+                {% for child in children %}
+                    {% include "documents/_category_tree_node.html" with category=child %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</li>

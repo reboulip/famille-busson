@@ -3,6 +3,61 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.12.0 — Phase 1: Document management
+
+> A new `documents` app (upload/browse/view/edit family documents, PDF/doc/image
+> support, group-restricted categories) plus the shared Markdown rendering it needs for
+> `Category.description`, extended to `publications` for consistency.
+
+### Rendu Markdown
+- **Shared Markdown rendering** — sanitized Markdown (Python-Markdown + `nh3`, `nl2br`
+  extension so existing single-newline content renders unchanged) as a shared template
+  filter, with a server-side preview endpoint reused by every Markdown field.
+- **Write/Preview widget** — reusable Write/Preview tabs wired to the shared preview
+  endpoint, applied to `BlogPost.body` and `Comment.body`.
+
+### Gestion des groupes
+- **Group management UI** — staff-only screens to create/rename/delete `auth.Group` and
+  manage membership, reusing the existing `Account.groups` M2M.
+- **Group-deletion guard** — refuse to delete a `Group` while any `Category` still
+  restricts access to it.
+
+### Modèle documentaire & stockage protégé
+- **`Category` & `Document`/`DocumentFile` models** — nested `Category` (self-FK,
+  Markdown description) restricted to an `auth.Group` set only where the whole ancestry
+  is public (a restricted parent's descendants inherit its groups and freeze);
+  `Document` (title, nullable `document_date`, description) + `DocumentFile` (file,
+  caption); category deletion `PROTECT`ed while non-empty.
+- **Protected file storage** — storage location outside `MEDIA_ROOT`/`media_serve`'s
+  reach (new `/srv/bubu/data/documents` volume alongside the existing media/postgres
+  ones), extension allowlist + 50 MB size cap enforced server-side, `file_cleanup`
+  signal wiring for `DocumentFile.file` and generated thumbnails.
+
+### Parcours documents
+- **Document CRUD** — create/update/delete views (title/date/category/files),
+  uploader-or-staff ownership (mirrors `AuthorOrStaffRequiredMixin`), detail view
+  branching preview by type (image inline, PDF embed, else download).
+- **Category-aware browsing** — document list (search, category filter, pagination) and
+  category list/detail views, filtered by the viewer's effective group access;
+  staff-only category create/update/delete views.
+- **Protected download/preview endpoint** — dedicated per-file URL that re-checks the
+  category's effective group access before streaming, independent of `media_serve`.
+- **Nav + docs** — "Documents" sidebar entry, `docs/data_model.md` regeneration,
+  `docs/deployment.md` updates for the new volume/cron entries.
+- **Fixed document edit form 500 when the document already has a file** — the default
+  `ClearableFileInput` widget calls `DocumentStorage.url()`, which always raises by
+  design since protected files have no public URL; swapped in a plain `FileInput`
+  (`documents/widgets.py`) that reads the existing filename from a `data-initial`
+  attribute instead.
+
+### Recherche & traitement différé
+- **Content extraction pipeline** — `manage.py` command backfilling PDF text (PyMuPDF)
+  with Tesseract OCR fallback for image-only pages/scans, plus a first-page thumbnail;
+  run on a cron schedule like the existing reminder commands.
+- **Content search** — extended document search to the extracted-text column.
+- **CI system dependency** — installed `tesseract-ocr` (+ `fra` language pack) in the
+  `Dockerfile` and the `tests.yml` runner so OCR-path tests exercise the real binary.
+
 ## v0.11.0
 
 ### Annuaire — administration

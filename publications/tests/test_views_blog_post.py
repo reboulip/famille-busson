@@ -79,6 +79,24 @@ def test_blogpost_detail_404_on_invalid_pk(auth_client):
 
 
 @pytest.mark.django_db
+def test_blogpost_detail_renders_body_as_markdown(auth_client, db, person):
+    post = BlogPost.objects.create(title="Markdown", body="**gras**")
+    post.authors.add(person)
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": post.pk}))
+    assert "<strong>gras</strong>" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_blogpost_list_excerpt_strips_markdown_markers(auth_client, db, person):
+    post = BlogPost.objects.create(title="Markdown", body="**gras**")
+    post.authors.add(person)
+    response = auth_client.get(reverse("blogpost-list"))
+    content = response.content.decode()
+    assert "**gras**" not in content
+    assert "gras" in content
+
+
+@pytest.mark.django_db
 def test_blogpost_detail_exposes_comment_form(auth_client, blog_post):
     response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
     assert "comment_form" in response.context
@@ -132,6 +150,21 @@ def test_blogpost_create_requires_login(client):
 def test_blogpost_create_get_returns_200(auth_client):
     response = auth_client.get(reverse("blogpost-create"))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_blogpost_create_get_includes_markdown_editor_widget(auth_client):
+    response = auth_client.get(reverse("blogpost-create"))
+    content = response.content.decode()
+    assert "markdown-editor" in content
+    assert "js/markdown_editor.js" in content
+
+
+@pytest.mark.django_db
+def test_blogpost_detail_comment_form_includes_markdown_editor_media(auth_client, blog_post):
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
+    content = response.content.decode()
+    assert "js/markdown_editor.js" in content
 
 
 @pytest.mark.django_db

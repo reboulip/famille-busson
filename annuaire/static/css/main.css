@@ -966,3 +966,69 @@ h2 {
 .address-picker-result.highlighted {
     background: #e9ecef;
 }
+
+/* Markdown */
+
+.markdown-body {
+    overflow-wrap: break-word;
+}
+
+.markdown-body > *:first-child {
+    margin-top: 0;
+}
+
+.markdown-body > *:last-child {
+    margin-bottom: 0;
+}
+
+.markdown-body img {
+    max-width: 100%;
+    height: auto;
+}
+
+.markdown-body pre {
+    padding: 8px 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+.markdown-body code {
+    background: #f5f5f5;
+    border-radius: 3px;
+    padding: 1px 4px;
+}
+
+.markdown-body pre code {
+    background: none;
+    padding: 0;
+}
+
+.markdown-body table {
+    border-collapse: collapse;
+}
+
+.markdown-body th,
+.markdown-body td {
+    border: 1px solid #ced4da;
+    padding: 4px 8px;
+}
+
+/* Éditeur Markdown */
+
+.markdown-editor .nav-tabs {
+    margin-bottom: 8px;
+}
+
+.markdown-editor-preview {
+    min-height: 100px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 8px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.markdown-editor-empty {
+    margin: 0;
+}

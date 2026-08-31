@@ -1,5 +1,6 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load markdown_extras %}
 {% block content %}
     <h1>Famille Busson</h1>
 
@@ -78,7 +79,7 @@
                     <a href="{% url 'blogpost-detail' comment.post.pk %}">
                         {{ comment.author|default:"Anonyme" }} sur « {{ comment.post.title }} »
                     </a>
-                    <p class="muted">{{ comment.body|truncatechars:80 }}</p>
+                    <p class="muted">{{ comment.body|markdown_plain|truncatechars:80 }}</p>
                 </div>
             {% empty %}
                 <p>Aucun commentaire.</p>

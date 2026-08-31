@@ -62,6 +62,21 @@ const COMMANDS = {
   async type(text) { if (page) await page.keyboard.type(text, { delay: 20 }); },
   async press(key) { if (page) await page.keyboard.press(key); },
 
+  async setfile(args) {
+    if (!page) return console.log('ERROR: launch first');
+    const [sel, ...paths] = args.split(' ');
+    try { await page.setInputFiles(sel, paths); console.log('setfile', sel, '→ OK', paths); }
+    catch (e) { console.log('setfile', sel, '→ ERROR:', e.message.split('\n')[0]); }
+  },
+
+  async select(args) {
+    if (!page) return console.log('ERROR: launch first');
+    const [sel, ...rest] = args.split(' ');
+    const values = rest.join(' ').split(',');
+    try { await page.selectOption(sel, values, { timeout: 5000 }); console.log('select', sel, '→ OK', values); }
+    catch (e) { console.log('select', sel, '→ ERROR:', e.message.split('\n')[0]); }
+  },
+
   async wait(sel) {
     if (!page) return console.log('ERROR: launch first');
     try { await page.waitForSelector(sel, { timeout: 10_000 }); console.log('found:', sel); }

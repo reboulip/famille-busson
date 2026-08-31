@@ -1,0 +1,17 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="form">
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend>{% if object %}Modifier « {{ object.name }} »{% else %}Nouveau groupe{% endif %}</legend>
+                {{ form.name|as_crispy_field }}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
+                <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

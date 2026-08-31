@@ -1,5 +1,6 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load markdown_extras %}
 {% block content %}
     <div class="flex-title">
         {% if person.profile_photo %}
@@ -40,9 +41,9 @@
         </div>
     </div>
     {% if person.description %}
-        <div class="annuaire-description">
+        <div class="annuaire-description markdown-body">
             <h2>À propos de {{ person.first_name }}</h2>
-            <p>{{ person.description }}</p>
+            {{ person.description|markdown }}
         </div>
     {% endif %}
     <h2>Relations</h2>

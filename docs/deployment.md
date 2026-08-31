@@ -23,15 +23,19 @@ before the app code is copied in, so `uv sync` only reruns when `pyproject.toml`
 `uv.lock` change. The image is built without dev dependencies (`--no-dev`). It does
 **not** set `USER appuser` — the container starts as root so `docker-entrypoint.sh` can
 fix ownership of the bind-mounted media volume before dropping privileges (see below).
+The `tesseract-ocr`/`tesseract-ocr-fra` system packages are installed via `apt-get` in
+their own early layer, ahead of the OCR content-extraction pipeline that will consume
+them (see `ROADMAP.md`); `tests.yml`'s CI job installs the same packages so the test
+suite runs against the same environment.
 
 ## `docker-entrypoint.sh` — the root → chown → appuser dance
 
 The entrypoint runs twice per container start:
-1. **As root** (first pass): `chown -R appuser:appuser /app/media`, then re-execs
-   itself as `appuser` via `runuser`. This exists because the media volume is a
-   host bind mount whose ownership can't be relied on to already match `appuser`'s
-   UID (1000) — pinning the host-side UID ahead of time isn't reliable across VPS
-   redeploys.
+1. **As root** (first pass): `chown -R appuser:appuser` on both `/app/media` and
+   `/app/documents_data`, then re-execs itself as `appuser` via `runuser`. This exists
+   because both are host bind mounts whose ownership can't be relied on to already
+   match `appuser`'s UID (1000) — pinning the host-side UID ahead of time isn't
+   reliable across VPS redeploys.
 2. **As `appuser`** (second pass, the `id -u` check no longer matches root): runs
    `manage.py migrate --noinput` and `collectstatic --noinput`, then `exec`s the
    container's `CMD` (`gunicorn famille_busson.wsgi:application`).
@@ -41,11 +45,26 @@ The entrypoint runs twice per container start:
 | Service | Image | Notes |
 |---|---|---|
 | `db` | `postgres:16-alpine` | Data at `/srv/bubu/data/postgres` on the host; healthcheck gates `web`'s startup. |
-| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; reads `.env`; published on host port `8001` → container `8000`. |
+| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`. |
 
 On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
-from this repo's `docker-compose.prod.yml`), `.env` (see below), and the two data
+from this repo's `docker-compose.prod.yml`), `.env` (see below), and the three data
 volumes above.
+
+### Protected document storage
+
+`/srv/bubu/data/documents` (mounted at `/app/documents_data`, `settings.DOCUMENTS_ROOT`)
+is deliberately separate from the `media` volume: it holds `documents.DocumentFile`
+uploads and their generated thumbnails, which are access-controlled per `documents.
+Category` and must never be reachable through `MEDIA_URL`/`media_serve` or any other
+public path (`documents/storage.py`'s `DocumentStorage.url()` raises rather than
+producing one). The only way to reach a file's bytes is `documents.views.
+DocumentFileView` (routes `document-file`/`document-file-thumbnail`, keyed by
+`DocumentFile` pk, never by path), which re-checks the category's effective group
+access on every request. Orphaned files (a deleted
+`DocumentFile`, or one whose `file`/`thumbnail` is replaced) are cleaned up
+automatically via `annuaire/file_cleanup.py`'s `register_file_cleanup`, wired in
+`documents/signals.py`.
 
 ## Environment variables
 
@@ -69,6 +88,18 @@ above):
 
 ```
 0 8 * * * cd /srv/bubu && docker compose exec -T web python manage.py send_birthday_reminders
+```
+
+`extract_document_content` (`documents/management/commands/extract_document_content.py`)
+backfills `DocumentFile.extracted_text`/`thumbnail` for pending uploads — PDF text via
+PyMuPDF with Tesseract OCR fallback for image-only pages/scans, direct OCR for raster
+image uploads, and a first-page thumbnail for PDFs (office docs and plain text files are
+marked "unsupported" and never processed). Capped at 20 files and 20 OCR'd pages per file
+per run, to avoid a pathological upload OOMing gunicorn. A cron entry every 15 minutes,
+same pattern as above:
+
+```
+*/15 * * * * cd /srv/bubu && docker compose exec -T web python manage.py extract_document_content
 ```
 
 ## One-time setup

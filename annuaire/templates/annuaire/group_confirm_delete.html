@@ -1,0 +1,29 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    <div class="form">
+        <h1>Supprimer le groupe « {{ object.name }} » ?</h1>
+        {% if member_count %}
+            <p class="text-danger">
+                {{ member_count }} membre{{ member_count|pluralize }} perdr{{ member_count|pluralize:"a,ont" }}
+                l'accès associé à ce groupe.
+            </p>
+        {% else %}
+            <p>Ce groupe n'a aucun membre.</p>
+        {% endif %}
+        {% if blocked_by %}
+            <div class="alert alert-warning" role="alert">
+                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                {% if blocked_by|length == 1 %}
+                    la catégorie « {{ blocked_by.0 }} ». Retirez d'abord la restriction sur cette catégorie.
+                {% else %}
+                    aux catégories : {{ blocked_by|join:", " }}. Retirez d'abord la restriction sur ces catégories.
+                {% endif %}
+            </div>
+        {% endif %}
+        <form method="POST">
+            {% csrf_token %}
+            <button class="btn btn-outline-danger" type="submit" {% if blocked_by %}disabled{% endif %}>Supprimer définitivement</button>
+            <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+        </form>
+    </div>
+{% endblock content %}

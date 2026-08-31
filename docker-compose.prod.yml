@@ -24,5 +24,6 @@ services:
       - .env
     volumes:
       - /srv/bubu/data/media:/app/media
+      - /srv/bubu/data/documents:/app/documents_data
     ports:
       - "8001:8000"

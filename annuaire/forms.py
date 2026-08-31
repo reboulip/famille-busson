@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
@@ -234,6 +235,12 @@ class ChaletUpdateForm(forms.ModelForm):
         help_texts = {
             "address": ADDRESS_HELP_TEXT,
         }
+
+
+class GroupForm(forms.ModelForm):
+    class Meta:
+        model = Group
+        fields = ["name"]
 
 
 class BulkAccountCreateForm(forms.Form):
