@@ -22,7 +22,7 @@
 - [x] 2.1 · Group management UI — staff-only screens to create/rename/delete
   `auth.Group` and manage membership, reusing the existing `Account.groups` M2M. Lays
   groundwork also needed by Backlog B.2.
-- [ ] 2.2 · Group-deletion guard — refuse to delete a `Group` while any `Category`
+- [x] 2.2 · Group-deletion guard — refuse to delete a `Group` while any `Category`
   still restricts access to it. (requires: 3.1)
 
 ### Cluster: Modèle documentaire & stockage protégé
@@ -32,7 +32,7 @@
   and freeze); `Document` (title, nullable `document_date`, description) +
   `DocumentFile` (file, caption); category deletion `PROTECT`ed while non-empty.
   (requires: 1.1)
-- [ ] 3.2 · Protected file storage — storage location outside `MEDIA_ROOT`/
+- [x] 3.2 · Protected file storage — storage location outside `MEDIA_ROOT`/
   `media_serve`'s reach (new `/srv/bubu/data/documents` volume alongside the existing
   media/postgres ones), extension allowlist + 50 MB size cap enforced server-side,
   `file_cleanup` signal wiring for `DocumentFile.file` and generated thumbnails.

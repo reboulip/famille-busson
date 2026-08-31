@@ -177,6 +177,11 @@ WHITENOISE_AUTOREFRESH = DEBUG
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+# Protected document storage -- deliberately outside MEDIA_ROOT/media_serve's reach
+# (see documents/storage.py). No MEDIA_URL-style public URL: files are only ever
+# served through documents' own access-checked endpoint.
+DOCUMENTS_ROOT = os.path.join(BASE_DIR, "documents_data")
+
 # Django's default LOGGING only sends the 'console' handler output when DEBUG=True
 # (RequireDebugTrue filter) -- in prod (DEBUG=False) that made every 500 invisible in
 # `docker logs`, since ADMINS/mail_admins isn't configured either. Force errors to

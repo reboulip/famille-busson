@@ -17,6 +17,7 @@ from documents.models import Category, Document, DocumentFile
 @pytest.fixture(autouse=True)
 def use_tmp_media(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path
+    settings.DOCUMENTS_ROOT = tmp_path / "documents_data"
 
 
 @pytest.fixture

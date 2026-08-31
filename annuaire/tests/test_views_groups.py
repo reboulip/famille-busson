@@ -2,12 +2,21 @@ import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
+from documents.models import Category
+
 LOGIN_URL = "/annuaire/login/"
 
 
 @pytest.fixture
 def group(db):
     return Group.objects.create(name="SCI grand chalet")
+
+
+@pytest.fixture
+def category_with_group(db, group):
+    category = Category.objects.create(name="Documents SCI")
+    category.groups.add(group)
+    return category
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +116,27 @@ def test_group_delete_post_deletes_group(staff_client, group):
     response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}))
     assert response.status_code == 302
     assert not Group.objects.filter(pk=group.pk).exists()
+
+
+@pytest.mark.django_db
+def test_group_delete_get_shows_blocked_by(staff_client, group, category_with_group):
+    response = staff_client.get(reverse("group-delete", kwargs={"pk": group.pk}))
+    assert response.status_code == 200
+    assert response.context["blocked_by"] == [category_with_group.name]
+
+
+@pytest.mark.django_db
+def test_group_delete_post_blocked_by_category_does_not_delete(staff_client, group, category_with_group):
+    response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}))
+    assert response.status_code == 200
+    assert Group.objects.filter(pk=group.pk).exists()
+
+
+@pytest.mark.django_db
+def test_group_delete_post_blocked_by_category_shows_error_message(staff_client, group, category_with_group):
+    response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}), follow=True)
+    msgs = [str(m) for m in response.context["messages"]]
+    assert any(category_with_group.name in m for m in msgs)
 
 
 # ---------------------------------------------------------------------------

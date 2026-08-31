@@ -14,7 +14,7 @@ from django.contrib.auth.views import LoginView, PasswordResetConfirmView, Passw
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection, send_mail
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import ProtectedError, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -363,7 +363,21 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["member_count"] = self.object.account_set.count()
+        context["blocked_by"] = list(self.object.document_categories.values_list("name", flat=True))
         return context
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        try:
+            return super().post(request, *args, **kwargs)
+        except ProtectedError:
+            blocked_by = list(self.object.document_categories.values_list("name", flat=True))
+            category_names = ", ".join(f"« {name} »" for name in blocked_by)
+            messages.error(
+                request,
+                f"Impossible de supprimer ce groupe : il est utilisé par les catégories {category_names}.",
+            )
+            return self.get(request, *args, **kwargs)
 
 
 class GroupMembersUpdateView(StaffRequiredMixin, DetailView):

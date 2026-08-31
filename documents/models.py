@@ -8,6 +8,9 @@ from django.dispatch import receiver
 
 from annuaire.models import Person
 
+from .storage import get_document_storage
+from .validators import validate_document_extension, validate_document_size
+
 EXTRACTION_STATUS_CHOICES = [
     ("pending", "En attente"),
     ("done", "Terminé"),
@@ -145,7 +148,12 @@ class Document(models.Model):
 
 class DocumentFile(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name="files", verbose_name="Document")
-    file = models.FileField(upload_to="documents/files/", verbose_name="Fichier")
+    file = models.FileField(
+        upload_to="files/",
+        storage=get_document_storage,
+        validators=[validate_document_extension, validate_document_size],
+        verbose_name="Fichier",
+    )
     caption = models.CharField(max_length=255, blank=True, default="", verbose_name="Légende")
     uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de téléversement")
     extracted_text = models.TextField(blank=True, default="", verbose_name="Texte extrait")
@@ -159,7 +167,13 @@ class DocumentFile(models.Model):
     extraction_error = models.CharField(max_length=255, blank=True, default="", verbose_name="Erreur d'extraction")
     extracted_at = models.DateTimeField(null=True, blank=True, verbose_name="Date d'extraction")
     ocr_used = models.BooleanField(default=False, verbose_name="OCR utilisé")
-    thumbnail = models.ImageField(upload_to="documents/thumbnails/", null=True, blank=True, verbose_name="Vignette")
+    thumbnail = models.ImageField(
+        upload_to="thumbnails/",
+        storage=get_document_storage,
+        null=True,
+        blank=True,
+        verbose_name="Vignette",
+    )
 
     class Meta:
         ordering = ["uploaded_at"]
