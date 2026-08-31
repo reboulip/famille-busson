@@ -26,7 +26,7 @@
   still restricts access to it. (requires: 3.1)
 
 ### Cluster: Modèle documentaire & stockage protégé
-- [ ] 3.1 · `Category` & `Document`/`DocumentFile` models — nested `Category`
+- [x] 3.1 · `Category` & `Document`/`DocumentFile` models — nested `Category`
   (self-FK, Markdown description via 1.1) restricted to an `auth.Group` set only where
   the whole ancestry is public (a restricted parent's descendants inherit its groups
   and freeze); `Document` (title, nullable `document_date`, description) +

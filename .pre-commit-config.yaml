@@ -23,5 +23,5 @@ repos:
           diff, `git add docs/data_model.md`, and commit again.
         entry: uv run python manage.py generate_data_model_docs
         language: system
-        files: ^(annuaire|publications)/models\.py$
+        files: ^(annuaire|publications|documents)/models\.py$
         pass_filenames: false

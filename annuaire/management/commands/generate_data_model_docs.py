@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Field, ManyToManyField, Model
 
-DOC_APP_LABELS = ["annuaire", "publications"]
+DOC_APP_LABELS = ["annuaire", "publications", "documents"]
 
 MERMAID_CARDINALITY = {
     "OneToOneField": "||--o|",

@@ -21,6 +21,13 @@ erDiagram
     BlogPost ||--o{ Attachment : "post"
     BlogPost ||--o{ Comment : "post"
     Person ||--o{ Comment : "author"
+    Category ||--o{ Category : "parent"
+    Category }o--o{ Group : "groups"
+    Category ||--o{ CategoryGroupAccess : "category"
+    Group ||--o{ CategoryGroupAccess : "group"
+    Category ||--o{ Document : "category"
+    Person ||--o{ Document : "uploaded_by"
+    Document ||--o{ DocumentFile : "document"
 ```
 
 ## `annuaire`
@@ -151,3 +158,60 @@ erDiagram
 | `author` | ForeignKey | Auteur | → Person (on_delete=SET_NULL), related_name='comments', optional |
 | `body` | TextField | Commentaire | required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+
+## `documents`
+
+### `Category`
+
+*App:* `documents` · *verbose name:* Catégorie / Catégories · *table:* `documents_category`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `name` | CharField | Nom | max_length=100, required |
+| `parent` | ForeignKey | Catégorie parente | → Category (on_delete=PROTECT), related_name='children', optional |
+| `description` | TextField | Description | default='', optional |
+| `groups` | ManyToManyField | Groupes autorisés | → Group (M2M), related_name='document_categories' |
+
+### `CategoryGroupAccess`
+
+*App:* `documents` · *verbose name:* Accès groupe à catégorie / Accès groupes à catégories · *table:* `documents_categorygroupaccess`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `category` | ForeignKey | Catégorie | → Category (on_delete=CASCADE), required |
+| `group` | ForeignKey | Groupe | → Group (on_delete=PROTECT), required |
+
+### `Document`
+
+*App:* `documents` · *verbose name:* Document / Documents · *table:* `documents_document`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `title` | CharField | Titre | max_length=200, required |
+| `category` | ForeignKey | Catégorie | → Category (on_delete=PROTECT), related_name='documents', required |
+| `document_date` | DateField | Date du document | optional |
+| `description` | TextField | Description | default='', optional |
+| `uploaded_by` | ForeignKey | Déposé par | → Person (on_delete=SET_NULL), related_name='documents', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+
+### `DocumentFile`
+
+*App:* `documents` · *verbose name:* Fichier / Fichiers · *table:* `documents_documentfile`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `document` | ForeignKey | Document | → Document (on_delete=CASCADE), related_name='files', required |
+| `file` | FileField | Fichier | max_length=100, required |
+| `caption` | CharField | Légende | max_length=255, default='', optional |
+| `uploaded_at` | DateTimeField | Date de téléversement | auto_now_add, optional |
+| `extracted_text` | TextField | Texte extrait | default='', optional |
+| `extraction_status` | CharField | Statut d'extraction | max_length=20, choices: pending=En attente, done=Terminé, unsupported=Non pris en charge, error=Erreur, default='pending', required |
+| `extraction_error` | CharField | Erreur d'extraction | max_length=255, default='', optional |
+| `extracted_at` | DateTimeField | Date d'extraction | optional |
+| `ocr_used` | BooleanField | OCR utilisé | default=False, required |
+| `thumbnail` | FileField | Vignette | max_length=100, optional |
