@@ -1,14 +1,25 @@
+import mimetypes
+import os
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
 from django.db.models import ProtectedError, Q
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from annuaire.views import StaffRequiredMixin
 
 from .access import accessible_categories, accessible_documents, user_can_access_category
 from .forms import CategoryForm
-from .models import Category, Document
+from .models import Category, Document, DocumentFile
+
+INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -99,3 +110,37 @@ class CategoryDeleteView(StaffRequiredMixin, DeleteView):
                 "sous-catégories. Supprimez-les d'abord.",
             )
             return self.get(request, *args, **kwargs)
+
+
+@method_decorator(xframe_options_sameorigin, name="dispatch")
+class DocumentFileView(LoginRequiredMixin, View):
+    """Serves a DocumentFile's `file` or `thumbnail` by pk only -- never by
+    path, which kills path traversal outright. This is the ONLY way to reach
+    a document's bytes: DocumentStorage.url() raises rather than producing a
+    public URL. Access is re-checked on every request, independent of
+    whatever list/detail view the client was browsing from."""
+
+    variant = "file"
+
+    def get(self, request, pk):
+        document_file = get_object_or_404(DocumentFile, pk=pk)
+        if not user_can_access_category(request.user, document_file.document.category):
+            raise PermissionDenied("Vous n'avez pas accès à ce document.")
+
+        field_file = document_file.thumbnail if self.variant == "thumbnail" else document_file.file
+        if not field_file:
+            raise Http404("Aucune vignette pour ce fichier.")
+
+        filename = os.path.basename(field_file.name)
+        safe_filename = filename.replace('"', "")
+        extension = os.path.splitext(filename)[1].lower()
+        content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
+        force_download = request.GET.get("download") == "1"
+        inline = extension in INLINE_EXTENSIONS and not force_download
+        disposition = "inline" if inline else "attachment"
+
+        response = FileResponse(field_file.open("rb"), content_type=content_type)
+        response["Content-Disposition"] = f'{disposition}; filename="{safe_filename}"'
+        response["X-Content-Type-Options"] = "nosniff"
+        return response

@@ -46,7 +46,7 @@
 - [x] 4.2 · Category-aware browsing — document list (search, category filter,
   pagination) and category list/detail views, filtered by the viewer's effective
   group access; staff-only category create/update/delete views. (requires: 2.1, 3.1)
-- [ ] 4.3 · Protected download/preview endpoint — dedicated per-file URL that
+- [x] 4.3 · Protected download/preview endpoint — dedicated per-file URL that
   re-checks the category's effective group access before streaming, independent of
   `media_serve`. (requires: 3.2, 4.2)
 - [ ] 4.4 · Nav + docs — "Documents" sidebar entry, `docs/data_model.md`
