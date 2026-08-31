@@ -2,6 +2,7 @@ from django import forms
 
 from .access import accessible_categories
 from .models import Category, Document, DocumentFile, ancestor_has_groups, descendant_has_groups
+from .widgets import DocumentFileInput
 
 
 class CategoryForm(forms.ModelForm):
@@ -53,4 +54,5 @@ DocumentFileFormSet = forms.inlineformset_factory(
     fields=["file", "caption"],
     extra=0,
     can_delete=True,
+    widgets={"file": DocumentFileInput},
 )

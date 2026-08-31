@@ -201,6 +201,18 @@ def test_document_update_allowed_for_staff(staff_client, other_person, category)
 
 
 @pytest.mark.django_db
+def test_document_update_renders_with_existing_file(auth_client, person, category):
+    """The formset's file widget must never call FieldFile.url() -- DocumentStorage.url()
+    always raises since protected files have no public URL, which crashed this exact
+    page with a 500 before documents/widgets.py's DocumentFileInput was introduced."""
+    document = Document.objects.create(title="Mon document", category=category, uploaded_by=person)
+    DocumentFile.objects.create(document=document, file=SimpleUploadedFile("scan.pdf", b"%PDF-fake"))
+    response = auth_client.get(reverse("document-edit", kwargs={"pk": document.pk}))
+    assert response.status_code == 200
+    assert b"scan.pdf" in response.content
+
+
+@pytest.mark.django_db
 def test_document_update_post_renames_document(auth_client, person, category):
     document = Document.objects.create(title="Ancien titre", category=category, uploaded_by=person)
     data = {"title": "Nouveau titre", "category": category.pk, "document_date": "", "description": ""}
