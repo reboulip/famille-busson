@@ -1,0 +1,36 @@
+{% extends "annuaire/base.html" %}
+{% load markdown_extras %}
+{% block content %}
+    <h1>{{ document.title }}</h1>
+    <p class="document-card-meta">
+        <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
+        {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
+        {% if document.uploaded_by %} — déposé par {{ document.uploaded_by }}{% endif %}
+    </p>
+    {% if document.description %}
+        <div class="markdown-body">{{ document.description|markdown }}</div>
+    {% endif %}
+    {% if can_edit %}
+        <div class="mb-3">
+            <a href="{% url 'document-edit' document.pk %}" class="btn btn-outline-secondary">Modifier</a>
+            <a href="{% url 'document-delete' document.pk %}" class="btn btn-outline-danger">Supprimer</a>
+        </div>
+    {% endif %}
+    <h2>Fichiers</h2>
+    <div class="document-file-list">
+        {% for file in document.files.all %}
+            <div class="document-file">
+                {% if file.caption %}<p>{{ file.caption }}</p>{% endif %}
+                {% if file.preview_kind == "image" %}
+                    <img src="{% url 'document-file' file.pk %}" alt="{{ file.caption|default:file.filename }}" class="document-file-preview-image">
+                {% elif file.preview_kind == "pdf" %}
+                    <embed src="{% url 'document-file' file.pk %}" type="application/pdf" class="document-file-preview-pdf">
+                {% else %}
+                    <a href="{% url 'document-file' file.pk %}?download=1" class="btn btn-outline-secondary">📎 Télécharger {{ file.filename }}</a>
+                {% endif %}
+            </div>
+        {% empty %}
+            <p>Aucun fichier.</p>
+        {% endfor %}
+    </div>
+{% endblock content %}

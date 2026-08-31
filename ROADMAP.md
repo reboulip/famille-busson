@@ -39,7 +39,7 @@
   (requires: 3.1)
 
 ### Cluster: Parcours documents
-- [ ] 4.1 · Document CRUD — create/update/delete views (title/date/category/files),
+- [x] 4.1 · Document CRUD — create/update/delete views (title/date/category/files),
   uploader-or-staff ownership (mirrors `AuthorOrStaffRequiredMixin`), detail view
   branching preview by type (image inline, PDF embed, else download).
   (requires: 3.2)

@@ -6,12 +6,20 @@ from .views import (
     CategoryDetailView,
     CategoryListView,
     CategoryUpdateView,
+    DocumentCreateView,
+    DocumentDeleteView,
+    DocumentDetailView,
     DocumentFileView,
     DocumentListView,
+    DocumentUpdateView,
 )
 
 urlpatterns = [
     path("", DocumentListView.as_view(), name="document-list"),
+    path("new/", DocumentCreateView.as_view(), name="document-create"),
+    path("<int:pk>/", DocumentDetailView.as_view(), name="document-detail"),
+    path("<int:pk>/edit/", DocumentUpdateView.as_view(), name="document-edit"),
+    path("<int:pk>/delete/", DocumentDeleteView.as_view(), name="document-delete"),
     path("categories/", CategoryListView.as_view(), name="category-list"),
     path("categories/new/", CategoryCreateView.as_view(), name="category-create"),
     path("categories/<int:pk>/", CategoryDetailView.as_view(), name="category-detail"),

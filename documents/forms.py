@@ -1,6 +1,7 @@
 from django import forms
 
-from .models import Category, ancestor_has_groups, descendant_has_groups
+from .access import accessible_categories
+from .models import Category, Document, DocumentFile, ancestor_has_groups, descendant_has_groups
 
 
 class CategoryForm(forms.ModelForm):
@@ -30,3 +31,26 @@ class CategoryForm(forms.ModelForm):
                 "sous-catégorie restreint déjà l'accès."
             )
         return cleaned_data
+
+
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ["title", "category", "document_date", "description"]
+        widgets = {
+            "document_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+        }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if user is not None and not (user.is_staff or user.is_superuser):
+            self.fields["category"].queryset = accessible_categories(user)
+
+
+DocumentFileFormSet = forms.inlineformset_factory(
+    Document,
+    DocumentFile,
+    fields=["file", "caption"],
+    extra=0,
+    can_delete=True,
+)

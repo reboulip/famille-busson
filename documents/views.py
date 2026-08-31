@@ -4,9 +4,10 @@ import os
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import ProtectedError, Q
 from django.http import FileResponse, Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -16,7 +17,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 from annuaire.views import StaffRequiredMixin
 
 from .access import accessible_categories, accessible_documents, user_can_access_category
-from .forms import CategoryForm
+from .forms import CategoryForm, DocumentFileFormSet, DocumentForm
 from .models import Category, Document, DocumentFile
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
@@ -144,3 +145,106 @@ class DocumentFileView(LoginRequiredMixin, View):
         response["Content-Disposition"] = f'{disposition}; filename="{safe_filename}"'
         response["X-Content-Type-Options"] = "nosniff"
         return response
+
+
+class UploaderOrStaffRequiredMixin(LoginRequiredMixin):
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return obj
+        profile = getattr(user, "profile", None)
+        if profile is None or obj.uploaded_by_id != profile.pk:
+            raise PermissionDenied("Vous n'êtes pas le déposant de ce document.")
+        return obj
+
+
+class DocumentDetailView(LoginRequiredMixin, DetailView):
+    model = Document
+    template_name = "documents/document_detail.html"
+    context_object_name = "document"
+
+    def get_queryset(self):
+        return accessible_documents(self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        profile = getattr(user, "profile", None)
+        context["can_edit"] = (
+            user.is_staff or user.is_superuser or (profile is not None and self.object.uploaded_by_id == profile.pk)
+        )
+        return context
+
+
+class DocumentCreateView(LoginRequiredMixin, CreateView):
+    model = Document
+    form_class = DocumentForm
+    template_name = "documents/document_form.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not hasattr(request.user, "profile"):
+            messages.error(request, "Vous devez compléter votre profil avant de déposer un document.")
+            return redirect("profile-create")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES)
+        else:
+            context["formset"] = DocumentFileFormSet()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["formset"]
+        if not formset.is_valid():
+            return self.form_invalid(form)
+        with transaction.atomic():
+            form.instance.uploaded_by = getattr(self.request.user, "profile", None)
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+        return redirect("document-detail", pk=self.object.pk)
+
+
+class DocumentUpdateView(UploaderOrStaffRequiredMixin, UpdateView):
+    model = Document
+    form_class = DocumentForm
+    template_name = "documents/document_form.html"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES, instance=self.object)
+        else:
+            context["formset"] = DocumentFileFormSet(instance=self.object)
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context["formset"]
+        if not formset.is_valid():
+            return self.form_invalid(form)
+        with transaction.atomic():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+        return redirect("document-detail", pk=self.object.pk)
+
+
+class DocumentDeleteView(UploaderOrStaffRequiredMixin, DeleteView):
+    model = Document
+    template_name = "documents/document_confirm_delete.html"
+    success_url = reverse_lazy("document-list")
