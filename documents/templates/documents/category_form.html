@@ -1,0 +1,20 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="form">
+        <form method="post">
+            {% csrf_token %}
+            <fieldset class="form-group">
+                <legend>{% if object %}Modifier « {{ object.name }} »{% else %}Nouvelle catégorie{% endif %}</legend>
+                {{ form.name|as_crispy_field }}
+                {{ form.description|as_crispy_field }}
+                {{ form.parent|as_crispy_field }}
+                {{ form.groups|as_crispy_field }}
+            </fieldset>
+            <div class="form-group">
+                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
+                <a href="{% url 'category-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

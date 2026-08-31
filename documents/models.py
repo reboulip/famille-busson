@@ -83,7 +83,11 @@ class CategoryGroupAccess(models.Model):
         return f"{self.category} — {self.group}"
 
 
-def _ancestor_has_groups(category):
+def ancestor_has_groups(category):
+    """Also used by documents/forms.py's CategoryForm.clean() to surface this
+    invariant as a normal form error -- a ModelForm's save_m2m() only runs
+    after the main object is already saved, too late for the m2m_changed
+    receiver below to become anything but an uncaught 500."""
     node = category.parent
     while node is not None:
         if node.groups.exists():
@@ -92,9 +96,9 @@ def _ancestor_has_groups(category):
     return False
 
 
-def _descendant_has_groups(category):
+def descendant_has_groups(category):
     for child in category.children.all():
-        if child.groups.exists() or _descendant_has_groups(child):
+        if child.groups.exists() or descendant_has_groups(child):
             return True
     return False
 
@@ -107,12 +111,12 @@ def validate_category_group_restriction(sender, instance, action, **kwargs):
     their own (see documents/access.py's effective_groups())."""
     if action != "pre_add":
         return
-    if _ancestor_has_groups(instance):
+    if ancestor_has_groups(instance):
         raise ValidationError(
             "Impossible de restreindre cette catégorie : une catégorie parente restreint déjà "
             "l'accès, et cette restriction s'applique à toute sa descendance."
         )
-    if _descendant_has_groups(instance):
+    if descendant_has_groups(instance):
         raise ValidationError(
             "Impossible de restreindre cette catégorie : une sous-catégorie restreint déjà "
             "l'accès de façon indépendante."

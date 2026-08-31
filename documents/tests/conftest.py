@@ -1,4 +1,5 @@
 import pytest
+from django.contrib.auth.models import Group
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from annuaire.tests.conftest import (  # noqa: F401 -- re-exported as fixtures
@@ -34,3 +35,15 @@ def document(db, category):
 def document_file(db, document):
     uploaded = SimpleUploadedFile(name="doc.pdf", content=b"%PDF-fake", content_type="application/pdf")
     return DocumentFile.objects.create(document=document, file=uploaded)
+
+
+@pytest.fixture
+def group(db):
+    return Group.objects.create(name="SCI grand chalet")
+
+
+@pytest.fixture
+def restricted_category(db, group):
+    category = Category.objects.create(name="Documents SCI")
+    category.groups.add(group)
+    return category

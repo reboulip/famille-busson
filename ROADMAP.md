@@ -43,7 +43,7 @@
   uploader-or-staff ownership (mirrors `AuthorOrStaffRequiredMixin`), detail view
   branching preview by type (image inline, PDF embed, else download).
   (requires: 3.2)
-- [ ] 4.2 · Category-aware browsing — document list (search, category filter,
+- [x] 4.2 · Category-aware browsing — document list (search, category filter,
   pagination) and category list/detail views, filtered by the viewer's effective
   group access; staff-only category create/update/delete views. (requires: 2.1, 3.1)
 - [ ] 4.3 · Protected download/preview endpoint — dedicated per-file URL that
