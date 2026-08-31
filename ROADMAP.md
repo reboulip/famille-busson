@@ -49,7 +49,7 @@
 - [x] 4.3 · Protected download/preview endpoint — dedicated per-file URL that
   re-checks the category's effective group access before streaming, independent of
   `media_serve`. (requires: 3.2, 4.2)
-- [ ] 4.4 · Nav + docs — "Documents" sidebar entry, `docs/data_model.md`
+- [x] 4.4 · Nav + docs — "Documents" sidebar entry, `docs/data_model.md`
   regeneration, `docs/deployment.md` updates for the new volume/cron entries.
   (requires: 4.1, 4.2, 4.3)
 

@@ -59,6 +59,17 @@
                             </ul>
                         </li>
 
+                        <li class="sidebar-title">Documents</li>
+                        <li>
+                            <ul>
+                                <li><a href="{% url 'document-list' %}">Tous les documents</a></li>
+                                <li><a href="{% url 'category-list' %}">Catégories</a></li>
+                                {% if user.is_authenticated %}
+                                    <li><a href="{% url 'document-create' %}">Nouveau document</a></li>
+                                {% endif %}
+                            </ul>
+                        </li>
+
                         {% if user.is_staff %}
                             <li class="sidebar-title">Administration</li>
                             <li>
