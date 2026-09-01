@@ -39,6 +39,30 @@ def test_genealogie_renders_export_button_with_export_url(auth_client, person):
 
 
 @pytest.mark.django_db
+def test_genealogie_export_button_label_mentions_carnet_dadresses(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    assert "Exporter le carnet d'adresses en Excel" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_genealogie_renders_export_image_button_in_toolbar(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    toolbar_start = content.index('class="genealogie-toolbar')
+    layout_start = content.index("genealogie-layout")
+    toolbar_html = content[toolbar_start:layout_start]
+    assert 'id="genealogie-export-image"' in toolbar_html
+    assert "Exporter en image" in toolbar_html
+
+
+@pytest.mark.django_db
+def test_genealogie_loads_html_to_image_before_family_tree_js(auth_client, person):
+    response = auth_client.get(reverse("genealogie"))
+    content = response.content.decode()
+    assert content.index("vendor/html-to-image/html-to-image.js") < content.index("js/family_tree.js")
+
+
+@pytest.mark.django_db
 def test_genealogie_search_mount_sits_in_the_same_toolbar_as_export_button(auth_client, person):
     # 6.3: search field and export button live in one toolbar row.
     response = auth_client.get(reverse("genealogie"))

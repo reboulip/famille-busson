@@ -87,3 +87,15 @@ def test_document_list_pagination_preserves_query(auth_client, category):
 def test_document_list_filter_categories_excludes_restricted_for_non_member(auth_client, restricted_category):
     response = auth_client.get(reverse("document-list"))
     assert restricted_category not in response.context["filter_categories"]
+
+
+@pytest.mark.django_db
+def test_document_card_strips_markdown_from_description(auth_client, category):
+    Document.objects.create(
+        title="Avec markdown", description="**gras** et [lien](https://example.com)", category=category
+    )
+    response = auth_client.get(reverse("document-list"))
+    content = response.content.decode()
+    assert "gras" in content
+    assert "<strong>" not in content
+    assert "[lien]" not in content

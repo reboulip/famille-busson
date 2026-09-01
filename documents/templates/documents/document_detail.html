@@ -5,6 +5,7 @@
     <p class="document-card-meta">
         <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
         {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
+        {% if document.redactor %} — rédigé par {{ document.redactor }}{% endif %}
         {% if document.uploaded_by %} — déposé par {{ document.uploaded_by }}{% endif %}
     </p>
     {% if document.description %}

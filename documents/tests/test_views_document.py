@@ -49,6 +49,23 @@ def test_document_detail_shows_edit_delete_for_uploader(auth_client, person, cat
 
 
 @pytest.mark.django_db
+def test_document_detail_shows_redactor_when_set(auth_client, person, other_person, category):
+    document = Document.objects.create(
+        title="Mon document", category=category, uploaded_by=person, redactor=other_person
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert "rédigé par" in content
+    assert str(other_person) in content
+
+
+@pytest.mark.django_db
+def test_document_detail_hides_redactor_when_unset(auth_client, document):
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "rédigé par" not in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_document_detail_hides_edit_delete_for_non_uploader(auth_client, other_person, category):
     document = Document.objects.create(title="Document de Bob", category=category, uploaded_by=other_person)
     response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
@@ -199,6 +216,27 @@ def test_document_create_post_with_zero_files_shows_error_and_creates_nothing(
     assert not Document.objects.filter(title="Sans fichier").exists()
 
 
+@pytest.mark.django_db
+def test_document_create_post_sets_redactor(auth_client, category, other_person, document_post_data):
+    data = document_post_data(category, title="Avec rédacteur", redactor=other_person.pk)
+    response = auth_client.post(reverse("document-create"), data)
+    assert response.status_code == 302
+    document = Document.objects.get(title="Avec rédacteur")
+    assert document.redactor == other_person
+
+
+@pytest.mark.django_db
+def test_document_create_get_person_picker_loads_js(auth_client):
+    response = auth_client.get(reverse("document-create"))
+    assert "js/person_picker.js" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_document_create_get_redactor_initial_json_empty_by_default(auth_client):
+    response = auth_client.get(reverse("document-create"))
+    assert response.context["redactor_initial_json"] == "[]"
+
+
 # ---------------------------------------------------------------------------
 # DocumentUpdateView
 # ---------------------------------------------------------------------------
@@ -230,6 +268,27 @@ def test_document_update_allowed_for_staff(staff_client, other_person, category)
     document = Document.objects.create(title="Document de Bob", category=category, uploaded_by=other_person)
     response = staff_client.get(reverse("document-edit", kwargs={"pk": document.pk}))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_document_update_get_redactor_initial_json_prefills_existing_redactor(
+    auth_client, person, other_person, category
+):
+    document = Document.objects.create(
+        title="Mon document", category=category, uploaded_by=person, redactor=other_person
+    )
+    response = auth_client.get(reverse("document-edit", kwargs={"pk": document.pk}))
+    assert f'"id": {other_person.pk}' in response.context["redactor_initial_json"]
+
+
+@pytest.mark.django_db
+def test_document_update_post_changes_redactor(auth_client, person, other_person, category, document_post_data):
+    document = Document.objects.create(title="Mon document", category=category, uploaded_by=person)
+    data = document_post_data(category, title="Mon document", redactor=other_person.pk)
+    response = auth_client.post(reverse("document-edit", kwargs={"pk": document.pk}), data)
+    assert response.status_code == 302
+    document.refresh_from_db()
+    assert document.redactor == other_person
 
 
 @pytest.mark.django_db

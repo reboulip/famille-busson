@@ -12,6 +12,11 @@
                 {{ form.title|as_crispy_field }}
                 {{ form.category|as_crispy_field }}
                 {{ form.document_date|as_crispy_field }}
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" for="document-redactor-search-input">Rédigé par</label>
+                    {% include "annuaire/_person_picker.html" with input_id="document-redactor-search-input" field_name="redactor" single_select=True initial_json=redactor_initial_json %}
+                    {% if form.redactor.errors %}<div class="text-danger small">{{ form.redactor.errors }}</div>{% endif %}
+                </div>
                 {{ form.description|as_crispy_field }}
             </fieldset>
 
@@ -66,4 +71,5 @@
         </form>
     </div>
     <script src="{% static 'js/document_files.js' %}"></script>
+    <script src="{% static 'js/person_picker.js' %}"></script>
 {% endblock content %}

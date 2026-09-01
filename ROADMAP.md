@@ -24,7 +24,7 @@
   document creation form. [#96]
 
 ### Cluster: Documents — métadonnées & accès
-- [ ] 2.6 · `Document.redactor` field — optional `Person` FK for the document's
+- [x] 2.6 · `Document.redactor` field — optional `Person` FK for the document's
   author/editor, separate from `uploaded_by`. [#107]
 - [x] 2.7 · Category view: access & hierarchy — show which groups can access the
   category ("Visible par : ..." / "Tous" if unrestricted) and show parent/child
@@ -34,7 +34,7 @@
 - [x] 2.8 · Fix list rendering after a paragraph — a `- item` list directly following a
   paragraph (no blank line) doesn't render as `<ul>` in the shared `markdown_utils.py`
   pipeline. [#93]
-- [ ] 2.9 · Consistent markdown rendering on card previews — apply the existing
+- [x] 2.9 · Consistent markdown rendering on card previews — apply the existing
   `markdown_plain` filter (already used by publications' cards) to document/category
   card excerpts. [#92]
 - [ ] 2.10 · Markdown editor toolbar — wire the existing Write/Preview widget into the
@@ -54,7 +54,7 @@
   without a geolocated address" count. [#104]
 
 ### Cluster: Généalogie
-- [ ] 2.14 · Genealogy export — rename "exporter en excel" to "exporter le carnet
+- [x] 2.14 · Genealogy export — rename "exporter en excel" to "exporter le carnet
   d'adresse en excel"; add an "exporter en image" button generating a JPEG of the
   displayed tree. (requires: 2.13) [#90]
 

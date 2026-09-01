@@ -1,3 +1,4 @@
+{% load markdown_extras %}
 <article class="document-card">
     <h3>
         <a href="{% url 'document-detail' document.pk %}">{{ document.title }}</a>
@@ -9,5 +10,5 @@
         <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
         {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
     </p>
-    {% if document.description %}<p>{{ document.description|truncatechars:200 }}</p>{% endif %}
+    {% if document.description %}<p>{{ document.description|markdown_plain|truncatechars:200 }}</p>{% endif %}
 </article>

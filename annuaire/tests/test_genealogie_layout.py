@@ -157,3 +157,30 @@ def test_family_tree_js_restamps_deceased_class_after_every_update():
 def test_genealogy_deceased_card_overrides_present():
     body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".f3 div.card.card--deceased div.card-image-circle img")
     assert _declared_value(body, "filter") == "grayscale(1)"
+
+
+def test_family_tree_js_image_export_uses_html_to_image():
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "htmlToImage" in content
+    assert "toJpeg" in content
+
+
+def test_family_tree_js_image_export_fits_before_capturing():
+    # Never capture the as-displayed (possibly panned/zoomed/clipped) viewport --
+    # always fit the whole tree first, mirroring the fullscreen re-fit dance.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    export_image_start = content.index("genealogie-export-image")
+    export_image_section = content[export_image_start : export_image_start + 1500]
+    assert "tree_position: 'fit'" in export_image_section
+
+
+def test_family_tree_js_image_export_sets_white_background():
+    # JPEG has no alpha channel -- without an explicit background, transparent
+    # pixels render black instead of the page's actual white.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "backgroundColor: '#ffffff'" in content
+
+
+def test_family_tree_js_image_export_caps_pixel_ratio():
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "Math.min(window.devicePixelRatio || 1, 2)" in content

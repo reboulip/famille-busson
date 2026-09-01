@@ -55,6 +55,25 @@ def test_category_list_shows_all_categories_for_staff(staff_client, restricted_c
     assert f'href="{detail_url}"' in response.content.decode()
 
 
+@pytest.mark.django_db
+def test_category_list_shows_markdown_plain_excerpt_for_accessible_category(auth_client, category):
+    category.description = "**gras** et [lien](https://example.com)"
+    category.save()
+    response = auth_client.get(reverse("category-list"))
+    content = response.content.decode()
+    assert "gras" in content
+    assert "<strong>" not in content
+    assert "[lien]" not in content
+
+
+@pytest.mark.django_db
+def test_category_list_hides_excerpt_for_locked_category(auth_client, restricted_category):
+    restricted_category.description = "Contenu secret"
+    restricted_category.save()
+    response = auth_client.get(reverse("category-list"))
+    assert "Contenu secret" not in response.content.decode()
+
+
 # ---------------------------------------------------------------------------
 # CategoryDetailView
 # ---------------------------------------------------------------------------

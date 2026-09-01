@@ -107,6 +107,30 @@ def test_document_str(document):
 
 
 @pytest.mark.django_db
+def test_document_redactor_defaults_to_none(document):
+    assert document.redactor is None
+
+
+@pytest.mark.django_db
+def test_document_redactor_set_leaves_uploaded_by_untouched(document, person, other_person):
+    document.uploaded_by = person
+    document.redactor = other_person
+    document.save()
+    document.refresh_from_db()
+    assert document.uploaded_by == person
+    assert document.redactor == other_person
+
+
+@pytest.mark.django_db
+def test_document_redactor_set_null_on_person_delete(document, person):
+    document.redactor = person
+    document.save()
+    person.delete()
+    document.refresh_from_db()
+    assert document.redactor is None
+
+
+@pytest.mark.django_db
 def test_document_file_str_uses_caption(document):
     doc_file = DocumentFile.objects.create(
         document=document, caption="Scan recto", file=SimpleUploadedFile("scan.pdf", b"%PDF-fake")

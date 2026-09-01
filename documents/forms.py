@@ -76,9 +76,10 @@ class CategoryForm(forms.ModelForm):
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
-        fields = ["title", "category", "document_date", "description"]
+        fields = ["title", "category", "document_date", "redactor", "description"]
         widgets = {
             "document_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "redactor": forms.HiddenInput,
         }
 
     def __init__(self, *args, user=None, **kwargs):

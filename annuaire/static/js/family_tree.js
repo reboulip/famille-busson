@@ -169,6 +169,41 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const exportImageButton = document.getElementById('genealogie-export-image');
+    if (exportImageButton && window.htmlToImage) {
+        exportImageButton.addEventListener('click', () => {
+            // Always fit-then-capture -- never the as-displayed viewport, which may be
+            // panned/zoomed to only part of the tree. Mirrors the fullscreen re-fit
+            // dance below: family-chart computes layout from getBoundingClientRect()
+            // at call time, so the capture must wait a frame after fit() too.
+            chart.updateTree({ tree_position: 'fit' });
+            const originalText = exportImageButton.textContent;
+            exportImageButton.disabled = true;
+            exportImageButton.textContent = 'Génération…';
+            requestAnimationFrame(() => {
+                htmlToImage
+                    .toJpeg(mount, {
+                        backgroundColor: '#ffffff',
+                        pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+                    })
+                    .then((dataUrl) => {
+                        const today = new Date().toISOString().slice(0, 10);
+                        const link = document.createElement('a');
+                        link.download = `genealogie-${today}.jpg`;
+                        link.href = dataUrl;
+                        link.click();
+                    })
+                    .catch((error) => {
+                        console.error("Échec de l'export en image :", error);
+                    })
+                    .finally(() => {
+                        exportImageButton.disabled = false;
+                        exportImageButton.textContent = originalText;
+                    });
+            });
+        });
+    }
+
     const fullscreenPanel = document.getElementById('genealogie-panel');
     const fullscreenButton = document.getElementById('genealogie-fullscreen');
     if (fullscreenPanel && fullscreenButton) {

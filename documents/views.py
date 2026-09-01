@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import os
 
@@ -14,11 +15,26 @@ from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from annuaire.models import Person
 from annuaire.views import StaffRequiredMixin
 
 from .access import accessible_categories, accessible_documents, effective_groups, user_can_access_category
 from .forms import CategoryForm, DocumentFileFormSet, DocumentForm
 from .models import Category, Document, DocumentFile
+
+
+def _redactor_initial_json(view):
+    """Build the JSON payload used by the person-picker to pre-populate redactor."""
+    request = view.request
+    if request.method == "POST":
+        pk = request.POST.get("redactor")
+        person = Person.objects.filter(pk=pk).first() if pk and pk.isdigit() else None
+    elif getattr(view, "object", None) is not None:
+        person = view.object.redactor
+    else:
+        person = None
+    return json.dumps([{"id": person.pk, "name": str(person)}] if person else [])
+
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
 
@@ -220,6 +236,7 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
             context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES)
         else:
             context["formset"] = DocumentFileFormSet()
+        context["redactor_initial_json"] = _redactor_initial_json(self)
         return context
 
     def form_valid(self, form):
@@ -251,6 +268,7 @@ class DocumentUpdateView(UploaderOrStaffRequiredMixin, UpdateView):
             context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
             context["formset"] = DocumentFileFormSet(instance=self.object)
+        context["redactor_initial_json"] = _redactor_initial_json(self)
         return context
 
     def form_valid(self, form):
