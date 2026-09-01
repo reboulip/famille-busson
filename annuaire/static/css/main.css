@@ -72,6 +72,13 @@ body {
     border-radius: 50%;
 }
 
+/* Shared across annuaire, profil and généalogie -- applied at every photo render
+   site conditionally on Person.deceased. */
+.person-photo--deceased {
+    filter: grayscale(1);
+    border: 2px solid #000;
+}
+
 .relations-inline {
     display: flex;
     align-items: center;
@@ -681,6 +688,19 @@ h2 {
     background-color: var(--genderless-color);
 }
 
+/* Deceased-member styling (Phase 2, #104): family_tree.js stamps .card--deceased on
+   the outer .card via chart.setAfterUpdate() (re-stamped on every re-render, since
+   family-chart rebuilds .card_cont on each updateMainId/branch change). The .card
+   itself has no image, so the filter/border apply one level down at
+   .card-image-circle -- already the vendor's circular avatar wrapper. */
+.f3 div.card.card--deceased div.card-image-circle {
+    border: 2px solid #000;
+}
+
+.f3 div.card.card--deceased div.card-image-circle img {
+    filter: grayscale(1);
+}
+
 /* Tuiles page d'accueil */
 .tile-grid {
     display: grid;
@@ -1020,6 +1040,27 @@ h2 {
     margin-bottom: 8px;
 }
 
+.markdown-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.markdown-editor-toolbar-btn {
+    min-width: 32px;
+    padding: 2px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.markdown-editor-toolbar-btn:hover {
+    background: #f1f3f5;
+}
+
 .markdown-editor-preview {
     min-height: 100px;
     max-height: 400px;
@@ -1031,4 +1072,130 @@ h2 {
 
 .markdown-editor-empty {
     margin: 0;
+}
+
+/* Documents — visionneuse (Phase 2, #98/#99/#100). Sizing follows the same
+   viewport-height idiom as .genealogie-container / .map-container. */
+.document-viewer {
+    margin-bottom: 24px;
+}
+
+.document-viewer-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.document-viewer-caption {
+    font-weight: 600;
+}
+
+.document-viewer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.document-viewer-stage {
+    height: 70vh;
+    min-height: 320px;
+    overflow: auto;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+}
+
+/* Multi-image carousel (#101): one image at a time on mobile (each strip item takes
+   the stage's full width), several on desktop -- a plain CSS scroll-snap strip rather
+   than a JS carousel library, so touch swipe is native and there's no extra dependency. */
+.document-viewer-stage.document-viewer-strip {
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    gap: 12px;
+}
+
+.document-viewer-strip-item {
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+@media (min-width: 992px) {
+    .document-viewer-strip-item {
+        flex: 0 0 calc(33.333% - 8px);
+    }
+}
+
+.document-viewer-strip-caption {
+    margin-top: 8px;
+    font-size: 0.85em;
+    color: #555;
+    text-align: center;
+}
+
+/* Zoom (#101): click-to-toggle between "fit" (default, shrunk to its container) and
+   "1:1" (natural size, scrollable via .document-viewer-stage's own overflow: auto).
+   touch-action leaves pinch-zoom to the browser rather than a custom gesture handler. */
+.document-viewer-zoomable {
+    cursor: zoom-in;
+    touch-action: pinch-zoom;
+}
+
+.document-viewer-zoomable--zoomed {
+    cursor: zoom-out;
+    max-width: none;
+    max-height: none;
+    width: auto;
+    height: auto;
+}
+
+/* Fullscreen: a CSS fixed overlay rather than the native Fullscreen API, matching
+   .genealogie-panel--fullscreen's documented rationale (no permission/gesture dance).
+   z-index 1050 sits above the mobile offcanvas menu toggle (z-index 1045). */
+.document-viewer--fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: #fff;
+    padding: 12px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.document-viewer--fullscreen .document-viewer-stage {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+}
+
+.document-file-preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.document-viewer-pdf-pages {
+    width: 100%;
+}
+
+.document-viewer-pdf-page {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
 }

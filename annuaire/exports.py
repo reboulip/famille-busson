@@ -1,10 +1,12 @@
 """Serialize a set of Person records into an Excel workbook for bulk download.
 
-Used by genealogie.html's "Exporter" button: the exported subset is exactly the
-person cards currently rendered in the centered-tree view (collected client-side
-in family_tree.js, since which cards are on screen is client-layout state family
-Family-chart never exposes server-side), not a server-computed branch. The view
-just fetches the given ids and shapes them into a spreadsheet.
+Used by genealogie.html's "Exporter le carnet d'adresses en Excel" button (there is
+also an "Exporter en image" button, handled entirely client-side in family_tree.js via
+the vendored html-to-image library -- it never reaches this module): the exported
+subset is exactly the person cards currently rendered in the centered-tree view
+(collected client-side in family_tree.js, since which cards are on screen is
+client-layout state family-chart never exposes server-side), not a server-computed
+branch. The view just fetches the given ids and shapes them into a spreadsheet.
 """
 
 from __future__ import annotations

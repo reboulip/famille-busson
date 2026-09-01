@@ -134,6 +134,15 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholder: 'Rechercher une personne…',
     });
     chart.setSingleParentEmptyCard(false);
+    // family-chart rebuilds .card_cont on every updateMainId/branch change, so a
+    // one-shot class-stamp would be lost on the next render -- re-stamp after every
+    // update instead, keyed off the same data-id the Excel export already reads.
+    chart.setAfterUpdate(() => {
+        mount.querySelectorAll('.card[data-id]').forEach((card) => {
+            const person = byId.get(card.dataset.id);
+            card.classList.toggle('card--deceased', Boolean(person && person.data.deceased));
+        });
+    });
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 
@@ -157,6 +166,41 @@ document.addEventListener('DOMContentLoaded', function () {
             const params = new URLSearchParams();
             ids.forEach((id) => params.append('ids', id));
             window.location.href = `${exportButton.dataset.exportUrl}?${params.toString()}`;
+        });
+    }
+
+    const exportImageButton = document.getElementById('genealogie-export-image');
+    if (exportImageButton && window.htmlToImage) {
+        exportImageButton.addEventListener('click', () => {
+            // Always fit-then-capture -- never the as-displayed viewport, which may be
+            // panned/zoomed to only part of the tree. Mirrors the fullscreen re-fit
+            // dance below: family-chart computes layout from getBoundingClientRect()
+            // at call time, so the capture must wait a frame after fit() too.
+            chart.updateTree({ tree_position: 'fit' });
+            const originalText = exportImageButton.textContent;
+            exportImageButton.disabled = true;
+            exportImageButton.textContent = 'Génération…';
+            requestAnimationFrame(() => {
+                htmlToImage
+                    .toJpeg(mount, {
+                        backgroundColor: '#ffffff',
+                        pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+                    })
+                    .then((dataUrl) => {
+                        const today = new Date().toISOString().slice(0, 10);
+                        const link = document.createElement('a');
+                        link.download = `genealogie-${today}.jpg`;
+                        link.href = dataUrl;
+                        link.click();
+                    })
+                    .catch((error) => {
+                        console.error("Échec de l'export en image :", error);
+                    })
+                    .finally(() => {
+                        exportImageButton.disabled = false;
+                        exportImageButton.textContent = originalText;
+                    });
+            });
         });
     }
 

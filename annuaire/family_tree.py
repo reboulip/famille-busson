@@ -35,6 +35,7 @@ def build_family_chart_data() -> list[dict]:
                 "birthday": str(person.birth_date.year) if person.birth_date else "",
                 "avatar": person.profile_photo.url if person.profile_photo else static("default_profile_picture.png"),
                 "url": reverse("personne-detail", kwargs={"pk": person.pk}),
+                "deceased": person.deceased,
             },
             "rels": {"parents": [], "spouses": [], "children": []},
         }

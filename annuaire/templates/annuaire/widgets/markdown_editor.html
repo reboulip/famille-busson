@@ -7,6 +7,16 @@
             <button class="nav-link markdown-editor-tab" type="button" data-tab="preview">Aperçu</button>
         </li>
     </ul>
+    <div class="markdown-editor-toolbar" role="toolbar" aria-label="Mise en forme Markdown">
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="heading" title="Titre" aria-label="Titre">H</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="bold" title="Gras" aria-label="Gras"><strong>G</strong></button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="italic" title="Italique" aria-label="Italique"><em>I</em></button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="quote" title="Citation" aria-label="Citation">❝</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="code" title="Code" aria-label="Code">&lt;/&gt;</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="link" title="Lien" aria-label="Lien">🔗</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ul" title="Liste à puces" aria-label="Liste à puces">•</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ol" title="Liste numérotée" aria-label="Liste numérotée">1.</button>
+    </div>
     <div class="markdown-editor-pane markdown-editor-write">
         {% include "django/forms/widgets/textarea.html" %}
     </div>

@@ -11,7 +11,8 @@
             <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
             <div id="genealogie-search" class="genealogie-search"></div>
             <button type="button" id="genealogie-export" class="btn btn-outline-success btn-sm"
-                    data-export-url="{% url 'genealogie-export' %}">Exporter en Excel</button>
+                    data-export-url="{% url 'genealogie-export' %}">Exporter le carnet d'adresses en Excel</button>
+            <button type="button" id="genealogie-export-image" class="btn btn-outline-success btn-sm">Exporter en image</button>
             <button type="button" id="genealogie-fullscreen" class="btn btn-outline-secondary btn-sm">Plein écran</button>
         </div>
 
@@ -29,5 +30,6 @@
 {% block extra_js %}
     <script src="{% static 'vendor/d3/d3.min.js' %}"></script>
     <script src="{% static 'vendor/family-chart/family-chart.min.js' %}"></script>
+    <script src="{% static 'vendor/html-to-image/html-to-image.js' %}"></script>
     <script src="{% static 'js/family_tree.js' %}"></script>
 {% endblock extra_js %}

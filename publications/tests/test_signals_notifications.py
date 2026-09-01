@@ -34,6 +34,21 @@ def test_new_blog_post_does_not_notify_unsubscribed_users(person, other_person):
 
 
 @pytest.mark.django_db
+def test_new_blog_post_does_not_notify_deceased_subscriber(person, other_person):
+    person.deceased = True
+    person.save()
+    person.settings.notify_on_new_blog_post = True
+    person.settings.save()
+    other_person.settings.notify_on_new_blog_post = False
+    other_person.settings.save()
+
+    post = BlogPost.objects.create(title="Nouvelle publication", body="Du contenu.")
+    post.authors.add(other_person)
+
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
 def test_blog_post_update_does_not_resend_notification(person, other_person):
     person.settings.notify_on_new_blog_post = True
     person.settings.save()

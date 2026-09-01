@@ -35,7 +35,7 @@ class Command(BaseCommand):
         # Feb 28 instead, same as most real-world "next birthday" logic.
         if today.month == 2 and today.day == 28 and not calendar.isleap(today.year):
             birthday_filter |= Q(birth_date__month=2, birth_date__day=29)
-        birthday_people = list(Person.objects.filter(birthday_filter))
+        birthday_people = list(Person.objects.filter(birthday_filter).exclude(deceased=True))
         if not birthday_people:
             self.stdout.write("Aucun anniversaire aujourd'hui.")
             return
@@ -44,6 +44,7 @@ class Command(BaseCommand):
             NotificationSettings.objects.filter(notify_on_birthday=True)
             .exclude(person__email__isnull=True)
             .exclude(person__email="")
+            .exclude(person__deceased=True)
             .select_related("person")
         )
         if not subscribers:

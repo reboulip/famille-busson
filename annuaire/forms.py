@@ -8,6 +8,7 @@ from django.core.validators import validate_email
 from django.urls import reverse_lazy
 
 from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
+from .widgets import MarkdownEditorWidget
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
@@ -57,17 +58,35 @@ class ProfileEditForm(forms.ModelForm):
             "latitude",
             "longitude",
             "birth_date",
+            "deceased",
+            "death_date",
             "description",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "death_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "postal_address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,
             "longitude": forms.HiddenInput,
+            "description": MarkdownEditorWidget,
         }
         help_texts = {
             "postal_address": ADDRESS_HELP_TEXT,
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Pop (not disable) for a non-staff editor: a POST carrying deceased=on from
+        # a tampered form is then structurally ignored, not just hidden by CSS.
+        if user is not None and not (user.is_staff or user.is_superuser):
+            del self.fields["deceased"]
+            del self.fields["death_date"]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("death_date") and not cleaned_data.get("deceased"):
+            cleaned_data["deceased"] = True
+        return cleaned_data
 
     def clean_profile_photo(self):
         photo = self.cleaned_data.get("profile_photo")

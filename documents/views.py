@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import os
 
@@ -14,11 +15,26 @@ from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from annuaire.models import Person
 from annuaire.views import StaffRequiredMixin
 
-from .access import accessible_categories, accessible_documents, user_can_access_category
+from .access import accessible_categories, accessible_documents, effective_groups, user_can_access_category
 from .forms import CategoryForm, DocumentFileFormSet, DocumentForm
 from .models import Category, Document, DocumentFile
+
+
+def _redactor_initial_json(view):
+    """Build the JSON payload used by the person-picker to pre-populate redactor."""
+    request = view.request
+    if request.method == "POST":
+        pk = request.POST.get("redactor")
+        person = Person.objects.filter(pk=pk).first() if pk and pk.isdigit() else None
+    elif getattr(view, "object", None) is not None:
+        person = view.object.redactor
+    else:
+        person = None
+    return json.dumps([{"id": person.pk, "name": str(person)}] if person else [])
+
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
 
@@ -46,6 +62,15 @@ class CategoryDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         can_access = user_can_access_category(self.request.user, self.object)
         context["can_access"] = can_access
+        context["access_groups"] = effective_groups(self.object)
+        ancestors = []
+        node = self.object.parent
+        while node is not None:
+            ancestors.append(node)
+            node = node.parent
+        ancestors.reverse()
+        context["ancestors"] = ancestors
+        context["children"] = self.object.children.all()
         if can_access:
             context["documents"] = accessible_documents(self.request.user).filter(category=self.object)
         return context
@@ -170,7 +195,7 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "document"
 
     def get_queryset(self):
-        return accessible_documents(self.request.user)
+        return accessible_documents(self.request.user).prefetch_related("files")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -179,6 +204,14 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
         context["can_edit"] = (
             user.is_staff or user.is_superuser or (profile is not None and self.object.uploaded_by_id == profile.pk)
         )
+        # preview_kind is a Python property, not a queryset-filterable field -- group
+        # in Python over the already-prefetched files rather than issuing 3 queries.
+        image_files, pdf_files, other_files = [], [], []
+        for file in self.object.files.all():
+            {"image": image_files, "pdf": pdf_files}.get(file.preview_kind, other_files).append(file)
+        context["image_files"] = image_files
+        context["pdf_files"] = pdf_files
+        context["other_files"] = other_files
         return context
 
 
@@ -198,12 +231,20 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_initial(self):
+        initial = super().get_initial()
+        category_id = self.request.GET.get("category", "")
+        if category_id.isdigit():
+            initial["category"] = int(category_id)
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
             context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES)
         else:
             context["formset"] = DocumentFileFormSet()
+        context["redactor_initial_json"] = _redactor_initial_json(self)
         return context
 
     def form_valid(self, form):
@@ -235,6 +276,7 @@ class DocumentUpdateView(UploaderOrStaffRequiredMixin, UpdateView):
             context["formset"] = DocumentFileFormSet(self.request.POST, self.request.FILES, instance=self.object)
         else:
             context["formset"] = DocumentFileFormSet(instance=self.object)
+        context["redactor_initial_json"] = _redactor_initial_json(self)
         return context
 
     def form_valid(self, form):

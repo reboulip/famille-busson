@@ -4,7 +4,9 @@ from decimal import Decimal
 import pytest
 from django.urls import reverse
 
+from annuaire.forms import ProfileEditForm
 from annuaire.models import Person, Relation, Settings
+from annuaire.widgets import MarkdownEditorWidget
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -268,6 +270,19 @@ def test_profile_update_requires_login(client, person):
 def test_profile_update_own_profile_get_200(auth_client, person):
     response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_profile_update_get_loads_markdown_editor_for_description(auth_client, person):
+    response = auth_client.get(reverse("person-edit", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "js/markdown_editor.js" in content
+    assert "markdown-editor-toolbar" in content
+
+
+@pytest.mark.django_db
+def test_profile_edit_form_description_uses_markdown_editor_widget():
+    assert isinstance(ProfileEditForm().fields["description"].widget, MarkdownEditorWidget)
 
 
 @pytest.mark.django_db

@@ -27,6 +27,7 @@ erDiagram
     Group ||--o{ CategoryGroupAccess : "group"
     Category ||--o{ Document : "category"
     Person ||--o{ Document : "uploaded_by"
+    Person ||--o{ Document : "redactor"
     Document ||--o{ DocumentFile : "document"
 ```
 
@@ -66,6 +67,8 @@ erDiagram
 | `longitude` | DecimalField | Longitude | optional |
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
+| `deceased` | BooleanField | Décédé·e | default=False, required |
+| `death_date` | DateField | Date de décès | optional |
 | `description` | TextField | Infos utiles | optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='managed_profiles' |
 
@@ -195,6 +198,7 @@ erDiagram
 | `document_date` | DateField | Date du document | optional |
 | `description` | TextField | Description | default='', optional |
 | `uploaded_by` | ForeignKey | Déposé par | → Person (on_delete=SET_NULL), related_name='documents', optional |
+| `redactor` | ForeignKey | Rédigé par | → Person (on_delete=SET_NULL), related_name='redacted_documents', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 

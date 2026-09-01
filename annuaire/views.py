@@ -14,7 +14,8 @@ from django.contrib.auth.views import LoginView, PasswordResetConfirmView, Passw
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection, send_mail
 from django.db import transaction
-from django.db.models import ProtectedError, Q
+from django.db.models import F, ProtectedError, Q
+from django.db.models.functions import Lower
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -636,6 +637,15 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
             return redirect("my-profile")
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        # Self-profile creation: pass user so ProfileEditForm pops deceased/death_date
+        # for a non-staff signup too -- these fields are staff/superuser-only
+        # everywhere else, and a brand-new member creating their own profile has no
+        # legitimate reason to need them, so there is no cost to closing this gap.
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if "settings_form" not in context:
@@ -676,6 +686,11 @@ class PersonCreateView(LoginRequiredMixin, CreateView):
             messages.error(request, "Vous devez compléter votre profil avant d'ajouter un membre de la famille.")
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def form_valid(self, form):
         with transaction.atomic():
@@ -725,6 +740,16 @@ class ProfileClaimView(LoginRequiredMixin, View):
         return redirect("person-edit", pk=person.pk)
 
 
+DIRECTORY_SORTS = {
+    "recent": ("-pk",),
+    "name_asc": (Lower("last_name"), Lower("first_name"), "pk"),
+    "name_desc": (Lower("last_name").desc(), Lower("first_name").desc(), "-pk"),
+    "birth_asc": (F("birth_date").asc(nulls_last=True), "last_name", "pk"),
+    "birth_desc": (F("birth_date").desc(nulls_last=True), "last_name", "pk"),
+}
+DEFAULT_DIRECTORY_SORT = "recent"
+
+
 class DirectoryListView(LoginRequiredMixin, ListView):
     model = Person
     template_name = "annuaire/annuaire_list.html"
@@ -732,7 +757,9 @@ class DirectoryListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         q = self.request.GET.get("q", "")
-        qs = Person.objects.all().order_by("last_name", "first_name")
+        sort = self.request.GET.get("sort", DEFAULT_DIRECTORY_SORT)
+        ordering = DIRECTORY_SORTS.get(sort, DIRECTORY_SORTS[DEFAULT_DIRECTORY_SORT])
+        qs = Person.objects.all().order_by(*ordering)
         if q:
             qs = qs.filter(Q(last_name__icontains=q) | Q(first_name__icontains=q))
         return qs
@@ -740,6 +767,8 @@ class DirectoryListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["query"] = self.request.GET.get("q", "")
+        sort = self.request.GET.get("sort", DEFAULT_DIRECTORY_SORT)
+        context["sort"] = sort if sort in DIRECTORY_SORTS else DEFAULT_DIRECTORY_SORT
         return context
 
 
@@ -757,8 +786,10 @@ class MapListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        unresolved_persons = Person.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True)).order_by(
-            "last_name", "first_name"
+        unresolved_persons = (
+            Person.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True))
+            .exclude(deceased=True)
+            .order_by("last_name", "first_name")
         )
         context["unresolved_persons"] = unresolved_persons
         context["unresolved_count"] = unresolved_persons.count()
@@ -870,6 +901,11 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         if not can_edit_person(self.request.user, obj):
             raise PermissionDenied("Vous ne pouvez pas éditer ce profil.")
         return obj
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         user = self.request.user

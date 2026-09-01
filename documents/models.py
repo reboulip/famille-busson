@@ -138,6 +138,14 @@ class Document(models.Model):
         related_name="documents",
         verbose_name="Déposé par",
     )
+    redactor = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="redacted_documents",
+        verbose_name="Rédigé par",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
 

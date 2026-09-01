@@ -1,7 +1,11 @@
 {% load documents_extras %}
+{% load markdown_extras %}
 <li>
     {% if category|can_access:request.user %}
         <a href="{% url 'category-detail' category.pk %}">{{ category.name }}</a>
+        {% if category.description %}
+            <p class="category-tree-excerpt text-muted">{{ category.description|markdown_plain|truncatechars:150 }}</p>
+        {% endif %}
     {% else %}
         <span class="category-locked">
             🔒 {{ category.name }}

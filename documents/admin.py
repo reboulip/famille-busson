@@ -23,7 +23,7 @@ class DocumentFileInline(admin.TabularInline):
 
 @admin.register(Document)
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ("title", "category", "document_date", "created_at")
+    list_display = ("title", "category", "document_date", "redactor", "created_at")
     list_filter = ("category",)
     search_fields = ("title", "description")
     inlines = [DocumentFileInline]
