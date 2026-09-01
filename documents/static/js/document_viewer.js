@@ -42,7 +42,9 @@ async function renderPdf(container) {
     try {
         const pdfjsLib = await import(pdfjsSrc);
         pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
-        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+        // pdf.js 6.x requires an options object -- a bare URL string is silently
+        // read as {} and fails with "expected either `data`, `range`, or `url`".
+        const pdf = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
         container.innerHTML = '';
         for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
             const page = await pdf.getPage(pageNumber);

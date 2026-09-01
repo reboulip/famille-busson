@@ -63,6 +63,16 @@ def test_document_viewer_js_sets_pdfjs_worker_src_before_loading_document():
     assert worker_assignment < get_document_call
 
 
+def test_document_viewer_js_calls_get_document_with_an_options_object():
+    # Regression guard: pdf.js 6.x's getDocument(t = {}) reads t.url internally --
+    # passing a bare URL string (rather than {url: ...}) is silently read as an empty
+    # options object and fails at runtime with "expected either `data`, `range`, or
+    # `url` parameter". No Python test can catch this (it's pure browser JS behavior);
+    # caught only via live browser verification.
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "getDocument({ url: pdfUrl })" in content
+
+
 def test_document_viewer_carousel_strip_is_one_item_per_row_by_default():
     body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-strip-item")
     assert _declared_value(body, "flex") == "0 0 100%"
