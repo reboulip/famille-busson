@@ -93,3 +93,37 @@ def test_every_subscriber_is_notified_including_the_birthday_person(person, othe
     assert len(mail.outbox) == 2
     recipients = {sent.to[0] for sent in mail.outbox}
     assert recipients == {person.email, other_person.email}
+
+
+@pytest.mark.django_db
+def test_deceased_persons_birthday_is_not_announced(person, other_person):
+    today = datetime.date.today()
+    other_person.birth_date = today.replace(year=1990)
+    other_person.deceased = True
+    other_person.save()
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+
+    run_command()
+
+    assert len(mail.outbox) == 0
+
+
+@pytest.mark.django_db
+def test_deceased_subscriber_does_not_receive_reminders(person, other_person):
+    today = datetime.date.today()
+    other_person.birth_date = today.replace(year=1990)
+    other_person.save()
+    person.deceased = True
+    person.save()
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+    # Isolate the deceased-subscriber exclusion: other_person must not itself be a
+    # subscriber, or its own (legitimate) birthday reminder would also land in the
+    # outbox and mask what this test is actually checking.
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
+
+    run_command()
+
+    assert len(mail.outbox) == 0

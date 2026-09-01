@@ -66,6 +66,8 @@ erDiagram
 | `longitude` | DecimalField | Longitude | optional |
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
+| `deceased` | BooleanField | Décédé·e | default=False, required |
+| `death_date` | DateField | Date de décès | optional |
 | `description` | TextField | Infos utiles | optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='managed_profiles' |
 

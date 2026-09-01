@@ -28,7 +28,8 @@
         {% for person in persons %}
             <a href="{% url 'personne-detail' person.pk %}" class="personne-card">
                 <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                     alt="{{ person.first_name }} {{ person.last_name }}" class="personne-card-photo">
+                     alt="{{ person.first_name }} {{ person.last_name }}{% if person.deceased %} (décédé·e){% endif %}"
+                     class="personne-card-photo{% if person.deceased %} person-photo--deceased{% endif %}">
                 <div class="personne-card-info">
                     <strong>{{ person.first_name }} {{ person.last_name }}</strong>
                 </div>

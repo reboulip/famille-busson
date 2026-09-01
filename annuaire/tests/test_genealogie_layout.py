@@ -144,3 +144,16 @@ def test_genealogy_card_male_ring_is_neutralized_without_reviving_genderless_sel
     assert match, "No .card-male .card-inner override found in main.css"
     assert _declared_value(match.group(1), "background-color") == "var(--genderless-color)"
     assert ".card-genderless" not in content
+
+
+def test_family_tree_js_restamps_deceased_class_after_every_update():
+    # family-chart rebuilds .card_cont on every updateMainId/branch change, so the
+    # deceased class must be re-applied via setAfterUpdate, not a one-shot pass.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "setAfterUpdate" in content
+    assert "card--deceased" in content
+
+
+def test_genealogy_deceased_card_overrides_present():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".f3 div.card.card--deceased div.card-image-circle img")
+    assert _declared_value(body, "filter") == "grayscale(1)"

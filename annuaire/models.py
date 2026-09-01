@@ -48,6 +48,16 @@ class Person(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
+    # Staff/superuser-only (see ProfileEditForm, which pops both fields for anyone
+    # else). Unlike `gender` -- added then deliberately removed in migration 0007,
+    # with two standing regression guards against its return -- this field's
+    # technical necessity is concrete: it drives real behaviour (suppressing
+    # birthday reminders, excluding from the "sans adresse géolocalisée" count) and,
+    # by explicit product decision, a visible "date de décès" line on the profile
+    # page. Treat that visible line as a deliberate, narrow exception -- not a
+    # precedent for surfacing more personal-status text elsewhere without asking.
+    deceased = models.BooleanField(default=False, verbose_name="Décédé·e")
+    death_date = models.DateField(blank=True, null=True, verbose_name="Date de décès")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
     owners = models.ManyToManyField(
         "self",

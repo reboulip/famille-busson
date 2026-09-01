@@ -134,6 +134,15 @@ document.addEventListener('DOMContentLoaded', function () {
         placeholder: 'Rechercher une personne…',
     });
     chart.setSingleParentEmptyCard(false);
+    // family-chart rebuilds .card_cont on every updateMainId/branch change, so a
+    // one-shot class-stamp would be lost on the next render -- re-stamp after every
+    // update instead, keyed off the same data-id the Excel export already reads.
+    chart.setAfterUpdate(() => {
+        mount.querySelectorAll('.card[data-id]').forEach((card) => {
+            const person = byId.get(card.dataset.id);
+            card.classList.toggle('card--deceased', Boolean(person && person.data.deceased));
+        });
+    });
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 

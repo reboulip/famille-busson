@@ -72,6 +72,13 @@ body {
     border-radius: 50%;
 }
 
+/* Shared across annuaire, profil and généalogie -- applied at every photo render
+   site conditionally on Person.deceased. */
+.person-photo--deceased {
+    filter: grayscale(1);
+    border: 2px solid #000;
+}
+
 .relations-inline {
     display: flex;
     align-items: center;
@@ -679,6 +686,19 @@ h2 {
 .f3 div.card-male .card-inner,
 .f3 div.card-male .person-icon svg {
     background-color: var(--genderless-color);
+}
+
+/* Deceased-member styling (Phase 2, #104): family_tree.js stamps .card--deceased on
+   the outer .card via chart.setAfterUpdate() (re-stamped on every re-render, since
+   family-chart rebuilds .card_cont on each updateMainId/branch change). The .card
+   itself has no image, so the filter/border apply one level down at
+   .card-image-circle -- already the vendor's circular avatar wrapper. */
+.f3 div.card.card--deceased div.card-image-circle {
+    border: 2px solid #000;
+}
+
+.f3 div.card.card--deceased div.card-image-circle img {
+    filter: grayscale(1);
 }
 
 /* Tuiles page d'accueil */

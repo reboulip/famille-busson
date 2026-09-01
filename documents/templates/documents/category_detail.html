@@ -2,11 +2,38 @@
 {% load markdown_extras %}
 {% load documents_extras %}
 {% block content %}
+    {% if ancestors %}
+        <nav class="category-breadcrumb" aria-label="Fil d'ariane">
+            {% for ancestor in ancestors %}
+                <a href="{% url 'category-detail' ancestor.pk %}">{{ ancestor.name }}</a> /
+            {% endfor %}
+            {{ category.name }}
+        </nav>
+    {% endif %}
     <h1>{{ category.name }}</h1>
+    <p class="category-access-line">
+        Visible par :
+        {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
+    </p>
+    {% if children %}
+        <div class="category-children mb-3">
+            <strong>Sous-catégories :</strong>
+            <ul>
+                {% for child in children %}
+                    <li>
+                        {% if child|can_access:request.user %}
+                            <a href="{% url 'category-detail' child.pk %}">{{ child.name }}</a>
+                        {% else %}
+                            <span class="category-locked">🔒 {{ child.name }}</span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
     {% if not can_access %}
         <div class="alert alert-warning" role="alert">
-            Cette catégorie est réservée. Groupes autorisés :
-            {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            Cette catégorie est réservée.
         </div>
     {% else %}
         {% if category.description %}

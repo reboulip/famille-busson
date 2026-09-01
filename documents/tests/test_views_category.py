@@ -122,6 +122,77 @@ def test_category_detail_locked_hides_add_document_button(auth_client, restricte
     assert "Ajouter un document" not in content
 
 
+@pytest.mark.django_db
+def test_category_detail_shows_tous_for_unrestricted_category(auth_client, category):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": category.pk}))
+    assert response.context["access_groups"] == []
+    assert "Visible par" in response.content.decode()
+    assert "Tous" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_category_detail_shows_group_names_for_restricted_category(auth_client, restricted_category, group):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": restricted_category.pk}))
+    assert list(response.context["access_groups"]) == [group]
+    assert group.name in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_category_detail_locked_alert_still_says_reservee(auth_client, restricted_category):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": restricted_category.pk}))
+    assert "réservée" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_category_detail_has_no_ancestors_for_root_category(auth_client, category):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": category.pk}))
+    assert response.context["ancestors"] == []
+
+
+@pytest.mark.django_db
+def test_category_detail_shows_parent_link(auth_client, category):
+    child = Category.objects.create(name="Enfant", parent=category)
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": child.pk}))
+    assert response.context["ancestors"] == [category]
+    parent_url = reverse("category-detail", kwargs={"pk": category.pk})
+    assert f'href="{parent_url}"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_category_detail_shows_grandparent_then_parent_in_order(auth_client, category):
+    parent = Category.objects.create(name="Parent", parent=category)
+    child = Category.objects.create(name="Enfant", parent=parent)
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": child.pk}))
+    assert response.context["ancestors"] == [category, parent]
+
+
+@pytest.mark.django_db
+def test_category_detail_shows_children_links(auth_client, category):
+    child = Category.objects.create(name="Enfant", parent=category)
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": category.pk}))
+    child_url = reverse("category-detail", kwargs={"pk": child.pk})
+    assert f'href="{child_url}"' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_category_detail_shows_locked_child_without_link(auth_client, category, group):
+    locked_child = Category.objects.create(name="Enfant restreint", parent=category)
+    locked_child.groups.add(group)
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": category.pk}))
+    content = response.content.decode()
+    child_url = reverse("category-detail", kwargs={"pk": locked_child.pk})
+    assert locked_child.name in content
+    assert f'href="{child_url}"' not in content
+
+
+@pytest.mark.django_db
+def test_category_detail_locked_page_still_shows_hierarchy(auth_client, restricted_category):
+    child = Category.objects.create(name="Enfant", parent=restricted_category)
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": restricted_category.pk}))
+    assert response.context["children"].count() == 1
+    assert child.name in response.content.decode()
+
+
 # ---------------------------------------------------------------------------
 # CategoryCreateView / CategoryUpdateView
 # ---------------------------------------------------------------------------

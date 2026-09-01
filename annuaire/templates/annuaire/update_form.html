@@ -4,6 +4,7 @@
     <div class="form">
         <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            {% include "annuaire/_profile_edit_actions.html" %}
             <fieldset class="form-group">
                 <legend>
                     {% if form_title %}
@@ -19,12 +20,7 @@
                 <legend>Notifications</legend>
                 {{ settings_form|crispy }}
             </fieldset>
-            <div class="form-group">
-                <button class='btn btn-outline-primary' type="submit">Enregistrer</button>
-                {% if form.instance.pk %}
-                    <a href="{% url 'person-relations-edit' form.instance.pk %}" class="btn btn-outline-secondary ms-2">Modifier les relations</a>
-                {% endif %}
-            </div>
+            {% include "annuaire/_profile_edit_actions.html" %}
         </form>
     </div>
     {% include "annuaire/_profile_photo_size_check.html" %}

@@ -678,6 +678,11 @@ class PersonCreateView(LoginRequiredMixin, CreateView):
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         with transaction.atomic():
             self.object = form.save()
@@ -772,8 +777,10 @@ class MapListView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        unresolved_persons = Person.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True)).order_by(
-            "last_name", "first_name"
+        unresolved_persons = (
+            Person.objects.filter(Q(latitude__isnull=True) | Q(longitude__isnull=True))
+            .exclude(deceased=True)
+            .order_by("last_name", "first_name")
         )
         context["unresolved_persons"] = unresolved_persons
         context["unresolved_count"] = unresolved_persons.count()
@@ -885,6 +892,11 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
         if not can_edit_person(self.request.user, obj):
             raise PermissionDenied("Vous ne pouvez pas éditer ce profil.")
         return obj
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         user = self.request.user

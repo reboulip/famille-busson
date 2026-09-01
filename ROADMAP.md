@@ -18,7 +18,7 @@
 ### Cluster: Documents — création & catégorisation
 - [x] 2.3 · Require at least one file per document — block saving a `Document` with
   zero `DocumentFile`s. [#97]
-- [ ] 2.4 · Nested category dropdown — show sub-categories indented under their parent
+- [x] 2.4 · Nested category dropdown — show sub-categories indented under their parent
   in the category `<select>` on the document create/edit form. [#102]
 - [x] 2.5 · "Add document" button on category view — pre-fills the category on the
   document creation form. [#96]
@@ -26,7 +26,7 @@
 ### Cluster: Documents — métadonnées & accès
 - [ ] 2.6 · `Document.redactor` field — optional `Person` FK for the document's
   author/editor, separate from `uploaded_by`. [#107]
-- [ ] 2.7 · Category view: access & hierarchy — show which groups can access the
+- [x] 2.7 · Category view: access & hierarchy — show which groups can access the
   category ("Visible par : ..." / "Tous" if unrestricted) and show parent/child
   categories. [#95]
 
@@ -45,10 +45,10 @@
 ### Cluster: Annuaire — profil
 - [x] 2.11 · Annuaire sort options — default the directory list to most-recently-created
   first; add sortable birth date and alphabetical name (asc/desc). [#106]
-- [ ] 2.12 · Edit Profile view buttons — mirror the Save/Edit-relations buttons at the
+- [x] 2.12 · Edit Profile view buttons — mirror the Save/Edit-relations buttons at the
   top of the page, and add a Cancel button (top + bottom) returning to the profile
   view. [#105]
-- [ ] 2.13 · Deceased attribute on Person — admin/staff-only `deceased` flag + optional
+- [x] 2.13 · Deceased attribute on Person — admin/staff-only `deceased` flag + optional
   death date; when set: suppress birthday notifications, render the photo in greyscale
   with a black border (annuaire, profile, genealogy), and exclude from the "profiles
   without a geolocated address" count. [#104]

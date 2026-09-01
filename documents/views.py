@@ -16,7 +16,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, ListView, U
 
 from annuaire.views import StaffRequiredMixin
 
-from .access import accessible_categories, accessible_documents, user_can_access_category
+from .access import accessible_categories, accessible_documents, effective_groups, user_can_access_category
 from .forms import CategoryForm, DocumentFileFormSet, DocumentForm
 from .models import Category, Document, DocumentFile
 
@@ -46,6 +46,15 @@ class CategoryDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         can_access = user_can_access_category(self.request.user, self.object)
         context["can_access"] = can_access
+        context["access_groups"] = effective_groups(self.object)
+        ancestors = []
+        node = self.object.parent
+        while node is not None:
+            ancestors.append(node)
+            node = node.parent
+        ancestors.reverse()
+        context["ancestors"] = ancestors
+        context["children"] = self.object.children.all()
         if can_access:
             context["documents"] = accessible_documents(self.request.user).filter(category=self.object)
         return context

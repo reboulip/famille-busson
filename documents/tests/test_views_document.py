@@ -133,6 +133,18 @@ def test_document_create_get_ignores_non_digit_category_query_param(auth_client)
 
 
 @pytest.mark.django_db
+def test_document_create_get_category_field_indents_child_under_parent(auth_client, category):
+    from documents.models import Category
+
+    child = Category.objects.create(name="Sous-catégorie", parent=category)
+    response = auth_client.get(reverse("document-create"))
+    choices = dict(response.context["form"].fields["category"].choices)
+    assert choices[child.pk] == "    Sous-catégorie"
+    assert choices[category.pk] == category.name
+    assert choices[""] == "---------"
+
+
+@pytest.mark.django_db
 def test_document_create_category_scoped_to_accessible_for_non_staff(auth_client, category, restricted_category):
     response = auth_client.get(reverse("document-create"))
     category_qs = response.context["form"].fields["category"].queryset

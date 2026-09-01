@@ -120,6 +120,21 @@ def test_avatar_falls_back_to_default_picture(person):
 
 
 @pytest.mark.django_db
+def test_deceased_flag_defaults_to_false(person):
+    data = build_family_chart_data()
+    assert data[0]["data"]["deceased"] is False
+
+
+@pytest.mark.django_db
+def test_deceased_flag_reflects_person_deceased(person):
+    person.deceased = True
+    person.save()
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    assert by_id[str(person.pk)]["data"]["deceased"] is True
+
+
+@pytest.mark.django_db
 def test_birthday_is_bare_year_string_or_empty(person):
     import datetime
 
