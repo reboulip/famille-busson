@@ -195,7 +195,7 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "document"
 
     def get_queryset(self):
-        return accessible_documents(self.request.user)
+        return accessible_documents(self.request.user).prefetch_related("files")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -204,6 +204,14 @@ class DocumentDetailView(LoginRequiredMixin, DetailView):
         context["can_edit"] = (
             user.is_staff or user.is_superuser or (profile is not None and self.object.uploaded_by_id == profile.pk)
         )
+        # preview_kind is a Python property, not a queryset-filterable field -- group
+        # in Python over the already-prefetched files rather than issuing 3 queries.
+        image_files, pdf_files, other_files = [], [], []
+        for file in self.object.files.all():
+            {"image": image_files, "pdf": pdf_files}.get(file.preview_kind, other_files).append(file)
+        context["image_files"] = image_files
+        context["pdf_files"] = pdf_files
+        context["other_files"] = other_files
         return context
 
 

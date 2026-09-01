@@ -7,7 +7,7 @@
 ## Phase 2
 
 ### Cluster: Documents — visionneuse
-- [ ] 2.1 · PDF/file viewer overhaul — enlarge the document viewer to use the available
+- [x] 2.1 · PDF/file viewer overhaul — enlarge the document viewer to use the available
   page space, add a full-screen display mode, add a download button for PDFs, and fix
   the PDF viewer on mobile (currently broken). [#98] [#99] [#100]
 - [ ] 2.2 · Responsive image viewer & carousel — fit image documents to the viewport

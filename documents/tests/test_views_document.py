@@ -89,12 +89,52 @@ def test_document_detail_branches_image_inline(auth_client, document):
 
 
 @pytest.mark.django_db
-def test_document_detail_branches_pdf_embed(auth_client, document):
+def test_document_detail_branches_pdf_into_viewer_not_embed(auth_client, document):
+    # <embed> renders nothing on many mobile browsers (no PDF plugin) -- PDFs now go
+    # through a pdf.js-rendered canvas instead. See documents/static/js/document_viewer.js.
     DocumentFile.objects.create(
         document=document, file=SimpleUploadedFile("scan.pdf", b"%PDF-fake", content_type="application/pdf")
     )
     response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
-    assert b"<embed" in response.content
+    content = response.content.decode()
+    assert "<embed" not in content
+    assert "document-viewer-pdf-pages" in content
+    assert 'data-pdf-url="' + reverse("document-file", kwargs={"pk": document.files.get().pk}) in content
+
+
+@pytest.mark.django_db
+def test_document_detail_pdf_has_download_button(auth_client, document):
+    doc_file = DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("scan.pdf", b"%PDF-fake", content_type="application/pdf")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    download_url = reverse("document-file", kwargs={"pk": doc_file.pk}) + "?download=1"
+    assert download_url in content
+
+
+@pytest.mark.django_db
+def test_document_detail_viewer_has_fullscreen_button(auth_client, document):
+    DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "document-viewer-fullscreen-btn" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_document_detail_loads_document_viewer_js_when_file_present(auth_client, document):
+    DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "js/document_viewer.js" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_document_detail_omits_document_viewer_js_when_no_viewable_file(auth_client, document):
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "js/document_viewer.js" not in response.content.decode()
 
 
 @pytest.mark.django_db
@@ -107,6 +147,23 @@ def test_document_detail_branches_other_as_download_link(auth_client, document):
     content = response.content.decode()
     assert reverse("document-file", kwargs={"pk": doc_file.pk}) in content
     assert "download=1" in content
+
+
+@pytest.mark.django_db
+def test_document_detail_context_groups_files_by_preview_kind(auth_client, document):
+    image_file = DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    pdf_file = DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("scan.pdf", b"%PDF-fake", content_type="application/pdf")
+    )
+    other_file = DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("notes.txt", b"some text", content_type="text/plain")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert list(response.context["image_files"]) == [image_file]
+    assert list(response.context["pdf_files"]) == [pdf_file]
+    assert list(response.context["other_files"]) == [other_file]
 
 
 # ---------------------------------------------------------------------------
