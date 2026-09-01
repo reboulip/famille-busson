@@ -637,6 +637,15 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
             return redirect("my-profile")
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        # Self-profile creation: pass user so ProfileEditForm pops deceased/death_date
+        # for a non-staff signup too -- these fields are staff/superuser-only
+        # everywhere else, and a brand-new member creating their own profile has no
+        # legitimate reason to need them, so there is no cost to closing this gap.
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if "settings_form" not in context:

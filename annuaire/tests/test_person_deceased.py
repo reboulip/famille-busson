@@ -37,6 +37,24 @@ def test_profile_edit_form_keeps_deceased_fields_for_staff_user(person, staff_ac
 
 
 @pytest.mark.django_db
+def test_profile_create_view_get_pops_deceased_fields_for_new_signup(client, other_account):
+    client.force_login(other_account)
+    response = client.get(reverse("profile-create"))
+    assert "deceased" not in response.context["form"].fields
+    assert "death_date" not in response.context["form"].fields
+
+
+@pytest.mark.django_db
+def test_profile_create_post_cannot_set_deceased_on_signup(client, other_account):
+    client.force_login(other_account)
+    data = {"first_name": "New", "last_name": "Member", "deceased": "on"}
+    response = client.post(reverse("profile-create"), data)
+    assert response.status_code == 302
+    created = Person.objects.get(first_name="New", last_name="Member")
+    assert created.deceased is False
+
+
+@pytest.mark.django_db
 def test_profile_edit_form_non_staff_post_cannot_smuggle_deceased(person, account):
     data = {
         "first_name": person.first_name,
