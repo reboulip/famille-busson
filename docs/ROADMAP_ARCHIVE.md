@@ -3,12 +3,12 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
-## v0.13.0 — Phases 2 & 3: Document viewer polish, markdown everywhere, deceased-profile handling
+## v1.0.0 — Phases 2 & 3: Document viewer polish, markdown everywhere, deceased-profile handling
 
-> Document viewer/creation refinements, Markdown editing rolled out to the last two
-> holdout fields (documents app, profile description), a `deceased` attribute on
-> `Person` with matching notification suppression, and directory/genealogy
-> quality-of-life fixes.
+> First official 1.0 release — the app now covers the full initial feature set. Document
+> viewer/creation refinements, Markdown editing rolled out to the last two holdout
+> fields (documents app, profile description), a `deceased` attribute on `Person` with
+> matching notification suppression, and directory/genealogy quality-of-life fixes.
 
 ### Documents — visionneuse
 - **PDF/file viewer overhaul** — enlarged the document viewer to use the available page
