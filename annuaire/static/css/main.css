@@ -1040,6 +1040,27 @@ h2 {
     margin-bottom: 8px;
 }
 
+.markdown-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+
+.markdown-editor-toolbar-btn {
+    min-width: 32px;
+    padding: 2px 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background: #fff;
+    line-height: 1.4;
+    cursor: pointer;
+}
+
+.markdown-editor-toolbar-btn:hover {
+    background: #f1f3f5;
+}
+
 .markdown-editor-preview {
     min-height: 100px;
     max-height: 400px;

@@ -1,5 +1,7 @@
 from django import forms
 
+from annuaire.widgets import MarkdownEditorWidget
+
 from .access import accessible_categories
 from .models import Category, Document, DocumentFile, ancestor_has_groups, descendant_has_groups
 from .widgets import DocumentFileInput
@@ -42,6 +44,9 @@ class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
         fields = ["name", "description", "parent", "groups"]
+        widgets = {
+            "description": MarkdownEditorWidget,
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -80,6 +85,7 @@ class DocumentForm(forms.ModelForm):
         widgets = {
             "document_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
             "redactor": forms.HiddenInput,
+            "description": MarkdownEditorWidget,
         }
 
     def __init__(self, *args, user=None, **kwargs):

@@ -9,6 +9,7 @@
                 <legend>
                     {% if object %}Modifier « {{ object.title }} »{% else %}Nouveau document{% endif %}
                 </legend>
+                {{ form.media }}
                 {{ form.title|as_crispy_field }}
                 {{ form.category|as_crispy_field }}
                 {{ form.document_date|as_crispy_field }}

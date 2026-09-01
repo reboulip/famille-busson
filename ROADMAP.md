@@ -37,7 +37,7 @@
 - [x] 2.9 · Consistent markdown rendering on card previews — apply the existing
   `markdown_plain` filter (already used by publications' cards) to document/category
   card excerpts. [#92]
-- [ ] 2.10 · Markdown editor toolbar — wire the existing Write/Preview widget into the
+- [x] 2.10 · Markdown editor toolbar — wire the existing Write/Preview widget into the
   documents app's category/document description fields, and add lightweight
   GitHub-style formatting buttons (bold/italic/list/etc.) — scope to be refined during
   implementation. [#94]

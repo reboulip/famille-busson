@@ -1,7 +1,8 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from documents.forms import DocumentFileFormSet, category_tree_choices
+from annuaire.widgets import MarkdownEditorWidget
+from documents.forms import CategoryForm, DocumentFileFormSet, DocumentForm, category_tree_choices
 from documents.models import Category
 
 
@@ -126,3 +127,18 @@ def test_category_tree_choices_treats_hidden_parent_as_root(db):
     choices = category_tree_choices(Category.objects.filter(pk__in=[visible_parent.pk, orphan.pk]))
     labels = dict(choices)
     assert labels[orphan.pk] == "Orphelin"
+
+
+# ---------------------------------------------------------------------------
+# Markdown editor widget wiring
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_document_form_description_uses_markdown_editor_widget():
+    assert isinstance(DocumentForm().fields["description"].widget, MarkdownEditorWidget)
+
+
+@pytest.mark.django_db
+def test_category_form_description_uses_markdown_editor_widget():
+    assert isinstance(CategoryForm().fields["description"].widget, MarkdownEditorWidget)

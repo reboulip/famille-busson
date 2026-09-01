@@ -351,6 +351,14 @@ def test_document_create_get_person_picker_loads_js(auth_client):
 
 
 @pytest.mark.django_db
+def test_document_create_get_loads_markdown_editor_widget(auth_client):
+    response = auth_client.get(reverse("document-create"))
+    content = response.content.decode()
+    assert "js/markdown_editor.js" in content
+    assert "markdown-editor-toolbar" in content
+
+
+@pytest.mark.django_db
 def test_document_create_get_redactor_initial_json_empty_by_default(auth_client):
     response = auth_client.get(reverse("document-create"))
     assert response.context["redactor_initial_json"] == "[]"

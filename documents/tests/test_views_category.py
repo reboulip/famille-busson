@@ -230,6 +230,14 @@ def test_category_create_get_returns_200(staff_client):
 
 
 @pytest.mark.django_db
+def test_category_create_get_loads_markdown_editor_widget(staff_client):
+    response = staff_client.get(reverse("category-create"))
+    content = response.content.decode()
+    assert "js/markdown_editor.js" in content
+    assert "markdown-editor-toolbar" in content
+
+
+@pytest.mark.django_db
 def test_category_create_post_creates_category(staff_client, db):
     response = staff_client.post(reverse("category-create"), {"name": "Nouvelle catégorie", "description": ""})
     assert response.status_code == 302
