@@ -10,7 +10,7 @@
 - [x] 2.1 · PDF/file viewer overhaul — enlarge the document viewer to use the available
   page space, add a full-screen display mode, add a download button for PDFs, and fix
   the PDF viewer on mobile (currently broken). [#98] [#99] [#100]
-- [ ] 2.2 · Responsive image viewer & carousel — fit image documents to the viewport
+- [x] 2.2 · Responsive image viewer & carousel — fit image documents to the viewport
   with zoom support; for documents with multiple images, show a carousel (one image at
   a time on mobile, several on desktop) — final layout to be refined during
   implementation. [#101]

@@ -25,6 +25,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.document-viewer-pdf-pages').forEach((container) => {
         renderPdf(container);
     });
+
+    // Zoom: click-to-toggle between "fit" (shrunk to its container) and "1:1"
+    // (natural size, scrollable within .document-viewer-stage's own overflow: auto).
+    // Native pinch-zoom is left to the browser (touch-action: pinch-zoom in CSS)
+    // rather than a custom gesture handler.
+    document.querySelectorAll('.document-viewer-zoomable').forEach((img) => {
+        img.addEventListener('click', () => {
+            img.classList.toggle('document-viewer-zoomable--zoomed');
+        });
+    });
 });
 
 async function renderPdf(container) {

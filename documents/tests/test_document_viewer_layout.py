@@ -61,3 +61,40 @@ def test_document_viewer_js_sets_pdfjs_worker_src_before_loading_document():
     worker_assignment = content.index("GlobalWorkerOptions.workerSrc")
     get_document_call = content.index("getDocument")
     assert worker_assignment < get_document_call
+
+
+def test_document_viewer_carousel_strip_is_one_item_per_row_by_default():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-strip-item")
+    assert _declared_value(body, "flex") == "0 0 100%"
+
+
+def test_document_viewer_carousel_strip_shows_several_per_row_on_desktop():
+    # This file has multiple `.document-viewer-strip-item` rules (mobile default +
+    # desktop override) and multiple unrelated `@media (min-width: 992px)` blocks
+    # elsewhere -- find the specific media block that contains this selector.
+    css_text = _strip_comments(MAIN_CSS.read_text(encoding="utf-8"))
+    for match in re.finditer(r"@media \(min-width: 992px\)\s*\{(.*?)\n\}", css_text, re.DOTALL):
+        block = match.group(1)
+        if ".document-viewer-strip-item" not in block:
+            continue
+        body = _rule_body(block, ".document-viewer-strip-item")
+        flex_value = _declared_value(body, "flex")
+        assert flex_value is not None
+        assert "100%" not in flex_value  # must differ from the mobile one-per-row value
+        return
+    raise AssertionError("No @media (min-width: 992px) block containing .document-viewer-strip-item found")
+
+
+def test_document_viewer_strip_scrolls_horizontally_with_native_touch_swipe():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-stage.document-viewer-strip")
+    assert _declared_value(body, "overflow-x") == "auto"
+
+
+def test_document_viewer_js_toggles_zoom_class():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "document-viewer-zoomable--zoomed" in content
+
+
+def test_document_viewer_zoom_uses_pinch_zoom_touch_action_not_a_custom_gesture_handler():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-zoomable")
+    assert _declared_value(body, "touch-action") == "pinch-zoom"

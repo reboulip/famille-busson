@@ -89,6 +89,68 @@ def test_document_detail_branches_image_inline(auth_client, document):
 
 
 @pytest.mark.django_db
+def test_document_detail_single_image_has_no_carousel_strip(auth_client, document):
+    DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "document-viewer-strip" not in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_document_detail_multi_image_shows_carousel_strip_with_every_image(auth_client, document):
+    files = [
+        DocumentFile.objects.create(
+            document=document, file=SimpleUploadedFile(f"photo{i}.jpg", b"fake image", content_type="image/jpeg")
+        )
+        for i in range(3)
+    ]
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert "document-viewer-strip" in content
+    for file in files:
+        assert reverse("document-file", kwargs={"pk": file.pk}) in content
+
+
+@pytest.mark.django_db
+def test_document_detail_multi_image_lazy_loads_all_but_the_first(auth_client, document):
+    for i in range(3):
+        DocumentFile.objects.create(
+            document=document, file=SimpleUploadedFile(f"photo{i}.jpg", b"fake image", content_type="image/jpeg")
+        )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert content.count('loading="lazy"') == 2
+
+
+@pytest.mark.django_db
+def test_document_detail_multi_image_shows_per_image_captions(auth_client, document):
+    DocumentFile.objects.create(
+        document=document,
+        file=SimpleUploadedFile("photo1.jpg", b"fake image", content_type="image/jpeg"),
+        caption="Recto",
+    )
+    DocumentFile.objects.create(
+        document=document,
+        file=SimpleUploadedFile("photo2.jpg", b"fake image", content_type="image/jpeg"),
+        caption="Verso",
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert "Recto" in content
+    assert "Verso" in content
+
+
+@pytest.mark.django_db
+def test_document_detail_images_are_zoomable(auth_client, document):
+    DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "document-viewer-zoomable" in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_document_detail_branches_pdf_into_viewer_not_embed(auth_client, document):
     # <embed> renders nothing on many mobile browsers (no PDF plugin) -- PDFs now go
     # through a pdf.js-rendered canvas instead. See documents/static/js/document_viewer.js.

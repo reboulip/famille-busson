@@ -20,19 +20,37 @@
     {% endif %}
     <h2>Fichiers</h2>
     <div class="document-file-list">
-        {% for file in image_files %}
-            <div class="document-viewer" data-file-id="{{ file.pk }}">
+        {% if image_files %}
+            <div class="document-viewer" data-file-id="{{ image_files.0.pk }}">
                 <div class="document-viewer-toolbar">
-                    <span class="document-viewer-caption">{{ file.caption|default:file.filename }}</span>
+                    <span class="document-viewer-caption">
+                        {% if image_files|length > 1 %}{{ image_files|length }} images{% else %}{{ image_files.0.caption|default:image_files.0.filename }}{% endif %}
+                    </span>
                     <div class="document-viewer-actions">
                         <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-fullscreen-btn">⛶ Plein écran</button>
                     </div>
                 </div>
-                <div class="document-viewer-stage">
-                    <img src="{% url 'document-file' file.pk %}" alt="{{ file.caption|default:file.filename }}" class="document-file-preview-image">
-                </div>
+                {% if image_files|length > 1 %}
+                    <div class="document-viewer-stage document-viewer-strip">
+                        {% for file in image_files %}
+                            <div class="document-viewer-strip-item">
+                                <img src="{% url 'document-file' file.pk %}" alt="{{ file.caption|default:file.filename }}"
+                                     class="document-file-preview-image document-viewer-zoomable"
+                                     {% if not forloop.first %}loading="lazy"{% endif %}>
+                                {% if file.caption %}
+                                    <p class="document-viewer-strip-caption">{{ file.caption }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="document-viewer-stage">
+                        <img src="{% url 'document-file' image_files.0.pk %}" alt="{{ image_files.0.caption|default:image_files.0.filename }}"
+                             class="document-file-preview-image document-viewer-zoomable">
+                    </div>
+                {% endif %}
             </div>
-        {% endfor %}
+        {% endif %}
         {% for file in pdf_files %}
             <div class="document-viewer" data-file-id="{{ file.pk }}">
                 <div class="document-viewer-toolbar">
