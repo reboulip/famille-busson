@@ -3,6 +3,71 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v0.13.0 — Phases 2 & 3: Document viewer polish, markdown everywhere, deceased-profile handling
+
+> Document viewer/creation refinements, Markdown editing rolled out to the last two
+> holdout fields (documents app, profile description), a `deceased` attribute on
+> `Person` with matching notification suppression, and directory/genealogy
+> quality-of-life fixes.
+
+### Documents — visionneuse
+- **PDF/file viewer overhaul** — enlarged the document viewer to use the available page
+  space, added a full-screen display mode and a download button for PDFs, and fixed the
+  PDF viewer on mobile (previously broken). [#98] [#99] [#100]
+- **Responsive image viewer & carousel** — image documents fit the viewport with zoom
+  support; documents with multiple images show a carousel (one image at a time on
+  mobile, several on desktop). [#101]
+
+### Documents — création & catégorisation
+- **Require at least one file per document** — saving a `Document` with zero
+  `DocumentFile`s is now blocked. [#97]
+- **Nested category dropdown** — sub-categories show indented under their parent in the
+  category `<select>` on the document create/edit form. [#102]
+- **"Add document" button on category view** — pre-fills the category on the document
+  creation form. [#96]
+
+### Documents — métadonnées & accès
+- **`Document.redactor` field** — optional `Person` FK for the document's author/editor,
+  separate from `uploaded_by`. [#107]
+- **Category view: access & hierarchy** — shows which groups can access the category
+  ("Visible par : ..." / "Tous" if unrestricted) and shows parent/child categories.
+  [#95]
+
+### Markdown
+- **Fixed list rendering after a paragraph** — a `- item` list directly following a
+  paragraph (no blank line) now renders as `<ul>` in the shared `markdown_utils.py`
+  pipeline. [#93]
+- **Consistent markdown rendering on card previews** — the existing `markdown_plain`
+  filter (already used by publications' cards) now applies to document/category card
+  excerpts. [#92]
+- **Markdown editor toolbar** — wired the existing Write/Preview widget into the
+  documents app's category/document description fields, with lightweight GitHub-style
+  formatting buttons (bold/italic/list/etc.). [#94]
+- **Markdown editor on profile description** — wired the same Write/Preview widget into
+  `ProfileEditForm`'s `description` field, which previously rendered as a plain textarea
+  even though it was displayed through the markdown pipeline.
+
+### Annuaire — profil
+- **Annuaire sort options** — the directory list defaults to most-recently-created
+  first; added sortable birth date and alphabetical name (asc/desc). [#106]
+- **Edit Profile view buttons** — mirrored the Save/Edit-relations buttons at the top of
+  the page, and added a Cancel button (top + bottom) returning to the profile view.
+  [#105]
+- **Deceased attribute on Person** — admin/staff-only `deceased` flag + optional death
+  date; when set: suppresses birthday notifications, renders the photo in greyscale with
+  a black border (annuaire, profile, genealogy), and excludes the profile from the
+  "profiles without a geolocated address" count. [#104]
+
+### Généalogie
+- **Genealogy export** — renamed "exporter en excel" to "exporter le carnet d'adresse en
+  excel"; added an "exporter en image" button generating a JPEG of the displayed tree.
+  [#90]
+
+### Publications
+- **Exclude deceased profiles from outbound notifications** — blog-post notification
+  emails (`publications/signals.py`) now suppress deceased profiles too, matching the
+  birthday-reminder suppression already in place.
+
 ## v0.12.0 — Phase 1: Document management
 
 > A new `documents` app (upload/browse/view/edit family documents, PDF/doc/image
