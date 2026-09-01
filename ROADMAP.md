@@ -58,6 +58,20 @@
   d'adresse en excel"; add an "exporter en image" button generating a JPEG of the
   displayed tree. (requires: 2.13) [#90]
 
+## Phase 3
+
+### Cluster: Markdown
+- [ ] 3.1 · Markdown editor on profile description — wire the same Write/Preview
+  widget already used elsewhere (documents app, publications) into `ProfileEditForm`'s
+  `description` field, which today renders as a plain textarea even though it's
+  displayed through the markdown pipeline.
+
+### Cluster: Publications
+- [ ] 3.2 · Exclude deceased profiles from outbound notifications — new blog-post
+  emails (`publications/signals.py`) currently mail every subscriber regardless of the
+  `deceased` flag on `Person`; extend that suppression here too, matching the
+  birthday-reminder suppression already in place.
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
@@ -81,17 +95,3 @@
   password-reset and magic-link request views; needs a shared cache backend first
   (current `CACHES` setting is unset, defaulting to per-worker `LocMemCache`, which a
   throttle built on it would trivially bypass). (priority: tbd)
-
-### Cluster: Markdown
-- [ ] B.4 · Markdown editor on profile description — wire the same Write/Preview
-  widget used elsewhere (see Phase 2's 2.10) into `ProfileEditForm`'s `description`
-  field, which today renders as a plain textarea even though it's displayed through
-  the markdown pipeline. Surfaced during Phase 2 planning; scoped out of that sprint
-  to avoid a `annuaire/forms.py` collision with 2.13. (priority: tbd)
-
-### Cluster: Publications
-- [ ] B.5 · Exclude deceased profiles from outbound notifications — new blog-post
-  emails (`publications/signals.py`) currently mail every subscriber regardless of
-  the `deceased` flag added in Phase 2's 2.13; extend that suppression here too.
-  Surfaced during Phase 2 planning; scoped out of that sprint as a separate app's
-  concern. (priority: tbd)
