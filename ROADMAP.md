@@ -67,7 +67,7 @@
   displayed through the markdown pipeline.
 
 ### Cluster: Publications
-- [ ] 3.2 · Exclude deceased profiles from outbound notifications — new blog-post
+- [x] 3.2 · Exclude deceased profiles from outbound notifications — new blog-post
   emails (`publications/signals.py`) currently mail every subscriber regardless of the
   `deceased` flag on `Person`; extend that suppression here too, matching the
   birthday-reminder suppression already in place.

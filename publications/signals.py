@@ -20,6 +20,7 @@ def notify_subscribers_of_new_post(sender, instance, created, **kwargs):
         NotificationSettings.objects.filter(notify_on_new_blog_post=True)
         .exclude(person__email__isnull=True)
         .exclude(person__email="")
+        .exclude(person__deceased=True)
         .select_related("person")
     )
     if not subscribers:
