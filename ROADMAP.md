@@ -61,7 +61,7 @@
 ## Phase 3
 
 ### Cluster: Markdown
-- [ ] 3.1 · Markdown editor on profile description — wire the same Write/Preview
+- [x] 3.1 · Markdown editor on profile description — wire the same Write/Preview
   widget already used elsewhere (documents app, publications) into `ProfileEditForm`'s
   `description` field, which today renders as a plain textarea even though it's
   displayed through the markdown pipeline.

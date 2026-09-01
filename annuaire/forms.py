@@ -8,6 +8,7 @@ from django.core.validators import validate_email
 from django.urls import reverse_lazy
 
 from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
+from .widgets import MarkdownEditorWidget
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
@@ -67,6 +68,7 @@ class ProfileEditForm(forms.ModelForm):
             "postal_address": AddressAutocompleteInput,
             "latitude": forms.HiddenInput,
             "longitude": forms.HiddenInput,
+            "description": MarkdownEditorWidget,
         }
         help_texts = {
             "postal_address": ADDRESS_HELP_TEXT,
