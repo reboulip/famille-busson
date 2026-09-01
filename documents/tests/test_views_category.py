@@ -107,6 +107,21 @@ def test_category_detail_404_on_invalid_pk(auth_client):
     assert response.status_code == 404
 
 
+@pytest.mark.django_db
+def test_category_detail_shows_add_document_button_linking_to_create_with_category(auth_client, category):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": category.pk}))
+    content = response.content.decode()
+    expected_url = reverse("document-create") + f"?category={category.pk}"
+    assert expected_url in content
+
+
+@pytest.mark.django_db
+def test_category_detail_locked_hides_add_document_button(auth_client, restricted_category):
+    response = auth_client.get(reverse("category-detail", kwargs={"pk": restricted_category.pk}))
+    content = response.content.decode()
+    assert "Ajouter un document" not in content
+
+
 # ---------------------------------------------------------------------------
 # CategoryCreateView / CategoryUpdateView
 # ---------------------------------------------------------------------------

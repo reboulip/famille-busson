@@ -120,6 +120,19 @@ def test_document_create_get_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_document_create_get_prefills_category_from_query_param(auth_client, category):
+    response = auth_client.get(reverse("document-create") + f"?category={category.pk}")
+    assert response.context["form"].initial.get("category") == category.pk
+
+
+@pytest.mark.django_db
+def test_document_create_get_ignores_non_digit_category_query_param(auth_client):
+    response = auth_client.get(reverse("document-create") + "?category=abc")
+    assert response.status_code == 200
+    assert "category" not in response.context["form"].initial
+
+
+@pytest.mark.django_db
 def test_document_create_category_scoped_to_accessible_for_non_staff(auth_client, category, restricted_category):
     response = auth_client.get(reverse("document-create"))
     category_qs = response.context["form"].fields["category"].queryset
@@ -146,9 +159,8 @@ def _formset_management_data(prefix="files", total=0):
 
 
 @pytest.mark.django_db
-def test_document_create_post_creates_document_and_sets_uploaded_by(auth_client, person, category):
-    data = {"title": "Acte de vente", "category": category.pk, "document_date": "", "description": ""}
-    data.update(_formset_management_data())
+def test_document_create_post_creates_document_and_sets_uploaded_by(auth_client, person, category, document_post_data):
+    data = document_post_data(category, title="Acte de vente")
     response = auth_client.post(reverse("document-create"), data)
     assert response.status_code == 302
     document = Document.objects.get(title="Acte de vente")
@@ -156,15 +168,23 @@ def test_document_create_post_creates_document_and_sets_uploaded_by(auth_client,
 
 
 @pytest.mark.django_db
-def test_document_create_post_with_file_creates_document_file(auth_client, category):
-    data = {"title": "Avec fichier", "category": category.pk, "document_date": "", "description": ""}
-    data.update(_formset_management_data(total=1))
-    data["files-0-caption"] = ""
-    data["files-0-file"] = SimpleUploadedFile("scan.pdf", b"%PDF-fake", content_type="application/pdf")
+def test_document_create_post_with_file_creates_document_file(auth_client, category, document_post_data):
+    data = document_post_data(category, title="Avec fichier")
     response = auth_client.post(reverse("document-create"), data)
     assert response.status_code == 302
     document = Document.objects.get(title="Avec fichier")
     assert document.files.count() == 1
+
+
+@pytest.mark.django_db
+def test_document_create_post_with_zero_files_shows_error_and_creates_nothing(
+    auth_client, category, document_post_data
+):
+    data = document_post_data(category, title="Sans fichier", files=0)
+    response = auth_client.post(reverse("document-create"), data)
+    assert response.status_code == 200
+    assert "Un document doit contenir au moins un fichier." in response.content.decode()
+    assert not Document.objects.filter(title="Sans fichier").exists()
 
 
 # ---------------------------------------------------------------------------
@@ -213,14 +233,42 @@ def test_document_update_renders_with_existing_file(auth_client, person, categor
 
 
 @pytest.mark.django_db
-def test_document_update_post_renames_document(auth_client, person, category):
+def test_document_update_post_renames_document(auth_client, person, category, document_post_data):
     document = Document.objects.create(title="Ancien titre", category=category, uploaded_by=person)
-    data = {"title": "Nouveau titre", "category": category.pk, "document_date": "", "description": ""}
-    data.update(_formset_management_data())
+    data = document_post_data(category, title="Nouveau titre")
     response = auth_client.post(reverse("document-edit", kwargs={"pk": document.pk}), data)
     assert response.status_code == 302
     document.refresh_from_db()
     assert document.title == "Nouveau titre"
+
+
+@pytest.mark.django_db
+def test_document_update_post_with_zero_files_shows_error_and_does_not_save(
+    auth_client, person, category, document_post_data
+):
+    document = Document.objects.create(title="Ancien titre", category=category, uploaded_by=person)
+    data = document_post_data(category, title="Nouveau titre", files=0)
+    response = auth_client.post(reverse("document-edit", kwargs={"pk": document.pk}), data)
+    assert response.status_code == 200
+    assert "Un document doit contenir au moins un fichier." in response.content.decode()
+    document.refresh_from_db()
+    assert document.title == "Ancien titre"
+
+
+@pytest.mark.django_db
+def test_document_update_post_deleting_the_only_file_shows_error(auth_client, person, category):
+    document = Document.objects.create(title="Mon document", category=category, uploaded_by=person)
+    doc_file = DocumentFile.objects.create(document=document, file=SimpleUploadedFile("scan.pdf", b"%PDF-fake"))
+    data = {"title": "Mon document", "category": category.pk, "document_date": "", "description": ""}
+    data.update(_formset_management_data(total=1))
+    data["files-INITIAL_FORMS"] = "1"
+    data["files-0-id"] = str(doc_file.pk)
+    data["files-0-caption"] = ""
+    data["files-0-DELETE"] = "on"
+    response = auth_client.post(reverse("document-edit", kwargs={"pk": document.pk}), data)
+    assert response.status_code == 200
+    assert "Un document doit contenir au moins un fichier." in response.content.decode()
+    assert DocumentFile.objects.filter(pk=doc_file.pk).exists()
 
 
 # ---------------------------------------------------------------------------

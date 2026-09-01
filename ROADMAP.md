@@ -16,11 +16,11 @@
   implementation. [#101]
 
 ### Cluster: Documents — création & catégorisation
-- [ ] 2.3 · Require at least one file per document — block saving a `Document` with
+- [x] 2.3 · Require at least one file per document — block saving a `Document` with
   zero `DocumentFile`s. [#97]
 - [ ] 2.4 · Nested category dropdown — show sub-categories indented under their parent
   in the category `<select>` on the document create/edit form. [#102]
-- [ ] 2.5 · "Add document" button on category view — pre-fills the category on the
+- [x] 2.5 · "Add document" button on category view — pre-fills the category on the
   document creation form. [#96]
 
 ### Cluster: Documents — métadonnées & accès
@@ -31,7 +31,7 @@
   categories. [#95]
 
 ### Cluster: Markdown
-- [ ] 2.8 · Fix list rendering after a paragraph — a `- item` list directly following a
+- [x] 2.8 · Fix list rendering after a paragraph — a `- item` list directly following a
   paragraph (no blank line) doesn't render as `<ul>` in the shared `markdown_utils.py`
   pipeline. [#93]
 - [ ] 2.9 · Consistent markdown rendering on card previews — apply the existing
@@ -43,7 +43,7 @@
   implementation. [#94]
 
 ### Cluster: Annuaire — profil
-- [ ] 2.11 · Annuaire sort options — default the directory list to most-recently-created
+- [x] 2.11 · Annuaire sort options — default the directory list to most-recently-created
   first; add sortable birth date and alphabetical name (asc/desc). [#106]
 - [ ] 2.12 · Edit Profile view buttons — mirror the Save/Edit-relations buttons at the
   top of the page, and add a Cancel button (top + bottom) returning to the profile
@@ -56,7 +56,7 @@
 ### Cluster: Généalogie
 - [ ] 2.14 · Genealogy export — rename "exporter en excel" to "exporter le carnet
   d'adresse en excel"; add an "exporter en image" button generating a JPEG of the
-  displayed tree. [#90]
+  displayed tree. (requires: 2.13) [#90]
 
 ## Backlog
 
@@ -81,3 +81,17 @@
   password-reset and magic-link request views; needs a shared cache backend first
   (current `CACHES` setting is unset, defaulting to per-worker `LocMemCache`, which a
   throttle built on it would trivially bypass). (priority: tbd)
+
+### Cluster: Markdown
+- [ ] B.4 · Markdown editor on profile description — wire the same Write/Preview
+  widget used elsewhere (see Phase 2's 2.10) into `ProfileEditForm`'s `description`
+  field, which today renders as a plain textarea even though it's displayed through
+  the markdown pipeline. Surfaced during Phase 2 planning; scoped out of that sprint
+  to avoid a `annuaire/forms.py` collision with 2.13. (priority: tbd)
+
+### Cluster: Publications
+- [ ] B.5 · Exclude deceased profiles from outbound notifications — new blog-post
+  emails (`publications/signals.py`) currently mail every subscriber regardless of
+  the `deceased` flag added in Phase 2's 2.13; extend that suppression here too.
+  Surfaced during Phase 2 planning; scoped out of that sprint as a separate app's
+  concern. (priority: tbd)

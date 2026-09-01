@@ -49,6 +49,42 @@ def test_render_markdown_tables():
     assert "<table>" in html
 
 
+def test_render_markdown_list_immediately_after_paragraph():
+    html = render_markdown("Texte\n- item")
+    assert "<ul>" in html
+    assert "<li>item</li>" in html
+
+
+def test_render_markdown_ordered_list_immediately_after_paragraph():
+    html = render_markdown("Texte\n1. item")
+    assert "<ol>" in html
+    assert "<li>item</li>" in html
+
+
+def test_render_markdown_year_followed_by_period_is_not_a_list():
+    html = render_markdown("il est né en\n1999. C'était une bonne année.")
+    assert "<ol" not in html
+    assert "1999." in html
+
+
+def test_render_markdown_lone_asterisk_emphasis_unaffected():
+    html = render_markdown("*italique*")
+    assert "<em>italique</em>" in html
+    assert "<li>" not in html
+
+
+def test_render_markdown_list_after_blank_line_still_works():
+    html = render_markdown("Texte\n\n- item")
+    assert "<ul>" in html
+    assert "<li>item</li>" in html
+
+
+def test_render_markdown_list_inside_fenced_code_stays_literal():
+    html = render_markdown("Texte\n```\ntexte\n- pas une liste\n```")
+    assert "<ul>" not in html
+    assert "- pas une liste" in html
+
+
 def test_render_markdown_strips_script_tags():
     html = render_markdown("<script>alert('xss')</script>texte")
     assert "<script" not in html

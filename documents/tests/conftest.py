@@ -47,3 +47,25 @@ def restricted_category(db, group):
     category = Category.objects.create(name="Documents SCI")
     category.groups.add(group)
     return category
+
+
+@pytest.fixture
+def document_post_data():
+    """Builds a valid document-create/document-edit POST payload, including the
+    formset management form and `files` non-deleted file uploads by default. Since
+    2.3, a zero-file payload (files=0) is *invalid* -- callers testing that rejection
+    path pass files=0 explicitly."""
+
+    def _make(category, *, files=1, **overrides):
+        data = {"title": "Titre", "category": category.pk, "document_date": "", "description": ""}
+        data["files-TOTAL_FORMS"] = str(files)
+        data["files-INITIAL_FORMS"] = "0"
+        data["files-MIN_NUM_FORMS"] = "0"
+        data["files-MAX_NUM_FORMS"] = "1000"
+        for i in range(files):
+            data[f"files-{i}-caption"] = ""
+            data[f"files-{i}-file"] = SimpleUploadedFile(f"file{i}.pdf", b"%PDF-fake", content_type="application/pdf")
+        data.update(overrides)
+        return data
+
+    return _make

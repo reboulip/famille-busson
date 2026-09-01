@@ -14,7 +14,8 @@ from django.contrib.auth.views import LoginView, PasswordResetConfirmView, Passw
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection, send_mail
 from django.db import transaction
-from django.db.models import ProtectedError, Q
+from django.db.models import F, ProtectedError, Q
+from django.db.models.functions import Lower
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -725,6 +726,16 @@ class ProfileClaimView(LoginRequiredMixin, View):
         return redirect("person-edit", pk=person.pk)
 
 
+DIRECTORY_SORTS = {
+    "recent": ("-pk",),
+    "name_asc": (Lower("last_name"), Lower("first_name"), "pk"),
+    "name_desc": (Lower("last_name").desc(), Lower("first_name").desc(), "-pk"),
+    "birth_asc": (F("birth_date").asc(nulls_last=True), "last_name", "pk"),
+    "birth_desc": (F("birth_date").desc(nulls_last=True), "last_name", "pk"),
+}
+DEFAULT_DIRECTORY_SORT = "recent"
+
+
 class DirectoryListView(LoginRequiredMixin, ListView):
     model = Person
     template_name = "annuaire/annuaire_list.html"
@@ -732,7 +743,9 @@ class DirectoryListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         q = self.request.GET.get("q", "")
-        qs = Person.objects.all().order_by("last_name", "first_name")
+        sort = self.request.GET.get("sort", DEFAULT_DIRECTORY_SORT)
+        ordering = DIRECTORY_SORTS.get(sort, DIRECTORY_SORTS[DEFAULT_DIRECTORY_SORT])
+        qs = Person.objects.all().order_by(*ordering)
         if q:
             qs = qs.filter(Q(last_name__icontains=q) | Q(first_name__icontains=q))
         return qs
@@ -740,6 +753,8 @@ class DirectoryListView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["query"] = self.request.GET.get("q", "")
+        sort = self.request.GET.get("sort", DEFAULT_DIRECTORY_SORT)
+        context["sort"] = sort if sort in DIRECTORY_SORTS else DEFAULT_DIRECTORY_SORT
         return context
 
 

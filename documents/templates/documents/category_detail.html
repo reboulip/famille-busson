@@ -12,6 +12,9 @@
         {% if category.description %}
             <div class="markdown-body">{{ category.description|markdown }}</div>
         {% endif %}
+        <div class="mb-3">
+            <a href="{% url 'document-create' %}?category={{ category.pk }}" class="btn btn-outline-primary">+ Ajouter un document</a>
+        </div>
         {% if user.is_staff %}
             <div class="mb-3">
                 <a href="{% url 'category-edit' category.pk %}" class="btn btn-outline-secondary">Modifier</a>

@@ -198,6 +198,13 @@ class DocumentCreateView(LoginRequiredMixin, CreateView):
         kwargs["user"] = self.request.user
         return kwargs
 
+    def get_initial(self):
+        initial = super().get_initial()
+        category_id = self.request.GET.get("category", "")
+        if category_id.isdigit():
+            initial["category"] = int(category_id)
+        return initial
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:

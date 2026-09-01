@@ -5,6 +5,13 @@
         <h1>Annuaire</h1>
         <form method="get" action="{% url 'directory' %}" class="search-form">
             <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
+            <select name="sort" class="form-select">
+                <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récents d'abord</option>
+                <option value="name_asc" {% if sort == "name_asc" %}selected{% endif %}>Nom (A → Z)</option>
+                <option value="name_desc" {% if sort == "name_desc" %}selected{% endif %}>Nom (Z → A)</option>
+                <option value="birth_asc" {% if sort == "birth_asc" %}selected{% endif %}>Date de naissance (croissant)</option>
+                <option value="birth_desc" {% if sort == "birth_desc" %}selected{% endif %}>Date de naissance (décroissant)</option>
+            </select>
             <button type="submit" class="btn btn-outline-primary">Rechercher</button>
             {% if query %}
                 <a href="{% url 'directory' %}" class="btn btn-outline-secondary">Effacer</a>

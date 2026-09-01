@@ -48,10 +48,32 @@ class DocumentForm(forms.ModelForm):
             self.fields["category"].queryset = accessible_categories(user)
 
 
+class BaseDocumentFileFormSet(forms.BaseInlineFormSet):
+    """Requires at least one non-deleted file, on both create and edit. Enforced here
+    (formset level) rather than as a Document.clean()/DB constraint because
+    DocumentCreateView.form_valid() saves the Document before the formset, making a
+    model-level "has files" constraint structurally impossible to satisfy at save
+    time -- and because the formset is the only place that knows about pending
+    deletions on edit."""
+
+    def clean(self):
+        super().clean()
+        if any(self.errors):
+            return
+        has_file = any(
+            form.cleaned_data.get("file") and not form.cleaned_data.get("DELETE", False)
+            for form in self.forms
+            if form.cleaned_data
+        )
+        if not has_file:
+            raise forms.ValidationError("Un document doit contenir au moins un fichier.")
+
+
 DocumentFileFormSet = forms.inlineformset_factory(
     Document,
     DocumentFile,
     fields=["file", "caption"],
+    formset=BaseDocumentFileFormSet,
     extra=0,
     can_delete=True,
     widgets={"file": DocumentFileInput},
