@@ -364,6 +364,14 @@ def test_document_create_get_redactor_initial_json_empty_by_default(auth_client)
     assert response.context["redactor_initial_json"] == "[]"
 
 
+@pytest.mark.django_db
+def test_document_create_get_file_picker_allows_multiple_files(auth_client):
+    response = auth_client.get(reverse("document-create"))
+    content = response.content.decode()
+    assert '<input type="file" id="document-file-picker" multiple' in content
+    assert 'accept=".csv,.doc,.docx' in content
+
+
 # ---------------------------------------------------------------------------
 # DocumentUpdateView
 # ---------------------------------------------------------------------------

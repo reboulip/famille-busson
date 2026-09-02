@@ -8,22 +8,22 @@
 
 ### Cluster: Documents
 
-- [ ] 4.1 · Fix PDF viewer (`documents/static/js/document_viewer.js`'s `renderPdf()`):
+- [x] 4.1 · Fix PDF viewer (`documents/static/js/document_viewer.js`'s `renderPdf()`):
   first pages are hidden, and the viewer opens scrolled to the last/a far page instead
   of page 1 — likely the same root cause. [#109]
 - [ ] 4.2 · Fix document image viewer (`documents/static/js/document_viewer.js`,
   `.document-viewer-zoomable`): click-to-zoom isn't working; multi-image documents
   should step through one image at a time in fullscreen instead of showing them all at
   once. [#111]
-- [ ] 4.3 · Add a "+ Ajouter un document" button to `document_list.html`
+- [x] 4.3 · Add a "+ Ajouter un document" button to `document_list.html`
   (`DocumentListView`), matching the one already on `category_detail.html`. [#115]
-- [ ] 4.4 · Allow selecting multiple files at once for a document's attachments
+- [x] 4.4 · Allow selecting multiple files at once for a document's attachments
   (`documents/forms.py`'s `BaseDocumentFileFormSet`, `document_form.html`) instead of
   attaching one file per file-picker round-trip. [#116]
 
 ### Cluster: Annuaire
 
-- [ ] 4.5 · Make the directory list (`DirectoryListView`, `annuaire_list.html`) filter
+- [x] 4.5 · Make the directory list (`DirectoryListView`, `annuaire_list.html`) filter
   live: apply `sort` immediately on change and debounce `q` (~200ms) instead of
   requiring the "Rechercher" button; remove the button once both are automatic. [#110]
 

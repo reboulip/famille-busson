@@ -1,6 +1,7 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% load static %}
+{% load documents_extras %}
 {% block content %}
     <div class="form">
         <form method="POST" enctype="multipart/form-data" id="document-form">
@@ -49,7 +50,7 @@
                 <button type="button" class="btn btn-outline-secondary mt-2" id="add-document-file-btn">
                     + Ajouter un fichier
                 </button>
-                <input type="file" id="document-file-picker" hidden>
+                <input type="file" id="document-file-picker" multiple accept="{% allowed_file_extensions %}" hidden>
 
                 <template id="document-file-row-template">
                     <div class="document-file-row" data-existing="0">

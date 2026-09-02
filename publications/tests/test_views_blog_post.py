@@ -161,6 +161,14 @@ def test_blogpost_create_get_includes_markdown_editor_widget(auth_client):
 
 
 @pytest.mark.django_db
+def test_blogpost_create_get_attachment_picker_allows_multiple_files(auth_client):
+    response = auth_client.get(reverse("blogpost-create"))
+    content = response.content.decode()
+    assert '<input type="file" id="attachment-picker" multiple' in content
+    assert 'accept=".csv,.doc,.docx' in content
+
+
+@pytest.mark.django_db
 def test_blogpost_detail_comment_form_includes_markdown_editor_media(auth_client, blog_post):
     response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
     content = response.content.decode()

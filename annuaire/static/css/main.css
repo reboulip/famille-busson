@@ -1102,13 +1102,19 @@ h2 {
     height: 70vh;
     min-height: 320px;
     overflow: auto;
+    overflow-anchor: none;
     background: #f8f9fa;
     border: 1px solid #e0e0e0;
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    /* `safe` keeps content centered when it fits, but falls back to flex-start once
+       it overflows -- plain `center` in a *scrollable* flex container makes the
+       overflow above the visible area unreachable (scrollTop can't go negative),
+       which is what made the PDF viewer open on a far page with its first pages
+       permanently clipped (#109). Also relied on by 4.2's zoomed-image panning. */
+    align-items: safe center;
+    justify-content: safe center;
     padding: 12px;
 }
 

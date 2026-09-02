@@ -2,6 +2,7 @@
 {% block content %}
     <div class="page-header">
         <h1>Documents</h1>
+        <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" class="btn btn-outline-primary">+ Ajouter un document</a>
     </div>
     <form method="get" class="search-form mb-3">
         <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…" class="search-input">

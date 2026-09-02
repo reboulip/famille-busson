@@ -46,6 +46,11 @@ async function renderPdf(container) {
         // read as {} and fails with "expected either `data`, `range`, or `url`".
         const pdf = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
         container.innerHTML = '';
+
+        // Pass 1: size every canvas up front, so the container reaches its final
+        // height before anything renders -- rendering incrementally let the browser's
+        // scroll anchoring drag scrollTop away from 0 as each page was appended (#109).
+        const pages = [];
         for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
             const page = await pdf.getPage(pageNumber);
             const targetWidth = container.clientWidth || 600;
@@ -56,10 +61,32 @@ async function renderPdf(container) {
             canvas.width = viewport.width;
             canvas.height = viewport.height;
             container.appendChild(canvas);
-            const context = canvas.getContext('2d');
-            // eslint-disable-next-line no-await-in-loop -- pages must render in order
-            await page.render({ canvasContext: context, viewport }).promise;
+            pages.push({ canvas, page, viewport });
         }
+
+        const stage = container.closest('.document-viewer-stage');
+        if (stage) stage.scrollTop = 0;
+
+        // Pass 2: render lazily as each page scrolls into view, instead of blocking
+        // the first paint on every page of a long scanned document.
+        const rendered = new WeakSet();
+        const renderPage = async ({ canvas, page, viewport }) => {
+            if (rendered.has(canvas)) return;
+            rendered.add(canvas);
+            const context = canvas.getContext('2d');
+            await page.render({ canvasContext: context, viewport }).promise;
+        };
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) return;
+                    const target = pages.find(({ canvas }) => canvas === entry.target);
+                    if (target) renderPage(target);
+                });
+            },
+            { root: stage || null, rootMargin: '200px 0px' },
+        );
+        pages.forEach(({ canvas }) => observer.observe(canvas));
     } catch (error) {
         console.error('Échec du rendu PDF :', error);
         container.textContent = "Impossible d'afficher ce PDF ici. ";
