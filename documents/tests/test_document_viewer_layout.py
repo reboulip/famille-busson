@@ -108,3 +108,45 @@ def test_document_viewer_js_toggles_zoom_class():
 def test_document_viewer_zoom_uses_pinch_zoom_touch_action_not_a_custom_gesture_handler():
     body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-zoomable")
     assert _declared_value(body, "touch-action") == "pinch-zoom"
+
+
+def test_document_viewer_zoomed_image_rule_out_specifies_the_base_image_rule():
+    # Regression guard for #111: a single-class ".document-viewer-zoomable--zoomed"
+    # rule used to lose to the later, equally-specific ".document-file-preview-image"
+    # rule -- the fix is a two-class selector combining both classes so it wins on
+    # specificity regardless of source order.
+    body = _rule_body(
+        MAIN_CSS.read_text(encoding="utf-8"), ".document-file-preview-image.document-viewer-zoomable--zoomed"
+    )
+    assert _declared_value(body, "max-width") == "none"
+    assert _declared_value(body, "max-height") == "none"
+    assert _declared_value(body, "flex") == "none"
+
+
+def test_document_viewer_fullscreen_carousel_shows_one_image_per_view():
+    # Must be placed outside the @media (min-width: 992px) block, else the desktop
+    # regression test above would read the wrong rule body (see that test's comment).
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer--fullscreen .document-viewer-strip-item")
+    assert _declared_value(body, "flex") == "0 0 100%"
+
+
+def test_document_viewer_fullscreen_carousel_snaps_to_exactly_one_image():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer--fullscreen .document-viewer-strip")
+    assert _declared_value(body, "scroll-snap-type") == "x mandatory"
+
+
+def test_document_viewer_js_defines_an_image_carousel():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "function initImageCarousel(" in content
+
+
+def test_document_viewer_js_carousel_responds_to_arrow_keys_in_fullscreen():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "'ArrowLeft'" in content
+    assert "'ArrowRight'" in content
+
+
+def test_document_viewer_js_clicking_a_strip_image_enters_fullscreen_instead_of_zooming():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "isStripImage" in content
+    assert "setFullscreen(true)" in content

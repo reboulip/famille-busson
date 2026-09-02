@@ -11,7 +11,7 @@
 - [x] 4.1 · Fix PDF viewer (`documents/static/js/document_viewer.js`'s `renderPdf()`):
   first pages are hidden, and the viewer opens scrolled to the last/a far page instead
   of page 1 — likely the same root cause. [#109]
-- [ ] 4.2 · Fix document image viewer (`documents/static/js/document_viewer.js`,
+- [x] 4.2 · Fix document image viewer (`documents/static/js/document_viewer.js`,
   `.document-viewer-zoomable`): click-to-zoom isn't working; multi-image documents
   should step through one image at a time in fullscreen instead of showing them all at
   once. [#111]
@@ -29,13 +29,13 @@
 
 ### Cluster: Généalogie
 
-- [ ] 4.6 · Fix genealogy tree image export (`family_tree.js`'s `htmlToImage.toJpeg`
+- [x] 4.6 · Fix genealogy tree image export (`family_tree.js`'s `htmlToImage.toJpeg`
   call): raise output resolution so large/main-branch exports stay legible, and fix
   relationship connector lines missing from the captured image. [#113]
 
 ### Cluster: Carte
 
-- [ ] 4.7 · Same-address people on the map (`annuaire/static/js/map_init.js`) spread
+- [x] 4.7 · Same-address people on the map (`annuaire/static/js/map_init.js`) spread
   into individual markers up to `SPREAD_MAX` (8); extend the existing "+N"
   cluster-badge marker (already used above that threshold) to same-address groups of
   any size instead of spreading small ones. [#114]

@@ -27,6 +27,11 @@
                         {% if image_files|length > 1 %}{{ image_files|length }} images{% else %}{{ image_files.0.caption|default:image_files.0.filename }}{% endif %}
                     </span>
                     <div class="document-viewer-actions">
+                        {% if image_files|length > 1 %}
+                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-carousel-prev" aria-label="Image précédente">‹</button>
+                            <span class="document-viewer-carousel-counter">1 / {{ image_files|length }}</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-carousel-next" aria-label="Image suivante">›</button>
+                        {% endif %}
                         <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-fullscreen-btn">⛶ Plein écran</button>
                     </div>
                 </div>

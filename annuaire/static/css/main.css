@@ -1162,10 +1162,6 @@ h2 {
 
 .document-viewer-zoomable--zoomed {
     cursor: zoom-out;
-    max-width: none;
-    max-height: none;
-    width: auto;
-    height: auto;
 }
 
 /* Fullscreen: a CSS fixed overlay rather than the native Fullscreen API, matching
@@ -1192,6 +1188,37 @@ h2 {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+}
+
+/* Two-class selector to out-specificity .document-file-preview-image above (#111) --
+   the zoom toggle class alone used to lose to it since both were single-class rules
+   and this one came first in source order. `flex: none` stops the column flex
+   container in .document-viewer-stage from shrinking the now-unclamped image back
+   down to fit. */
+.document-file-preview-image.document-viewer-zoomable--zoomed {
+    max-width: none;
+    max-height: none;
+    width: auto;
+    height: auto;
+    flex: none;
+}
+
+/* Fullscreen multi-image carousel (#111): one image at a time, regardless of the
+   desktop 3-up strip above -- overrides .document-viewer-strip-item's flex basis and
+   switches the strip's scroll-snap from "proximity" (used for casual browsing) to
+   "mandatory" (locks to exactly one image per swipe/scroll) while in fullscreen. */
+.document-viewer--fullscreen .document-viewer-strip-item {
+    flex: 0 0 100%;
+}
+
+.document-viewer--fullscreen .document-viewer-strip {
+    scroll-snap-type: x mandatory;
+}
+
+.document-viewer-carousel-counter {
+    font-size: 0.9em;
+    color: #555;
+    align-self: center;
 }
 
 .document-viewer-pdf-pages {

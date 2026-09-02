@@ -165,13 +165,29 @@ def test_family_tree_js_image_export_uses_html_to_image():
     assert "toJpeg" in content
 
 
+def _export_tree_image_section(content: str) -> str:
+    # exportTreeImage() was extracted into its own named function (#113) -- a stable
+    # anchor to slice from, unlike the old "genealogie-export-image" element-id
+    # string, which now appears *after* the function definition (at the button-wiring
+    # call site) rather than inside it. Window is generous: the function grew to
+    # cover the fit/capture/pixel-ratio/link-color logic in one pass.
+    start = content.index("function exportTreeImage(")
+    return content[start : start + 4000]
+
+
 def test_family_tree_js_image_export_fits_before_capturing():
     # Never capture the as-displayed (possibly panned/zoomed/clipped) viewport --
     # always fit the whole tree first, mirroring the fullscreen re-fit dance.
     content = FAMILY_TREE_JS.read_text(encoding="utf-8")
-    export_image_start = content.index("genealogie-export-image")
-    export_image_section = content[export_image_start : export_image_start + 1500]
-    assert "tree_position: 'fit'" in export_image_section
+    assert "tree_position: 'fit'" in _export_tree_image_section(content)
+
+
+def test_family_tree_js_image_export_fits_instantly_not_mid_transition():
+    # A capture that races the vendor's ~1000ms fit transition can catch the tree
+    # still panned/zoomed, or links still mid-fade-in (#113) -- transition_time: 0
+    # makes the fit instantaneous instead.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "transition_time: 0" in _export_tree_image_section(content)
 
 
 def test_family_tree_js_image_export_sets_white_background():
@@ -181,6 +197,34 @@ def test_family_tree_js_image_export_sets_white_background():
     assert "backgroundColor: '#ffffff'" in content
 
 
-def test_family_tree_js_image_export_caps_pixel_ratio():
+def test_family_tree_js_image_export_derives_pixel_ratio_from_fit_scale_not_screen_density():
+    # Regression guard for #113: a fixed pixelRatio tied to devicePixelRatio produced
+    # unreadably small output on a large tree (which fits at a small scale) regardless
+    # of the viewer's screen. The clamp constants replace the old
+    # `Math.min(window.devicePixelRatio || 1, 2)` literal.
     content = FAMILY_TREE_JS.read_text(encoding="utf-8")
-    assert "Math.min(window.devicePixelRatio || 1, 2)" in content
+    assert "Math.min(window.devicePixelRatio || 1, 2)" not in content
+    assert "EXPORT_MAX_SIDE = 8192" in content
+    assert "EXPORT_MAX_AREA = 16e6" in content
+    assert "EXPORT_MIN_PIXEL_RATIO = 2" in content
+    assert "scale\\(([\\d.]+)\\)" in content
+
+
+def test_family_tree_js_image_export_reads_link_color_from_computed_style():
+    # Regression guard for #113: html-to-image clones the tree's <svg> subtree raw,
+    # without inlining computed styles, so the vendor's default white stroke on
+    # relationship connector lines (overridden on-screen by main.css's `.f3 .link`
+    # rule) used to win in the captured image -- invisible lines on a white
+    # background. The fix reads the *computed* stroke rather than hardcoding the
+    # CSS color, so the two can never drift apart.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    section = _export_tree_image_section(content)
+    assert "getComputedStyle" in section
+    assert "link.style.stroke = '#6c757d'" not in section
+
+
+def test_family_tree_js_image_export_sets_jpeg_quality_and_skips_fonts():
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    section = _export_tree_image_section(content)
+    assert "quality: 0.92" in section
+    assert "skipFonts: true" in section
