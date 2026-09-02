@@ -44,7 +44,7 @@
             {% if person.birth_date %}<p class="contact-line mb-1">🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
             {% if person.deceased %}
                 <p class="contact-line mb-1">
-                    ✝ Décédé·e{% if person.death_date %} le {{ person.death_date|date:"j F Y" }}{% endif %}
+                    ✝ {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% endif %}
                 </p>
             {% endif %}
         </div>
