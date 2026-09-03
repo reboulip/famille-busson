@@ -166,13 +166,24 @@ def test_family_tree_js_image_export_uses_html_to_image():
 
 
 def _export_tree_image_section(content: str) -> str:
-    # exportTreeImage() was extracted into its own named function (#113) -- a stable
-    # anchor to slice from, unlike the old "genealogie-export-image" element-id
-    # string, which now appears *after* the function definition (at the button-wiring
-    # call site) rather than inside it. Window is generous: the function grew to
-    # cover the fit/capture/pixel-ratio/link-color logic in one pass.
+    """Just the body of exportTreeImage() -- a stable anchor, unlike the old
+    "genealogie-export-image" element-id string, which now appears *after* the function
+    definition (at the button-wiring call site) rather than inside it.
+
+    Sliced by matching braces rather than a fixed character window: the function keeps
+    growing (fit/capture, pixel ratio, link colour, and now the export crop), and a
+    window has to be re-tuned every time it does. Naive brace counting is enough here --
+    every brace in this function is real code, none hide inside a string or regex."""
     start = content.index("function exportTreeImage(")
-    return content[start : start + 4000]
+    depth = 0
+    for index in range(start, len(content)):
+        if content[index] == "{":
+            depth += 1
+        elif content[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return content[start : index + 1]
+    raise AssertionError("exportTreeImage() has unbalanced braces")
 
 
 def test_family_tree_js_image_export_fits_before_capturing():
@@ -228,3 +239,46 @@ def test_family_tree_js_image_export_sets_jpeg_quality_and_skips_fonts():
     section = _export_tree_image_section(content)
     assert "quality: 0.92" in section
     assert "skipFonts: true" in section
+
+
+def test_family_tree_js_image_export_crops_to_the_drawn_tree():
+    """ "fit" leaves the tree centred in a viewport-shaped mount, so a wide branch sits
+    in a band with large empty margins. Capturing the mount as-is spent more than half
+    of EXPORT_MAX_AREA on blank pixels -- resolution the cards never got (#113)."""
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "function contentBounds(" in content
+    section = _export_tree_image_section(content)
+    assert "const crop = contentBounds(exportMount);" in section
+    assert "transform: `translate(${-crop.left}px, ${-crop.top}px)`" in section
+    assert "transformOrigin: 'top left'" in section
+
+
+def test_family_tree_js_image_export_sizes_the_pixel_budget_from_the_cropped_area():
+    section = _export_tree_image_section(FAMILY_TREE_JS.read_text(encoding="utf-8"))
+    assert "const width = crop.width || 1;" in section
+    assert "const height = crop.height || 1;" in section
+
+
+def test_family_tree_js_content_bounds_includes_the_card_name_plates():
+    """A card's .card-label is positioned to overhang its parent's box, so a union over
+    `.card` alone crops the bottom row's names off."""
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "querySelectorAll('.card, .card *, .link')" in content
+
+
+def test_family_tree_js_content_bounds_never_crops_outside_the_mount():
+    # html-to-image only renders the node itself; a region beyond it would just be
+    # padded with background.
+    content = FAMILY_TREE_JS.read_text(encoding="utf-8")
+    assert "Math.min(nodeRect.width," in content
+    assert "Math.min(nodeRect.height," in content
+
+
+def test_family_tree_js_image_export_reads_the_node_it_was_handed():
+    """exportTreeImage() takes the node to capture as a parameter but used to read the
+    module-level `mount` for everything except the capture call itself -- the same
+    object today, a trap the moment a second chart is mounted."""
+    section = _export_tree_image_section(FAMILY_TREE_JS.read_text(encoding="utf-8"))
+    assert "mount.querySelectorAll('.link')" not in section
+    assert "exportMount.querySelectorAll('.link')" in section
+    assert "mount.querySelector('#htmlSvg" not in section

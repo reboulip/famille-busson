@@ -150,3 +150,104 @@ def test_document_viewer_js_clicking_a_strip_image_enters_fullscreen_instead_of_
     content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
     assert "isStripImage" in content
     assert "setFullscreen(true)" in content
+
+
+# ---------------------------------------------------------------------------
+# PDF rendering resolution, zoom and memory (#109)
+# ---------------------------------------------------------------------------
+
+
+def test_pdf_pages_render_at_the_device_pixel_ratio():
+    """Rendering one canvas pixel per CSS pixel is what left scanned PDFs unreadable:
+    a phone at devicePixelRatio 3 showed an A4 page through a 324-pixel-wide bitmap,
+    and downloading the file was the only way to read it (#109)."""
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "window.devicePixelRatio" in content
+    assert "cssScale * dpr" in content
+
+
+def test_pdf_canvas_css_size_is_set_independently_of_its_backing_store():
+    # The split is what lets the backing store carry dpr*zoom pixels, and lets a
+    # released page keep its place in the scroll.
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "canvas.style.width" in content
+    assert "canvas.style.height" in content
+
+
+def test_pdf_page_css_rule_does_not_shrink_the_canvas_back_to_fit():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-pdf-page")
+    assert _declared_value(body, "max-width") == "none"
+
+
+def test_pdf_viewer_offers_zoom_steps():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "PDF_ZOOM_STEPS" in content
+    assert "document-viewer-zoom-in" in content
+    assert "document-viewer-zoom-out" in content
+
+
+def test_pdf_zoom_controls_are_rendered_in_the_pdf_toolbar():
+    template = (Path(__file__).resolve().parent.parent / "templates" / "documents" / "document_detail.html").read_text(
+        encoding="utf-8"
+    )
+    assert "document-viewer-zoom-in" in template
+    assert "document-viewer-zoom-out" in template
+    assert "document-viewer-zoom-level" in template
+
+
+def test_pdf_pages_are_re_rendered_when_the_stage_changes_width():
+    """Fullscreen used to show the same small page inside a bigger box: the canvases
+    were sized once, at load, for the pre-fullscreen width (#109)."""
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "if (pdf) pdf.relayout();" in content
+    assert "window.addEventListener('resize'" in content
+
+
+def test_pdf_canvas_size_is_capped_per_page():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "PDF_MAX_CANVAS_SIDE" in content
+    assert "PDF_MAX_CANVAS_AREA" in content
+    assert "function clampScale(" in content
+
+
+def test_pdf_pages_release_their_pixels_once_far_off_screen():
+    """Lazy *rendering* alone still accumulated every page ever shown -- 60 A4 pages at
+    fit width is ~117M pixels of canvas that was never reclaimed (#109)."""
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "PDF_RETAIN_MARGIN" in content
+    assert "function releasePage(" in content
+    assert "entry.canvas.width = 1;" in content
+
+
+def test_pdf_pages_start_with_a_collapsed_backing_store():
+    # A not-yet-rendered canvas defaults to 300x150; 60 of them reserve ~11MB before a
+    # single page is drawn.
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "canvas.width = 1;\n            canvas.height = 1;" in content
+
+
+# ---------------------------------------------------------------------------
+# Carousel / zoom layout (#111)
+# ---------------------------------------------------------------------------
+
+
+def test_carousel_counter_follows_a_manual_swipe():
+    """The strip is a native scroll-snap container, so swiping (the primary mobile
+    gesture) moves it without going through goTo(): the counter used to keep reading
+    "1 / 4" after a swipe, and next/prev then stepped from the stale index (#111)."""
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "strip.addEventListener('scroll'" in content
+    assert "currentIndex = closest;" in content
+
+
+def test_content_column_can_shrink_below_its_content_width():
+    """.content is a flex item, and a flex item's default min-width: auto refuses to
+    shrink below its content -- a zoomed image widened the whole page and made it
+    scroll sideways, sidebar and all, instead of panning inside the viewer (#111)."""
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".content")
+    assert _declared_value(body, "min-width") == "0"
+
+
+def test_document_viewer_stage_never_grows_past_its_column():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-stage")
+    assert _declared_value(body, "max-width") == "100%"

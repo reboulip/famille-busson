@@ -61,6 +61,11 @@
                 <div class="document-viewer-toolbar">
                     <span class="document-viewer-caption">{{ file.caption|default:file.filename }}</span>
                     <div class="document-viewer-actions">
+                        <div class="document-viewer-zoom" role="group" aria-label="Zoom">
+                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-zoom-out" aria-label="Réduire">−</button>
+                            <span class="document-viewer-zoom-level" aria-live="polite">100 %</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-zoom-in" aria-label="Agrandir">+</button>
+                        </div>
                         <a href="{% url 'document-file' file.pk %}?download=1" class="btn btn-sm btn-outline-secondary">📥 Télécharger</a>
                         <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-fullscreen-btn">⛶ Plein écran</button>
                     </div>

@@ -23,6 +23,50 @@ function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
 
+// Padding kept around the tree in the exported image, in CSS pixels before pixelRatio.
+const EXPORT_CROP_PADDING = 24;
+
+// Union of everything family-chart actually drew (person cards and the connector lines
+// between them), in coordinates relative to `node`, padded and clamped to `node`'s own
+// box. Used to crop the image export down from the viewport-shaped mount (#113).
+// `.card *` matters as much as `.card` itself: a card's name plate (.card-label) is
+// positioned to overhang its parent's box, so a union over `.card` alone crops the
+// bottom row's names off.
+function contentBounds(node) {
+    const nodeRect = node.getBoundingClientRect();
+    const drawn = node.querySelectorAll('.card, .card *, .link');
+    if (drawn.length === 0) {
+        return { left: 0, top: 0, width: nodeRect.width, height: nodeRect.height };
+    }
+    let left = Infinity;
+    let top = Infinity;
+    let right = -Infinity;
+    let bottom = -Infinity;
+    drawn.forEach((element) => {
+        const rect = element.getBoundingClientRect();
+        if (rect.width === 0 && rect.height === 0) return;
+        left = Math.min(left, rect.left);
+        top = Math.min(top, rect.top);
+        right = Math.max(right, rect.right);
+        bottom = Math.max(bottom, rect.bottom);
+    });
+    if (!Number.isFinite(left)) {
+        return { left: 0, top: 0, width: nodeRect.width, height: nodeRect.height };
+    }
+    // Never crop outside the mount: html-to-image only ever renders the node itself, so
+    // asking for a region beyond it would just pad the result with background.
+    const clampedLeft = Math.max(0, left - nodeRect.left - EXPORT_CROP_PADDING);
+    const clampedTop = Math.max(0, top - nodeRect.top - EXPORT_CROP_PADDING);
+    const clampedRight = Math.min(nodeRect.width, right - nodeRect.left + EXPORT_CROP_PADDING);
+    const clampedBottom = Math.min(nodeRect.height, bottom - nodeRect.top + EXPORT_CROP_PADDING);
+    return {
+        left: clampedLeft,
+        top: clampedTop,
+        width: Math.max(1, clampedRight - clampedLeft),
+        height: Math.max(1, clampedBottom - clampedTop),
+    };
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('genealogie-chart');
     if (!container) return;
@@ -206,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // stroke onto its own inline style just before capture (read, never
                 // hardcoded, so CSS stays the single source of truth), and restore
                 // it afterward so the live tree is never visually altered.
-                const links = Array.from(mount.querySelectorAll('.link'));
+                const links = Array.from(exportMount.querySelectorAll('.link'));
                 const savedStyles = links.map((link) => link.getAttribute('style'));
                 links.forEach((link) => {
                     const stroke = window.getComputedStyle(link).stroke;
@@ -219,13 +263,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 // branch fits at a small scale, so a fixed pixelRatio produced
                 // unreadably small cards regardless of screen. Read the scale the
                 // vendor just wrote onto the cards layer's transform.
-                const cardsView = mount.querySelector('#htmlSvg .cards_view');
+                const cardsView = exportMount.querySelector('#htmlSvg .cards_view');
                 const transform = cardsView ? cardsView.style.transform : '';
                 const scaleMatch = /scale\(([\d.]+)\)/.exec(transform);
                 const fitScale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
-                const rect = mount.getBoundingClientRect();
-                const width = rect.width || 1;
-                const height = rect.height || 1;
+                // "fit" leaves the tree centred in a viewport-shaped mount, so a wide
+                // branch sits in a band with big empty margins above and below. Capturing
+                // the mount as-is spent more than half of EXPORT_MAX_AREA on blank pixels,
+                // which is resolution the cards never get. Crop to what is actually drawn.
+                const crop = contentBounds(exportMount);
+                const width = crop.width || 1;
+                const height = crop.height || 1;
                 const pixelRatio = clamp(
                     fitScale > 0 ? 1 / fitScale : EXPORT_MIN_PIXEL_RATIO,
                     EXPORT_MIN_PIXEL_RATIO,
@@ -238,6 +286,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         pixelRatio,
                         quality: 0.92,
                         skipFonts: true,
+                        width,
+                        height,
+                        // html-to-image applies this to the cloned root: shift the drawn
+                        // area up/left into the cropped canvas.
+                        style: {
+                            transform: `translate(${-crop.left}px, ${-crop.top}px)`,
+                            transformOrigin: 'top left',
+                        },
                     })
                     .then((dataUrl) => {
                         const today = new Date().toISOString().slice(0, 10);

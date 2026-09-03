@@ -165,7 +165,14 @@ def test_blogpost_create_get_attachment_picker_allows_multiple_files(auth_client
     response = auth_client.get(reverse("blogpost-create"))
     content = response.content.decode()
     assert '<input type="file" id="attachment-picker" multiple' in content
-    assert 'accept=".csv,.doc,.docx' in content
+
+
+@pytest.mark.django_db
+def test_blogpost_create_get_attachment_picker_does_not_restrict_file_types(auth_client):
+    """Attachment.file has no extension validator, so the picker must not filter
+    either -- an accept list would hide file types the server still accepts (#116)."""
+    response = auth_client.get(reverse("blogpost-create"))
+    assert "accept=" not in response.content.decode()
 
 
 @pytest.mark.django_db
