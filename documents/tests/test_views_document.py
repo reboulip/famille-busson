@@ -151,6 +151,29 @@ def test_document_detail_images_are_zoomable(auth_client, document):
 
 
 @pytest.mark.django_db
+def test_document_detail_single_image_has_no_carousel_nav(auth_client, document):
+    DocumentFile.objects.create(
+        document=document, file=SimpleUploadedFile("photo.jpg", b"fake image", content_type="image/jpeg")
+    )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert "document-viewer-carousel-counter" not in content
+
+
+@pytest.mark.django_db
+def test_document_detail_multi_image_shows_carousel_nav_with_count(auth_client, document):
+    for i in range(3):
+        DocumentFile.objects.create(
+            document=document, file=SimpleUploadedFile(f"photo{i}.jpg", b"fake image", content_type="image/jpeg")
+        )
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    content = response.content.decode()
+    assert "document-viewer-carousel-prev" in content
+    assert "document-viewer-carousel-next" in content
+    assert "1 / 3" in content
+
+
+@pytest.mark.django_db
 def test_document_detail_branches_pdf_into_viewer_not_embed(auth_client, document):
     # <embed> renders nothing on many mobile browsers (no PDF plugin) -- PDFs now go
     # through a pdf.js-rendered canvas instead. See documents/static/js/document_viewer.js.
@@ -362,6 +385,14 @@ def test_document_create_get_loads_markdown_editor_widget(auth_client):
 def test_document_create_get_redactor_initial_json_empty_by_default(auth_client):
     response = auth_client.get(reverse("document-create"))
     assert response.context["redactor_initial_json"] == "[]"
+
+
+@pytest.mark.django_db
+def test_document_create_get_file_picker_allows_multiple_files(auth_client):
+    response = auth_client.get(reverse("document-create"))
+    content = response.content.decode()
+    assert '<input type="file" id="document-file-picker" multiple' in content
+    assert 'accept=".csv,.doc,.docx' in content
 
 
 # ---------------------------------------------------------------------------

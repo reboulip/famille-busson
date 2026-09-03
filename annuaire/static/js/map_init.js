@@ -27,30 +27,12 @@ document.addEventListener('DOMContentLoaded', function () {
     const MARKER_SIZE = 60;
     document.documentElement.style.setProperty('--map-marker-size', `${MARKER_SIZE}px`);
 
-    // Co-located groups up to this size spread into individual markers arranged
-    // around the shared point instead of one composite cluster pin; larger
-    // groups keep the cluster pin below (a ring that big would be unreadable
-    // and would swamp neighboring markers at low zoom).
-    const SPREAD_MAX = 8;
-    const SPREAD_RADIUS = 51; // px, first ring (1.5x MARKER_SIZE's 34px baseline)
-    const SPREAD_RING_STEP = 39; // px added per additional ring (1.5x baseline)
-    const PER_RING = 6; // markers per ring before overflowing to the next ring
-
-    // Pixel offset for the i-th (of `total`) spread marker in a group, laid
-    // out on concentric rings around the shared point -- varying distance
-    // (ring) and angle so avatars don't overlap.
-    function calculateIconOffset(index, total) {
-        const ring = Math.floor(index / PER_RING);
-        const indexInRing = index % PER_RING;
-        const countInRing = Math.min(PER_RING, total - ring * PER_RING);
-        const radius = SPREAD_RADIUS + ring * SPREAD_RING_STEP;
-        // Stagger each ring's start angle so rings don't align radially.
-        const angle = (2 * Math.PI * indexInRing) / countInRing + ring * (Math.PI / PER_RING);
-        return {
-            dx: Math.round(radius * Math.cos(angle)),
-            dy: Math.round(radius * Math.sin(angle)),
-        };
-    }
+    // Co-located groups of this size or more get the composite "+N" cluster pin
+    // instead of their own individual markers -- previously only groups larger than
+    // 8 clustered, and smaller ones spread into a ring of markers around the shared
+    // point. A ring is unreadable even at 2-3 markers when they're this close
+    // together, so every co-located group of 2+ now clusters (#114).
+    const CLUSTER_MIN_SIZE = 2;
 
     function buildAvatarElement(avatarUrl, entryName) {
         const avatar = document.createElement('div');
@@ -67,24 +49,25 @@ document.addEventListener('DOMContentLoaded', function () {
         return avatar;
     }
 
-    // Single-person marker, optionally shifted by a spread offset (in pixels).
-    // The marker itself always stays at the group's true lat/lon -- only the
-    // icon (and its popup anchor) move, via iconAnchor/popupAnchor, so
-    // fitBounds/search/zoom all keep working against real coordinates.
-    function buildPersonIcon(entry, offset) {
-        const dx = offset ? offset.dx : 0;
-        const dy = offset ? offset.dy : 0;
+    // Shared L.divIcon geometry -- identical for a solo-person icon and a
+    // composite cluster icon now that neither carries a spread offset.
+    function buildMarkerIcon(htmlNode) {
         const half = MARKER_SIZE / 2;
         return L.divIcon({
             className: 'map-marker-avatar-wrapper',
-            html: buildAvatarElement(entry.avatar, entry.name),
+            html: htmlNode,
             iconSize: [MARKER_SIZE, MARKER_SIZE],
-            iconAnchor: [half - dx, MARKER_SIZE - dy],
-            popupAnchor: [dx, dy - MARKER_SIZE],
+            iconAnchor: [half, MARKER_SIZE],
+            popupAnchor: [0, -MARKER_SIZE],
         });
     }
 
-    // Composite "+N" cluster pin for groups too large to spread legibly.
+    // Single-entry marker, exactly at the group's true lat/lon.
+    function buildPersonIcon(entry) {
+        return buildMarkerIcon(buildAvatarElement(entry.avatar, entry.name));
+    }
+
+    // Composite "+N" cluster pin for any co-located group of CLUSTER_MIN_SIZE or more.
     function buildClusterIcon(group) {
         const cluster = document.createElement('div');
         cluster.className = 'map-marker-cluster';
@@ -97,14 +80,7 @@ document.addEventListener('DOMContentLoaded', function () {
         badge.className = 'map-marker-cluster-badge';
         badge.textContent = `+${group.entries.length}`;
         cluster.appendChild(badge);
-        const half = MARKER_SIZE / 2;
-        return L.divIcon({
-            className: 'map-marker-avatar-wrapper',
-            html: cluster,
-            iconSize: [MARKER_SIZE, MARKER_SIZE],
-            iconAnchor: [half, MARKER_SIZE],
-            popupAnchor: [0, -MARKER_SIZE],
-        });
+        return buildMarkerIcon(cluster);
     }
 
     function buildEntryLink(entry) {
@@ -114,12 +90,15 @@ document.addEventListener('DOMContentLoaded', function () {
         return link;
     }
 
-    // Cluster-pin popup (groups too large to spread): heading + full list.
-    function buildClusterPopup(group) {
+    // Cluster-pin popup: heading + full list. `label` is the plural noun for the
+    // heading ("membres" for persons, "chalets" for chalets) -- both collections
+    // share this same cluster/popup code (#114), so the heading text can't be
+    // hardcoded to one of them.
+    function buildClusterPopup(group, label) {
         const wrapper = document.createElement('div');
         const heading = document.createElement('p');
         heading.className = 'map-marker-cluster-heading';
-        heading.textContent = `${group.entries.length} membres à cette adresse`;
+        heading.textContent = `${group.entries.length} ${label} à cette adresse`;
         wrapper.appendChild(heading);
         const list = document.createElement('ul');
         list.className = 'map-marker-cluster-list';
@@ -132,48 +111,37 @@ document.addEventListener('DOMContentLoaded', function () {
         return wrapper;
     }
 
-    // Builds a flat marker list from co-location groups. Groups of up to
-    // SPREAD_MAX entries spread into one marker per entry (offset around the
-    // shared point); larger groups keep a single composite cluster marker,
-    // exactly at the group's point. Each marker carries metadata
-    // (_groupIdx/_entryName or _entries) used below to fix up fitBounds and
-    // the person search index now that groups no longer map 1:1 to markers.
-    function buildMarkers(groups) {
-        const markers = [];
-        groups.forEach((group, groupIdx) => {
+    // Builds a flat marker list from co-location groups: one marker per group,
+    // always exactly at the group's point -- a composite cluster pin for groups of
+    // CLUSTER_MIN_SIZE or more, a plain avatar pin for a solo entry (#114). Every
+    // marker carries its group's full entries array as `_entries`, used below to
+    // fix up the person search index now that groups no longer map 1:1 to markers
+    // for multi-entry addresses.
+    function buildMarkers(groups, label) {
+        return groups.map((group) => {
             const entries = group.entries;
-            if (entries.length > SPREAD_MAX) {
-                const marker = L.marker([group.lat, group.lon], { icon: buildClusterIcon(group) });
-                marker.bindPopup(buildClusterPopup(group));
-                marker._groupIdx = groupIdx;
-                marker._entries = entries;
-                markers.push(marker);
-                return;
-            }
-            entries.forEach((entry, i) => {
-                const offset = entries.length > 1 ? calculateIconOffset(i, entries.length) : null;
-                const marker = L.marker([group.lat, group.lon], { icon: buildPersonIcon(entry, offset) });
-                marker.bindPopup(buildEntryLink(entry));
-                marker._groupIdx = groupIdx;
-                marker._entryName = entry.name;
-                markers.push(marker);
+            const isCluster = entries.length >= CLUSTER_MIN_SIZE;
+            const marker = L.marker([group.lat, group.lon], {
+                icon: isCluster ? buildClusterIcon(group) : buildPersonIcon(entries[0]),
             });
+            marker.bindPopup(isCluster ? buildClusterPopup(group, label) : buildEntryLink(entries[0]));
+            marker._entries = entries;
+            return marker;
         });
-        return markers;
     }
 
-    const personMarkers = buildMarkers(persons);
-    const chaletMarkers = buildMarkers(chalets);
+    const personMarkers = buildMarkers(persons, 'membres');
+    const chaletMarkers = buildMarkers(chalets, 'chalets');
 
     const personsLayer = L.layerGroup(personMarkers).addTo(map);
     const chaletsLayer = L.layerGroup(chaletMarkers).addTo(map);
     L.control.layers(null, { Membres: personsLayer, Chalets: chaletsLayer }).addTo(map);
 
     const allMarkers = personMarkers.concat(chaletMarkers);
-    // Spreading can turn one co-located group into several markers at the
-    // *same* lat/lon -- count distinct group points, not markers, or a
-    // spread group of e.g. 3 people would wrongly skip the single-point
-    // branch and hit fitBounds on a zero-area box, which zooms to max.
+    // Count distinct group points, not markers/collections -- a person and a
+    // chalet can share the exact same coordinates (two separate arrays, two
+    // markers), which would wrongly skip the single-point branch below and hit
+    // fitBounds on a zero-area box, which zooms to max.
     const uniquePointCount = new Set(persons.concat(chalets).map((g) => `${g.lat},${g.lon}`)).size;
     if (uniquePointCount === 1) {
         map.setView(allMarkers[0].getLatLng(), 13);
@@ -189,16 +157,12 @@ document.addEventListener('DOMContentLoaded', function () {
         return str.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     }
 
-    // Spreading gives most entries their own marker (opens straight to that
-    // person's popup); entries still folded into a cluster (>SPREAD_MAX) fall
-    // back to opening the shared cluster marker/popup.
+    // A solo entry's marker opens straight to their own popup; entries folded
+    // into a cluster (CLUSTER_MIN_SIZE+) share their group's cluster marker/popup --
+    // selectResult() below bolds the matched name in that shared list.
     const searchIndex = [];
     personMarkers.forEach((marker) => {
-        if (marker._entryName) {
-            searchIndex.push({ name: marker._entryName, marker });
-        } else if (marker._entries) {
-            marker._entries.forEach((entry) => searchIndex.push({ name: entry.name, marker }));
-        }
+        marker._entries.forEach((entry) => searchIndex.push({ name: entry.name, marker }));
     });
 
     initPersonSearch();
@@ -222,12 +186,25 @@ document.addEventListener('DOMContentLoaded', function () {
             items.forEach((el, idx) => el.classList.toggle('highlighted', idx === highlightedIndex));
         }
 
+        // A cluster popup now lists every co-located person (#114), where it used
+        // to open straight to the searched person's own marker -- bold their name
+        // in the list so the search result is still easy to pick out.
+        function highlightResultInPopup(result) {
+            const popup = result.marker.getPopup();
+            const content = popup ? popup.getContent() : null;
+            if (!content || !content.querySelectorAll) return;
+            content.querySelectorAll('.map-marker-cluster-list li').forEach((item) => {
+                item.classList.toggle('fw-bold', item.textContent.trim() === result.name);
+            });
+        }
+
         function selectResult(result) {
             if (!map.hasLayer(personsLayer)) {
                 map.addLayer(personsLayer);
             }
             map.setView(result.marker.getLatLng(), 15);
             result.marker.openPopup();
+            highlightResultInPopup(result);
             closeDropdown();
             input.value = '';
         }

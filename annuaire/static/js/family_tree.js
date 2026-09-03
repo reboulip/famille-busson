@@ -9,6 +9,20 @@
 const CARD_X_SPACING = 170;
 const LABEL_MAX_WIDTH = CARD_X_SPACING - 10;
 
+// Image export (#113) resolution clamp. EXPORT_MAX_AREA is a hard ceiling, not just a
+// size preference -- iOS Safari silently returns a blank "data:," image past ~16.7M
+// px with no exception, so exceeding it produces a broken download, not just a big
+// one. EXPORT_MAX_SIDE mirrors html-to-image's own canvas dimension limit (16384px),
+// halved for headroom. EXPORT_MIN_PIXEL_RATIO is a floor -- a small tree must not
+// export worse than before this fix.
+const EXPORT_MAX_SIDE = 8192;
+const EXPORT_MAX_AREA = 16e6;
+const EXPORT_MIN_PIXEL_RATIO = 2;
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     const container = document.getElementById('genealogie-chart');
     if (!container) return;
@@ -169,22 +183,61 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    const exportImageButton = document.getElementById('genealogie-export-image');
-    if (exportImageButton && window.htmlToImage) {
-        exportImageButton.addEventListener('click', () => {
-            // Always fit-then-capture -- never the as-displayed viewport, which may be
-            // panned/zoomed to only part of the tree. Mirrors the fullscreen re-fit
-            // dance below: family-chart computes layout from getBoundingClientRect()
-            // at call time, so the capture must wait a frame after fit() too.
-            chart.updateTree({ tree_position: 'fit' });
-            const originalText = exportImageButton.textContent;
-            exportImageButton.disabled = true;
-            exportImageButton.textContent = 'Génération…';
+    function exportTreeImage(exportChart, exportMount, button) {
+        // Always fit-then-capture -- never the as-displayed viewport, which may be
+        // panned/zoomed to only part of the tree. transition_time: 0 makes the fit
+        // instantaneous instead of the default ~1000ms d3 zoom transition -- the old
+        // single-rAF capture below could otherwise land mid-transition (#113).
+        exportChart.updateTree({ tree_position: 'fit', transition_time: 0 });
+        const originalText = button.textContent;
+        button.disabled = true;
+        button.textContent = 'Génération…';
+
+        // Two rAFs: the tree update itself needs a frame to reflow, and a
+        // zero-duration d3 transition still only applies on the *next* timer tick.
+        requestAnimationFrame(() => {
             requestAnimationFrame(() => {
+                // The relationship connector lines carry their color as an inline
+                // SVG stroke attribute (vendor default, white) that main.css's
+                // `.f3 .link { stroke: #6c757d }` overrides on screen -- but
+                // html-to-image clones the <svg> subtree raw, without inlining any
+                // computed style, so the export used to capture the vendor's
+                // original white-on-white lines. Stamp each link's *computed*
+                // stroke onto its own inline style just before capture (read, never
+                // hardcoded, so CSS stays the single source of truth), and restore
+                // it afterward so the live tree is never visually altered.
+                const links = Array.from(mount.querySelectorAll('.link'));
+                const savedStyles = links.map((link) => link.getAttribute('style'));
+                links.forEach((link) => {
+                    const stroke = window.getComputedStyle(link).stroke;
+                    link.style.stroke = stroke;
+                    link.style.opacity = '1';
+                });
+
+                // Resolution (#113): derive pixelRatio from how much the fit actually
+                // shrank the tree, not from the viewer's screen density -- a large
+                // branch fits at a small scale, so a fixed pixelRatio produced
+                // unreadably small cards regardless of screen. Read the scale the
+                // vendor just wrote onto the cards layer's transform.
+                const cardsView = mount.querySelector('#htmlSvg .cards_view');
+                const transform = cardsView ? cardsView.style.transform : '';
+                const scaleMatch = /scale\(([\d.]+)\)/.exec(transform);
+                const fitScale = scaleMatch ? parseFloat(scaleMatch[1]) : 1;
+                const rect = mount.getBoundingClientRect();
+                const width = rect.width || 1;
+                const height = rect.height || 1;
+                const pixelRatio = clamp(
+                    fitScale > 0 ? 1 / fitScale : EXPORT_MIN_PIXEL_RATIO,
+                    EXPORT_MIN_PIXEL_RATIO,
+                    Math.min(EXPORT_MAX_SIDE / width, EXPORT_MAX_SIDE / height, Math.sqrt(EXPORT_MAX_AREA / (width * height)))
+                );
+
                 htmlToImage
-                    .toJpeg(mount, {
+                    .toJpeg(exportMount, {
                         backgroundColor: '#ffffff',
-                        pixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+                        pixelRatio,
+                        quality: 0.92,
+                        skipFonts: true,
                     })
                     .then((dataUrl) => {
                         const today = new Date().toISOString().slice(0, 10);
@@ -197,11 +250,23 @@ document.addEventListener('DOMContentLoaded', function () {
                         console.error("Échec de l'export en image :", error);
                     })
                     .finally(() => {
-                        exportImageButton.disabled = false;
-                        exportImageButton.textContent = originalText;
+                        links.forEach((link, i) => {
+                            if (savedStyles[i] === null) {
+                                link.removeAttribute('style');
+                            } else {
+                                link.setAttribute('style', savedStyles[i]);
+                            }
+                        });
+                        button.disabled = false;
+                        button.textContent = originalText;
                     });
             });
         });
+    }
+
+    const exportImageButton = document.getElementById('genealogie-export-image');
+    if (exportImageButton && window.htmlToImage) {
+        exportImageButton.addEventListener('click', () => exportTreeImage(chart, mount, exportImageButton));
     }
 
     const fullscreenPanel = document.getElementById('genealogie-panel');

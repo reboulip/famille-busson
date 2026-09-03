@@ -120,9 +120,16 @@
         });
     }
 
+    const MAX_FILES_PER_SELECTION = 100;
+
     addBtn.addEventListener('click', () => picker.click());
 
     picker.addEventListener('change', () => {
+        if (picker.files.length > MAX_FILES_PER_SELECTION) {
+            window.alert('Vous ne pouvez sélectionner que ' + MAX_FILES_PER_SELECTION + ' fichiers maximum.');
+            picker.value = '';
+            return;
+        }
         Array.from(picker.files).forEach(addRowForFile);
         picker.value = '';
     });

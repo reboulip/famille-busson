@@ -3,8 +3,8 @@
 {% block content %}
     <div class="page-header">
         <h1>Annuaire</h1>
-        <form method="get" action="{% url 'directory' %}" class="search-form">
-            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
+        <form method="get" action="{% url 'directory' %}" class="search-form" id="directory-filter-form" autocomplete="off">
+            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input" id="directory-search" aria-label="Rechercher par nom ou prénom">
             <select name="sort" class="form-select">
                 <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récents d'abord</option>
                 <option value="name_asc" {% if sort == "name_asc" %}selected{% endif %}>Nom (A → Z)</option>
@@ -12,7 +12,6 @@
                 <option value="birth_asc" {% if sort == "birth_asc" %}selected{% endif %}>Date de naissance (croissant)</option>
                 <option value="birth_desc" {% if sort == "birth_desc" %}selected{% endif %}>Date de naissance (décroissant)</option>
             </select>
-            <button type="submit" class="btn btn-outline-primary">Rechercher</button>
             {% if query %}
                 <a href="{% url 'directory' %}" class="btn btn-outline-secondary">Effacer</a>
             {% endif %}
@@ -20,22 +19,10 @@
         <a href="{% url 'person-create' %}" class="btn btn-outline-primary">Ajouter un membre de la famille sans compte</a>
     </div>
 
-    {% if query %}
-        <p class="search-result-count">{{ persons|length }} résultat{{ persons|length|pluralize }} pour « {{ query }} »</p>
-    {% endif %}
-
-    <div class="annuaire-grid">
-        {% for person in persons %}
-            <a href="{% url 'personne-detail' person.pk %}" class="personne-card">
-                <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                     alt="{{ person.first_name }} {{ person.last_name }}{% if person.deceased %} (décédé·e){% endif %}"
-                     class="personne-card-photo{% if person.deceased %} person-photo--deceased{% endif %}">
-                <div class="personne-card-info">
-                    <strong>{{ person.first_name }} {{ person.last_name }}</strong>
-                </div>
-            </a>
-        {% empty %}
-            <p>Aucune personne trouvée.</p>
-        {% endfor %}
+    <div id="directory-results" aria-live="polite">
+        {% include "annuaire/_annuaire_results.html" %}
     </div>
 {% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/directory_filter.js' %}"></script>
+{% endblock extra_js %}

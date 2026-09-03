@@ -19,6 +19,7 @@ from django.db.models.functions import Lower
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -770,6 +771,16 @@ class DirectoryListView(LoginRequiredMixin, ListView):
         sort = self.request.GET.get("sort", DEFAULT_DIRECTORY_SORT)
         context["sort"] = sort if sort in DIRECTORY_SORTS else DEFAULT_DIRECTORY_SORT
         return context
+
+    def get_template_names(self):
+        if self.request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return ["annuaire/_annuaire_results.html"]
+        return [self.template_name]
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Requested-With"])
+        return response
 
 
 class MapListView(LoginRequiredMixin, ListView):
