@@ -3,6 +3,42 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.1.0 — Phase 4: Document viewer/list fixes, live directory filter, genealogy export, map clustering
+
+> Bug-fix and polish pass: PDF/image viewer fixes, a multi-file attachment picker, a
+> live (debounced, AJAX) directory filter, higher-fidelity genealogy tree image export,
+> and map marker clustering for same-address people/chalets.
+
+### Documents
+- **Fix PDF viewer** — first pages were unreachable by scroll (`justify-content: safe
+  center` fix); switched to a two-pass measure-then-lazy-render approach via
+  `IntersectionObserver`. [#109]
+- **Fix document image viewer zoom + carousel** — zoom was inert due to a CSS
+  specificity clash; added a fullscreen one-image-at-a-time carousel (nav buttons,
+  counter, arrow keys) for multi-image documents. [#111]
+- **"+ Ajouter un document" button on the documents list** — matches the existing
+  `category_detail.html` pattern. [#115]
+- **Multi-file selection in the attachment picker** — `multiple` attribute plus an
+  accept-list template tag and a 100-file client-side cap; folded in the identical
+  parity fix for publications' blog-post attachment picker. [#116]
+
+### Annuaire
+- **Live directory list filter** — AJAX partial swap, sort-on-change, 200ms-debounced
+  search, stale-response guarding, URL synced via `replaceState`; removed the
+  "Rechercher" button. [#110]
+
+### Généalogie
+- **Fix genealogy tree image export** — relationship connector lines were invisible
+  because `html-to-image` clones the SVG without inlining computed styles; now stamped
+  from `getComputedStyle` before capture. Also fixed a mid-transition capture race and
+  derived output resolution from the tree's actual fit scale for legible large-branch
+  exports. [#113]
+
+### Carte
+- **Map marker clustering for same-address groups** — replaced the spread-into-
+  individual-markers behavior (up to 8) with the existing "+N" cluster pin for every
+  co-located group of 2+, for both persons and chalets. [#114]
+
 ## v1.0.0 — Phases 2 & 3: Document viewer polish, markdown everywhere, deceased-profile handling
 
 > First official 1.0 release — the app now covers the full initial feature set. Document

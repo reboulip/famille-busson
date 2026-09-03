@@ -4,42 +4,6 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
-## Phase 4
-
-### Cluster: Documents
-
-- [x] 4.1 · Fix PDF viewer (`documents/static/js/document_viewer.js`'s `renderPdf()`):
-  first pages are hidden, and the viewer opens scrolled to the last/a far page instead
-  of page 1 — likely the same root cause. [#109]
-- [x] 4.2 · Fix document image viewer (`documents/static/js/document_viewer.js`,
-  `.document-viewer-zoomable`): click-to-zoom isn't working; multi-image documents
-  should step through one image at a time in fullscreen instead of showing them all at
-  once. [#111]
-- [x] 4.3 · Add a "+ Ajouter un document" button to `document_list.html`
-  (`DocumentListView`), matching the one already on `category_detail.html`. [#115]
-- [x] 4.4 · Allow selecting multiple files at once for a document's attachments
-  (`documents/forms.py`'s `BaseDocumentFileFormSet`, `document_form.html`) instead of
-  attaching one file per file-picker round-trip. [#116]
-
-### Cluster: Annuaire
-
-- [x] 4.5 · Make the directory list (`DirectoryListView`, `annuaire_list.html`) filter
-  live: apply `sort` immediately on change and debounce `q` (~200ms) instead of
-  requiring the "Rechercher" button; remove the button once both are automatic. [#110]
-
-### Cluster: Généalogie
-
-- [x] 4.6 · Fix genealogy tree image export (`family_tree.js`'s `htmlToImage.toJpeg`
-  call): raise output resolution so large/main-branch exports stay legible, and fix
-  relationship connector lines missing from the captured image. [#113]
-
-### Cluster: Carte
-
-- [x] 4.7 · Same-address people on the map (`annuaire/static/js/map_init.js`) spread
-  into individual markers up to `SPREAD_MAX` (8); extend the existing "+N"
-  cluster-badge marker (already used above that threshold) to same-address groups of
-  any size instead of spreading small ones. [#114]
-
 ## Phase 5
 
 ### Cluster: Emails — identité visuelle
