@@ -1,38 +1,27 @@
 {% extends "annuaire/base.html" %}
+{% load static %}
 {% block content %}
     <div class="page-header">
         <h1>Documents</h1>
-        <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}" class="btn btn-outline-primary">+ Ajouter un document</a>
+        <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}"
+           class="btn btn-outline-primary" data-live-filter-carry="category">+ Ajouter un document</a>
     </div>
-    <form method="get" class="search-form mb-3">
-        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…" class="search-input">
-        <select name="category">
+    <form method="get" action="{% url 'document-list' %}" class="search-form mb-3" id="document-filter-form"
+          data-live-filter="#document-results" autocomplete="off">
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…" class="search-input" aria-label="Rechercher un document">
+        <select name="category" aria-label="Filtrer par catégorie">
             <option value="">Toutes les catégories</option>
             {% for cat in filter_categories %}
                 <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
-        <button type="submit" class="btn btn-outline-primary">Rechercher</button>
-        {% if query or selected_category %}
-            <a href="{% url 'document-list' %}" class="btn btn-outline-secondary">Effacer</a>
-        {% endif %}
+        <a href="{% url 'document-list' %}" class="btn btn-outline-secondary" data-live-filter-reset
+           {% if not query and not selected_category %}hidden{% endif %}>Effacer</a>
     </form>
-    <div class="document-list">
-        {% for document in documents %}
-            {% include "documents/_document_card.html" %}
-        {% empty %}
-            <p>Aucun document trouvé.</p>
-        {% endfor %}
+    <div id="document-results" aria-live="polite">
+        {% include "documents/_document_results.html" %}
     </div>
-    {% if is_paginated %}
-        <nav class="pagination">
-            {% if page_obj.has_previous %}
-                <a href="{% querystring page=page_obj.previous_page_number %}" class="btn btn-outline-secondary">&larr; Précédent</a>
-            {% endif %}
-            <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
-            {% if page_obj.has_next %}
-                <a href="{% querystring page=page_obj.next_page_number %}" class="btn btn-outline-secondary">Suivant &rarr;</a>
-            {% endif %}
-        </nav>
-    {% endif %}
 {% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/live_filter.js' %}"></script>
+{% endblock extra_js %}

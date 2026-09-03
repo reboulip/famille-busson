@@ -42,6 +42,12 @@ body {
 .content {
     flex-grow: 1;
     padding: 20px;
+    /* A flex item defaults to min-width: auto, i.e. "never shrink below my content's
+       min-content width". Anything genuinely wide inside -- a zoomed document image,
+       a zoomed PDF page, a wide table -- therefore used to stretch .content past the
+       viewport and make the *whole page* scroll sideways, sidebar and all, instead of
+       scrolling inside its own overflow container (#111). */
+    min-width: 0;
 }
 
 .flex-title {
@@ -1100,6 +1106,7 @@ h2 {
 
 .document-viewer-stage {
     height: 70vh;
+    max-width: 100%;
     min-height: 320px;
     overflow: auto;
     overflow-anchor: none;
@@ -1227,8 +1234,25 @@ h2 {
 
 .document-viewer-pdf-page {
     display: block;
-    max-width: 100%;
-    height: auto;
+    /* Sized in CSS pixels by document_viewer.js, independently of the canvas backing
+       store: the backing store carries devicePixelRatio * zoom real pixels (#109), and
+       an off-screen page's store is collapsed to 1x1 to reclaim memory without the
+       page losing its place. A max-width fit rule here would override both. */
+    max-width: none;
+    flex: none;
     margin: 0 auto 12px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.document-viewer-zoom {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.document-viewer-zoom-level {
+    font-size: 0.85em;
+    color: #555;
+    min-width: 48px;
+    text-align: center;
 }

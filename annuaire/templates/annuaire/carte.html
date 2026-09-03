@@ -2,6 +2,7 @@
 {% load static %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+    <link rel="stylesheet" href="{% static 'vendor/leaflet.markercluster/MarkerCluster.css' %}">
 {% endblock extra_css %}
 {% block content %}
     <h1>Carte</h1>
@@ -38,5 +39,6 @@
 {% endblock content %}
 {% block extra_js %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>
+    <script src="{% static 'vendor/leaflet.markercluster/leaflet.markercluster.js' %}"></script>
     <script src="{% static 'js/map_init.js' %}"></script>
 {% endblock extra_js %}

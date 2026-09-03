@@ -27,12 +27,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const MARKER_SIZE = 60;
     document.documentElement.style.setProperty('--map-marker-size', `${MARKER_SIZE}px`);
 
-    // Co-located groups of this size or more get the composite "+N" cluster pin
-    // instead of their own individual markers -- previously only groups larger than
-    // 8 clustered, and smaller ones spread into a ring of markers around the shared
-    // point. A ring is unreadable even at 2-3 markers when they're this close
-    // together, so every co-located group of 2+ now clusters (#114).
-    const CLUSTER_MIN_SIZE = 2;
+    // Metres between neighbouring pins of a co-located group once spread onto a ring
+    // (see spreadEntries). Sets the zoom at which a household finally separates:
+    // ~20m of ground apart clears the 60px medallions at about zoom 18 of 19.
+    const COLOCATED_SPACING_M = 20;
+    const METRES_PER_DEGREE_LAT = 111320;
 
     function buildAvatarElement(avatarUrl, entryName) {
         const avatar = document.createElement('div');
@@ -50,7 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Shared L.divIcon geometry -- identical for a solo-person icon and a
-    // composite cluster icon now that neither carries a spread offset.
+    // composite cluster icon.
     function buildMarkerIcon(htmlNode) {
         const half = MARKER_SIZE / 2;
         return L.divIcon({
@@ -62,23 +61,24 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Single-entry marker, exactly at the group's true lat/lon.
     function buildPersonIcon(entry) {
         return buildMarkerIcon(buildAvatarElement(entry.avatar, entry.name));
     }
 
-    // Composite "+N" cluster pin for any co-located group of CLUSTER_MIN_SIZE or more.
-    function buildClusterIcon(group) {
+    // Composite pin for a cluster of overlapping markers: up to three stacked
+    // avatars plus the total count. The badge is the cluster's real size, not a
+    // "+N" remainder -- three avatars are decoration, not a partial listing (#114).
+    function buildClusterIcon(entries) {
         const cluster = document.createElement('div');
         cluster.className = 'map-marker-cluster';
-        group.entries.slice(0, 3).forEach((entry) => {
+        entries.slice(0, 3).forEach((entry) => {
             const avatar = buildAvatarElement(entry.avatar);
             avatar.classList.add('map-marker-cluster-avatar');
             cluster.appendChild(avatar);
         });
         const badge = document.createElement('div');
         badge.className = 'map-marker-cluster-badge';
-        badge.textContent = `+${group.entries.length}`;
+        badge.textContent = String(entries.length);
         cluster.appendChild(badge);
         return buildMarkerIcon(cluster);
     }
@@ -90,19 +90,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return link;
     }
 
-    // Cluster-pin popup: heading + full list. `label` is the plural noun for the
-    // heading ("membres" for persons, "chalets" for chalets) -- both collections
-    // share this same cluster/popup code (#114), so the heading text can't be
-    // hardcoded to one of them.
-    function buildClusterPopup(group, label) {
+    // Cluster popup: heading + full list. `label` is the plural noun for the heading
+    // ("membres" for persons, "chalets" for chalets) -- both collections share this
+    // code. A cluster is now a *screen-space* grouping (Leaflet.markercluster), so it
+    // can span neighbouring addresses, not just one: hence "à proximité", not
+    // "à cette adresse".
+    function buildClusterPopup(entries, label) {
         const wrapper = document.createElement('div');
         const heading = document.createElement('p');
         heading.className = 'map-marker-cluster-heading';
-        heading.textContent = `${group.entries.length} ${label} à cette adresse`;
+        heading.textContent = `${entries.length} ${label} à proximité`;
         wrapper.appendChild(heading);
         const list = document.createElement('ul');
         list.className = 'map-marker-cluster-list';
-        group.entries.forEach((entry) => {
+        entries.forEach((entry) => {
             const item = document.createElement('li');
             item.appendChild(buildEntryLink(entry));
             list.appendChild(item);
@@ -111,33 +112,80 @@ document.addEventListener('DOMContentLoaded', function () {
         return wrapper;
     }
 
-    // Builds a flat marker list from co-location groups: one marker per group,
-    // always exactly at the group's point -- a composite cluster pin for groups of
-    // CLUSTER_MIN_SIZE or more, a plain avatar pin for a solo entry (#114). Every
-    // marker carries its group's full entries array as `_entries`, used below to
-    // fix up the person search index now that groups no longer map 1:1 to markers
-    // for multi-entry addresses.
-    function buildMarkers(groups, label) {
-        return groups.map((group) => {
-            const entries = group.entries;
-            const isCluster = entries.length >= CLUSTER_MIN_SIZE;
-            const marker = L.marker([group.lat, group.lon], {
-                icon: isCluster ? buildClusterIcon(group) : buildPersonIcon(entries[0]),
+    // Everyone at one address shares the exact same coordinates, so no amount of
+    // zooming would ever pull their markers apart -- Leaflet.markercluster splits
+    // clusters by screen distance, and that distance stays zero. Spread each
+    // co-located group onto a small ring around its true point (display only; the
+    // stored coordinates are untouched) so zooming in eventually separates them.
+    // The radius grows with the group size to keep neighbours ~COLOCATED_SPACING_M
+    // apart: n points on a ring of radius r sit 2*r*sin(pi/n) apart. (#114)
+    function spreadEntries(groups) {
+        const spread = [];
+        groups.forEach((group) => {
+            const count = group.entries.length;
+            if (count === 1) {
+                spread.push({ lat: group.lat, lon: group.lon, entry: group.entries[0] });
+                return;
+            }
+            const radius = COLOCATED_SPACING_M / (2 * Math.sin(Math.PI / count));
+            const metresPerDegreeLon = METRES_PER_DEGREE_LAT * Math.cos((group.lat * Math.PI) / 180);
+            group.entries.forEach((entry, index) => {
+                // Start at the top and go clockwise -- deterministic, so a reload
+                // never reshuffles who sits where.
+                const angle = (2 * Math.PI * index) / count - Math.PI / 2;
+                spread.push({
+                    lat: group.lat + (radius * Math.sin(angle)) / METRES_PER_DEGREE_LAT,
+                    lon: group.lon + (radius * Math.cos(angle)) / (metresPerDegreeLon || METRES_PER_DEGREE_LAT),
+                    entry,
+                });
             });
-            marker.bindPopup(isCluster ? buildClusterPopup(group, label) : buildEntryLink(entries[0]));
-            marker._entries = entries;
-            return marker;
         });
+        return spread;
     }
 
-    const personMarkers = buildMarkers(persons, 'membres');
-    const chaletMarkers = buildMarkers(chalets, 'chalets');
+    // One marker per entry, handed to a markerClusterGroup that merges/splits them
+    // by screen distance as the zoom changes. maxClusterRadius is the medallion
+    // width, so pins separate exactly when they stop overlapping.
+    function buildClusterGroup(groups, label) {
+        const clusterGroup = L.markerClusterGroup({
+            maxClusterRadius: MARKER_SIZE,
+            showCoverageOnHover: false,
+            // Click opens the member list (as it did before markercluster) instead of
+            // zooming to bounds -- reaching a profile from a zoomed-out view stays a
+            // single click. Zooming still splits clusters through the normal controls.
+            zoomToBoundsOnClick: false,
+            // spreadEntries() guarantees co-located pins separate before max zoom, so
+            // the spider-leg fallback would only ever fire for genuinely distinct
+            // addresses a metre apart -- the popup lists those just as well.
+            spiderfyOnMaxZoom: false,
+            iconCreateFunction: (cluster) => buildClusterIcon(cluster.getAllChildMarkers().map((m) => m._entry)),
+        });
+        const markers = spreadEntries(groups).map((placed) => {
+            const marker = L.marker([placed.lat, placed.lon], { icon: buildPersonIcon(placed.entry) });
+            marker.bindPopup(buildEntryLink(placed.entry));
+            marker._entry = placed.entry;
+            return marker;
+        });
+        clusterGroup.addLayers(markers);
+        clusterGroup.on('clusterclick', (event) => {
+            const entries = event.layer.getAllChildMarkers().map((m) => m._entry);
+            L.popup({ offset: [0, -MARKER_SIZE] })
+                .setLatLng(event.layer.getLatLng())
+                .setContent(buildClusterPopup(entries, label))
+                .openOn(map);
+        });
+        return { clusterGroup, markers };
+    }
 
-    const personsLayer = L.layerGroup(personMarkers).addTo(map);
-    const chaletsLayer = L.layerGroup(chaletMarkers).addTo(map);
-    L.control.layers(null, { Membres: personsLayer, Chalets: chaletsLayer }).addTo(map);
+    const personsLayer = buildClusterGroup(persons, 'membres');
+    const chaletsLayer = buildClusterGroup(chalets, 'chalets');
+    map.addLayer(personsLayer.clusterGroup);
+    map.addLayer(chaletsLayer.clusterGroup);
+    L.control
+        .layers(null, { Membres: personsLayer.clusterGroup, Chalets: chaletsLayer.clusterGroup })
+        .addTo(map);
 
-    const allMarkers = personMarkers.concat(chaletMarkers);
+    const allMarkers = personsLayer.markers.concat(chaletsLayer.markers);
     // Count distinct group points, not markers/collections -- a person and a
     // chalet can share the exact same coordinates (two separate arrays, two
     // markers), which would wrongly skip the single-point branch below and hit
@@ -146,8 +194,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (uniquePointCount === 1) {
         map.setView(allMarkers[0].getLatLng(), 13);
     } else {
-        const group = L.featureGroup(allMarkers);
-        map.fitBounds(group.getBounds().pad(0.2));
+        map.fitBounds(L.featureGroup(allMarkers).getBounds().pad(0.2));
     }
 
     // Client-side search over the members already plotted on the map (accent-
@@ -157,13 +204,10 @@ document.addEventListener('DOMContentLoaded', function () {
         return str.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
     }
 
-    // A solo entry's marker opens straight to their own popup; entries folded
-    // into a cluster (CLUSTER_MIN_SIZE+) share their group's cluster marker/popup --
-    // selectResult() below bolds the matched name in that shared list.
-    const searchIndex = [];
-    personMarkers.forEach((marker) => {
-        marker._entries.forEach((entry) => searchIndex.push({ name: entry.name, marker }));
-    });
+    // Every person now has their own marker, whether or not it is currently folded
+    // into a cluster -- zoomToShowLayer() below zooms until it is separated out,
+    // then opens that person's own popup.
+    const searchIndex = personsLayer.markers.map((marker) => ({ name: marker._entry.name, marker }));
 
     initPersonSearch();
 
@@ -186,25 +230,13 @@ document.addEventListener('DOMContentLoaded', function () {
             items.forEach((el, idx) => el.classList.toggle('highlighted', idx === highlightedIndex));
         }
 
-        // A cluster popup now lists every co-located person (#114), where it used
-        // to open straight to the searched person's own marker -- bold their name
-        // in the list so the search result is still easy to pick out.
-        function highlightResultInPopup(result) {
-            const popup = result.marker.getPopup();
-            const content = popup ? popup.getContent() : null;
-            if (!content || !content.querySelectorAll) return;
-            content.querySelectorAll('.map-marker-cluster-list li').forEach((item) => {
-                item.classList.toggle('fw-bold', item.textContent.trim() === result.name);
-            });
-        }
-
         function selectResult(result) {
-            if (!map.hasLayer(personsLayer)) {
-                map.addLayer(personsLayer);
+            if (!map.hasLayer(personsLayer.clusterGroup)) {
+                map.addLayer(personsLayer.clusterGroup);
             }
-            map.setView(result.marker.getLatLng(), 15);
-            result.marker.openPopup();
-            highlightResultInPopup(result);
+            // Zoom in far enough for the marker to leave its cluster, then open it --
+            // openPopup() on a still-clustered marker would silently do nothing.
+            personsLayer.clusterGroup.zoomToShowLayer(result.marker, () => result.marker.openPopup());
             closeDropdown();
             input.value = '';
         }

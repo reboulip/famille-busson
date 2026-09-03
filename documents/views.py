@@ -10,6 +10,7 @@ from django.db.models import Exists, OuterRef, ProtectedError, Q
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
+from django.utils.cache import patch_vary_headers
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
@@ -103,6 +104,19 @@ class DocumentListView(LoginRequiredMixin, ListView):
         context["selected_category"] = self.request.GET.get("category", "")
         context["filter_categories"] = accessible_categories(self.request.user).order_by("name")
         return context
+
+    def get_template_names(self):
+        """live_filter.js re-fetches this same URL and swaps in just the results,
+        so an XHR gets the partial rather than the whole page (mirrors
+        annuaire's DirectoryListView)."""
+        if self.request.headers.get("X-Requested-With") == "XMLHttpRequest":
+            return ["documents/_document_results.html"]
+        return [self.template_name]
+
+    def render_to_response(self, context, **response_kwargs):
+        response = super().render_to_response(context, **response_kwargs)
+        patch_vary_headers(response, ["X-Requested-With"])
+        return response
 
 
 class CategoryCreateView(StaffRequiredMixin, CreateView):
