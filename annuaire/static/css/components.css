@@ -544,6 +544,9 @@ a.fb-card:hover,
     position: relative;
     padding-left: calc(var(--fb-sp-5) + 3px);
     margin-bottom: var(--fb-sp-4);
+    transition: transform var(--fb-dur-fast) var(--fb-ease),
+                box-shadow var(--fb-dur-fast) var(--fb-ease),
+                border-color var(--fb-dur-fast) var(--fb-ease);
 }
 .fb-post-card::before {
     content: "";
@@ -564,6 +567,31 @@ a.fb-card:hover,
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* --- Whole-card click target (#128) ------------------------------------- */
+/* The title link carries Bootstrap's .stretched-link, whose ::after overlay
+   fills the nearest positioned ancestor -- the card itself. Side effect of
+   the technique: text over the card body is no longer selectable. Written as
+   its own rule rather than folded into the a.fb-card group above, which the
+   source-text test helpers read by exact selector. */
+.fb-post-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--fb-shadow-2);
+    border-color: color-mix(in srgb, var(--fb-alpenglow) 45%, var(--fb-border));
+}
+
+/* Links in the meta line sit above the overlay so they stay independently
+   clickable -- losing the author and category links would be a regression. */
+.fb-post-card .fb-meta a {
+    position: relative;
+    z-index: 2;
+}
+
+/* Keyboard focus has to read on the whole card, not just the title words. */
+.fb-post-card:has(.stretched-link:focus-visible) {
+    outline: 2px solid var(--fb-alpenglow);
+    outline-offset: 2px;
 }
 
 /* =========================================================================
@@ -1254,6 +1282,12 @@ a.fb-card:hover,
 }
 
 .category-tree__name--locked { color: var(--fb-bark); }
+
+/* Positioned ancestor for the row's whole-row click overlay (#128). It wraps
+   only the row itself, never the nested child list -- covering that would
+   make every child row unclickable. A locked row carries no link, so it
+   stays inert. */
+.category-tree__row { position: relative; }
 
 .category-tree-excerpt { margin: 2px 0 0; }
 

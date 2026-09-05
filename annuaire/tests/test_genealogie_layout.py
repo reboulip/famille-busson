@@ -282,3 +282,13 @@ def test_family_tree_js_image_export_reads_the_node_it_was_handed():
     assert "mount.querySelectorAll('.link')" not in section
     assert "exportMount.querySelectorAll('.link')" in section
     assert "mount.querySelector('#htmlSvg" not in section
+
+
+def test_genealogy_node_card_neutralizes_the_bootstrap_component_of_the_same_name():
+    """#121: family-chart names its node wrapper with a class Bootstrap also styles,
+    so the framework's background, border and radius drew a filled rounded square
+    behind every circular node."""
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".f3 div.card")
+    assert _declared_value(body, "background") == "none"
+    assert _declared_value(body, "border") == "0"
+    assert _declared_value(body, "border-radius") == "0"

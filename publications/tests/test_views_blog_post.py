@@ -438,3 +438,10 @@ def test_blogpost_delete_post_allowed_for_staff(staff_client, blog_post):
     response = staff_client.post(reverse("blogpost-delete", kwargs={"pk": pk}))
     assert response.status_code == 302
     assert not BlogPost.objects.filter(pk=pk).exists()
+
+
+@pytest.mark.django_db
+def test_blogpost_list_card_is_clickable_as_a_whole(auth_client, blog_post):
+    # #128: the card used to be reachable only by clicking the title text.
+    content = auth_client.get(reverse("blogpost-list")).content.decode()
+    assert "stretched-link" in content

@@ -184,3 +184,10 @@ def test_stylesheets_load_tokens_and_components_after_bootstrap_and_main_last(au
     content = auth_client.get(reverse("directory")).content.decode()
     order = [content.index(f"css/{name}.css") for name in ("bootstrap", "tokens", "components", "main")]
     assert order == sorted(order)
+
+
+@pytest.mark.django_db
+def test_sidebar_chalet_entry_names_presences_too(auth_client):
+    # #127: the section covers the presence calendar as well as the chalets.
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert "Chalets et Présences" in content

@@ -338,3 +338,20 @@ def test_category_delete_blocked_when_has_children(staff_client, category):
 def test_category_delete_get_shows_document_count(staff_client, category, document):
     response = staff_client.get(reverse("category-delete", kwargs={"pk": category.pk}))
     assert response.context["document_count"] == 1
+
+
+@pytest.mark.django_db
+def test_category_list_row_is_clickable_as_a_whole(auth_client, category):
+    # #128: the row used to be reachable only by clicking the name text.
+    content = auth_client.get(reverse("category-list")).content.decode()
+    assert "category-tree__row" in content
+    assert "stretched-link" in content
+
+
+@pytest.mark.django_db
+def test_category_list_locked_row_is_not_a_click_target(auth_client, restricted_category):
+    # A row the member may not open must not become clickable just because whole-row
+    # click targets were introduced.
+    content = auth_client.get(reverse("category-list")).content.decode()
+    assert restricted_category.name in content
+    assert "stretched-link" not in content

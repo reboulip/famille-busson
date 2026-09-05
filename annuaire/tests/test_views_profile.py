@@ -947,3 +947,13 @@ def test_carte_renders_person_search_box(auth_client):
     content = response.content.decode()
     assert 'id="carte-person-search"' in content
     assert "Rechercher un membre" in content
+
+
+@pytest.mark.django_db
+def test_profile_detail_information_card_is_labelled_informations(auth_client, person):
+    # #122: the card carries birth/death dates as well as contact details, so the
+    # narrower previous label was wrong.
+    person.phone_number = "+33 6 12 34 56 78"
+    person.save()
+    content = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk})).content.decode()
+    assert '<p class="fb-eyebrow fb-card__label">Informations</p>' in content

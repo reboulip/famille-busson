@@ -571,3 +571,17 @@ def test_chalet_owners_edit_post_allowed_for_owner(auth_client, chalet, person, 
     )
     assert response.status_code == 302
     assert set(chalet.owners.all()) == {person, other_person}
+
+
+@pytest.mark.django_db
+def test_chalet_list_heading_names_presences_too(auth_client):
+    # #127
+    content = auth_client.get(reverse("chalet-list")).content.decode()
+    assert "<h1>Chalets et Présences</h1>" in content
+
+
+@pytest.mark.django_db
+def test_chalet_list_shows_the_presence_calendar_above_the_chalet_grid(auth_client, chalet):
+    # #127: the calendar is the reason people open this page, so it comes first.
+    content = auth_client.get(reverse("chalet-list")).content.decode()
+    assert content.index("presence-calendar") < content.index("fb-grid--wide")

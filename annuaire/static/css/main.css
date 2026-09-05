@@ -544,6 +544,18 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
 .f3 div.card.card--deceased div.card-image-circle img { filter: grayscale(1); }
 
+/* #121: family-chart names its node wrapper class="card", which collides with
+   Bootstrap's own component of that name (loaded globally in base.html) --
+   its background, border and radius paint a filled rounded square behind
+   every circular node. Only those three are neutralized: the vendor's layout
+   has always run with Bootstrap's flex in effect, so touching display here
+   would change behaviour that currently works. */
+.f3 div.card {
+    background: none;
+    border: 0;
+    border-radius: 0;
+}
+
 /* =========================================================================
    5. Person / address pickers
    ========================================================================= */

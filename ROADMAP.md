@@ -8,7 +8,7 @@
 
 ### Cluster: Publications & Documents
 
-- [ ] 7.1 · Make the whole card clickable to its detail — publications
+- [x] 7.1 · Make the whole card clickable to its detail — publications
   (`publications/templates/publications/blogpost_list.html`) and documents
   (`documents/templates/documents/document_list.html`, `category_list.html`) lists
   currently link only via the title text. [#128]
@@ -18,7 +18,7 @@
 
 ### Cluster: Profil
 
-- [ ] 7.3 · Rename the "Coordonnées" section heading to "Informations" on the profile
+- [x] 7.3 · Rename the "Coordonnées" section heading to "Informations" on the profile
   view (`annuaire/templates/annuaire/personne_detail.html`). [#122]
 - [ ] 7.4 · Mobile profile view (`personne_detail.html`): shrink the sticky identity
   rail on scroll to show only name+photo instead of the full info card, and move
@@ -27,14 +27,14 @@
 
 ### Cluster: Généalogie
 
-- [ ] 7.5 · Remove the square artifacts rendered under circle nodes in the family
+- [x] 7.5 · Remove the square artifacts rendered under circle nodes in the family
   tree visual (`annuaire/static/js/family_tree.js`). [#121]
 - [ ] 7.6 · Mobile genealogy view: shrink the fixed bottom banner as much as possible
   to give the tree visualization more vertical space. [#125]
 
 ### Cluster: Chalets et Présences
 
-- [ ] 7.7 · Rename the "Chalets" tab/heading to "Chalets et Présences" and reorder
+- [x] 7.7 · Rename the "Chalets" tab/heading to "Chalets et Présences" and reorder
   `chalet_list.html` to show the presence calendar (`_presence_calendar.html`) above
   the chalet list instead of below. [#127]
 
