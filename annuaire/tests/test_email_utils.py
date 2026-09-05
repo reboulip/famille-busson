@@ -17,14 +17,16 @@ def test_send_bulk_emails_sends_all_messages():
 def test_send_bulk_emails_isolates_a_failed_send(monkeypatch):
     import annuaire.email_utils as email_utils
 
-    real_send_mail = email_utils.send_mail
+    real_build_message = email_utils.build_message
 
-    def _flaky_send_mail(subject, body, from_email, recipient_list, **kwargs):
-        if recipient_list == ["bad@example.com"]:
+    # Was a patch of email_utils.send_mail; messages are now built as
+    # EmailMultiAlternatives so they can carry an HTML half and inline images.
+    def _flaky_build_message(email, connection=None):
+        if email.to == "bad@example.com":
             raise Exception("SMTP down")
-        return real_send_mail(subject, body, from_email, recipient_list, **kwargs)
+        return real_build_message(email, connection=connection)
 
-    monkeypatch.setattr(email_utils, "send_mail", _flaky_send_mail)
+    monkeypatch.setattr(email_utils, "build_message", _flaky_build_message)
 
     messages = [
         ("good1@example.com", "Sujet", "Contenu"),

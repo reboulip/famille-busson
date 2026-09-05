@@ -1,0 +1,12 @@
+Un nouvel article a été publié sur le site de la famille Busson :
+
+{{ post.title }}{% if authors %}
+Par {{ authors }}{% endif %}
+{% if excerpt %}
+{{ excerpt }}
+{% endif %}
+{{ post_url }}
+
+--
+Vous recevez cette notification car vous êtes abonné·e aux nouvelles publications sur
+le site de la famille Busson. Pour vous désabonner, modifiez votre profil : {{ settings_url }}

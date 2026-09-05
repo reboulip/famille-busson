@@ -133,7 +133,9 @@ def test_bulk_create_email_failure_still_creates_account_and_shows_reset_link(st
     def _raise(*args, **kwargs):
         raise Exception("SMTP down")
 
-    monkeypatch.setattr(annuaire_views, "send_mail", _raise)
+    # Was a patch of views.send_mail; account emails now go through
+    # email_utils.build_message so they can carry an HTML alternative.
+    monkeypatch.setattr(annuaire_views, "build_message", _raise)
     response = staff_client.post(reverse("bulk-account-create"), {"emails": "new@example.com"})
 
     assert Account.objects.filter(email="new@example.com").exists()

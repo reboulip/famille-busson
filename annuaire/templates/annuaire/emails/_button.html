@@ -1,0 +1,27 @@
+{% comment %}
+The one call to action.
+
+A padded <a> rather than a VML ghost button: Outlook's Word engine ignores
+border-radius and shows a square button with the same fill and padding, which is an
+acceptable degrade and half the markup.
+
+The fill is `ember` (#9C4A22), not `alpenglow` (#D9793F) as the original palette
+table assigned to CTAs. Card-tinted text on alpenglow measures 2.98:1, which fails
+WCAG AA for the button label; on ember it is 5.90:1. The site made the same swap for
+the same reason (design/web/SPEC.md §3.2), so the two now agree.
+
+Params: url, label
+{% endcomment %}
+<tr>
+  <td class="em-pad" style="padding: 28px 48px 0;" align="left">
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td class="em-btn" style="background-color:#9C4A22; border-radius:6px;">
+          <a href="{{ url }}" class="em-btn-text" style="display:inline-block; padding:14px 28px; font-family: 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif; font-size:16px; font-weight:bold; color:#FFFAF0; text-decoration:none;">
+            {{ label }}
+          </a>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>

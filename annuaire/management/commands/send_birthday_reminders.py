@@ -13,11 +13,10 @@ from __future__ import annotations
 import calendar
 import datetime
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Q
-from django.urls import reverse
 
+from annuaire import emails
 from annuaire.email_utils import send_bulk_emails
 from annuaire.models import Person
 from annuaire.models import Settings as NotificationSettings
@@ -53,18 +52,11 @@ class Command(BaseCommand):
 
         messages = []
         for birthday_person in birthday_people:
-            profile_url = settings.SITE_BASE_URL.rstrip("/") + reverse(
-                "personne-detail", kwargs={"pk": birthday_person.pk}
-            )
-            unsubscribe_url = settings.SITE_BASE_URL.rstrip("/") + reverse("edit-my-profile")
-            subject = f"Anniversaire de {birthday_person.first_name} {birthday_person.last_name}"
-            body = (
-                f"C'est aujourd'hui l'anniversaire de {birthday_person.first_name} "
-                f"{birthday_person.last_name} !\n\n{profile_url}\n\n"
-                f"Vous pouvez vous désabonner de ces rappels en modifiant votre profil : {unsubscribe_url}"
-            )
+            # Read the photo once per birthday person, not once per subscriber: the
+            # same bytes are attached to every copy of that person's message.
+            photo = emails.birthday_photo(birthday_person)
             for subscriber in subscribers:
-                messages.append((subscriber.person.email, subject, body))
+                messages.append(emails.birthday_reminder(birthday_person, subscriber.person.email, photo))
 
         sent, failed = send_bulk_emails(messages)
         self.stdout.write(f"{len(sent)} email(s) envoyé(s), {len(failed)} échec(s).")

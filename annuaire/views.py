@@ -12,7 +12,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.core.mail import get_connection, send_mail
+from django.core.mail import get_connection
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
@@ -28,7 +28,8 @@ from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
-from .email_utils import send_bulk_emails
+from . import emails
+from .email_utils import build_message, send_bulk_emails
 from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
 from .forms import (
@@ -163,30 +164,21 @@ def _build_password_reset_url(request, account):
 
 
 def _account_setup_email_content(email, reset_url, is_reset):
-    subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
-    intro = (
-        "Le mot de passe de votre compte sur le site de la famille Busson a été réinitialisé."
-        if is_reset
-        else "Un compte a été créé pour vous sur le site de la famille Busson."
-    )
-    message = (
-        f"Bonjour,\n\n"
-        f"{intro}\n\n"
-        f"Adresse : {email}\n\n"
-        f"Choisissez votre mot de passe ici : {reset_url}\n"
-        f"Ce lien est à usage unique et expire dans 7 jours.\n\n"
-        f"À bientôt !"
-    )
-    return subject, message
+    """Kept as a thin wrapper over annuaire.emails.account_setup so callers (and the
+    tests that assert on the copy) keep a (subject, text_body) pair to look at, while
+    the message itself is built in one place with its HTML half."""
+    message = emails.account_setup(email, reset_url, is_reset)
+    return message.subject, message.text_body
 
 
 def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
     """Best-effort: one recipient's SMTP failure must not lose the others'
     accounts (already created) or hide their reset link (still shown on screen
     regardless -- see bulk_account_create.html)."""
-    subject, message = _account_setup_email_content(email, reset_url, is_reset)
     try:
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, connection=connection)
+        build_message(emails.account_setup(email, reset_url, is_reset), connection=connection).send(
+            fail_silently=False
+        )
         return True
     except Exception:
         logging.getLogger("django").exception("Failed to send account setup email to %s", email)
@@ -530,6 +522,10 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
 class AccountPasswordResetView(PasswordResetView):
     template_name = "annuaire/password_reset.html"
     email_template_name = "annuaire/password_reset_email.txt"
+    # Django sends email_template_name as the text body and this as an HTML
+    # alternative -- both halves ship, which is what keeps text-only clients working
+    # and avoids the spam signal an HTML-only multipart gives off.
+    html_email_template_name = "annuaire/emails/password_reset.html"
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
 
@@ -546,6 +542,7 @@ class MagicLinkRequestView(PasswordResetView):
 
     template_name = "annuaire/magic_link_request.html"
     email_template_name = "annuaire/magic_link_email.txt"
+    html_email_template_name = "annuaire/emails/magic_link.html"
     subject_template_name = "annuaire/magic_link_subject.txt"
     token_generator = magic_link_token_generator
     success_url = reverse_lazy("magic-link-sent")

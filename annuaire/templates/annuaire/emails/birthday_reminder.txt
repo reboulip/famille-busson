@@ -1,0 +1,9 @@
+C'est aujourd'hui l'anniversaire de {{ person.first_name }} {{ person.last_name }} !
+
+Un petit mot fait toujours plaisir : passez lui souhaiter un joyeux anniversaire.
+
+{{ profile_url }}
+
+--
+Vous recevez ce rappel car vous êtes abonné·e aux rappels d'anniversaire sur le site
+de la famille Busson. Pour vous désabonner, modifiez votre profil : {{ settings_url }}
