@@ -8,7 +8,7 @@
         var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
 
         var warning = document.createElement('div');
-        warning.className = 'alert alert-warning mt-2 d-none';
+        warning.className = 'fb-alert fb-alert--warning mt-2 d-none';
         warning.textContent = 'Cette photo dépasse 5 Mo et sera refusée par le serveur. Choisissez une image plus légère.';
         input.insertAdjacentElement('afterend', warning);
 

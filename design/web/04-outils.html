@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Outils (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .demo-sep { margin: var(--fb-sp-8) 0 var(--fb-sp-6); border: 0; border-top: 1px dashed var(--fb-border-strong); }
+  .demo-note { font-size: var(--fb-text-sm); color: var(--fb-bark); margin-bottom: var(--fb-sp-5); max-width: var(--fb-measure-max); }
+
+  /* Mockup-only fake canvases. The real ones are Leaflet / family-chart / pdf.js. */
+  .fake-map {
+      width: 100%; height: 100%;
+      background:
+        radial-gradient(circle at 30% 35%, color-mix(in srgb, var(--fb-slate-mist) 30%, transparent) 0 18%, transparent 19%),
+        radial-gradient(circle at 68% 62%, color-mix(in srgb, var(--fb-spruce) 22%, transparent) 0 22%, transparent 23%),
+        repeating-linear-gradient(0deg, transparent 0 39px, var(--fb-border) 39px 40px),
+        repeating-linear-gradient(90deg, transparent 0 39px, var(--fb-border) 39px 40px),
+        var(--fb-parchment);
+      position: relative;
+  }
+  .pin { position: absolute; transform: translate(-50%, -50%); }
+  .pin img, .pin .pin__disc {
+      width: 56px; height: 56px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--fb-card); box-shadow: var(--fb-shadow-2); display: block; background: var(--fb-card);
+  }
+  .pin__badge {
+      position: absolute; right: -4px; bottom: -4px;
+      min-width: 20px; height: 20px; padding: 0 5px;
+      border-radius: 10px; background: var(--fb-ember); color: var(--fb-card);
+      border: 2px solid var(--fb-card);
+      font-size: 11px; font-weight: 700; line-height: 16px; text-align: center;
+  }
+  .fake-tree { width: 100%; height: 100%; background: var(--fb-card); position: relative; }
+  .node {
+      position: absolute; transform: translate(-50%, -50%);
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      font-size: var(--fb-text-xs); font-weight: 600; text-align: center; width: 92px;
+  }
+  .node img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--fb-border-strong); }
+  .node--focus img { border-color: var(--fb-alpenglow); border-width: 3px; }
+  .edge { position: absolute; background: var(--fb-bark); }
+  .canvas-row { display: flex; gap: var(--fb-sp-4); align-items: flex-start; }
+  @media (max-width: 991.98px) { .canvas-row .fb-canvas__aside { display: none; } }
+</style>
+</head>
+<body>
+
+<div class="fb-layout" data-fb-shell data-active="carte">
+  <main class="fb-content">
+    <div class="fb-content__inner">
+
+      <!-- ============================================================
+           Archetype F — Canvas tools
+           The rule: the chrome recedes. Page head, then a toolbar welded
+           to the canvas so the two read as one instrument rather than a
+           loose row of controls floating above a bordered box.
+           ============================================================ -->
+
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <h1>Carte</h1>
+          <p class="fb-page-head__lede">Où habite la famille, et où sont les chalets.</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <span class="fb-chip">22 profils</span>
+          <span class="fb-chip">5 chalets</span>
+        </div>
+      </div>
+
+      <!-- Warnings about unmapped records become a real alert, not a bare
+           <details> with a search-result-count class borrowed from elsewhere. -->
+      <details class="fb-alert fb-alert--warning" style="display:block">
+        <summary style="cursor:pointer; font-weight:600">
+          3 profils sans adresse géolocalisée n'apparaissent pas sur la carte.
+        </summary>
+        <ul style="margin: var(--fb-sp-3) 0 0; padding-left: 1.2rem">
+          <li><a href="03-details.html">Claire Roux</a> <span class="fb-meta">— adresse non renseignée</span></li>
+          <li><a href="03-details.html">Gabriel Petit</a> <span class="fb-meta">— 4 rue sans numéro, ?</span></li>
+          <li><a href="03-details.html">Inès Dubois</a> <span class="fb-meta">— adresse non renseignée</span></li>
+        </ul>
+      </details>
+
+      <div class="fb-toolbar fb-toolbar--attached">
+        <input class="fb-input fb-search" type="search" placeholder="Rechercher un membre…" aria-label="Rechercher un membre sur la carte">
+        <span class="fb-toolbar__spacer"></span>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">Personnes</button>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">Chalets</button>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">⛶ Plein écran</button>
+      </div>
+      <div class="fb-canvas">
+        <div class="fake-map">
+          <div class="pin" style="left:22%; top:34%"><img data-ph="avatar" alt=""></div>
+          <div class="pin" style="left:44%; top:56%"><img data-ph="avatar" alt=""><span class="pin__badge">4</span></div>
+          <div class="pin" style="left:63%; top:28%"><img data-ph="chalet" alt=""></div>
+          <div class="pin" style="left:74%; top:66%"><img data-ph="avatar" alt=""></div>
+          <div class="pin" style="left:34%; top:76%"><img data-ph="chalet" alt=""></div>
+        </div>
+      </div>
+      <p class="demo-note" style="margin-top: var(--fb-sp-3)">
+        <strong>La variation :</strong> les seuls changements de couleur sont dans les
+        overrides vendor déjà présents dans <code>main.css</code> — l'anneau blanc des
+        médaillons devient <code>--fb-card</code>, et la pastille de regroupement passe du
+        bleu Bootstrap <code>#0d6efd</code> à <code>--fb-ember</code>. Le fond de carte
+        OSM reste ce qu'il est : on ne reteinte pas la cartographie.
+      </p>
+
+      <hr class="demo-sep">
+
+      <!-- Généalogie ------------------------------------------------- -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <h1>Généalogie</h1>
+          <p class="fb-page-head__lede">L'arbre complet, branche par branche.</p>
+        </div>
+      </div>
+
+      <div class="fb-toolbar fb-toolbar--attached">
+        <select class="fb-select" style="width:auto" aria-label="Branche">
+          <option>Branche Busson (18 personnes)</option>
+          <option>Branche Lefevre (6 personnes)</option>
+        </select>
+        <input class="fb-input" style="width:200px" type="search" placeholder="Chercher une personne…" aria-label="Chercher dans l'arbre">
+        <span class="fb-toolbar__spacer"></span>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">Exporter en Excel</button>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">Exporter en image</button>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">⛶ Plein écran</button>
+      </div>
+
+      <div class="canvas-row">
+        <div class="fb-canvas" style="flex:1">
+          <div class="fake-tree">
+            <div class="edge" style="left:32%; top:30%; width:36%; height:2px"></div>
+            <div class="edge" style="left:50%; top:30%; width:2px; height:18%"></div>
+            <div class="edge" style="left:24%; top:48%; width:52%; height:2px"></div>
+            <div class="edge" style="left:24%; top:48%; width:2px; height:14%"></div>
+            <div class="edge" style="left:50%; top:48%; width:2px; height:14%"></div>
+            <div class="edge" style="left:76%; top:48%; width:2px; height:14%"></div>
+            <div class="node" style="left:32%; top:30%"><img data-ph="avatar" alt="">Sandrine Busson</div>
+            <div class="node" style="left:68%; top:30%"><img data-ph="avatar" alt="">Henri Busson</div>
+            <div class="node node--focus" style="left:24%; top:62%"><img data-ph="avatar" alt="">Alice Bernard</div>
+            <div class="node" style="left:50%; top:62%"><img data-ph="avatar" alt="">Émile Busson</div>
+            <div class="node" style="left:76%; top:62%"><img data-ph="avatar" alt="">Quentin Busson</div>
+          </div>
+        </div>
+
+        <aside class="fb-canvas__aside">
+          <div style="display:flex; align-items:center; gap:var(--fb-sp-3); margin-bottom:var(--fb-sp-4)">
+            <img data-ph="avatar" alt="" class="fb-avatar" style="width:56px;height:56px">
+            <div>
+              <h2 style="font-size:1.125rem; margin:0">Alice Bernard</h2>
+              <p class="fb-meta">10 octobre 1948</p>
+            </div>
+          </div>
+          <div class="fb-contact">
+            <p class="fb-contact__row"><span class="fb-contact__icon">📧</span><span class="fb-contact__value"><a href="#">alice.bernard@example.com</a></span></p>
+            <p class="fb-contact__row"><span class="fb-contact__icon">🏠</span><span class="fb-contact__value">Lyon</span></p>
+          </div>
+          <p style="margin-top:var(--fb-sp-4)">
+            <a class="fb-btn fb-btn--primary fb-btn--sm" href="03-details.html">Voir la fiche</a>
+          </p>
+        </aside>
+      </div>
+
+      <p class="demo-note" style="margin-top: var(--fb-sp-3)">
+        <strong>La variation :</strong> le panneau de détail passe d'un simple encadré à une
+        carte ombrée qui flotte au-dessus de l'arbre en plein écran (comportement déjà en
+        place, simplement reskinné). Côté vendor, <code>.f3 .link</code> passe de
+        <code>#6c757d</code> à <code>--fb-bark</code>, et la sélection de
+        l'autocomplete du bleu Bootstrap à <code>--fb-ember</code>.
+      </p>
+
+      <hr class="demo-sep">
+
+      <!-- Visionneuse ------------------------------------------------ -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <p class="fb-eyebrow">Documents · Chalets · Grand chalet</p>
+          <h1>Plan cadastral du grand chalet</h1>
+          <p class="fb-page-head__lede">14 mars 1978 — déposé par Émile Lefevre</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--quiet fb-btn--sm" href="05-formulaires.html">Modifier</a>
+        </div>
+      </div>
+
+      <div class="fb-toolbar fb-toolbar--attached">
+        <span style="font-weight:600">plan_cadastral_1978.pdf</span>
+        <span class="fb-toolbar__spacer"></span>
+        <span class="fb-chip">1 / 3</span>
+        <div style="display:flex; align-items:center; gap:4px">
+          <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button" aria-label="Réduire">−</button>
+          <span class="fb-meta" style="min-width:48px; text-align:center">100 %</span>
+          <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button" aria-label="Agrandir">+</button>
+        </div>
+        <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">📥 Télécharger</a>
+        <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button">⛶ Plein écran</button>
+      </div>
+      <div class="fb-canvas fb-canvas--stage" style="height:420px">
+        <div style="width:min(420px,100%); aspect-ratio:1/1.414; background:var(--fb-card); box-shadow:var(--fb-shadow-2); border:1px solid var(--fb-border); padding:24px">
+          <p class="fb-eyebrow">Commune de Praz-sur-Verre</p>
+          <h3 style="font-size:1rem">Section AB — parcelle 214</h3>
+          <div style="margin-top:16px; border:1.5px solid var(--fb-ink); height:150px; position:relative">
+            <div style="position:absolute; inset:18px 60px 40px 18px; border:1px solid var(--fb-bark)"></div>
+            <div style="position:absolute; right:12px; bottom:12px; font-size:11px; color:var(--fb-bark)">1/500</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="demo-note" style="margin-top: var(--fb-sp-3)">
+        <strong>La variation :</strong> la scène de la visionneuse quitte le gris Bootstrap
+        <code>#f8f9fa</code> pour <code>--fb-parchment</code>, et la page rendue garde son
+        fond <code>--fb-card</code> avec une ombre chaude — un document posé sur un
+        établi, pas une image dans une boîte grise.
+      </p>
+
+      <p class="fb-meta" style="margin-top: var(--fb-sp-8)">
+        Maquette — archetype F (outils). Les canevas sont simulés en CSS ;
+        les vrais restent Leaflet, family-chart et pdf.js, inchangés.
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

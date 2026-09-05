@@ -1,12 +1,31 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="form">
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Publications</p>
+            <h1>Supprimer cette publication ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
         <h1>Supprimer « {{ object.title }} » ?</h1>
-        <p>Cette action est irréversible. La publication, ses commentaires et ses pièces jointes seront supprimés.</p>
+        <p class="fb-meta">Publiée le {{ object.created_at|date:"j F Y" }}.</p>
+        <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <ul>
+                <li>la publication et son contenu ;</li>
+                <li>{% with n=object.comments.count %}{% if n == 1 %}son commentaire{% else %}ses {{ n }} commentaires{% endif %}{% endwith %} ;</li>
+                <li>{% with n=object.attachments.count %}{% if n == 1 %}sa pièce jointe{% else %}ses {{ n }} pièces jointes{% endif %}{% endwith %}, fichiers compris.</li>
+            </ul>
+        </div>
         <form method="POST">
             {% csrf_token %}
-            <button class="btn btn-outline-danger" type="submit">Supprimer définitivement</button>
-            <a href="{% url 'blogpost-detail' object.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
         </form>
     </div>
 {% endblock content %}

@@ -1,23 +1,32 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
-    <div class="alert alert-info">
-        Vous êtes déjà dans l'annuaire ? <a href="{% url 'profile-claim' %}">Rattachez votre compte à votre fiche existante</a> plutôt que d'en créer une nouvelle.
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>Créer mon profil</h1>
+        </div>
     </div>
-    <div class="form">
-        <form method="POST" enctype="multipart/form-data">
+
+    <div class="fb-form">
+        <div class="fb-alert fb-alert--info">
+            Vous êtes déjà dans l'annuaire ?
+            <a href="{% url 'profile-claim' %}">Rattachez votre compte à votre fiche existante</a>
+            plutôt que d'en créer une nouvelle.
+        </div>
+        <form method="POST" enctype="multipart/form-data" class="form">
             {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>Créer mon profil</legend>
+            <fieldset class="fb-fieldset">
+                <legend>Mon profil</legend>
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
-            <fieldset class="form-group">
+            <fieldset class="fb-fieldset">
                 <legend>Notifications</legend>
                 {{ settings_form|crispy }}
             </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
             </div>
         </form>
     </div>

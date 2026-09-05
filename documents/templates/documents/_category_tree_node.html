@@ -1,18 +1,25 @@
 {% load documents_extras %}
 {% load markdown_extras %}
+{% load icons %}
 <li>
     {% if category|can_access:request.user %}
-        <a href="{% url 'category-detail' category.pk %}">{{ category.name }}</a>
+        <a class="category-tree__name" href="{% url 'category-detail' category.pk %}">
+            {% icon "folder" size=16 %} {{ category.name }}
+        </a>
         {% if category.description %}
-            <p class="category-tree-excerpt text-muted">{{ category.description|markdown_plain|truncatechars:150 }}</p>
+            <p class="category-tree-excerpt fb-meta">{{ category.description|markdown_plain|truncatechars:150 }}</p>
         {% endif %}
     {% else %}
-        <span class="category-locked">
-            🔒 {{ category.name }}
-            <small class="text-muted">
-                — Réservé au groupe{{ category|effective_groups|length|pluralize }} :
-                {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-            </small>
+        {% comment %}
+            Locked: the lock glyph, the dashed chip and the group name all say
+            the same thing, so access is never carried by styling alone.
+        {% endcomment %}
+        <span class="category-tree__name category-tree__name--locked">
+            {% icon "lock" size=16 %} {{ category.name }}
+        </span>
+        <span class="fb-chip fb-chip--lock">
+            Réservé au groupe{{ category|effective_groups|length|pluralize }} :
+            {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
         </span>
     {% endif %}
     {% with children=category.children.all %}

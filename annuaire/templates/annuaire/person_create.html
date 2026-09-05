@@ -1,8 +1,16 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
-    <div class="form">
-        <div class="alert alert-warning">
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>Créer une fiche</h1>
+            <p class="fb-page-head__lede">Pour un membre de la famille qui n'aura pas de compte.</p>
+        </div>
+    </div>
+
+    <div class="fb-form">
+        <div class="fb-alert fb-alert--warning">
             Cette page sert à créer une fiche pour une personne qui <strong>ne doit pas
             avoir accès au site</strong> (un enfant, un autre membre de la famille…).
             Vous en deviendrez le propriétaire et pourrez la modifier comme la vôtre.
@@ -10,16 +18,16 @@
             elle-même un compte à partir de cette adresse — ne la renseignez que si
             c'est bien votre intention.
         </div>
-        <form method="POST" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data" class="form">
             {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>Créer une fiche</legend>
+            <fieldset class="fb-fieldset">
+                <legend>La fiche</legend>
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
-                <a href="{% url 'directory' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+                <a href="{% url 'directory' %}" class="fb-btn fb-btn--ghost">Annuler</a>
             </div>
         </form>
     </div>

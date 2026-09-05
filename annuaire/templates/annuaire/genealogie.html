@@ -1,19 +1,37 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block vendor_css %}
     <link rel="stylesheet" href="{% static 'vendor/family-chart/family-chart.css' %}">
 {% endblock vendor_css %}
 {% block content %}
-    <h1>Généalogie</h1>
+    {% comment %}
+        Archetype F — canvas tool.
+
+        Two literal strings here are asserted on by
+        annuaire/tests/test_views_family_tree.py and must not be reordered:
+          - the toolbar's class attribute must START with "genealogie-toolbar"
+            (the tests slice the response between `class="genealogie-toolbar`
+            and `genealogie-layout`, then look for the control ids inside);
+          - the aside must render exactly
+            id="genealogie-detail" class="genealogie-detail d-none d-lg-block".
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Généalogie</h1>
+            <p class="fb-page-head__lede">L'arbre complet, branche par branche.</p>
+        </div>
+    </div>
 
     <div id="genealogie-panel">
-        <div class="genealogie-toolbar d-flex gap-2 align-items-center flex-wrap mb-3">
-            <select id="genealogie-branch-picker" class="form-select genealogie-branch-picker" hidden></select>
+        <div class="genealogie-toolbar fb-toolbar fb-toolbar--attached">
+            <select id="genealogie-branch-picker" class="fb-select genealogie-branch-picker" hidden></select>
             <div id="genealogie-search" class="genealogie-search"></div>
-            <button type="button" id="genealogie-export" class="btn btn-outline-success btn-sm"
-                    data-export-url="{% url 'genealogie-export' %}">Exporter le carnet d'adresses en Excel</button>
-            <button type="button" id="genealogie-export-image" class="btn btn-outline-success btn-sm">Exporter en image</button>
-            <button type="button" id="genealogie-fullscreen" class="btn btn-outline-secondary btn-sm">Plein écran</button>
+            <span class="fb-toolbar__spacer"></span>
+            <button type="button" id="genealogie-export" class="fb-btn fb-btn--quiet fb-btn--sm"
+                    data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} Exporter le carnet d'adresses en Excel</button>
+            <button type="button" id="genealogie-export-image" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "image" size=16 %} Exporter en image</button>
+            <button type="button" id="genealogie-fullscreen" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "expand" size=16 %} Plein écran</button>
         </div>
 
         <div class="d-lg-flex genealogie-layout">
@@ -22,7 +40,7 @@
                 <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
             </div>
             <aside id="genealogie-detail" class="genealogie-detail d-none d-lg-block">
-                <p class="genealogie-detail-empty">Sélectionnez une personne dans l'arbre.</p>
+                <p class="genealogie-detail-empty fb-meta">Sélectionnez une personne dans l'arbre.</p>
             </aside>
         </div>
     </div>

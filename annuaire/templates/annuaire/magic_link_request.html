@@ -1,18 +1,25 @@
-{% extends "annuaire/base.html" %}
+{% extends "annuaire/base_threshold.html" %}
 {% load crispy_forms_filters %}
+{% block title %}Lien de connexion — Famille Busson{% endblock title %}
+{# Restrained treatment, matching the transactional emails: no peaks, no gold. #}
+{% block ridge %}<div class="fb-horizon"></div>{% endblock ridge %}
+{% block heading %}Votre lien de connexion{% endblock heading %}
+{% block lede %}
+    <p class="fb-meta fb-threshold__lede">
+        Indiquez l'adresse email associée à votre compte, nous vous enverrons un
+        lien pour vous connecter sans mot de passe.
+    </p>
+{% endblock lede %}
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <h1>Connexion par email</h1>
-        <p class="text-muted">
-            Indiquez l'adresse email associée à votre compte, nous vous enverrons un
-            lien pour vous connecter sans mot de passe.
-        </p>
-        <form method="post">
-            {% csrf_token %}
-            {{ form|crispy }}
-            <button type="submit" class="btn btn-primary w-100 mt-2">Recevoir un lien de connexion</button>
-        </form>
-    </div>
-</div>
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="fb-btn fb-btn--primary fb-btn--block">Recevoir un lien de connexion</button>
+    </form>
 {% endblock content %}
+{% block links %}
+    <div class="fb-threshold__links">
+        <span><a href="{% url 'magic-link-help' %}">Comment ça marche ?</a></span>
+        <span><a href="{% url 'login' %}">Retour à la connexion</a></span>
+    </div>
+{% endblock links %}

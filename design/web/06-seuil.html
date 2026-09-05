@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Le seuil (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Mockup-only: three threshold states side by side. In the app each of
+     these is a whole page, vertically centred on the parchment ground. */
+  .gallery {
+      min-height: 100vh;
+      background: var(--fb-parchment);
+      padding: var(--fb-sp-6) var(--fb-sp-5) var(--fb-sp-8);
+  }
+  .gallery__head { max-width: 68rem; margin: 0 auto var(--fb-sp-6); }
+  .gallery__row {
+      max-width: 68rem; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: var(--fb-sp-6); align-items: start;
+  }
+  .gallery__label { margin-bottom: var(--fb-sp-3); }
+  .gallery .fb-threshold { min-height: 0; padding: 0; display: block; }
+  .gallery .fb-threshold__card { max-width: none; }
+  .toggle { position: fixed; right: var(--fb-sp-4); top: var(--fb-sp-4); z-index: 10; }
+</style>
+</head>
+<body>
+
+<button class="fb-btn fb-btn--quiet fb-btn--sm toggle" type="button" data-fb-theme-toggle>◐ Nightfall</button>
+
+<div class="gallery">
+  <div class="gallery__head">
+    <div class="fb-page-head">
+      <div class="fb-page-head__titles">
+        <p class="fb-eyebrow">Archetype H</p>
+        <h1>Le seuil</h1>
+        <p class="fb-page-head__lede">
+          Connexion, inscription, lien magique, mot de passe oublié, changement de mot de
+          passe imposé, réclamation de profil. Six vues, une seule carte.
+        </p>
+      </div>
+    </div>
+    <p class="fb-meta" style="max-width: 46rem">
+      <strong>Deux décisions.</strong> D'abord : <em>pas de barre latérale</em>. Aujourd'hui
+      <code>login.html</code> étend <code>base.html</code>, donc un visiteur déconnecté
+      regarde un menu complet — Annuaire, Généalogie, Carte, Chalets — dont chaque lien le
+      renverra ici. Ensuite : cette carte est <em>exactement</em> celle des emails
+      transactionnels — même crête, même signature, même ligne de larmier, même colonne.
+      Cliquer sur un lien de connexion reçu par email et atterrir ici doit donner
+      l'impression de franchir la porte de l'email, pas d'arriver ailleurs.
+    </p>
+  </div>
+
+  <div class="gallery__row">
+
+    <!-- 1. Connexion — traitement complet, avec crête ---------------- -->
+    <div>
+      <p class="fb-eyebrow gallery__label">Connexion · traitement complet</p>
+      <div class="fb-threshold">
+        <div class="fb-threshold__card">
+          <div class="fb-threshold__head">
+            <span class="fb-wordmark">Famille Busson</span>
+            <svg class="fb-ridge" viewBox="0 0 240 76" preserveAspectRatio="none" style="margin-top:14px" role="img" aria-label="Crête de montagne">
+              <path class="fb-ridge__far"  d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>
+              <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+              <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+              <g class="fb-ridge__pine">
+                <path d="M18,50 L25,62 L11,62 Z"/><path d="M18,58 L26,72 L10,72 Z"/><rect x="16.6" y="71" width="2.8" height="5"/>
+                <path d="M222,52 L229,64 L215,64 Z"/><path d="M222,60 L230,73 L214,73 Z"/><rect x="220.6" y="72" width="2.8" height="4"/>
+              </g>
+            </svg>
+          </div>
+          <div class="fb-eaves"></div>
+
+          <div class="fb-threshold__body">
+            <h1>Content de vous revoir</h1>
+            <p class="fb-meta" style="margin-bottom: var(--fb-sp-5)">
+              Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications.
+            </p>
+
+            <div class="fb-field">
+              <label for="t-email">Adresse email</label>
+              <input class="fb-input" id="t-email" type="email" placeholder="prenom.nom@example.com">
+            </div>
+            <div class="fb-field">
+              <label for="t-pass">Mot de passe</label>
+              <input class="fb-input" id="t-pass" type="password" value="············">
+              <p class="fb-help"><a href="#">Afficher le mot de passe</a></p>
+            </div>
+
+            <button class="fb-btn fb-btn--primary" type="button" style="width:100%; justify-content:center">Se connecter</button>
+
+            <div class="fb-threshold__links">
+              <span>Pas envie de saisir votre mot de passe ? <a href="#">Recevez un lien de connexion par email</a>.</span>
+              <span>Mot de passe oublié ? <a href="#">Réinitialisez-le ici</a>.</span>
+              <span>Pas encore de compte ? <a href="#">C'est par ici</a>.</span>
+            </div>
+          </div>
+        </div>
+        <p class="fb-threshold__foot">Famille Busson · site privé de la famille</p>
+      </div>
+    </div>
+
+    <!-- 2. Lien magique — traitement restreint, horizon plat --------- -->
+    <div>
+      <p class="fb-eyebrow gallery__label">Lien de connexion · traitement restreint</p>
+      <div class="fb-threshold">
+        <div class="fb-threshold__card">
+          <div class="fb-threshold__head" style="padding-bottom: var(--fb-sp-4)">
+            <span class="fb-wordmark">Famille Busson</span>
+          </div>
+          <div class="fb-horizon"></div>
+          <div class="fb-eaves"></div>
+
+          <div class="fb-threshold__body">
+            <h1>Votre lien de connexion</h1>
+            <p class="fb-meta" style="margin-bottom: var(--fb-sp-5)">
+              Indiquez l'adresse email associée à votre compte. Nous vous enverrons un lien
+              pour vous connecter sans mot de passe.
+            </p>
+
+            <div class="fb-field">
+              <label for="t-magic">Adresse email</label>
+              <input class="fb-input" id="t-magic" type="email" placeholder="prenom.nom@example.com">
+            </div>
+
+            <button class="fb-btn fb-btn--primary" type="button" style="width:100%; justify-content:center">Recevoir un lien de connexion</button>
+
+            <div class="fb-threshold__links">
+              <span><a href="#">Comment ça marche ?</a></span>
+              <span><a href="#">Retour à la connexion</a></span>
+            </div>
+          </div>
+        </div>
+        <p class="fb-threshold__foot">
+          Le même traitement sobre que les emails transactionnels : pas de pics, pas d'or.
+        </p>
+      </div>
+    </div>
+
+    <!-- 3. Confirmation ---------------------------------------------- -->
+    <div>
+      <p class="fb-eyebrow gallery__label">Confirmation · état d'attente</p>
+      <div class="fb-threshold">
+        <div class="fb-threshold__card">
+          <div class="fb-threshold__head" style="padding-bottom: var(--fb-sp-4)">
+            <span class="fb-wordmark">Famille Busson</span>
+          </div>
+          <div class="fb-horizon"></div>
+          <div class="fb-eaves"></div>
+
+          <div class="fb-threshold__body">
+            <h1>Vérifiez vos emails</h1>
+            <div class="fb-alert fb-alert--info" style="margin-bottom: var(--fb-sp-4)">
+              Si un compte existe avec cette adresse, un lien de connexion vient d'être
+              envoyé. Il est valable <strong>15 minutes</strong> et à usage unique.
+            </div>
+            <p class="fb-meta">
+              Rien reçu au bout de quelques minutes ? Regardez dans les indésirables, ou
+              <a href="#">demandez un nouveau lien</a>.
+            </p>
+
+            <div class="fb-threshold__links">
+              <span><a href="#">Retour à la connexion</a></span>
+            </div>
+          </div>
+        </div>
+        <p class="fb-threshold__foot">
+          Même carte, corps réduit à une seule alerte — l'état d'attente n'a rien à saisir.
+        </p>
+      </div>
+    </div>
+
+  </div>
+
+  <p class="fb-meta" style="max-width:68rem; margin: var(--fb-sp-8) auto 0">
+    Maquette — archetype H (seuil). Implique une seconde base de gabarit,
+    <code>annuaire/base_threshold.html</code>, sans barre latérale.
+  </p>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

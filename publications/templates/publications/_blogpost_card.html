@@ -1,13 +1,14 @@
 {% load static %}
 {% load markdown_extras %}
-<article class="blogpost-card">
-    <header class="blogpost-card-header">
-        <h2 class="blogpost-card-title">
-            <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
-        </h2>
-        <span class="badge badge-{{ post.post_type|lower }}">{{ post.get_post_type_display }}</span>
-    </header>
-    <p class="blogpost-card-meta">
+{% comment %}
+Archetype C card. No medallion — a post has no portrait. The 3px left bar
+codes the type: alpenglow for a normal post, gold for a Busson connection.
+{% endcomment %}
+<article class="fb-card fb-post-card{% if post.post_type == 'BC' %} fb-post-card--bc{% endif %}">
+    <h2 class="fb-post-card__title">
+        <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
+    </h2>
+    <p class="fb-meta">
         Par
         {% for author in post.authors.all %}
             <a href="{% url 'personne-detail' author.pk %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
@@ -15,6 +16,7 @@
             anonyme
         {% endfor %}
         — {{ post.created_at|date:"j F Y" }}
+        <span class="fb-chip{% if post.post_type == 'BC' %} fb-chip--gold{% endif %}">{{ post.get_post_type_display }}</span>
     </p>
-    <p class="blogpost-card-excerpt">{{ post.body|markdown_plain|truncatechars:200 }}</p>
+    <p class="fb-post-card__excerpt">{{ post.body|markdown_plain|truncatechars:200 }}</p>
 </article>

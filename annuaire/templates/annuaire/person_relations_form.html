@@ -1,30 +1,38 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <h1>Relations de {{ person }}</h1>
-    <a href="{% url 'personne-detail' person.pk %}" class="btn btn-sm btn-outline-secondary mb-3">← Retour au profil</a>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>Relations de {{ person }}</h1>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">← Retour au profil</a>
+        </div>
+    </div>
 
     {% if row_forms %}
-        <table class="presence-table">
+        <table class="fb-table">
             <thead>
-                <tr><th>Personne</th><th>Type</th><th>Date de début</th><th>Actions</th></tr>
+                <tr><th>Personne</th><th>Type et date de début</th><th></th></tr>
             </thead>
             <tbody>
                 {% for relation, edit_form in row_forms %}
                     <tr>
                         <td><a href="{% url 'personne-detail' relation.person2.pk %}">{{ relation.person2 }}</a></td>
-                        <td colspan="3">
+                        <td>
                             <form method="post" action="{% url 'person-relation-update' person.pk relation.pk %}" class="d-flex flex-wrap align-items-center gap-2">
                                 {% csrf_token %}
                                 {{ edit_form.relationship_type }}
                                 {{ edit_form.start_date }}
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Enregistrer</button>
+                                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Enregistrer</button>
                             </form>
                         </td>
-                        <td class="presence-actions">
-                            <form method="post" action="{% url 'person-relation-delete' person.pk relation.pk %}" style="display:inline">
+                        <td class="fb-table__actions presence-actions">
+                            <form method="post" action="{% url 'person-relation-delete' person.pk relation.pk %}" class="d-inline">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
                                         onclick="return confirm('Supprimer cette relation ?')">Supprimer</button>
                             </form>
                         </td>
@@ -33,31 +41,33 @@
             </tbody>
         </table>
     {% else %}
-        <p>Aucune relation enregistrée.</p>
+        {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez ci-dessous les parents, enfants ou le conjoint de cette personne." %}
     {% endif %}
 
-    <h2>Ajouter une relation</h2>
-    <form method="post" action="{% url 'person-relation-add' person.pk %}" class="presence-form">
+    <div class="fb-section-head"><h2>Ajouter une relation</h2></div>
+    <form method="post" action="{% url 'person-relation-add' person.pk %}" class="fb-form fb-card presence-form">
         {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label fw-semibold" for="relation-person-search-input">Personne</label>
+        <div class="fb-field">
+            <label class="fb-label" for="relation-person-search-input">Personne</label>
             {% include "annuaire/_person_picker.html" with input_id="relation-person-search-input" field_name="person2" single_select=True %}
-            {% if add_form.person2.errors %}<div class="text-danger small">{{ add_form.person2.errors }}</div>{% endif %}
+            {% if add_form.person2.errors %}<div class="fb-error">{{ add_form.person2.errors }}</div>{% endif %}
         </div>
-        <div class="row g-2 mb-3">
-            <div class="col-auto">
-                <label class="form-label" for="{{ add_form.relationship_type.id_for_label }}">{{ add_form.relationship_type.label }}</label>
+        <div class="row g-2">
+            <div class="col-auto fb-field">
+                <label class="fb-label" for="{{ add_form.relationship_type.id_for_label }}">{{ add_form.relationship_type.label }}</label>
                 {{ add_form.relationship_type }}
             </div>
-            <div class="col-auto">
-                <label class="form-label" for="{{ add_form.start_date.id_for_label }}">{{ add_form.start_date.label }}</label>
+            <div class="col-auto fb-field">
+                <label class="fb-label" for="{{ add_form.start_date.id_for_label }}">{{ add_form.start_date.label }}</label>
                 {{ add_form.start_date }}
             </div>
         </div>
         {% if add_form.relationship_type.errors or add_form.start_date.errors %}
-            <div class="text-danger small mb-2">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}</div>
+            <div class="fb-error">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}</div>
         {% endif %}
-        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Ajouter</button>
+        </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>
 {% endblock content %}

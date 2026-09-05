@@ -30,7 +30,11 @@ def test_category_list_shows_restricted_category_name_for_non_member(auth_client
     response = auth_client.get(reverse("category-list"))
     content = response.content.decode()
     assert restricted_category.name in content
-    assert "🔒" in content
+    # The 🔒 emoji became an inline SVG glyph in the Alpenglow design pass (emoji
+    # renders as a tofu box wherever the system has no emoji font). The locked state
+    # is still carried three ways: the glyph, the muted name, and the words below.
+    assert "category-tree__name--locked" in content
+    assert "Réservé au groupe" in content
 
 
 @pytest.mark.django_db

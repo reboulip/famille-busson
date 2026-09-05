@@ -1,188 +1,89 @@
-body {
-    font-family: 'Helvetica';
-}
+/* =========================================================================
+   Famille Busson — view-specific CSS
+   =========================================================================
 
-.layout {
-    display: flex;
-}
+   Load order (annuaire/templates/annuaire/base.html):
+       bootstrap.css → tokens.css → components.css → {vendor_css} → main.css
 
-.sidebar {
-    background-color: #f4f4f4;
-    padding: 15px;
-}
+   This file is deliberately last, because most of what is left in it exists
+   to win against a *vendor* stylesheet (leaflet, family-chart, pdf.js), which
+   loads in the vendor_css block above. Generic layout, cards, forms, tables,
+   alerts and typography now live in components.css; what remains here is the
+   per-feature CSS and the vendor overrides.
 
-@media (min-width: 992px) {
-    .sidebar {
-        width: 200px;
-        flex-shrink: 0;
-    }
-}
+   Colours come from --fb-* tokens (see tokens.css). Do not reintroduce
+   literal hex values: they break Nightfall silently.
 
-/* .navbar-toggler-icon's background-image reads a custom property that
-   Bootstrap only defines on .navbar -- our toggle button has no .navbar
-   ancestor, so the icon glyph is invisible without setting it directly. */
-[data-bs-toggle="offcanvas"] .navbar-toggler-icon {
-    --bs-navbar-toggler-icon-bg: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%2833, 37, 41, 0.75%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
-}
+   Sections
+     1  Portraits and relation photos
+     2  Presence calendar
+     3  Map (leaflet)
+     4  Genealogy (family-chart)
+     5  Person / address pickers
+     6  Markdown body and editor
+     7  Document viewer (pdf.js and images)
+     8  Chalet placeholder
+   ========================================================================= */
 
-.sidebar ul {
-    list-style-type: none;
-    padding: 0;
-}
+/* =========================================================================
+   1. Portraits and relation photos
+   ========================================================================= */
 
-.sidebar ul li {
-    margin: 10px 0;
-}
-
-.sidebar ul li a {
-    text-decoration: none;
-    color: #333;
-}
-
-.content {
-    flex-grow: 1;
-    padding: 20px;
-    /* A flex item defaults to min-width: auto, i.e. "never shrink below my content's
-       min-content width". Anything genuinely wide inside -- a zoomed document image,
-       a zoomed PDF page, a wide table -- therefore used to stretch .content past the
-       viewport and make the *whole page* scroll sideways, sidebar and all, instead of
-       scrolling inside its own overflow container (#111). */
-    min-width: 0;
-}
-
-.flex-title {
-    display: flex;
-    flex-wrap: nowrap;
-    align-items: center;
-    width: 100%;
-    gap: 10px;
-}
-
-.expandable-image {
-    width: 100px;
-    height: 100px;
+/* Was .expandable-image: a 100px→200px grow over a *1 second* transition on
+   hover, which reflowed the page under the cursor and shifted whatever you
+   were about to click. It is now a fixed medallion; enlargement is the
+   image viewer's job (document_viewer.js), which already does zoom properly. */
+.profile-portrait {
+    width: 150px;
+    height: 150px;
     object-fit: cover;
-    border-radius: 100px;
-    transition: 1s;
+    border-radius: 50%;
+    border: 3px solid var(--fb-border);
+    background: var(--fb-panel);
+    transition: border-color var(--fb-dur-fast) var(--fb-ease);
 }
 
-.expandable-image:hover {
-    width: 200px;
-    height: 200px;
-    border-radius: 0;
-}
+a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
-.profile-picture  {
+.profile-picture {
     width: 1.5em;
     height: 1.5em;
     border-radius: 50%;
+    object-fit: cover;
 }
 
 /* Shared across annuaire, profil and généalogie -- applied at every photo render
    site conditionally on Person.deceased. */
 .person-photo--deceased {
     filter: grayscale(1);
-    border: 2px solid #000;
+    border-color: var(--fb-ink);
 }
 
 .relations-inline {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: var(--fb-sp-2);
+    flex-wrap: wrap;
 }
 
-p {
-    margin-top: 0;
-    margin-bottom: 0;
-}
+/* =========================================================================
+   2. Presence calendar
+   ========================================================================= */
 
-h1 {
-    margin-top: .3em;
-    margin-bottom: .3em;
-    font-weight: bold;
-    font-size: 2.5em;
-}
-
-h2 {
-    margin-top: .2em;
-    margin-bottom: .2em;
-    font-size: 1.6em;
-}
-
-/* Sidebar */
-.sidebar-section {
-    font-weight: bold;
-    margin-top: 15px;
-    color: #555;
-    font-size: .85em;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-
-.sidebar-title {
-    font-weight: bold;
-    margin-top: 18px;
-    color: #222;
-    font-size: 1.05em;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-
-.sidebar-title a {
-    color: #222 !important;
-    text-decoration: none;
-}
-
-.sidebar-profile a {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.sidebar-profile-photo {
-    width: 1.8em;
-    height: 1.8em;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.sidebar-logout-form {
-    margin: 0;
-}
-
-.sidebar-logout-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    color: #222;
-    font: inherit;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-    cursor: pointer;
-}
-
-.sidebar-logout-btn:hover {
-    text-decoration: underline;
-}
-
-/* Presence calendar */
-.presence-calendar {
-    margin: 1rem 0;
-}
+.presence-calendar { margin: var(--fb-sp-4) 0; }
 
 .presence-calendar-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
+    gap: var(--fb-sp-2);
+    margin-bottom: var(--fb-sp-2);
 }
 
 .presence-calendar-scroll {
     overflow-x: auto;
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
 }
 
 .presence-calendar-grid {
@@ -191,17 +92,17 @@ h2 {
     grid-auto-rows: 32px;
     column-gap: 0;
     row-gap: 2px;
-    background: #f8f9fa;
+    background: var(--fb-parchment);
     min-width: 760px;
 }
 
 .presence-calendar-grid .cal-corner,
 .presence-calendar-grid .cal-day,
 .presence-calendar-grid .cal-name {
-    background: #fff;
+    background: var(--fb-card);
     padding: 4px 6px;
-    font-size: 0.75rem;
-    border-bottom: 1px solid #dee2e6;
+    font-size: var(--fb-text-xs);
+    border-bottom: 1px solid var(--fb-border);
     overflow: hidden;
     white-space: pre-line;
     line-height: 1.1;
@@ -209,39 +110,36 @@ h2 {
 
 .presence-calendar-grid .cal-day {
     text-align: center;
-    color: #555;
+    color: var(--fb-bark);
 }
 
-.presence-calendar-grid .cal-day-weekend {
-    background: #f1f3f5;
-}
+.presence-calendar-grid .cal-day-weekend { background: var(--fb-parchment); }
 
 .presence-calendar-grid .cal-day-today {
-    background: #fff3cd;
-    font-weight: bold;
+    background: var(--fb-warning-soft);
+    font-weight: 700;
+    color: var(--fb-ink);
 }
 
-.presence-calendar-grid .cal-day-month-start {
-    border-left: 2px solid #adb5bd;
-}
+.presence-calendar-grid .cal-day-month-start { border-left: 2px solid var(--fb-border-strong); }
 
 .presence-calendar-grid .cal-name {
-    font-weight: 500;
+    font-weight: 600;
     text-align: left;
-    border-right: 1px solid #dee2e6;
+    border-right: 1px solid var(--fb-border);
 }
 
 .presence-calendar-grid .cal-lane {
-    background: #fdfdfd;
-    border-bottom: 1px solid #f1f3f5;
+    background: var(--fb-card);
+    border-bottom: 1px solid var(--fb-border);
 }
 
 .presence-calendar-grid .cal-bar {
     align-self: center;
     padding: 2px 6px;
     border-radius: 4px;
-    font-size: 0.75rem;
-    color: #fff;
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bar-ink);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -250,131 +148,70 @@ h2 {
     margin: 0 1px;
 }
 
-.presence-calendar-grid .cal-bar.bar-past {
-    background: #adb5bd;
-}
-
-.presence-calendar-grid .cal-bar.bar-current {
-    background: #198754;
-}
-
-.presence-calendar-grid .cal-bar.bar-future {
-    background: #0d6efd;
-}
+/* Retuned from Bootstrap's grey/green/blue to the landscape palette: a past
+   stay is bark, a current one spruce, a future one ember. The fills come from
+   dedicated --fb-bar-* tokens rather than those palette colours directly,
+   because the label sitting on them has to stay legible in Nightfall too --
+   dark spruce carried --fb-card text at 1.18:1. */
+.presence-calendar-grid .cal-bar.bar-past { background: var(--fb-bar-past); }
+.presence-calendar-grid .cal-bar.bar-current { background: var(--fb-bar-current); }
+.presence-calendar-grid .cal-bar.bar-future { background: var(--fb-bar-future); }
 
 .presence-calendar-grid .cal-empty-message {
-    padding: 12px;
-    color: #6c757d;
-    background: #fff;
+    padding: var(--fb-sp-3);
+    color: var(--fb-bark);
+    background: var(--fb-card);
     text-align: center;
 }
 
 .presence-calendar-legend {
     display: flex;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #555;
+    gap: var(--fb-sp-2);
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
 }
 
 .presence-calendar-legend .presence-calendar-bar {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 2px var(--fb-sp-2);
     border-radius: 4px;
-    color: #fff;
-    font-size: 0.75rem;
+    color: var(--fb-bar-ink);
+    font-size: var(--fb-text-xs);
 }
 
-.presence-calendar-legend .bar-past { background: #adb5bd; }
-.presence-calendar-legend .bar-current { background: #198754; }
-.presence-calendar-legend .bar-future { background: #0d6efd; }
+.presence-calendar-legend .bar-past { background: var(--fb-bar-past); }
+.presence-calendar-legend .bar-current { background: var(--fb-bar-current); }
+.presence-calendar-legend .bar-future { background: var(--fb-bar-future); }
 
-.cal-window-toggle.active {
-    background: #6c757d;
-    color: #fff;
-}
-
-.presence-view-toggle {
-    margin-bottom: 8px;
-}
-
+.cal-window-toggle.active,
 .presence-view-toggle .btn.active {
-    background: #6c757d;
-    color: #fff;
+    background: var(--fb-ember);
+    border-color: var(--fb-ember);
+    color: var(--fb-card);
 }
 
-/* Page header avec recherche */
-.page-header {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex-wrap: wrap;
-    margin-bottom: 20px;
+.presence-view-toggle { margin-bottom: var(--fb-sp-2); }
+
+/* Presence rows keep their semantic tint inside .fb-table. */
+.presence-current { background: var(--fb-success-soft); }
+.presence-past td { color: var(--fb-bark); }
+
+.presence-past-details { margin-top: var(--fb-sp-4); }
+
+.presence-past-details summary {
+    cursor: pointer;
+    color: var(--fb-bark);
+    font-size: var(--fb-text-sm);
+    margin-bottom: var(--fb-sp-2);
 }
 
-.search-form {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
+.presence-actions { display: flex; gap: var(--fb-sp-2); }
 
-.search-input {
-    padding: 6px 12px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1em;
-    width: 260px;
-}
+.presence-form { max-width: 400px; }
 
-.search-result-count {
-    color: #666;
-    font-size: .9em;
-    margin-bottom: 12px;
-}
-
-/* Grille annuaire */
-.annuaire-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 16px;
-    margin-top: 16px;
-}
-
-.personne-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    text-decoration: none;
-    color: #333;
-    transition: box-shadow .2s;
-}
-
-.personne-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,.1);
-}
-
-.personne-card-photo {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 8px;
-}
-
-.personne-card-info {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: .9em;
-}
-
-.personne-card-info span {
-    color: #777;
-    font-size: .85em;
-}
+/* =========================================================================
+   3. Map (leaflet)
+   ========================================================================= */
 
 .map-container {
     /* Leaflet forces position:relative on its container inline but leaves
@@ -386,9 +223,8 @@ h2 {
     z-index: 0;
     height: 70vh;
     min-height: 320px;
-    margin-top: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--fb-border);
+    border-radius: 0 0 var(--fb-radius) var(--fb-radius);
 }
 
 .map-marker-avatar {
@@ -398,9 +234,9 @@ h2 {
     height: var(--map-marker-size, 60px);
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-    background-color: #fff;
+    border: 2px solid var(--fb-card);
+    box-shadow: var(--fb-shadow-2);
+    background-color: var(--fb-card);
 }
 
 .map-marker-avatar img {
@@ -417,15 +253,20 @@ h2 {
     display: block;
 }
 
-.map-marker-avatar-emoji {
+/* A chalet with no photo: the ridge mark, drawn by map_init.js's RIDGE_SVG.
+   Was a 🏔️ emoji until the Alpenglow design pass -- it rendered as a tofu box
+   wherever the system has no emoji font, and could not follow the theme. */
+.map-marker-avatar-placeholder {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Relative to Leaflet's container font-size -- scaled with the medallion
-       (1.4em at the old 40px marker) or the emoji looks lost in the larger
-       circle for chalets, which have no photo to fall back to. */
-    font-size: 2.1em;
-    background-color: #f0f0f0;
+    align-items: flex-end;
+    background-color: var(--fb-sky);
+}
+
+.map-marker-avatar-placeholder .fb-ridge {
+    /* The medallion is a circle, so the ridge fills it rather than sitting in
+       it: the round overflow:hidden on .map-marker-avatar does the cropping. */
+    width: 100%;
+    height: 70%;
 }
 
 .map-marker-cluster {
@@ -442,9 +283,7 @@ h2 {
     height: calc(var(--map-marker-size, 60px) * 0.7);
 }
 
-.map-marker-cluster-avatar:nth-child(1) {
-    z-index: 3;
-}
+.map-marker-cluster-avatar:nth-child(1) { z-index: 3; }
 
 .map-marker-cluster-avatar:nth-child(2) {
     top: calc(var(--map-marker-size, 60px) * 0.2);
@@ -466,34 +305,46 @@ h2 {
     height: 18px;
     padding: 0 4px;
     border-radius: 9px;
-    background-color: #0d6efd;
-    color: #fff;
+    background-color: var(--fb-ember);
+    color: var(--fb-card);
     font-size: 0.7em;
-    font-weight: 600;
+    font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #fff;
+    border: 2px solid var(--fb-card);
     z-index: 4;
 }
 
-.map-marker-cluster-heading {
-    font-weight: 600;
-    margin-bottom: 4px;
+.map-marker-cluster-heading { font-weight: 600; margin-bottom: 4px; }
+
+.map-marker-cluster-list { list-style: none; margin: 0; padding: 0; }
+
+/* Leaflet's popups and controls are white cards with grey text by default --
+   jarring against the parchment ground, and unreadable in Nightfall. */
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip,
+.leaflet-control-layers,
+.leaflet-bar a {
+    background: var(--fb-card);
+    color: var(--fb-ink);
 }
 
-.map-marker-cluster-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
+.leaflet-bar a,
+.leaflet-control-layers { border-color: var(--fb-border); }
+
+.leaflet-bar a:hover { background: var(--fb-panel); color: var(--fb-ember); }
+
+/* =========================================================================
+   4. Genealogy (family-chart)
+   ========================================================================= */
 
 .genealogie-container {
     height: 70vh;
     min-height: 320px;
-    margin-top: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    border: 1px solid var(--fb-border);
+    border-radius: 0 0 var(--fb-radius) var(--fb-radius);
+    background: var(--fb-card);
     /* family-chart still appends an (empty) .f3-nav-cont here at createChart
        time even though the search widget itself is now mounted in the
        toolbar's #genealogie-search (see family_tree.js's setPersonDropdown
@@ -521,24 +372,19 @@ h2 {
     display: block;
 }
 
-.genealogie-layout {
-    gap: 16px;
-}
+.genealogie-layout { gap: var(--fb-sp-4); }
 
-.genealogie-branch-picker {
-    max-width: 400px;
-}
+.genealogie-branch-picker { max-width: 400px; }
 
-.genealogie-search {
-    position: relative;
-}
+.genealogie-search { position: relative; }
 
 .genealogie-detail {
     flex: 0 0 320px;
-    margin-top: 16px;
-    padding: 16px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    padding: var(--fb-sp-4);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-1);
     align-self: flex-start;
 }
 
@@ -549,8 +395,8 @@ h2 {
     position: fixed;
     inset: 0;
     z-index: 1050;
-    background: #fff;
-    padding: 12px;
+    background: var(--fb-parchment);
+    padding: var(--fb-sp-3);
     display: flex;
     flex-direction: column;
 }
@@ -580,19 +426,17 @@ h2 {
     max-height: calc(100% - 100px);
     overflow-y: auto;
     margin-top: 0;
-    background: #fff;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+    background: var(--fb-card);
+    box-shadow: var(--fb-shadow-3);
     z-index: 1;
 }
 
-.genealogie-panel--fullscreen .genealogie-detail.d-none {
-    display: block !important;
-}
+.genealogie-panel--fullscreen .genealogie-detail.d-none { display: block !important; }
 
 .genealogie-detail-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--fb-sp-3);
 }
 
 .genealogie-detail-avatar {
@@ -600,28 +444,27 @@ h2 {
     height: 4em;
     border-radius: 50%;
     object-fit: cover;
+    border: 2px solid var(--fb-border);
 }
 
-.genealogie-chip {
-    margin: 0 4px 4px 0;
-}
+.genealogie-chip { margin: 0 4px 4px 0; }
 
 /* Généalogie — surcharges du thème sombre de family-chart (vendored
    family-chart.css: it ships a dark UI theme with white text/edges, but the
-   app renders it on Bootstrap's white page. Never edit the vendor CSS
+   app renders it on our own card ground. Never edit the vendor CSS
    directly -- override the specific selectors here instead. Selectors below
    match family-chart.css as vendored at v1 (see annuaire/static/vendor/family-chart/). */
 
 /* Edges between nodes are drawn stroke:#fff by the vendor JS -- invisible on
-   a white background. */
+   a light background. */
 .f3 .link {
-    stroke: #6c757d;
+    stroke: var(--fb-bark);
     stroke-width: 1.5px;
 }
 
 /* Search autocomplete: vendor sets a dark background but never sets a text
    color, so text inherits Bootstrap's near-black body color -- black on
-   near-black. Re-theme the whole widget to the light palette instead of
+   near-black. Re-theme the whole widget to our palette instead of
    touching --background-color/--text-color, which are load-bearing for the
    person cards' own white-on-translucent-plate labels. Scoped to
    .genealogie-search (the toolbar mount point, see family_tree.js's
@@ -631,24 +474,20 @@ h2 {
 .genealogie-search .f3-autocomplete input,
 .genealogie-search .f3-autocomplete-items,
 .genealogie-search .f3-autocomplete-item > div {
-    background-color: #fff;
-    color: #212529;
-    border-color: #dee2e6;
+    background-color: var(--fb-card);
+    color: var(--fb-ink);
+    border-color: var(--fb-border-strong);
 }
 
 .genealogie-search .f3-autocomplete-item > div:hover,
 .genealogie-search .f3-autocomplete-item.f3-selected > div {
-    background-color: #0d6efd;
-    color: #fff;
+    background-color: var(--fb-ember);
+    color: var(--fb-card);
 }
 
-.genealogie-search .f3-autocomplete-toggle {
-    color: #212529;
-}
+.genealogie-search .f3-autocomplete-toggle { color: var(--fb-ink); }
 
-.genealogie-search .f3-autocomplete input:focus {
-    outline: 2px solid #0d6efd;
-}
+.genealogie-search .f3-autocomplete input:focus { outline: 2px solid var(--fb-alpenglow); }
 
 /* The vendor result list is in normal flow with a max-height transition --
    harmless inside the old absolutely-positioned .f3-nav-cont overlay, but in
@@ -700,166 +539,20 @@ h2 {
    itself has no image, so the filter/border apply one level down at
    .card-image-circle -- already the vendor's circular avatar wrapper. */
 .f3 div.card.card--deceased div.card-image-circle {
-    border: 2px solid #000;
+    border: 2px solid var(--fb-ink);
 }
 
-.f3 div.card.card--deceased div.card-image-circle img {
-    filter: grayscale(1);
-}
+.f3 div.card.card--deceased div.card-image-circle img { filter: grayscale(1); }
 
-/* Tuiles page d'accueil */
-.tile-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: 24px;
-    margin-top: 24px;
-}
+/* =========================================================================
+   5. Person / address pickers
+   ========================================================================= */
 
-.tile {
-    border: 1px solid #e0e0e0;
-    border-radius: 10px;
-    padding: 20px;
-    background: #fff;
-}
+.person-picker,
+.address-picker { position: relative; }
 
-.tile-placeholder {
-    background: #fafafa;
-    color: #888;
-}
-
-.tile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 16px;
-}
-
-.tile-link {
-    font-size: .9em;
-    color: #0066cc;
-    text-decoration: none;
-}
-
-.tile-link:hover {
-    text-decoration: underline;
-}
-
-.annuaire-mini-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-}
-
-.personne-mini-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    text-decoration: none;
-    color: #333;
-}
-
-.personne-mini-photo {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-.personne-mini-nom {
-    font-size: .78em;
-    text-align: center;
-    line-height: 1.2;
-}
-
-/* Châlets */
-.chalet-photo-placeholder {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5em;
-    background: #f0f0f0;
-    border-radius: 8px;
-    margin-bottom: 8px;
-}
-
-.chalet-photo-placeholder.large {
-    width: 100px;
-    height: 100px;
-    font-size: 3em;
-    margin-bottom: 0;
-}
-
-.chalet-photo-placeholder.mini {
-    width: 60px;
-    height: 60px;
-    font-size: 1.6em;
-    margin-bottom: 0;
-}
-
-.home-presence-item {
-    margin-bottom: 8px;
-}
-
-/* Tableau présences */
-.presence-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 24px;
-    font-size: .95em;
-}
-
-.presence-table th,
-.presence-table td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #e0e0e0;
-    text-align: left;
-}
-
-.presence-table th {
-    font-weight: bold;
-    color: #555;
-    background: #f8f8f8;
-}
-
-.presence-actions {
-    display: flex;
-    gap: 6px;
-}
-
-/* Formulaire présence */
-.presence-form {
-    max-width: 400px;
-}
-
-.presence-form p {
-    margin-bottom: 12px;
-}
-
-/* Messages flash */
-.messages {
-    margin-bottom: 16px;
-}
-
-.alert {
-    padding: 10px 16px;
-    border-radius: 4px;
-    margin-bottom: 8px;
-}
-
-.alert-error {
-    background: #fee;
-    border: 1px solid #fcc;
-    color: #c00;
-}
-
-.person-picker {
-    position: relative;
-}
-
-.person-picker-results {
+.person-picker-results,
+.address-picker-results {
     position: absolute;
     top: 100%;
     left: 0;
@@ -868,12 +561,12 @@ h2 {
     margin: 0;
     padding: 0;
     list-style: none;
-    background: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 0 0 4px 4px;
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border-strong);
+    border-radius: 0 0 var(--fb-radius-sm) var(--fb-radius-sm);
     max-height: 240px;
     overflow-y: auto;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--fb-shadow-2);
 }
 
 .person-picker-inline {
@@ -882,43 +575,44 @@ h2 {
 }
 
 .person-picker-result,
-.person-picker-empty {
-    padding: 8px 12px;
+.person-picker-empty,
+.address-picker-result,
+.address-picker-empty {
+    padding: var(--fb-sp-2) var(--fb-sp-3);
     cursor: pointer;
 }
 
-.person-picker-empty {
-    color: #6c757d;
+.person-picker-empty,
+.address-picker-empty {
+    color: var(--fb-bark);
     cursor: default;
     font-style: italic;
 }
 
+.address-picker-context {
+    display: block;
+    color: var(--fb-bark);
+}
+
 .person-picker-result:hover,
-.person-picker-result.highlighted {
-    background: #e9ecef;
+.person-picker-result.highlighted,
+.address-picker-result:hover,
+.address-picker-result.highlighted {
+    background: var(--fb-ember-soft);
+    color: var(--fb-ember);
 }
 
-.person-picker-badge {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.9rem;
-    padding: 6px 10px;
-}
-
-.person-picker-badge .btn-close {
-    font-size: 0.65rem;
-}
-
+.person-picker-badge,
 .attachment-badge {
     display: inline-flex;
     align-items: center;
-    font-size: 0.9rem;
-    padding: 6px 10px;
+    gap: var(--fb-sp-1);
+    font-size: var(--fb-text-sm);
+    padding: var(--fb-sp-1) var(--fb-sp-2);
 }
 
-.attachment-badge .btn-close {
-    font-size: 0.65rem;
-}
+.person-picker-badge .btn-close,
+.attachment-badge .btn-close { font-size: 0.65rem; }
 
 .attachment-badge-caption {
     max-width: 200px;
@@ -930,121 +624,65 @@ h2 {
     line-height: 1;
 }
 
-.presence-current {
-    background-color: #d1e7dd;
-    font-weight: 500;
-}
+/* =========================================================================
+   6. Markdown body and editor
+   ========================================================================= */
 
-.presence-past-details {
-    margin-top: 1rem;
-}
+.markdown-body { overflow-wrap: break-word; }
 
-.presence-past-details summary {
-    cursor: pointer;
-    color: #6c757d;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.presence-past {
-    color: #6c757d;
-}
-
-.address-picker {
-    position: relative;
-}
-
-.address-picker-results {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: 10;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    background: #fff;
-    border: 1px solid #ced4da;
-    border-radius: 0 0 4px 4px;
-    max-height: 240px;
-    overflow-y: auto;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.address-picker-result,
-.address-picker-empty {
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-.address-picker-context {
-    display: block;
-    color: #6c757d;
-}
-
-.address-picker-empty {
-    color: #6c757d;
-    cursor: default;
-    font-style: italic;
-}
-
-.address-picker-result:hover,
-.address-picker-result.highlighted {
-    background: #e9ecef;
-}
-
-/* Markdown */
-
-.markdown-body {
-    overflow-wrap: break-word;
-}
-
-.markdown-body > *:first-child {
-    margin-top: 0;
-}
-
-.markdown-body > *:last-child {
-    margin-bottom: 0;
-}
+.markdown-body > *:first-child { margin-top: 0; }
+.markdown-body > *:last-child { margin-bottom: 0; }
 
 .markdown-body img {
     max-width: 100%;
     height: auto;
+    border-radius: var(--fb-radius-sm);
 }
 
 .markdown-body pre {
-    padding: 8px 12px;
-    background: #f5f5f5;
-    border-radius: 4px;
+    padding: var(--fb-sp-2) var(--fb-sp-3);
+    background: var(--fb-parchment);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius-sm);
     overflow-x: auto;
 }
 
 .markdown-body code {
-    background: #f5f5f5;
+    background: var(--fb-parchment);
     border-radius: 3px;
     padding: 1px 4px;
+    color: var(--fb-ember);
 }
 
 .markdown-body pre code {
     background: none;
     padding: 0;
+    color: inherit;
 }
 
 .markdown-body table {
     border-collapse: collapse;
+    margin-bottom: var(--fb-sp-4);
 }
 
 .markdown-body th,
 .markdown-body td {
-    border: 1px solid #ced4da;
-    padding: 4px 8px;
+    border: 1px solid var(--fb-border);
+    padding: var(--fb-sp-1) var(--fb-sp-2);
+}
+
+.markdown-body th { background: var(--fb-panel); }
+
+.markdown-body blockquote {
+    margin: var(--fb-sp-4) 0;
+    padding-left: var(--fb-sp-4);
+    border-left: 3px solid var(--fb-alpenglow);
+    color: var(--fb-bark);
 }
 
 /* Éditeur Markdown */
 
-.markdown-editor .nav-tabs {
-    margin-bottom: 8px;
-}
+.markdown-editor .nav-tabs { margin-bottom: var(--fb-sp-2); }
 
 .markdown-editor-toolbar {
     display: flex;
@@ -1055,53 +693,59 @@ h2 {
 
 .markdown-editor-toolbar-btn {
     min-width: 32px;
-    padding: 2px 8px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
-    background: #fff;
+    padding: 2px var(--fb-sp-2);
+    border: 1px solid var(--fb-border-strong);
+    border-radius: var(--fb-radius-sm);
+    background: var(--fb-card);
+    color: var(--fb-ink);
     line-height: 1.4;
     cursor: pointer;
 }
 
 .markdown-editor-toolbar-btn:hover {
-    background: #f1f3f5;
+    background: var(--fb-panel);
+    border-color: var(--fb-alpenglow);
+    color: var(--fb-ember);
 }
 
 .markdown-editor-preview {
     min-height: 100px;
     max-height: 400px;
     overflow-y: auto;
-    padding: 8px 12px;
-    border: 1px solid #ced4da;
-    border-radius: 4px;
+    padding: var(--fb-sp-2) var(--fb-sp-3);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border-strong);
+    border-radius: var(--fb-radius-sm);
 }
 
-.markdown-editor-empty {
-    margin: 0;
-}
+.markdown-editor-empty { margin: 0; }
 
-/* Documents — visionneuse (Phase 2, #98/#99/#100). Sizing follows the same
-   viewport-height idiom as .genealogie-container / .map-container. */
-.document-viewer {
-    margin-bottom: 24px;
-}
+/* =========================================================================
+   7. Document viewer (pdf.js and images)
+   ========================================================================= */
+
+.document-viewer { margin-bottom: var(--fb-sp-5); }
 
 .document-viewer-toolbar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 8px;
+    gap: var(--fb-sp-2);
     flex-wrap: wrap;
-    margin-bottom: 8px;
+    padding: var(--fb-sp-3);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-bottom: 0;
+    border-radius: var(--fb-radius) var(--fb-radius) 0 0;
 }
 
-.document-viewer-caption {
-    font-weight: 600;
-}
+.document-viewer-caption { font-weight: 600; }
 
 .document-viewer-actions {
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: var(--fb-sp-2);
+    flex-wrap: wrap;
 }
 
 .document-viewer-stage {
@@ -1110,9 +754,9 @@ h2 {
     min-height: 320px;
     overflow: auto;
     overflow-anchor: none;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--fb-parchment);
+    border: 1px solid var(--fb-border);
+    border-radius: 0 0 var(--fb-radius) var(--fb-radius);
     display: flex;
     flex-direction: column;
     /* `safe` keeps content centered when it fits, but falls back to flex-start once
@@ -1122,7 +766,7 @@ h2 {
        permanently clipped (#109). Also relied on by 4.2's zoomed-image panning. */
     align-items: safe center;
     justify-content: safe center;
-    padding: 12px;
+    padding: var(--fb-sp-3);
 }
 
 /* Multi-image carousel (#101): one image at a time on mobile (each strip item takes
@@ -1134,7 +778,7 @@ h2 {
     justify-content: flex-start;
     overflow-x: auto;
     scroll-snap-type: x proximity;
-    gap: 12px;
+    gap: var(--fb-sp-3);
 }
 
 .document-viewer-strip-item {
@@ -1147,15 +791,13 @@ h2 {
 }
 
 @media (min-width: 992px) {
-    .document-viewer-strip-item {
-        flex: 0 0 calc(33.333% - 8px);
-    }
+    .document-viewer-strip-item { flex: 0 0 calc(33.333% - 8px); }
 }
 
 .document-viewer-strip-caption {
-    margin-top: 8px;
-    font-size: 0.85em;
-    color: #555;
+    margin-top: var(--fb-sp-2);
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
     text-align: center;
 }
 
@@ -1167,9 +809,7 @@ h2 {
     touch-action: pinch-zoom;
 }
 
-.document-viewer-zoomable--zoomed {
-    cursor: zoom-out;
-}
+.document-viewer-zoomable--zoomed { cursor: zoom-out; }
 
 /* Fullscreen: a CSS fixed overlay rather than the native Fullscreen API, matching
    .genealogie-panel--fullscreen's documented rationale (no permission/gesture dance).
@@ -1178,8 +818,8 @@ h2 {
     position: fixed;
     inset: 0;
     z-index: 1050;
-    background: #fff;
-    padding: 12px;
+    background: var(--fb-parchment);
+    padding: var(--fb-sp-3);
     margin: 0;
     display: flex;
     flex-direction: column;
@@ -1214,23 +854,17 @@ h2 {
    desktop 3-up strip above -- overrides .document-viewer-strip-item's flex basis and
    switches the strip's scroll-snap from "proximity" (used for casual browsing) to
    "mandatory" (locks to exactly one image per swipe/scroll) while in fullscreen. */
-.document-viewer--fullscreen .document-viewer-strip-item {
-    flex: 0 0 100%;
-}
+.document-viewer--fullscreen .document-viewer-strip-item { flex: 0 0 100%; }
 
-.document-viewer--fullscreen .document-viewer-strip {
-    scroll-snap-type: x mandatory;
-}
+.document-viewer--fullscreen .document-viewer-strip { scroll-snap-type: x mandatory; }
 
 .document-viewer-carousel-counter {
-    font-size: 0.9em;
-    color: #555;
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
     align-self: center;
 }
 
-.document-viewer-pdf-pages {
-    width: 100%;
-}
+.document-viewer-pdf-pages { width: 100%; }
 
 .document-viewer-pdf-page {
     display: block;
@@ -1240,8 +874,9 @@ h2 {
        page losing its place. A max-width fit rule here would override both. */
     max-width: none;
     flex: none;
-    margin: 0 auto 12px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    margin: 0 auto var(--fb-sp-3);
+    box-shadow: var(--fb-shadow-2);
+    background: var(--fb-card);
 }
 
 .document-viewer-zoom {
@@ -1251,8 +886,39 @@ h2 {
 }
 
 .document-viewer-zoom-level {
-    font-size: 0.85em;
-    color: #555;
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
     min-width: 48px;
     text-align: center;
+}
+
+.document-file { margin-bottom: var(--fb-sp-3); }
+
+/* =========================================================================
+   8. Chalet placeholder
+   -------------------------------------------------------------------------
+   Was a 🏔️ emoji, which renders as a tofu box wherever the system has no
+   emoji font -- already visible in the project's own .shots/01-landing.png.
+   It is now the ridge, on the sky band. See annuaire/templates/annuaire/_ridge.html.
+   ========================================================================= */
+
+.chalet-photo-placeholder {
+    background: var(--fb-sky);
+    border-radius: var(--fb-radius-sm);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+}
+
+.chalet-photo-placeholder.large {
+    width: 100%;
+    aspect-ratio: 3 / 2;
+}
+
+.chalet-photo-placeholder.mini {
+    width: 54px;
+    height: 36px;
+    aspect-ratio: auto;
 }

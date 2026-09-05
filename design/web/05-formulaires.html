@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Formulaires et tableaux (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .demo-sep { margin: var(--fb-sp-8) 0 var(--fb-sp-6); border: 0; border-top: 1px dashed var(--fb-border-strong); }
+  .demo-note { font-size: var(--fb-text-sm); color: var(--fb-bark); margin-bottom: var(--fb-sp-5); max-width: var(--fb-measure-max); }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--fb-sp-4); }
+  @media (max-width: 575.98px) { .field-row { grid-template-columns: 1fr; } }
+  .md-toolbar { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+  .md-btn {
+      min-width: 32px; padding: 2px 8px; font: inherit; font-size: var(--fb-text-sm);
+      border: 1px solid var(--fb-border-strong); border-radius: var(--fb-radius-sm);
+      background: var(--fb-card); color: var(--fb-ink); cursor: pointer;
+  }
+  .md-btn:hover { border-color: var(--fb-alpenglow); color: var(--fb-ember); }
+  .picker-badges { display: flex; flex-wrap: wrap; gap: var(--fb-sp-2); margin-top: var(--fb-sp-2); }
+</style>
+</head>
+<body>
+
+<div class="fb-layout" data-fb-shell data-active="publication-new">
+  <main class="fb-content">
+    <div class="fb-content__inner">
+
+      <!-- Flash messages, all four Django tags in one grammar --------- -->
+      <div class="fb-alert fb-alert--success">✅ &nbsp;Le profil d'Alice Bernard a bien été enregistré.</div>
+      <div class="fb-alert fb-alert--warning">⚠️ &nbsp;Cette photo dépasse 5 Mo : elle sera redimensionnée à l'envoi.</div>
+
+      <!-- ============================================================
+           Archetype G — Form
+           ============================================================ -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <p class="fb-eyebrow">Publications</p>
+          <h1>Nouvelle publication</h1>
+        </div>
+      </div>
+
+      <p class="demo-note">
+        <strong>La variation :</strong> le <code>&lt;fieldset&gt;</code> devient une carte à
+        part entière et sa <code>&lt;legend&gt;</code> un vrai titre de section souligné.
+        Les formulaires longs (profil, document, publication) deviennent une pile de cartes
+        lisible plutôt qu'un seul bloc crispy sans respiration.
+      </p>
+
+      <form class="fb-form">
+        <fieldset class="fb-fieldset">
+          <legend>Le billet</legend>
+
+          <div class="fb-field">
+            <label for="f-title">Titre</label>
+            <input class="fb-input" id="f-title" value="Rénovation du chalet du Lac">
+          </div>
+
+          <div class="fb-field">
+            <label for="f-type">Type de publication</label>
+            <select class="fb-select" id="f-type">
+              <option>Publication normale</option>
+              <option>Busson connection</option>
+            </select>
+            <p class="fb-help">« Busson connection » met le billet en avant avec un liseré doré.</p>
+          </div>
+
+          <div class="fb-field">
+            <label for="f-body">Contenu</label>
+            <div class="md-toolbar" role="group" aria-label="Mise en forme">
+              <button class="md-btn" type="button"><strong>B</strong></button>
+              <button class="md-btn" type="button"><em>I</em></button>
+              <button class="md-btn" type="button">H2</button>
+              <button class="md-btn" type="button">« »</button>
+              <button class="md-btn" type="button">Lien</button>
+              <button class="md-btn" type="button">Liste</button>
+              <button class="md-btn" type="button">Image</button>
+              <button class="md-btn" type="button">Aperçu</button>
+            </div>
+            <textarea class="fb-textarea" id="f-body" rows="6">Les travaux de la toiture commencent lundi…</textarea>
+          </div>
+
+          <div class="fb-field">
+            <label for="f-authors">Auteur(s)</label>
+            <input class="fb-input" id="f-authors" placeholder="Chercher un auteur…">
+            <div class="picker-badges">
+              <span class="fb-chip fb-chip--accent">Julien Simon ✕</span>
+              <span class="fb-chip fb-chip--accent">Margaux Simon ✕</span>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="fb-fieldset">
+          <legend>Pièces jointes</legend>
+          <div class="picker-badges" style="margin-bottom: var(--fb-sp-3)">
+            <span class="fb-chip">🖼️ toiture-avant.jpg ✕</span>
+            <span class="fb-chip">🖼️ rives-detail.jpg ✕</span>
+            <span class="fb-chip">📎 Devis_toiture.pdf ✕</span>
+          </div>
+          <button class="fb-btn fb-btn--quiet" type="button">+ Ajouter une pièce jointe</button>
+        </fieldset>
+
+        <!-- A field in error, so the error grammar is visible ---------- -->
+        <fieldset class="fb-fieldset">
+          <legend>Notifications</legend>
+          <div class="fb-field fb-field--invalid">
+            <label for="f-mail">Prévenir par email</label>
+            <input class="fb-input" id="f-mail" value="tout-le-monde@">
+            <p class="fb-error">Saisissez une adresse email valide.</p>
+          </div>
+          <div class="fb-field">
+            <label style="font-weight:400; display:flex; gap:8px; align-items:center">
+              <input type="checkbox" checked> Prévenir les membres abonnés aux nouvelles publications
+            </label>
+          </div>
+        </fieldset>
+
+        <div class="fb-form__actions">
+          <button class="fb-btn fb-btn--primary" type="button">Enregistrer</button>
+          <a class="fb-btn fb-btn--ghost" href="02-collections.html#publications">Annuler</a>
+        </div>
+      </form>
+
+      <hr class="demo-sep">
+
+      <!-- ============================================================
+           Archetype J — Destructive confirm
+           ============================================================ -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles"><h1>Confirmation de suppression</h1></div>
+      </div>
+
+      <p class="demo-note">
+        <strong>La variation :</strong> même carte, liseré rouge à gauche, et les
+        conséquences énumérées sur un fond teinté plutôt qu'en une phrase de corps de
+        texte. Le bouton destructeur est <em>plein</em> ; l'annulation est discrète —
+        aujourd'hui les deux sont des <code>btn-outline-*</code> de même poids visuel.
+      </p>
+
+      <div class="fb-card fb-confirm">
+        <h1>Supprimer « Rénovation du chalet du Lac » ?</h1>
+        <p class="fb-meta">Publié par Julien Simon le 20 août 2026.</p>
+        <div class="fb-confirm__consequences">
+          <p style="font-weight:600; margin-bottom: var(--fb-sp-2)">Cette action est irréversible. Seront supprimés :</p>
+          <ul>
+            <li>la publication et son contenu ;</li>
+            <li>ses 2 commentaires ;</li>
+            <li>ses 3 pièces jointes, y compris les fichiers déposés.</li>
+          </ul>
+        </div>
+        <div class="fb-form__actions">
+          <button class="fb-btn fb-btn--danger" type="button">Supprimer définitivement</button>
+          <a class="fb-btn fb-btn--ghost" href="03-details.html#publication">Annuler</a>
+        </div>
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- ============================================================
+           Archetype I — Tabular admin
+           ============================================================ -->
+      <div class="fb-page-head" id="tableaux">
+        <div class="fb-page-head__titles">
+          <p class="fb-eyebrow">Administration</p>
+          <h1>Groupes</h1>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="#">+ Créer un groupe</a>
+        </div>
+      </div>
+
+      <table class="fb-table">
+        <thead><tr><th>Nom</th><th>Membres</th><th></th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600">SCI Grand Chalet</td>
+            <td><span class="fb-chip">8</span></td>
+            <td class="fb-table__actions">
+              <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Membres</a>
+              <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Modifier</a>
+              <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" style="color:var(--fb-danger)">Supprimer</button>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:600">Conseil de famille</td>
+            <td><span class="fb-chip">4</span></td>
+            <td class="fb-table__actions">
+              <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Membres</a>
+              <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Modifier</a>
+              <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" style="color:var(--fb-danger)">Supprimer</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="fb-section-head"><h2>Comptes sans profil</h2><span class="fb-meta">3 en attente</span></div>
+
+      <table class="fb-table">
+        <thead>
+          <tr><th style="width:2.5rem"><input type="checkbox" aria-label="Tout sélectionner"></th><th>Email</th><th>Dernière connexion</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>claire.roux@example.com</td>
+            <td class="fb-meta">Jamais</td>
+            <td><span class="fb-chip">Jamais connecté</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>gabriel.petit@example.com</td>
+            <td class="fb-meta">12 juin 2026, 18:04</td>
+            <td><span class="fb-chip fb-chip--success">Invitation envoyée</span></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox"></td>
+            <td>ines.dubois@example</td>
+            <td class="fb-meta">Jamais</td>
+            <td><span class="fb-chip fb-chip--danger">Échec d'envoi</span></td>
+          </tr>
+        </tbody>
+      </table>
+      <p style="margin-top: var(--fb-sp-4)">
+        <button class="fb-btn fb-btn--primary" type="button">Renvoyer le lien d'invitation</button>
+      </p>
+
+      <hr class="demo-sep">
+
+      <!-- Empty state ------------------------------------------------ -->
+      <div class="fb-section-head"><h2>État vide (composant partagé)</h2></div>
+      <p class="demo-note">
+        Il y a une quinzaine de « il n'y a rien ici » dans l'application, chacun écrit à la
+        main en <code>&lt;p&gt;Aucun…&lt;/p&gt;</code>. Un seul composant, avec la crête en
+        filigrane et l'action à portée de main.
+      </p>
+      <div class="fb-empty">
+        <svg class="fb-ridge fb-empty__ridge" viewBox="0 0 240 76" preserveAspectRatio="none" aria-hidden="true">
+          <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+          <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+        </svg>
+        <p class="fb-empty__title">Aucun groupe pour l'instant</p>
+        <p>Les groupes servent à réserver certaines catégories de documents à quelques membres.</p>
+        <p class="fb-empty__action"><a class="fb-btn fb-btn--primary" href="#">+ Créer le premier groupe</a></p>
+      </div>
+
+      <p class="fb-meta" style="margin-top: var(--fb-sp-8)">
+        Maquette — archetypes G (formulaire), I (tableau) et J (suppression).
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

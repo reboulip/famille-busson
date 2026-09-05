@@ -1,17 +1,28 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="form">
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Supprimer un groupe ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
         <h1>Supprimer le groupe « {{ object.name }} » ?</h1>
-        {% if member_count %}
-            <p class="text-danger">
-                {{ member_count }} membre{{ member_count|pluralize }} perdr{{ member_count|pluralize:"a,ont" }}
-                l'accès associé à ce groupe.
-            </p>
-        {% else %}
-            <p>Ce groupe n'a aucun membre.</p>
-        {% endif %}
+        <div class="fb-confirm__consequences">
+            {% if member_count %}
+                <p class="fb-confirm__lead">
+                    {{ member_count }} membre{{ member_count|pluralize }} perdr{{ member_count|pluralize:"a,ont" }}
+                    l'accès associé à ce groupe.
+                </p>
+            {% else %}
+                <p class="fb-confirm__lead">Ce groupe n'a aucun membre.</p>
+            {% endif %}
+        </div>
         {% if blocked_by %}
-            <div class="alert alert-warning" role="alert">
+            <div class="fb-alert fb-alert--warning" role="alert">
                 <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
                 {% if blocked_by|length == 1 %}
                     la catégorie « {{ blocked_by.0 }} ». Retirez d'abord la restriction sur cette catégorie.
@@ -22,8 +33,12 @@
         {% endif %}
         <form method="POST">
             {% csrf_token %}
-            <button class="btn btn-outline-danger" type="submit" {% if blocked_by %}disabled{% endif %}>Supprimer définitivement</button>
-            <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by %}disabled{% endif %}>
+                    {% icon "trash" size=16 %} Supprimer définitivement
+                </button>
+                <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
         </form>
     </div>
 {% endblock content %}

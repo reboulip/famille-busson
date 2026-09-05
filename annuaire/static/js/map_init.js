@@ -17,9 +17,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // Chalets without a photo carry an "emoji::<char>" sentinel instead of an image URL
-    // (there's no default chalet photo asset the way there is a default person avatar).
-    const EMOJI_PREFIX = 'emoji::';
+    // Chalets without a photo carry a "placeholder::<kind>" sentinel instead of an image
+    // URL (there's no default chalet photo asset the way there is a default person
+    // avatar). See annuaire/map_data.py's PLACEHOLDER_PREFIX -- keep the two in sync.
+    const PLACEHOLDER_PREFIX = 'placeholder::';
+
+    // The ridge mark, inline. Same silhouette as annuaire/templates/annuaire/_ridge.html
+    // and favicon.svg; drawn rather than written as an emoji so it never renders as a
+    // tofu box and so it follows Alpenglow/Nightfall through the CSS custom properties.
+    const RIDGE_SVG =
+        '<svg class="fb-ridge" viewBox="0 0 240 76" preserveAspectRatio="none" aria-hidden="true">' +
+        '<path class="fb-ridge__far" d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>' +
+        '<path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>' +
+        '<path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>' +
+        '</svg>';
 
     // Single source of truth for marker medallion size (60 = 40 * 1.5), published
     // as a CSS custom property so main.css's .map-marker-* rules stay in sync
@@ -36,9 +47,9 @@ document.addEventListener('DOMContentLoaded', function () {
     function buildAvatarElement(avatarUrl, entryName) {
         const avatar = document.createElement('div');
         avatar.className = 'map-marker-avatar';
-        if (avatarUrl.startsWith(EMOJI_PREFIX)) {
-            avatar.classList.add('map-marker-avatar-emoji');
-            avatar.textContent = avatarUrl.slice(EMOJI_PREFIX.length);
+        if (avatarUrl.startsWith(PLACEHOLDER_PREFIX)) {
+            avatar.classList.add('map-marker-avatar-placeholder');
+            avatar.innerHTML = RIDGE_SVG;
         } else {
             const img = document.createElement('img');
             img.src = avatarUrl;

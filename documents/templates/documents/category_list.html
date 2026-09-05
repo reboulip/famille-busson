@@ -1,16 +1,33 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Catégories de documents</h1>
+    {# Archetype C — the category tree, with indent guides. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Catégories de documents</h1>
+            <p class="fb-page-head__lede">L'arborescence dans laquelle les documents sont rangés.</p>
+        </div>
         {% if user.is_staff %}
-            <a href="{% url 'category-create' %}" class="btn btn-outline-primary">+ Nouvelle catégorie</a>
+            <div class="fb-page-head__actions">
+                <a href="{% url 'category-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvelle catégorie</a>
+            </div>
         {% endif %}
     </div>
-    <ul class="category-tree">
-        {% for category in root_categories %}
-            {% include "documents/_category_tree_node.html" with category=category %}
-        {% empty %}
-            <p>Aucune catégorie.</p>
-        {% endfor %}
-    </ul>
+
+    {% if root_categories %}
+        <div class="fb-card">
+            <ul class="category-tree">
+                {% for category in root_categories %}
+                    {% include "documents/_category_tree_node.html" with category=category %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        {% if user.is_staff %}
+            {% url 'category-create' as create_url %}
+            {% include "annuaire/_empty.html" with title="Aucune catégorie" body="Les catégories servent à ranger les documents, et à en réserver certains à un groupe." action_url=create_url action_label="Créer une catégorie" %}
+        {% else %}
+            {% include "annuaire/_empty.html" with title="Aucune catégorie" %}
+        {% endif %}
+    {% endif %}
 {% endblock content %}

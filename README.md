@@ -24,6 +24,9 @@ credentials included).
 - [`docs/data_model.md`](docs/data_model.md) — data model (ER diagram + field tables),
   auto-generated from `models.py`.
 - [`docs/deployment.md`](docs/deployment.md) — how this ships to production.
+- [`docs/design_system.md`](docs/design_system.md) — the Alpenglow/Nightfall design
+  system: tokens, components, and the checklist for adding a view.
+- [`docs/emails.md`](docs/emails.md) — the five outgoing emails and how to preview them.
 - [`docs/permissions.md`](docs/permissions.md) — who can do what: the mixins/`get_object()`
   overrides that gate each view.
 - [`docs/ROADMAP_ARCHIVE.md`](docs/ROADMAP_ARCHIVE.md) — shipped roadmap items.

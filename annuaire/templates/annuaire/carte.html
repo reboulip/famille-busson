@@ -1,38 +1,51 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/leaflet.markercluster/MarkerCluster.css' %}">
 {% endblock extra_css %}
 {% block content %}
-    <h1>Carte</h1>
+    {% comment %}
+        Archetype F — canvas tool. The chrome recedes: page head, then a
+        toolbar welded to the canvas so the two read as one instrument.
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Carte</h1>
+            <p class="fb-page-head__lede">Où habite la famille, et où sont les chalets.</p>
+        </div>
+    </div>
 
     {% if unresolved_count %}
-        <details class="unresolved-persons-details">
+        <details class="fb-alert fb-alert--warning unresolved-persons-details">
             <summary class="search-result-count">
                 {{ unresolved_count }} profil{{ unresolved_count|pluralize }} sans adresse géolocalisée
                 {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
             </summary>
-            <ul>
+            <ul class="fb-alert__list">
                 {% for p in unresolved_persons %}
                     <li>
                         <a href="{% url 'personne-detail' p.pk %}">{{ p }}</a>
-                        <small class="text-body-secondary">— {{ p.postal_address|default:"adresse non renseignée" }}</small>
+                        <span class="fb-meta">— {{ p.postal_address|default:"adresse non renseignée" }}</span>
                     </li>
                 {% endfor %}
             </ul>
         </details>
     {% endif %}
     {% if unresolved_chalet_count %}
-        <p class="search-result-count">
+        <p class="fb-alert fb-alert--warning search-result-count">
             {{ unresolved_chalet_count }} chalet{{ unresolved_chalet_count|pluralize }} sans adresse géolocalisée
             {{ unresolved_chalet_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
         </p>
     {% endif %}
 
-    <div class="person-picker person-picker-inline mb-2">
-        <input type="text" id="carte-person-search" class="search-input" placeholder="Rechercher un membre…" autocomplete="off">
-        <ul id="carte-person-search-results" class="person-picker-results" role="listbox" hidden></ul>
+    <div class="fb-toolbar fb-toolbar--attached">
+        <div class="person-picker person-picker-inline">
+            <input type="text" id="carte-person-search" class="fb-input search-input"
+                   placeholder="Rechercher un membre…" autocomplete="off" aria-label="Rechercher un membre sur la carte">
+            <ul id="carte-person-search-results" class="person-picker-results" role="listbox" hidden></ul>
+        </div>
     </div>
 
     <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}'></div>

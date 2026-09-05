@@ -1,9 +1,16 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Publications</h1>
+    {# Archetype C — collection feed. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Publications</h1>
+            <p class="fb-page-head__lede">Nouvelles, souvenirs et annonces de la famille.</p>
+        </div>
         {% if user.is_authenticated %}
-            <a href="{% url 'blogpost-create' %}" class="btn btn-outline-primary">Nouvelle publication</a>
+            <div class="fb-page-head__actions">
+                <a href="{% url 'blogpost-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvelle publication</a>
+            </div>
         {% endif %}
     </div>
 
@@ -11,18 +18,23 @@
         {% for post in posts %}
             {% include "publications/_blogpost_card.html" %}
         {% empty %}
-            <p>Aucune publication pour l'instant.</p>
+            {% if user.is_authenticated %}
+                {% url 'blogpost-create' as create_url %}
+                {% include "annuaire/_empty.html" with title="Aucune publication pour l'instant" body="Racontez une nouvelle, partagez des photos, ouvrez le bal." action_url=create_url action_label="Écrire la première publication" %}
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucune publication pour l'instant" %}
+            {% endif %}
         {% endfor %}
     </div>
 
     {% if is_paginated %}
-        <nav class="pagination">
+        <nav class="fb-pagination pagination">
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline-secondary">&larr; Précédent</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
             {% endif %}
             <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline-secondary">Suivant &rarr;</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
             {% endif %}
         </nav>
     {% endif %}

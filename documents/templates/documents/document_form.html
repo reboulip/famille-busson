@@ -2,76 +2,81 @@
 {% load crispy_forms_filters %}
 {% load static %}
 {% load documents_extras %}
+{% load icons %}
 {% block content %}
-    <div class="form">
-        <form method="POST" enctype="multipart/form-data" id="document-form">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>
-                    {% if object %}Modifier « {{ object.title }} »{% else %}Nouveau document{% endif %}
-                </legend>
-                {{ form.media }}
-                {{ form.title|as_crispy_field }}
-                {{ form.category|as_crispy_field }}
-                {{ form.document_date|as_crispy_field }}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold" for="document-redactor-search-input">Rédigé par</label>
-                    {% include "annuaire/_person_picker.html" with input_id="document-redactor-search-input" field_name="redactor" single_select=True initial_json=redactor_initial_json %}
-                    {% if form.redactor.errors %}<div class="text-danger small">{{ form.redactor.errors }}</div>{% endif %}
-                </div>
-                {{ form.description|as_crispy_field }}
-            </fieldset>
+    {# Archetype G — form. Each fieldset is a card; its legend is a real section title. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Documents</p>
+            <h1>{% if object %}Modifier « {{ object.title }} »{% else %}Nouveau document{% endif %}</h1>
+        </div>
+    </div>
 
-            <fieldset class="form-group document-files-fieldset">
-                <legend class="formset-legend">Fichiers</legend>
-                {{ formset.management_form }}
+    <form method="POST" enctype="multipart/form-data" id="document-form" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Le document</legend>
+            {{ form.media }}
+            {{ form.title|as_crispy_field }}
+            {{ form.category|as_crispy_field }}
+            {{ form.document_date|as_crispy_field }}
+            <div class="fb-field">
+                <label class="fb-label" for="document-redactor-search-input">Rédigé par</label>
+                {% include "annuaire/_person_picker.html" with input_id="document-redactor-search-input" field_name="redactor" single_select=True initial_json=redactor_initial_json %}
+                {% if form.redactor.errors %}<div class="fb-error">{{ form.redactor.errors }}</div>{% endif %}
+            </div>
+            {{ form.description|as_crispy_field }}
+        </fieldset>
 
-                {% if formset.non_form_errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {% for error in formset.non_form_errors %}
-                            {{ error }}
-                        {% endfor %}
-                    </div>
-                {% endif %}
+        <fieldset class="fb-fieldset">
+            <legend>Fichiers</legend>
+            {{ formset.management_form }}
 
-                <div class="document-file-formset-rows" hidden>
-                    {% for inline_form in formset.forms %}
-                        <div class="document-file-row" data-existing="{% if inline_form.instance.pk %}1{% else %}0{% endif %}">
-                            {{ inline_form.id }}
-                            {{ inline_form.file }}
-                            {{ inline_form.caption }}
-                            {{ inline_form.DELETE }}
-                        </div>
+            {% if formset.non_form_errors %}
+                <div class="fb-alert fb-alert--danger" role="alert">
+                    {% for error in formset.non_form_errors %}
+                        {{ error }}
                     {% endfor %}
                 </div>
+            {% endif %}
 
-                <div class="document-file-badges" id="document-file-badges" aria-live="polite"></div>
-
-                <button type="button" class="btn btn-outline-secondary mt-2" id="add-document-file-btn">
-                    + Ajouter un fichier
-                </button>
-                <input type="file" id="document-file-picker" multiple accept="{% allowed_file_extensions %}" hidden>
-
-                <template id="document-file-row-template">
-                    <div class="document-file-row" data-existing="0">
-                        <input type="file" name="{{ formset.prefix }}-__prefix__-file" id="id_{{ formset.prefix }}-__prefix__-file">
-                        <input type="text" name="{{ formset.prefix }}-__prefix__-caption" id="id_{{ formset.prefix }}-__prefix__-caption" maxlength="255">
-                        <input type="hidden" name="{{ formset.prefix }}-__prefix__-id" id="id_{{ formset.prefix }}-__prefix__-id">
-                        <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" id="id_{{ formset.prefix }}-__prefix__-DELETE">
+            <div class="document-file-formset-rows" hidden>
+                {% for inline_form in formset.forms %}
+                    <div class="document-file-row" data-existing="{% if inline_form.instance.pk %}1{% else %}0{% endif %}">
+                        {{ inline_form.id }}
+                        {{ inline_form.file }}
+                        {{ inline_form.caption }}
+                        {{ inline_form.DELETE }}
                     </div>
-                </template>
-            </fieldset>
-
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
-                {% if object %}
-                    <a href="{% url 'document-detail' object.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-                {% else %}
-                    <a href="{% url 'document-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-                {% endif %}
+                {% endfor %}
             </div>
-        </form>
-    </div>
+
+            <div class="document-file-badges" id="document-file-badges" aria-live="polite"></div>
+
+            <button type="button" class="fb-btn fb-btn--quiet" id="add-document-file-btn">
+                {% icon "plus" size=16 %} Ajouter un fichier
+            </button>
+            <input type="file" id="document-file-picker" multiple accept="{% allowed_file_extensions %}" hidden>
+
+            <template id="document-file-row-template">
+                <div class="document-file-row" data-existing="0">
+                    <input type="file" name="{{ formset.prefix }}-__prefix__-file" id="id_{{ formset.prefix }}-__prefix__-file">
+                    <input type="text" name="{{ formset.prefix }}-__prefix__-caption" id="id_{{ formset.prefix }}-__prefix__-caption" maxlength="255">
+                    <input type="hidden" name="{{ formset.prefix }}-__prefix__-id" id="id_{{ formset.prefix }}-__prefix__-id">
+                    <input type="checkbox" name="{{ formset.prefix }}-__prefix__-DELETE" id="id_{{ formset.prefix }}-__prefix__-DELETE">
+                </div>
+            </template>
+        </fieldset>
+
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            {% if object %}
+                <a href="{% url 'document-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% else %}
+                <a href="{% url 'document-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% endif %}
+        </div>
+    </form>
     <script src="{% static 'js/document_files.js' %}"></script>
     <script src="{% static 'js/person_picker.js' %}"></script>
 {% endblock content %}

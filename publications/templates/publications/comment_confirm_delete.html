@@ -1,16 +1,28 @@
 {% extends "annuaire/base.html" %}
 {% load markdown_extras %}
+{% load icons %}
 {% block content %}
-    <div class="form">
-        <h1>Supprimer ce commentaire ?</h1>
-        <blockquote class="comment-preview">
-            <strong>{{ object.author|default:"Anonyme" }}</strong> — {{ object.created_at|date:"j F Y H:i" }}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Publications</p>
+            <h1>Supprimer ce commentaire ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <p class="fb-meta">Sur « {{ object.post.title }} ».</p>
+        <blockquote class="fb-confirm__quote">
+            <strong>{{ object.author|default:"Anonyme" }}</strong>
+            <span class="fb-meta">— {{ object.created_at|date:"j F Y H:i" }}</span>
             <div class="markdown-body">{{ object.body|markdown }}</div>
         </blockquote>
         <form method="POST">
             {% csrf_token %}
-            <button class="btn btn-outline-danger" type="submit">Supprimer définitivement</button>
-            <a href="{% url 'blogpost-detail' object.post.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <a href="{% url 'blogpost-detail' object.post.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
         </form>
     </div>
 {% endblock content %}

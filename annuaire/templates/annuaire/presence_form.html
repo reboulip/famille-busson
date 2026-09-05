@@ -1,14 +1,19 @@
 {% extends "annuaire/base.html" %}
 {% block content %}
-    <h1>Modifier la présence</h1>
-    <p>{{ object.person }} — {{ object.chalet }}</p>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Chalets PSV</p>
+            <h1>Modifier la présence</h1>
+            <p class="fb-page-head__lede">{{ object.person }} — {{ object.chalet }}</p>
+        </div>
+    </div>
 
-    <form method="post" class="presence-form">
+    <form method="post" class="fb-form fb-card presence-form">
         {% csrf_token %}
         {{ form.as_p }}
-        <div class="form-group">
-            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
-            <a href="{% url 'chalet-detail' view.kwargs.pk %}" class="btn btn-outline-secondary">Annuler</a>
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
+            <a href="{% url 'chalet-detail' view.kwargs.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
         </div>
     </form>
 {% endblock content %}
