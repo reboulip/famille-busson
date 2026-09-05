@@ -203,3 +203,14 @@ def test_genealogie_detail_panel_uses_bootstrap_visibility(auth_client, person):
     content = response.content.decode()
     assert 'id="genealogie-detail" class="genealogie-detail d-none d-lg-block"' in content
     assert '<aside id="genealogie-detail" class="genealogie-detail" hidden>' not in content
+
+
+@pytest.mark.django_db
+def test_genealogie_toolbar_labels_stay_in_the_markup_for_screen_readers(auth_client, person):
+    # #125 hides these captions with CSS on small screens, so the accessible name
+    # has to come from somewhere -- the text itself must not be removed.
+    content = auth_client.get(reverse("genealogie")).content.decode()
+    assert content.count("genealogie-toolbar__label") == 3
+    for label in ("Exporter le carnet d'adresses en Excel", "Exporter en image", "Plein écran"):
+        assert f'aria-label="{label}"' in content
+        assert f'<span class="genealogie-toolbar__label">{label}</span>' in content

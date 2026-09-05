@@ -610,6 +610,24 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     border-radius: 0;
 }
 
+/* --- Mobile: give the tree the screen (#125) ----------------------------- */
+/* Two things were taking the space. The toolbar's three long captions wrap it
+   onto several rows, so below this width the buttons are icon-only (the text
+   stays in the DOM and in aria-label -- see genealogie.html). And the height
+   was in vh, which resolves against the *largest* viewport, so the bottom of
+   the chart sat underneath the mobile browser's own bar; dvh follows the bar
+   as it collapses. The subtraction is the page chrome above the chart
+   (top bar, page head, toolbar) -- an estimate, and min-height still floors it.
+   The vh line is declared first as the fallback for browsers without dvh. */
+@media (max-width: 991.98px) {
+    .genealogie-toolbar__label { display: none; }
+
+    .genealogie-container {
+        height: 70vh;
+        height: calc(100dvh - 13rem);
+    }
+}
+
 /* =========================================================================
    5. Person / address pickers
    ========================================================================= */

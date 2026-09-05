@@ -29,7 +29,7 @@
 
 - [x] 7.5 · Remove the square artifacts rendered under circle nodes in the family
   tree visual (`annuaire/static/js/family_tree.js`). [#121]
-- [ ] 7.6 · Mobile genealogy view: shrink the fixed bottom banner as much as possible
+- [x] 7.6 · Mobile genealogy view: shrink the fixed bottom banner as much as possible
   to give the tree visualization more vertical space. [#125]
 
 ### Cluster: Chalets et Présences
