@@ -37,6 +37,9 @@
     - `annuaire`: users (`Account`), profiles (`Person`), family relations (`Relation`),
       chalets (`Chalet`), and presences (`PresencePSV`)
     - `publications`: blog posts (`BlogPost`), comments (`Comment`), attachments (`Attachment`)
+    - `documents`: protected family-document storage and browsing — `Category` (nested,
+      group-restricted), `Document` + `DocumentFile` (upload, PDF/image preview, OCR text
+      extraction, full-text search). Access rules live in `documents/access.py`
 
 ## 4. Coding Standards & Preferences
 - **Views:** Class-Based Views preferred. Ownership checks go in `get_object()`, raising `PermissionDenied`.
@@ -46,6 +49,18 @@
 - **Style:** Follow PEP 8, use Type Hinting.
 - **Language:** Code in English; all user-facing text and model `verbose_name` in French, but names of classes, methods, variables, and comments must all be in English.
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
+- **Source-text regression tests:** there is no JS test runner here, so frontend behaviour
+  is guarded by Python tests that read a `.js`/`.css`/template file and assert on its
+  *text* — typically `assert "<token>" not in content` to prove an old behaviour is really
+  gone or a value isn't hardcoded (e.g. `annuaire/tests/test_carte_marker_cluster.py`,
+  `test_templates_base.py`, `test_views_family_tree.py`). Two consequences:
+    - **A comment can trip the very test next to it.** When you write a comment explaining
+      what the old/removed behaviour was, do **not** spell out the literal token the test
+      bans — say "the previous threshold" or write the number out instead of naming the
+      constant. This has happened twice: a comment mentioning `SPREAD_MAX` failed
+      `test_spread_machinery_is_gone`, which asserts that string is absent from the file.
+    - Slice the assertion as narrowly as the guard needs (a function body, not the whole
+      file) so unrelated prose can't collide with it.
 
 ## 5. Signals — auto-sync logic (do not bypass)
 Signals are registered via each app's `AppConfig.ready()`: `annuaire/signals.py` via
@@ -145,6 +160,13 @@ the default one-branch-per-issue rule above still applies.
   `GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=<tmp-path> -o StrictHostKeyChecking=accept-new"`.
   Before the first commit, set `git config user.name`/`user.email` (match the GitHub
   account, e.g. via `gh api user`). Neither persists across a fresh container instance.
+- **Splitting one working tree into several commits:** pre-commit stashes unstaged
+  **tracked** changes but leaves **untracked** files in place, and the `ty` hook runs with
+  `pass_filenames: false` — i.e. it type-checks the whole project, not just the staged
+  files. So a partial stage whose new *untracked* module imports from a file stashed back
+  to `HEAD` fails the commit with a large, confusing diagnostic count and no hint of the
+  cause, while `pre-commit run --all-files` passes right afterwards, making it look flaky.
+  Stage in dependency order — the self-contained half first — or make a single commit.
 
 ## 10. Releases
 famille-busson is a continuously-deployed web app, not a published package — there's no

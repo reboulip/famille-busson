@@ -81,7 +81,10 @@ closing it after one batch.
 | `click <css-sel>` | click element |
 | `click-text <text>` | click the first element containing this text |
 | `fill <css-sel> <text>` | fill an input |
+| `setfile <css-sel> <path...>` | attach local file(s) to a file input. Use one `setfile` per file on an input that isn't `multiple` — this app's JS formsets reset the input after each selection |
+| `select <css-sel> <v1,v2,...>` | choose option(s) in a `<select>` **by value**. For a `<select multiple>` whose option values you don't know (e.g. a category's `groups`), drive it via `eval` instead, matching options by visible text and dispatching a `change` event |
 | `type <text>` / `press <key>` | keyboard input |
+| `viewport <w> <h> [mobile]` | resize the window; `mobile` also sets `isMobile`/touch/2× DPR. Recreates the browser context, carrying cookies over and reloading the current URL, so a prior `login` survives. Use `viewport 390 844 mobile` for the mobile breakpoint |
 | `wait <css-sel>` | wait for element, 10s timeout |
 | `eval <js>` | evaluate in the page, print JSON |
 | `text [css-sel]` | print innerText (whole page if no selector) |
@@ -115,6 +118,15 @@ running the whole suite.
 
 ## Gotchas
 
+- **Animated views need to settle before you screenshot them.** The
+  généalogie page (family-chart/d3) and the document viewer animate in over
+  roughly 1-3s. `wait <selector>` returns the moment the node exists, which
+  is the *start* of the animation — a screenshot taken there shows the cards
+  stacked at the origin at near-zero opacity (`opacity: 0.009`), which looks
+  exactly like a layout regression and has repeatedly sent sessions off
+  diagnosing a bug that doesn't exist (hence the `-settled.png` /
+  `-after-wait.png` pairs in `.shots/`). Settle first:
+  `eval new Promise(r=>setTimeout(()=>r('ok'),3000))`, then `ss`.
 - **`uv sync` (no `--group test`) uninstalls pytest and friends** if they
   were already installed — it syncs to exactly the default group. Running
   the Build section right before `/test-select` or `pytest` will make the
