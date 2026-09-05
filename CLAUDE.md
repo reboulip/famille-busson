@@ -96,6 +96,7 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 | `develop` | Integration branch | Direct push allowed. Receives squash-merges from issue branches. |
 | `<type>/issue-<N>/<summary>` | One GitHub issue = one branch | Sub-branch of `develop`. Squash-merge into `develop` when green (see `issue-workflow`). |
 | `hotfix/<name>` | Urgent fix on top of `main` | Branch from `main`. PR back to `main` (no squash). Then merge `main` → `develop`. |
+| `deps/<date>` | Weekly automated dependency upgrade | Branch from `main`, opened by `.github/workflows/dependency-upgrade.yml`. PR back to `main` (no squash). Then merge `main` → `develop`. |
 
 ### Merge rules
 - **Issue branch → `develop`:** local squash-merge (`git merge --squash`), one commit per
@@ -104,6 +105,16 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   squash-commit per issue) is preserved as-is on `main`. See `/release`.
 - **Hotfix → `main`:** PR only, no squash. Immediately after merging, merge `main` back
   into `develop` so the hotfix isn't lost on the next release.
+- **Dependency upgrade → `main`:** same shape as a hotfix — PR only, no squash, then
+  merge `main` back into `develop`. This is a deliberate, documented exception to the
+  general rule that only `develop`/`hotfix/*` PR into `main`: `dependency-upgrade.yml`
+  runs weekly (every Friday night), branches `deps/<date>` off `main`, upgrades the
+  pinned Python minor version, every uv-managed package, and the vendored front-end
+  assets under `annuaire/static/vendor/` (see §11's manifest note), and only opens the
+  PR if lint/ty/collectstatic-sanity/the full test suite all stay green. It always bumps
+  the **minor** version (another documented exception — see §10), regardless of the
+  general "chore-only commits: ask whether release-worthy" convention, since these
+  commits are never reviewed for release-worthiness before the PR opens.
 - Never push directly to `main`.
 
 ### Phase-grouped issues (carve-out)
@@ -195,6 +206,10 @@ gate a build/publish step.
 - **Hotfixes** bump the patch version on the `hotfix/*` branch itself, so the PR into
   `main` still carries a version change for the workflow to tag (see `/release`'s
   Hotfix variant).
+- **Weekly dependency upgrades** (`dependency-upgrade.yml`, see §8's Branch Model)
+  always bump the **minor** version directly on the `deps/<date>` branch, regardless of
+  the general bump convention above — there's no human in the loop to ask whether a
+  dependency-only chore is release-worthy, so it's simply always treated as such.
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
 
@@ -204,6 +219,15 @@ gate a build/publish step.
   models. **Auto-generated, never edit by hand** — regenerate with
   `uv run python manage.py generate_data_model_docs` (see `dev-commands`) after any
   `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
+- **`annuaire/static/vendor/manifest.json`** tracks the npm-published version each
+  vendored front-end library (leaflet, d3, family-chart, pdfjs, etc. — not the Django
+  admin's own bundled vendor assets, which upgrade with Django itself) was last synced
+  from, and which package files map to which local files. **Owned by
+  `manage.py upgrade_vendored_assets`** (`annuaire/management/commands/
+  upgrade_vendored_assets.py`) — don't hand-edit the `"version"` fields. Run weekly by
+  `dependency-upgrade.yml` (see §8); manual run: `uv run python manage.py
+  upgrade_vendored_assets` (add `--check-only` to list available upgrades without
+  downloading).
 - **`ROADMAP.md`** tracks pending work only. Shipped items move to
   **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `/release`'s
   release-time housekeeping step).
