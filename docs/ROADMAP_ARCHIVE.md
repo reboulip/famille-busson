@@ -3,6 +3,58 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.2.0 — Phases 5 & 6: one visual identity, in the emails and across the site
+
+> The app had no brand system beyond the mountain/trees favicon. This release gives it
+> one — **Alpenglow** (day) and **Nightfall** (night over the valley) — and applies it
+> to every email and every page. Design passes and mockups live in `design/emails/` and
+> `design/web/`; `docs/emails.md` and `docs/design_system.md` are the shipped references.
+
+### Emails — identité visuelle
+- **Design pass** — palettes, per-email specs and static mockups for one branded HTML
+  email base, covering all five touchpoints. Chose a CSS-only mountain motif over an
+  image header, because most clients block images exactly when these mails are read.
+- **Build** — all five flows moved off plain text onto the shared shell, each shipping
+  an HTML and a plain-text half. Two treatments: the full ridge for notifications, a
+  flat horizon for credential mail. Who receives what is unchanged.
+- **The birthday photo is embedded, not linked** — `MEDIA_URL` sits behind
+  `@login_required` by design, so an `<img src>` would render the login page. The photo
+  now travels in a `multipart/related` inside the message, falling back to an initials
+  disc when absent, unreadable or over 400 KB.
+- **`manage.py preview_emails`** — renders any flow to HTML or sends it to a real
+  address, so the mails are observable without waiting for a real birthday.
+
+### Site — identité visuelle
+- **Design pass** — the ten view archetypes, the token and component layers, and six
+  reviewable mockups.
+- **Foundation** — a token layer plus a bridge that re-points Bootstrap 5.3's own
+  `--bs-*` variables, so stock components and crispy output inherit the palette without
+  per-component overrides. Bitter + Karla self-hosted, with fallback stacks identical to
+  the emails'.
+- **The unstyled apps got a design** — `publications` and `documents` shipped no CSS at
+  all; a dozen classes written in their templates were matched by nothing.
+- **Structure** — the eaves rule on every view, a `base_threshold.html` split so
+  logged-out visitors no longer see a nav that bounces them back to the login form, a
+  shared empty state replacing ~15 hand-written "Aucun…" paragraphs, and an inline SVG
+  icon set replacing emoji (which rendered as tofu boxes without an emoji font).
+- **Nightfall** — with a no-flash inline theme script and a sidebar toggle.
+
+### Accessibility
+- `alpenglow` is 2.98:1 on the card surface, so it never carries text: links and filled
+  buttons use `ember` (5.90:1), and the roles invert in Nightfall. Verified by sweep
+  across 20 pages in both palettes.
+- Presence bars got their own tokens — reusing spruce directly left the "en cours"
+  label at 1.18:1 in Nightfall, i.e. invisible.
+- `--fb-bark` darkened to clear AA on the panel ground (4.31:1 → 5.00:1).
+- Status is never colour alone, and every interactive element has a focus ring.
+
+### Fixes found along the way
+- Multi-line `{# #}` template comments render as visible text — one had been printing
+  on the publication form.
+- `body { font-family: 'Helvetica' }` had no fallback stack.
+- `.expandable-image` grew 100→200px over a 1s hover transition, reflowing the page
+  under the cursor.
+
 ## v1.1.0 — Phase 4: Document viewer/list fixes, live directory filter, genealogy export, map clustering
 
 > Bug-fix and polish pass: PDF/image viewer fixes, a multi-file attachment picker, a
