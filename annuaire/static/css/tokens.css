@@ -1,0 +1,353 @@
+/* =========================================================================
+   Famille Busson — token layer  (design pass, not yet wired into Django)
+   =========================================================================
+
+   Extends the Alpenglow / Nightfall palettes defined in ../emails/SPEC.md to
+   the web app. Every hex below that also exists in the email spec is byte-
+   identical to it; the additions are documented in ./SPEC.md §3.
+
+   Load order once adopted:
+       bootstrap.css  →  tokens.css  →  components.css  →  view CSS
+
+   This file does two things and nothing else:
+     1. declares the --fb-* app tokens,
+     2. re-points Bootstrap 5.3's own --bs-* variables at them, so unmodified
+        Bootstrap components (.btn, .alert, .form-control, .table, .badge…)
+        inherit the palette instead of being overridden rule by rule.
+   ========================================================================= */
+
+/* -------------------------------------------------------------------------
+   1. Alpenglow — the light palette (default)
+   ------------------------------------------------------------------------- */
+
+:root {
+    /* --- Surfaces ------------------------------------------------------- */
+    --fb-parchment:     #F6EEE0;  /* page ground */
+    --fb-card:          #FFFAF0;  /* raised surface: cards, panels, inputs */
+    --fb-panel:         #EFE3D0;  /* recessed surface: sidebar, table heads */
+    --fb-sky:           #F3D9B1;  /* the ridge's sky band */
+    --fb-border:        #E6D8C3;  /* hairlines, card borders */
+    --fb-border-strong: #D8C4A6;  /* input borders, table rules */
+
+    /* --- Ink ------------------------------------------------------------ */
+    --fb-ink:           #3A2C1E;  /* primary text */
+    --fb-bark:          #705C48;  /* secondary text — 6.09:1 on --fb-card, 5.00:1 on --fb-panel */
+
+    /* --- Accent --------------------------------------------------------- */
+    /* alpenglow is 2.98:1 on --fb-card: decorative and fills only, never
+       text. ember is 5.90:1: that is the one that carries link + button
+       label colour. See SPEC.md §3.2 for the full contrast table. */
+    --fb-alpenglow:     #D9793F;  /* rules, focus ring, active marker, hover */
+    --fb-ember:         #9C4A22;  /* link text, primary button fill */
+    --fb-ember-soft:    #F6E3D4;  /* alpenglow at ~12% over card */
+
+    /* --- Landscape ------------------------------------------------------ */
+    --fb-spruce:        #4B5D3F;  /* near ridge — doubles as "success" */
+    --fb-slate-mist:    #9FB0AE;  /* far ridge */
+    --fb-snowcap:       #FBF6EC;  /* peak highlight */
+    --fb-gold:          #D9A441;  /* celebration accent: birthdays, portrait ring */
+
+    /* --- Presence bars --------------------------------------------------- */
+    /* Declared as their own tokens rather than reusing bark/spruce/ember directly:
+       the *text* on them has to be legible in both palettes, and Nightfall's spruce
+       (#28331F) is far too dark to carry --fb-card text (measured 1.18:1). */
+    --fb-bar-past:      #705C48;
+    --fb-bar-current:   #4B5D3F;
+    --fb-bar-future:    #9C4A22;
+    --fb-bar-ink:       #FFFAF0;
+
+    /* --- Status --------------------------------------------------------- */
+    /* Status *text* is always --fb-ink on a tinted ground, so every alert is
+       AA by construction. These are the bar / icon / border colours. */
+    --fb-success:       #4B5D3F;  /* = spruce            6.87:1 on card */
+    --fb-success-soft:  #E7EADF;
+    --fb-info:          #6B7FA0;  /* = moon              */
+    --fb-info-soft:     #E9E7DE;
+    --fb-warning:       #D9A441;  /* = gold              */
+    --fb-warning-soft:  #F7ECD3;
+    --fb-danger:        #A83A28;  /*                     6.12:1 on card */
+    --fb-danger-soft:   #F7E2DD;
+
+    /* --- Typography ----------------------------------------------------- */
+    /* Fallback stacks are byte-identical to the email spec's, so a page whose
+       webfonts failed to load looks exactly like the email that linked to it. */
+    --fb-font-display: 'Bitter', Georgia, 'Noto Serif', 'Droid Serif', serif;
+    --fb-font-body:    'Karla', 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif;
+
+    --fb-text-xs:   0.75rem;    /* 12px — chips, counters */
+    --fb-text-sm:   0.8125rem;  /* 13px — meta, captions, help text */
+    --fb-text-base: 1rem;       /* 16px — body */
+    --fb-text-lg:   1.0625rem;  /* 17px — long-form body */
+    --fb-text-h3:   1.0625rem;
+    --fb-text-h2:   1.375rem;
+    --fb-text-h1:   2rem;
+    --fb-text-display: clamp(2rem, 1.55rem + 1.5vw, 2.75rem);
+
+    --fb-leading-tight: 1.2;
+    --fb-leading-snug:  1.35;
+    --fb-leading-body:  1.65;
+    --fb-leading-long:  1.75;
+
+    --fb-tracking-eyebrow: 0.12em;  /* small-caps section labels */
+    --fb-tracking-wordmark: 0.2em;  /* the signpost wordmark */
+
+    /* --- Space (4px base) ----------------------------------------------- */
+    --fb-sp-1: 0.25rem;
+    --fb-sp-2: 0.5rem;
+    --fb-sp-3: 0.75rem;
+    --fb-sp-4: 1rem;
+    --fb-sp-5: 1.5rem;
+    --fb-sp-6: 2rem;
+    --fb-sp-7: 3rem;
+    --fb-sp-8: 4rem;
+
+    /* --- Shape ---------------------------------------------------------- */
+    --fb-radius-sm: 6px;   /* controls: buttons, inputs, chips */
+    --fb-radius:    10px;  /* cards, panels, canvases */
+    --fb-radius-lg: 16px;  /* the threshold card */
+    --fb-radius-pill: 999px;
+
+    /* Shadows are warm — tinted with ink, never neutral black. */
+    --fb-shadow-1: 0 1px 2px rgba(58, 44, 30, 0.05);
+    --fb-shadow-2: 0 4px 12px rgba(58, 44, 30, 0.08);
+    --fb-shadow-3: 0 12px 32px rgba(58, 44, 30, 0.12);
+
+    /* --- Layout --------------------------------------------------------- */
+    --fb-sidebar-w:    236px;
+    --fb-content-max:  76rem;  /* grids, dashboards, tools */
+    --fb-measure-max:  38rem;  /* long-form reading column */
+
+    /* --- Motion --------------------------------------------------------- */
+    --fb-ease: cubic-bezier(0.2, 0, 0.2, 1);
+    --fb-dur-fast: 120ms;
+    --fb-dur:      200ms;
+}
+
+/* -------------------------------------------------------------------------
+   2. Nightfall — the dark palette
+
+   Same token names, different light. Only the values that actually change
+   are redefined; everything else (space, shape, type) is inherited.
+
+   Applied by `data-bs-theme="dark"` on <html>, which is also the attribute
+   Bootstrap 5.3 keys its own dark theme off — one attribute, both systems.
+   The `:root:not([data-bs-theme="light"])` guard on the media query lets an
+   explicit light choice win over the OS preference.
+   ------------------------------------------------------------------------- */
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-bs-theme="light"]) {
+        --fb-parchment:     #221810;
+        --fb-card:          #2C2119;
+        --fb-panel:         #241A12;
+        --fb-sky:           #3A3450;
+        --fb-border:        #4A3B2E;
+        --fb-border-strong: #5C4A39;
+
+        --fb-ink:           #F2E6D5;
+        --fb-bark:          #B9A68F;
+
+        /* Inverted roles: in Nightfall the *bright* ember is the readable one
+           (6.28:1 on --fb-card), so it takes over link text and button fill,
+           and the deep ember drops out entirely. */
+        --fb-alpenglow:     #E2914E;
+        --fb-ember:         #E2914E;
+        --fb-ember-soft:    #3D2A1C;
+
+        --fb-spruce:        #28331F;
+        --fb-slate-mist:    #6B7FA0;
+        --fb-snowcap:       #D8DEE6;
+        --fb-gold:          #E8B85B;
+
+        --fb-bar-past:      #B9A68F;
+        --fb-bar-current:   #8FA87A;
+        --fb-bar-future:    #E2914E;
+        --fb-bar-ink:       #2C2119;
+
+        --fb-success:       #8FA87A;
+        --fb-success-soft:  #29301F;
+        --fb-info:          #8FA3C4;
+        --fb-info-soft:     #262B36;
+        --fb-warning:       #E8B85B;
+        --fb-warning-soft:  #362B18;
+        --fb-danger:        #E08B76;
+        --fb-danger-soft:   #3A211B;
+
+        --fb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+        --fb-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+        --fb-shadow-3: 0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+}
+
+[data-bs-theme="dark"] {
+    --fb-parchment:     #221810;
+    --fb-card:          #2C2119;
+    --fb-panel:         #241A12;
+    --fb-sky:           #3A3450;
+    --fb-border:        #4A3B2E;
+    --fb-border-strong: #5C4A39;
+
+    --fb-ink:           #F2E6D5;
+    --fb-bark:          #B9A68F;
+
+    --fb-alpenglow:     #E2914E;
+    --fb-ember:         #E2914E;
+    --fb-ember-soft:    #3D2A1C;
+
+    --fb-spruce:        #28331F;
+    --fb-slate-mist:    #6B7FA0;
+    --fb-snowcap:       #D8DEE6;
+    --fb-gold:          #E8B85B;
+
+    --fb-bar-past:      #B9A68F;
+    --fb-bar-current:   #8FA87A;
+    --fb-bar-future:    #E2914E;
+    --fb-bar-ink:       #2C2119;
+
+    --fb-success:       #8FA87A;
+    --fb-success-soft:  #29301F;
+    --fb-info:          #8FA3C4;
+    --fb-info-soft:     #262B36;
+    --fb-warning:       #E8B85B;
+    --fb-warning-soft:  #362B18;
+    --fb-danger:        #E08B76;
+    --fb-danger-soft:   #3A211B;
+
+    --fb-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35);
+    --fb-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.45);
+    --fb-shadow-3: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+/* -------------------------------------------------------------------------
+   3. Bootstrap bridge
+
+   Bootstrap 5.3 exposes almost everything it paints as a --bs-* custom
+   property. Re-pointing those at the --fb-* tokens re-skins every stock
+   component at once — .btn, .alert, .badge, .table, .form-control, .nav,
+   .offcanvas, .dropdown, .pagination — without touching bootstrap.css and
+   without writing a per-component override for each.
+
+   Bootstrap wants RGB triplets (not hex) for the handful of properties it
+   composes with rgba(), which is why those are spelled out numerically. Keep
+   each triplet in sync with the hex above it.
+   ------------------------------------------------------------------------- */
+
+:root,
+[data-bs-theme="light"] {
+    --bs-body-bg:               var(--fb-parchment);
+    --bs-body-color:            var(--fb-ink);
+    --bs-body-color-rgb:        58, 44, 30;
+    --bs-body-bg-rgb:           246, 238, 224;
+    --bs-body-font-family:      var(--fb-font-body);
+    --bs-body-font-size:        var(--fb-text-base);
+    --bs-body-line-height:      var(--fb-leading-body);
+
+    --bs-emphasis-color:        var(--fb-ink);
+    --bs-secondary-color:       var(--fb-bark);
+    --bs-secondary-bg:          var(--fb-panel);
+    --bs-tertiary-bg:           var(--fb-parchment);
+
+    --bs-border-color:          var(--fb-border);
+    --bs-border-color-translucent: var(--fb-border);
+    --bs-border-radius:         var(--fb-radius-sm);
+    --bs-border-radius-lg:      var(--fb-radius);
+
+    --bs-link-color:            var(--fb-ember);
+    --bs-link-color-rgb:        156, 74, 34;
+    --bs-link-hover-color:      var(--fb-alpenglow);
+    --bs-link-hover-color-rgb:  217, 121, 63;
+
+    --bs-primary:               var(--fb-ember);
+    --bs-primary-rgb:           156, 74, 34;
+    --bs-secondary:             var(--fb-bark);
+    --bs-secondary-rgb:         122, 102, 80;
+    --bs-success:               var(--fb-success);
+    --bs-success-rgb:           75, 93, 63;
+    --bs-info:                  var(--fb-info);
+    --bs-info-rgb:              107, 127, 160;
+    --bs-warning:               var(--fb-warning);
+    --bs-warning-rgb:           217, 164, 65;
+    --bs-danger:                var(--fb-danger);
+    --bs-danger-rgb:            168, 58, 40;
+
+    --bs-heading-color:         var(--fb-ink);
+    --bs-code-color:            var(--fb-ember);
+    --bs-highlight-bg:          var(--fb-warning-soft);
+
+    --bs-focus-ring-color:      rgba(217, 121, 63, 0.35);
+    --bs-focus-ring-width:      2px;
+}
+
+[data-bs-theme="dark"] {
+    --bs-body-color-rgb:        242, 230, 213;
+    --bs-body-bg-rgb:           34, 24, 16;
+    --bs-link-color-rgb:        226, 145, 78;
+    --bs-link-hover-color-rgb:  232, 184, 91;
+    --bs-link-hover-color:      var(--fb-gold);
+    --bs-primary-rgb:           226, 145, 78;
+    --bs-secondary-rgb:         185, 166, 143;
+}
+
+/* -------------------------------------------------------------------------
+   4. Webfonts
+
+   Bitter (display) + Karla (body) are the pairing the email spec named as
+   "aspirational" — the look most recipients never get, because Outlook's
+   Word engine ignores @font-face. The web app has no such constraint, so it
+   is where that pairing actually lands. Self-hosted rather than pulled from
+   Google Fonts, matching how the project already vendors leaflet / d3 /
+   pdfjs, and because production serves through WhiteNoise with no external
+   CDN in the CSP story.
+
+   `font-display: swap` means the Georgia/Trebuchet fallback paints first and
+   is replaced when the woff2 arrives — i.e. the very first paint of the site
+   is the email's typography, which is a feature, not a compromise.
+
+   Both faces are variable woff2 (one file spans weights 400-700), split into
+   the `latin` and `latin-ext` subsets Google Fonts publishes. French needs
+   only `latin` in practice — Œ/œ (U+0152-0153) sit inside it — so `latin-ext`
+   is a ~45 KB insurance policy the browser downloads only if a page actually
+   contains a character in its range.
+
+   ⚠ These url() references are exactly what WhiteNoise's
+   CompressedManifestStaticFilesStorage validates at collectstatic time (see
+   CLAUDE.md §9). Any rename here without moving the file kills the container
+   at boot, so re-run the build-sanity check after touching this block:
+       DEBUG=False SECRET_KEY=x uv run python manage.py collectstatic --noinput
+   ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'Bitter';
+    src: url('../fonts/bitter-latin.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Bitter';
+    src: url('../fonts/bitter-latin-ext.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+    font-family: 'Karla';
+    src: url('../fonts/karla-latin.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Karla';
+    src: url('../fonts/karla-latin-ext.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

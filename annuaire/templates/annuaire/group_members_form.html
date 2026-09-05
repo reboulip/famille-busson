@@ -1,17 +1,23 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% block content %}
-    <h1>Membres de « {{ group.name }} »</h1>
-    <form method="post" class="presence-form">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label fw-semibold" for="members-search-input">Membres actuels</label>
-            {% include "annuaire/_person_picker.html" with input_id="members-search-input" field_name="members" initial_json=members_initial_json search_url=person_search_with_account_url aria_label="Chercher un membre" %}
-            <div class="form-text">Seules les personnes ayant un compte peuvent être membres d'un groupe.</div>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Membres de « {{ group.name }} »</h1>
         </div>
-        <div class="form-group">
-            <button type="submit" class="btn btn-outline-primary">Enregistrer</button>
-            <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+    </div>
+
+    <form method="post" class="fb-form fb-card presence-form">
+        {% csrf_token %}
+        <div class="fb-field">
+            <label class="fb-label" for="members-search-input">Membres actuels</label>
+            {% include "annuaire/_person_picker.html" with input_id="members-search-input" field_name="members" initial_json=members_initial_json search_url=person_search_with_account_url aria_label="Chercher un membre" %}
+            <p class="fb-help form-text">Seules les personnes ayant un compte peuvent être membres d'un groupe.</p>
+        </div>
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
+            <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
         </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>

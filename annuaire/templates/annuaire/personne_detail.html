@@ -1,110 +1,166 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load markdown_extras %}
+{% load icons %}
 {% block content %}
-    <div class="flex-title">
-        {% if person.profile_photo %}
-            <a href="{{ person.profile_photo.url }}">
-                <img class="expandable-image{% if person.deceased %} person-photo--deceased{% endif %}"
-                src="{{ person.profile_photo.url }}"
-                alt="Photo de profil de {{ person.first_name }} {{ person.last_name }}"
-                {% if person.deceased %}title="Décédé·e"{% endif %} />
+    {% comment %}
+        Archetype D — record detail. A sticky identity rail (portrait, aligned
+        contact list, stacked actions) beside a content column, replacing the
+        single full-width column where the actions were crammed after the <h1>
+        and relations were anonymous 1.5em thumbnails.
+
+        `class="contact-line` is load-bearing: annuaire/tests/test_views_profile.py
+        counts occurrences of that literal string. Keep it on each contact row.
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>{{ person.first_name }} {{ person.last_name }}</h1>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'genealogie-person' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
+                {% icon "tree" size=16 %} Voir dans l'arbre
             </a>
-        {% else %}
-            <img class="expandable-image{% if person.deceased %} person-photo--deceased{% endif %}"
-            src={% static 'default_profile_picture.png' %} alt="Photo par défaut"
-            {% if person.deceased %}title="Décédé·e"{% endif %}>
-        {% endif %}
-        <div>
-            <h1>
-                {{ person.first_name }} {{ person.last_name }}
-                <a href="{% url 'genealogie-person' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Voir dans l'arbre</a>
-                {% if can_edit %}
-                    <a href="{% url 'person-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier le profil</a>
-                    <a href="{% url 'person-relations-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les relations</a>
-                    {% if not person.account_id %}
-                        <a href="{% url 'person-owners-edit' person.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Gérer les propriétaires</a>
-                    {% endif %}
-                {% endif %}
-            </h1>
-            {% if person.email %}
-                <p class="contact-line mb-1">
-                    📧 <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email|urlencode }}>">{{ person.email }}</a>
-                </p>
-            {% endif %}
-            {% if person.phone_number %}
-                <p class="contact-line mb-1">☎️ <a href="tel:{{ person.phone_number }}">{{ person.phone_number }}</a></p>
-            {% endif %}
-            {% if person.postal_address %}
-                <p class="contact-line mb-1">🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">
-                    {{ person.postal_address}}
-                    </a>
-                </p>
-            {% endif %}
-            {% if person.birth_date %}<p class="contact-line mb-1">🎂 {{ person.birth_date|date:"j F Y" }}</p>{% endif %}
-            {% if person.deceased %}
-                <p class="contact-line mb-1">
-                    ✝ {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% endif %}
-                </p>
+            {% if can_edit %}
+                <a href="{% url 'person-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "edit" size=16 %} Modifier le profil
+                </a>
             {% endif %}
         </div>
     </div>
-    {% if person.description %}
-        <div class="annuaire-description markdown-body">
-            <h2>À propos de {{ person.first_name }}</h2>
-            {{ person.description|markdown }}
+
+    <div class="fb-record">
+        <div class="fb-record__rail">
+            <div class="fb-card fb-record__portrait">
+                {% if person.profile_photo %}
+                    <a href="{{ person.profile_photo.url }}">
+                        <img class="profile-portrait{% if person.deceased %} person-photo--deceased{% endif %}"
+                             src="{{ person.profile_photo.url }}"
+                             alt="Photo de profil de {{ person.first_name }} {{ person.last_name }}"
+                             {% if person.deceased %}title="Décédé·e"{% endif %}>
+                    </a>
+                {% else %}
+                    <img class="profile-portrait{% if person.deceased %} person-photo--deceased{% endif %}"
+                         src="{% static 'default_profile_picture.png' %}" alt="Photo par défaut"
+                         {% if person.deceased %}title="Décédé·e"{% endif %}>
+                {% endif %}
+                <div>
+                    <h2 class="fb-record__name">{{ person.first_name }} {{ person.last_name }}</h2>
+                    {% if person.deceased %}
+                        <p class="fb-meta">
+                            <span class="fb-chip">
+                                {% if person.birth_date %}{{ person.birth_date|date:"Y" }}{% endif %} –
+                                {% if person.death_date %}{{ person.death_date|date:"Y" }}{% else %}décédé·e{% endif %}
+                            </span>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if person.email or person.phone_number or person.postal_address or person.birth_date or person.deceased %}
+                <div class="fb-card">
+                    <p class="fb-eyebrow fb-card__label">Coordonnées</p>
+                    <div class="fb-contact">
+                        {% if person.email %}
+                            <p class="contact-line fb-contact__row">
+                                <span class="fb-contact__icon">{% icon "mail" size=16 %}</span>
+                                <span class="fb-contact__value">
+                                    <a href="mailto:{{ person.first_name }} {{ person.last_name }}<{{ person.email|urlencode }}>">{{ person.email }}</a>
+                                </span>
+                            </p>
+                        {% endif %}
+                        {% if person.phone_number %}
+                            <p class="contact-line fb-contact__row">
+                                <span class="fb-contact__icon">{% icon "phone" size=16 %}</span>
+                                <span class="fb-contact__value"><a href="tel:{{ person.phone_number }}">{{ person.phone_number }}</a></span>
+                            </p>
+                        {% endif %}
+                        {% if person.postal_address %}
+                            <p class="contact-line fb-contact__row">
+                                <span class="fb-contact__icon">{% icon "home" size=16 %}</span>
+                                <span class="fb-contact__value">
+                                    <a href="https://www.google.com/maps/search/?api=1&query={{ person.postal_address|urlencode }}">{{ person.postal_address }}</a>
+                                </span>
+                            </p>
+                        {% endif %}
+                        {% if person.birth_date %}
+                            <p class="contact-line fb-contact__row">
+                                <span class="fb-contact__icon">{% icon "cake" size=16 %}</span>
+                                <span class="fb-contact__value">{{ person.birth_date|date:"j F Y" }}</span>
+                            </p>
+                        {% endif %}
+                        {% if person.deceased %}
+                            <p class="contact-line fb-contact__row">
+                                <span class="fb-contact__icon">{% icon "cross" size=16 %}</span>
+                                <span class="fb-contact__value">
+                                    {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% else %}Décédé·e{% endif %}
+                                </span>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if can_edit %}
+                <div class="fb-record__actions">
+                    <a href="{% url 'person-relations-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les relations</a>
+                    {% if not person.account_id %}
+                        <a href="{% url 'person-owners-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Gérer les propriétaires</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
-    {% endif %}
-    <h2>Relations</h2>
-    <!-- Conjoint / époux -->
-    {% if partner %}
-        <div class="relations-inline">
-            <div>{{ partner_type|title }}</div>
-            <a href="{% url 'personne-detail' partner.pk %}" title="{{ partner.first_name }} {{ partner.last_name }}">
-                <img src="{% if partner.profile_photo %}
-                            {{ partner.profile_photo.url }}
+
+        <div>
+            {% if person.description %}
+                <section class="fb-card" style="margin-bottom: var(--fb-sp-5)">
+                    <h2>À propos de {{ person.first_name }}</h2>
+                    <div class="markdown-body">{{ person.description|markdown }}</div>
+                </section>
+            {% endif %}
+
+            <section class="fb-relations">
+                {% if partner or parents or children %}
+                    {% if partner %}
+                        <div>
+                            <p class="fb-eyebrow fb-relation-group__label">{{ partner_type|title }}</p>
+                            <div class="fb-relation-grid">
+                                {% include "annuaire/_relation.html" with related=partner %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if parents %}
+                        <div>
+                            <p class="fb-eyebrow fb-relation-group__label">Parents</p>
+                            <div class="fb-relation-grid">
+                                {% for parent in parents %}
+                                    {% include "annuaire/_relation.html" with related=parent %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if children %}
+                        <div>
+                            <p class="fb-eyebrow fb-relation-group__label">Enfants</p>
+                            <div class="fb-relation-grid">
+                                {% for child in children %}
+                                    {% include "annuaire/_relation.html" with related=child %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div>
+                        <h2>Relations</h2>
+                        {% if can_edit %}
+                            {% url 'person-relations-edit' person.pk as relations_url %}
+                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez les parents, enfants ou le conjoint de cette personne." action_url=relations_url action_label="Modifier les relations" %}
                         {% else %}
-                            {% static 'default_profile_picture.png' %}
-                        {% endif %}"
-                    alt="Photo de {{ partner.first_name }}"
-                    class="profile-picture">
-            </a>
+                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </section>
         </div>
-    {% endif %}
-
-    <!-- Parents -->
-    {% if parents %}
-        <div class="relations-inline">
-            <div>Parents</div>
-            {% for parent in parents %}
-                <a href="{% url 'personne-detail' parent.pk %}" title="{{ parent.first_name }} {{ parent.last_name }}">
-                    <img src="{% if parent.profile_photo %}
-                                {{ parent.profile_photo.url }}
-                            {% else %}
-                                {% static 'default_profile_picture.png' %}
-                            {% endif %}"
-                        alt="Photo de {{ parent.first_name }} {{ parent.last_name }}"
-                        class="profile-picture">
-                </a>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <!-- Enfants -->
-    {% if children %}
-        <div class="relations-inline">
-            <div>Enfants</div>
-            {% for child in children %}
-                <a href="{% url 'personne-detail' child.pk %}" title="{{ child.first_name }} {{ child.last_name }}">
-                    <img src="{% if child.profile_photo %}
-                                {{ child.profile_photo.url }}
-                            {% else %}
-                                {% static 'default_profile_picture.png' %}
-                            {% endif %}"
-                        alt="Photo de {{ child.first_name }}"
-                        class="profile-picture">
-                </a>
-            {% endfor %}
-        </div>
-    {% endif %}
+    </div>
 {% endblock content %}

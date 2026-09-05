@@ -1,120 +1,183 @@
 {% load static %}
+{% load icons %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Famille Busson</title>
+    <title>{% block title %}Famille Busson{% endblock title %}</title>
+    <meta name="color-scheme" content="light dark">
+    {% comment %}
+        Applied before the stylesheets paint, or the page flashes Alpenglow on
+        its way to Nightfall. Inline on purpose: an external file would be a
+        second round-trip during which the wrong palette is already on screen.
+    {% endcomment %}
+    <script>
+        try {
+            var t = localStorage.getItem('fb-theme');
+            if (t === 'dark' || t === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', t);
+            }
+        } catch (e) { /* private mode / storage blocked — fall back to the OS preference */ }
+    </script>
     <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    {% comment %}
+        Load order matters: bootstrap first so tokens.css can re-point its
+        --bs-* variables, then our components, then any per-page vendor CSS,
+        then main.css — which is what has to win against the vendor sheets.
+    {% endcomment %}
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+    <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
     {% block vendor_css %}{% endblock vendor_css %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock extra_css %}
 </head>
 <body>
-    <button class="btn btn-outline-secondary d-lg-none m-2" type="button"
-            data-bs-toggle="offcanvas" data-bs-target="#sidebarNav"
-            aria-controls="sidebarNav" aria-label="Ouvrir le menu">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="layout">
-        <div class="offcanvas-lg offcanvas-start" tabindex="-1" id="sidebarNav">
+    <header class="fb-topbar">
+        <button class="fb-btn fb-btn--ghost" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebarNav"
+                aria-controls="sidebarNav" aria-label="Ouvrir le menu">
+            {% icon "menu" size=22 %}
+        </button>
+        <span class="fb-wordmark">Famille Busson</span>
+    </header>
+
+    <div class="fb-layout">
+        <div class="offcanvas-lg offcanvas-start fb-sidebar-host" tabindex="-1" id="sidebarNav">
             <div class="offcanvas-header">
                 <h5 class="offcanvas-title">Menu</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
                         data-bs-target="#sidebarNav" aria-label="Fermer"></button>
             </div>
             <div class="offcanvas-body">
-                <div class="sidebar">
-                    <ul>
-                        <li><a href="{% url 'home' %}">Accueil</a></li>
+                {% with un=request.resolver_match.url_name %}
+                <aside class="fb-sidebar">
 
+                    {# Brand block — the email header, transplanted. #}
+                    <a class="fb-brand" href="{% url 'home' %}" aria-label="Accueil — Famille Busson">
+                        <span class="fb-brand__name"><span class="fb-wordmark">Famille Busson</span></span>
+                        <span class="fb-brand__spacer"></span>
+                        {% include "annuaire/_ridge.html" %}
+                    </a>
+                    <div class="fb-eaves"></div>
+
+                    {% if user.is_authenticated %}
+                        <a class="fb-identity" href="{% url 'my-profile' %}">
+                            <img src="{% if user.profile.profile_photo %}{{ user.profile.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                                 alt="">
+                            <span class="fb-identity__text">
+                                <span class="fb-identity__name">{{ user.profile|default:user.email }}</span>
+                                <span class="fb-identity__role">Mon profil</span>
+                            </span>
+                        </a>
+                    {% endif %}
+
+                    <nav class="fb-nav" aria-label="Navigation principale">
+                        {% comment %}
+                            Everything below Aide is login-required. Showing it to a
+                            logged-out visitor (the help page is public and linked from
+                            the login card) means a menu whose every link bounces back
+                            to the form they just came from.
+                        {% endcomment %}
                         {% if user.is_authenticated %}
-                            <li class="sidebar-title sidebar-profile">
-                                <a href="{% url 'my-profile' %}">
-                                    <img src="{% if user.profile.profile_photo %}{{ user.profile.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                                         alt="Mon profil" class="sidebar-profile-photo">
-                                    <span>Mon profil</span>
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        <li class="sidebar-title">Les Busson</li>
-                        <li>
+                        <div class="fb-nav__group">
                             <ul>
-                                <li><a href="{% url 'directory' %}">Annuaire</a></li>
-                                <li><a href="{% url 'genealogie' %}">Généalogie</a></li>
-                                <li><a href="{% url 'carte' %}">Carte</a></li>
-                                <li><a href="{% url 'chalet-list' %}">Chalets</a></li>
+                                <li><a href="{% url 'home' %}" {% if un == 'home' %}aria-current="page"{% endif %}>Accueil</a></li>
                             </ul>
-                        </li>
+                        </div>
 
-                        <li class="sidebar-title">Publications</li>
-                        <li>
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Les Busson</p>
                             <ul>
-                                <li><a href="{% url 'blogpost-list' %}">Toutes les publications</a></li>
+                                <li><a href="{% url 'directory' %}" {% if un == 'directory' or un == 'personne-detail' or un == 'person-create' %}aria-current="page"{% endif %}>Annuaire</a></li>
+                                <li><a href="{% url 'genealogie' %}" {% if un == 'genealogie' or un == 'genealogie-person' %}aria-current="page"{% endif %}>Généalogie</a></li>
+                                <li><a href="{% url 'carte' %}" {% if un == 'carte' %}aria-current="page"{% endif %}>Carte</a></li>
+                                <li><a href="{% url 'chalet-list' %}" {% if un == 'chalet-list' or un == 'chalet-detail' %}aria-current="page"{% endif %}>Chalets</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Publications</p>
+                            <ul>
+                                <li><a href="{% url 'blogpost-list' %}" {% if un == 'blogpost-list' or un == 'blogpost-detail' %}aria-current="page"{% endif %}>Toutes les publications</a></li>
                                 {% if user.is_authenticated %}
-                                    <li><a href="{% url 'blogpost-create' %}">Nouvelle publication</a></li>
+                                    <li><a href="{% url 'blogpost-create' %}" {% if un == 'blogpost-create' %}aria-current="page"{% endif %}>Nouvelle publication</a></li>
                                 {% endif %}
                             </ul>
-                        </li>
+                        </div>
 
-                        <li class="sidebar-title">Documents</li>
-                        <li>
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Documents</p>
                             <ul>
-                                <li><a href="{% url 'document-list' %}">Tous les documents</a></li>
-                                <li><a href="{% url 'category-list' %}">Catégories</a></li>
+                                <li><a href="{% url 'document-list' %}" {% if un == 'document-list' or un == 'document-detail' %}aria-current="page"{% endif %}>Tous les documents</a></li>
+                                <li><a href="{% url 'category-list' %}" {% if un == 'category-list' or un == 'category-detail' %}aria-current="page"{% endif %}>Catégories</a></li>
                                 {% if user.is_authenticated %}
-                                    <li><a href="{% url 'document-create' %}">Nouveau document</a></li>
+                                    <li><a href="{% url 'document-create' %}" {% if un == 'document-create' %}aria-current="page"{% endif %}>Nouveau document</a></li>
                                 {% endif %}
                             </ul>
-                        </li>
+                        </div>
 
                         {% if user.is_staff %}
-                            <li class="sidebar-title">Administration</li>
-                            <li>
+                            <div class="fb-nav__group">
+                                <p class="fb-eyebrow fb-nav__label">Administration</p>
                                 <ul>
-                                    <li><a href="{% url 'bulk-account-create' %}">Créer des comptes</a></li>
-                                    <li><a href="{% url 'group-list' %}">Groupes</a></li>
+                                    <li><a href="{% url 'bulk-account-create' %}" {% if un == 'bulk-account-create' %}aria-current="page"{% endif %}>Créer des comptes</a></li>
+                                    <li><a href="{% url 'group-list' %}" {% if un == 'group-list' %}aria-current="page"{% endif %}>Groupes</a></li>
                                     <li><a href="{% url 'admin:index' %}">Console d'admin</a></li>
                                 </ul>
-                            </li>
+                            </div>
                         {% endif %}
 
-                        <li class="sidebar-title">Aide</li>
-                        <li>
+                        {% endif %}
+
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Aide</p>
                             <ul>
-                                <li><a href="{% url 'magic-link-help' %}">Comment fonctionne la connexion par lien ?</a></li>
+                                <li><a href="{% url 'magic-link-help' %}" {% if un == 'magic-link-help' %}aria-current="page"{% endif %}>Comment fonctionne la connexion par lien ?</a></li>
                                 <li><a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a></li>
                             </ul>
-                        </li>
+                        </div>
 
+                    </nav>
+                    <div class="fb-nav__foot">
+                        <button type="button" class="fb-btn fb-btn--ghost fb-btn--sm" data-theme-toggle
+                                aria-label="Changer de thème">
+                            <span data-theme-icon>{% icon "moon" size=16 %}</span>
+                            <span data-theme-label>Nightfall</span>
+                        </button>
                         {% if user.is_authenticated %}
-                            <li class="sidebar-title">
-                                <form method="post" action="{% url 'logout' %}" class="sidebar-logout-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="sidebar-logout-btn">Déconnexion</button>
-                                </form>
-                            </li>
+                            <form method="post" action="{% url 'logout' %}" class="fb-nav__logout-form">
+                                {% csrf_token %}
+                                <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm">
+                                    {% icon "logout" size=16 %} Déconnexion
+                                </button>
+                            </form>
                         {% else %}
-                            <li class="sidebar-title"><a href="{% url 'login' %}">Se connecter</a></li>
+                            <a class="fb-btn fb-btn--ghost fb-btn--sm" href="{% url 'login' %}">Se connecter</a>
                         {% endif %}
-                    </ul>
-                </div>
+                    </div>
+                </aside>
+                {% endwith %}
             </div>
         </div>
-        <div class="content">
-            {% if messages %}
-                <div class="messages">
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-            {% block content %}{% endblock content %}
-        </div>
+
+        <main class="fb-content">
+            <div class="fb-content__inner">
+                {% if messages %}
+                    <div class="messages">
+                        {% for message in messages %}
+                            <div class="fb-alert fb-alert--{{ message.tags }}">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% block content %}{% endblock content %}
+            </div>
+        </main>
     </div>
+
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/theme_toggle.js' %}"></script>
     {% block extra_js %}{% endblock extra_js %}
 </body>
 </html>

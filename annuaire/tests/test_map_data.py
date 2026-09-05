@@ -78,7 +78,7 @@ def test_chalet_without_photo_uses_emoji_sentinel(chalet):
     chalet.longitude = Decimal("7.228")
     chalet.save()
     groups = build_chalet_map_groups()
-    assert groups[0]["entries"][0]["avatar"] == "emoji::🏔️"
+    assert groups[0]["entries"][0]["avatar"] == "placeholder::chalet"
 
 
 @pytest.mark.django_db

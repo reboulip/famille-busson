@@ -1,90 +1,130 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load markdown_extras %}
+{% load icons %}
 {% block content %}
-    <h1>Famille Busson</h1>
+    {% comment %}
+        Archetype A — hub. The only view that earns the full ridge in the content
+        column: it is the front door, and the only page with no subject of its own
+        to lead with. See design/web/SPEC.md §7.
+    {% endcomment %}
+    <section class="fb-hub-banner">
+        <div class="fb-hub-banner__ridge">
+            {% include "annuaire/_ridge.html" %}
+        </div>
+        <div class="fb-hub-banner__body">
+            <h1 class="fb-display">Famille Busson</h1>
+            <p class="fb-meta">{% now "l j F Y" %}</p>
+        </div>
+    </section>
 
-    <div class="tile-grid">
+    <div class="fb-grid fb-grid--tiles">
 
-        <div class="tile">
-            <div class="tile-header">
+        <section class="fb-card">
+            <div class="fb-tile__head">
                 <h2>Annuaire</h2>
-                <a href="{% url 'directory' %}" class="tile-link">Voir tout →</a>
+                <a href="{% url 'directory' %}" class="fb-tile__link">Voir tout →</a>
             </div>
-            <div class="annuaire-mini-grid">
-                {% for person in recent_persons %}
-                    <a href="{% url 'personne-detail' person.pk %}" class="personne-mini-card" title="{{ person.first_name }} {{ person.last_name }}">
-                        <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                             alt="{{ person.first_name }}" class="personne-mini-photo">
-                        <span class="personne-mini-nom">{{ person.first_name }}<br>{{ person.last_name }}</span>
-                    </a>
-                {% empty %}
-                    <p>Aucun profil pour l'instant.</p>
-                {% endfor %}
-            </div>
-        </div>
+            {% if recent_persons %}
+                <div class="fb-mini-grid">
+                    {% for person in recent_persons %}
+                        <a href="{% url 'personne-detail' person.pk %}" class="fb-mini" title="{{ person.first_name }} {{ person.last_name }}">
+                            <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+                                 alt="" class="fb-mini__photo{% if person.deceased %} person-photo--deceased{% endif %}">
+                            <span class="fb-mini__name">{{ person.first_name }}<br>{{ person.last_name }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" %}
+            {% endif %}
+        </section>
 
-        <div class="tile">
-            <div class="tile-header">
+        <section class="fb-card">
+            <div class="fb-tile__head">
                 <h2>Chalets PSV</h2>
-                <a href="{% url 'chalet-list' %}" class="tile-link">Voir tout →</a>
+                <a href="{% url 'chalet-list' %}" class="fb-tile__link">Voir tout →</a>
             </div>
-            <div class="annuaire-mini-grid">
-                {% for chalet in chalets %}
-                    <a href="{% url 'chalet-detail' chalet.pk %}" class="personne-mini-card" title="{{ chalet.name }}">
-                        {% if chalet.photo %}
-                            <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="personne-mini-photo">
-                        {% else %}
-                            <div class="chalet-photo-placeholder mini">🏔️</div>
-                        {% endif %}
-                        <span class="personne-mini-nom">{{ chalet.name }}</span>
-                    </a>
-                {% empty %}
-                    <p>Aucun chalet pour l'instant.</p>
-                {% endfor %}
-            </div>
-            {% for presence in upcoming_presences %}
-                <div class="home-presence-item">
-                    <a href="{% url 'chalet-detail' presence.chalet.pk %}">
-                        <strong>{{ presence.person }}</strong> à {{ presence.chalet.name }}
-                    </a>
-                    <span class="muted">— du {{ presence.start_date|date:"j F" }} au {{ presence.end_date|date:"j F" }}</span>
+            {% if chalets %}
+                <div class="fb-mini-grid fb-mini-grid--places">
+                    {% for chalet in chalets %}
+                        <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-mini" title="{{ chalet.name }}">
+                            {% if chalet.photo %}
+                                <img src="{{ chalet.photo.url }}" alt="" class="fb-mini__photo fb-mini__photo--place">
+                            {% else %}
+                                <span class="chalet-photo-placeholder mini">{% include "annuaire/_ridge.html" with variant="plain" %}</span>
+                            {% endif %}
+                            <span class="fb-mini__name">{{ chalet.name }}</span>
+                        </a>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p>Aucune présence à venir.</p>
-            {% endfor %}
-        </div>
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" %}
+            {% endif %}
 
-        <div class="tile">
-            <div class="tile-header">
+            {% if upcoming_presences %}
+                <p class="fb-eyebrow fb-tile__subhead">Prochaines présences</p>
+                <div class="fb-feed">
+                    {% for presence in upcoming_presences %}
+                        <div class="fb-feed__item fb-stay">
+                            <span class="fb-stay__who">
+                                <a href="{% url 'chalet-detail' presence.chalet.pk %}">{{ presence.person }}</a>
+                                <span class="fb-meta">{{ presence.chalet.name }}</span>
+                            </span>
+                            <span class="fb-meta fb-stay__dates">{{ presence.start_date|date:"j M" }} → {{ presence.end_date|date:"j M" }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="fb-card">
+            <div class="fb-tile__head">
                 <h2>Dernières publications</h2>
-                <a href="{% url 'blogpost-list' %}" class="tile-link">Voir tout →</a>
+                <a href="{% url 'blogpost-list' %}" class="fb-tile__link">Voir tout →</a>
             </div>
-            {% for post in recent_posts %}
-                <div class="home-publication-item">
-                    <a href="{% url 'blogpost-detail' post.pk %}"><strong>{{ post.title }}</strong></a>
-                    <span class="muted">— {{ post.created_at|date:"j F" }}</span>
+            {% if recent_posts %}
+                <div class="fb-feed">
+                    {% for post in recent_posts %}
+                        <div class="fb-feed__item">
+                            <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
+                            <p class="fb-meta">
+                                {{ post.created_at|date:"j F" }}
+                                {% if post.post_type == "BC" %}<span class="fb-chip fb-chip--gold">Busson connection</span>{% endif %}
+                            </p>
+                        </div>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p>Aucune publication.</p>
-            {% endfor %}
-        </div>
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucune publication" %}
+            {% endif %}
+        </section>
 
-        <div class="tile">
-            <div class="tile-header">
+        <section class="fb-card">
+            <div class="fb-tile__head">
                 <h2>Derniers commentaires</h2>
             </div>
-            {% for comment in recent_comments %}
-                <div class="home-comment-item">
-                    <a href="{% url 'blogpost-detail' comment.post.pk %}">
-                        {{ comment.author|default:"Anonyme" }} sur « {{ comment.post.title }} »
-                    </a>
-                    <p class="muted">{{ comment.body|markdown_plain|truncatechars:80 }}</p>
+            {% if recent_comments %}
+                <div class="fb-feed">
+                    {% for comment in recent_comments %}
+                        <article class="fb-comment">
+                            <span class="fb-comment__disc">{{ comment.author|default:"?"|stringformat:"s"|slice:":1"|upper }}</span>
+                            <div>
+                                <div class="fb-comment__head">
+                                    <span class="fb-comment__author">{{ comment.author|default:"Anonyme" }}</span>
+                                    <span class="fb-meta">sur
+                                        <a href="{% url 'blogpost-detail' comment.post.pk %}">« {{ comment.post.title }} »</a>
+                                    </span>
+                                </div>
+                                <p class="fb-meta">{{ comment.body|markdown_plain|truncatechars:80 }}</p>
+                            </div>
+                        </article>
+                    {% endfor %}
                 </div>
-            {% empty %}
-                <p>Aucun commentaire.</p>
-            {% endfor %}
-        </div>
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucun commentaire" %}
+            {% endif %}
+        </section>
 
     </div>
 {% endblock content %}

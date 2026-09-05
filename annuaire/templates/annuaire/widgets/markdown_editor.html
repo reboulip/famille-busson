@@ -1,3 +1,4 @@
+{% load icons %}
 <div class="markdown-editor" data-preview-url="{% url 'markdown-preview' %}">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item" role="presentation">
@@ -13,7 +14,7 @@
         <button type="button" class="markdown-editor-toolbar-btn" data-md-action="italic" title="Italique" aria-label="Italique"><em>I</em></button>
         <button type="button" class="markdown-editor-toolbar-btn" data-md-action="quote" title="Citation" aria-label="Citation">❝</button>
         <button type="button" class="markdown-editor-toolbar-btn" data-md-action="code" title="Code" aria-label="Code">&lt;/&gt;</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="link" title="Lien" aria-label="Lien">🔗</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="link" title="Lien" aria-label="Lien">{% icon "link" size=15 %}</button>
         <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ul" title="Liste à puces" aria-label="Liste à puces">•</button>
         <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ol" title="Liste numérotée" aria-label="Liste numérotée">1.</button>
     </div>
@@ -21,6 +22,6 @@
         {% include "django/forms/widgets/textarea.html" %}
     </div>
     <div class="markdown-editor-pane markdown-editor-preview markdown-body" hidden>
-        <p class="markdown-editor-empty text-muted">Rien à prévisualiser.</p>
+        <p class="markdown-editor-empty fb-meta text-muted">Rien à prévisualiser.</p>
     </div>
 </div>

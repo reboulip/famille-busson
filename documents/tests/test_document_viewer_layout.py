@@ -7,6 +7,9 @@ import re
 from pathlib import Path
 
 MAIN_CSS = Path(__file__).resolve().parent.parent.parent / "annuaire" / "static" / "css" / "main.css"
+# The generic layout shell moved out of main.css into components.css with the
+# Alpenglow design pass; main.css now holds only per-feature and vendor CSS.
+COMPONENTS_CSS = Path(__file__).resolve().parent.parent.parent / "annuaire" / "static" / "css" / "components.css"
 DOCUMENT_VIEWER_JS = Path(__file__).resolve().parent.parent / "static" / "js" / "document_viewer.js"
 
 
@@ -241,10 +244,13 @@ def test_carousel_counter_follows_a_manual_swipe():
 
 
 def test_content_column_can_shrink_below_its_content_width():
-    """.content is a flex item, and a flex item's default min-width: auto refuses to
+    """.fb-content is a flex item, and a flex item's default min-width: auto refuses to
     shrink below its content -- a zoomed image widened the whole page and made it
-    scroll sideways, sidebar and all, instead of panning inside the viewer (#111)."""
-    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".content")
+    scroll sideways, sidebar and all, instead of panning inside the viewer (#111).
+
+    Was `.content` in main.css before the Alpenglow design pass renamed the shell
+    and moved it to components.css; the guard is unchanged in substance."""
+    body = _rule_body(COMPONENTS_CSS.read_text(encoding="utf-8"), ".fb-content")
     assert _declared_value(body, "min-width") == "0"
 
 

@@ -1,164 +1,185 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <div class="flex-title">
-        {% if chalet.photo %}
-            <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="expandable-image">
-        {% else %}
-            <div class="chalet-photo-placeholder large">🏔️</div>
+    {# Archetype D — record detail, place variant. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Chalets PSV</p>
+            <h1>{{ chalet.name }}</h1>
+        </div>
+        {% if can_edit_chalet %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'chalet-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les propriétaires</a>
+            </div>
         {% endif %}
-        <div>
-            <h1>
-                {{ chalet.name }}
-                {% if can_edit_chalet %}
-                    <a href="{% url 'chalet-edit' chalet.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier</a>
-                    <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="btn btn-sm btn-outline-secondary ms-2">Modifier les propriétaires</a>
+    </div>
+
+    <div class="fb-record">
+        <div class="fb-record__rail">
+            <div class="fb-card fb-place-card">
+                {% if chalet.photo %}
+                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="fb-place-card__media">
+                {% else %}
+                    <span class="fb-place-placeholder">
+                        {% include "annuaire/_ridge.html" %}
+                    </span>
                 {% endif %}
-            </h1>
-            <p>🏠 <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a></p>
-        </div>
-    </div>
-
-    <h2>Présences</h2>
-
-    <div class="presence-view-toggle btn-group btn-group-sm" role="group" aria-label="Vue des présences">
-        <button type="button" class="btn btn-outline-secondary active" data-presence-view="list">Liste</button>
-        <button type="button" class="btn btn-outline-secondary" data-presence-view="calendar">Calendrier</button>
-    </div>
-
-    <div class="presence-view-list">
-
-    {% if current_presences %}
-        <h3>En ce moment</h3>
-        <table class="presence-table">
-            <thead>
-                <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                {% for presence in current_presences %}
-                    <tr class="presence-current">
-                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
-                        <td>{{ presence.start_date|date:"j F Y" }}</td>
-                        <td>{{ presence.end_date|date:"j F Y" }}</td>
-                        <td class="presence-actions">
-                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-    {% if future_presences %}
-        <h3>À venir</h3>
-        <table class="presence-table">
-            <thead>
-                <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
-            </thead>
-            <tbody>
-                {% for presence in future_presences %}
-                    <tr>
-                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
-                        <td>{{ presence.start_date|date:"j F Y" }}</td>
-                        <td>{{ presence.end_date|date:"j F Y" }}</td>
-                        <td class="presence-actions">
-                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
-
-    {% if not current_presences and not future_presences %}
-        <p>Aucune présence en cours ou à venir pour ce chalet.</p>
-    {% endif %}
-
-    {% if past_presences %}
-        <details class="presence-past-details">
-            <summary>{{ past_presences|length }} présence{{ past_presences|length|pluralize }} passée{{ past_presences|length|pluralize }}</summary>
-            <table class="presence-table">
-                <thead>
-                    <tr><th>Personne</th><th>Du</th><th>Au</th><th>Actions</th></tr>
-                </thead>
-                <tbody>
-                    {% for presence in past_presences %}
-                        <tr class="presence-past">
-                            <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
-                            <td>{{ presence.start_date|date:"j F Y" }}</td>
-                            <td>{{ presence.end_date|date:"j F Y" }}</td>
-                            <td class="presence-actions">
-                                <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                                <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" style="display:inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </details>
-    {% endif %}
-
-    </div><!-- /.presence-view-list -->
-
-    <div class="presence-view-calendar" hidden>
-        {% include "annuaire/_presence_calendar.html" %}
-    </div>
-
-    <script>
-        (function () {
-            const toggle = document.querySelector('.presence-view-toggle');
-            const listEl = document.querySelector('.presence-view-list');
-            const calEl = document.querySelector('.presence-view-calendar');
-            if (!toggle || !listEl || !calEl) return;
-            toggle.addEventListener('click', (e) => {
-                const btn = e.target.closest('[data-presence-view]');
-                if (!btn) return;
-                const mode = btn.dataset.presenceView;
-                toggle.querySelectorAll('[data-presence-view]').forEach((b) => {
-                    b.classList.toggle('active', b === btn);
-                });
-                listEl.hidden = (mode !== 'list');
-                calEl.hidden = (mode !== 'calendar');
-            });
-        })();
-    </script>
-
-    <h2>Ajouter une présence</h2>
-    <form method="post" action="{% url 'presence-add' chalet.pk %}" class="presence-form">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label fw-semibold" for="presence-person-search-input">Personnes</label>
-            {% include "annuaire/_person_picker.html" with input_id="presence-person-search-input" %}
-            {% if presence_form.persons.errors %}<div class="text-danger small">{{ presence_form.persons.errors }}</div>{% endif %}
-        </div>
-        <div class="row g-2 mb-3">
-            <div class="col-auto">
-                <label class="form-label" for="{{ presence_form.start_date.id_for_label }}">{{ presence_form.start_date.label }}</label>
-                {{ presence_form.start_date }}
-            </div>
-            <div class="col-auto">
-                <label class="form-label" for="{{ presence_form.end_date.id_for_label }}">{{ presence_form.end_date.label }}</label>
-                {{ presence_form.end_date }}
+                <div class="fb-place-card__body">
+                    <div class="fb-contact">
+                        <p class="fb-contact__row">
+                            <span class="fb-contact__icon">{% icon "home" size=16 %}</span>
+                            <span class="fb-contact__value">
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a>
+                            </span>
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-        {% if presence_form.start_date.errors or presence_form.end_date.errors %}
-            <div class="text-danger small mb-2">{{ presence_form.start_date.errors }}{{ presence_form.end_date.errors }}</div>
-        {% endif %}
-        <button type="submit" class="btn btn-outline-primary">Ajouter</button>
-    </form>
-    <script src="{% static 'js/person_picker.js' %}"></script>
+
+        <div>
+            <div class="fb-toolbar presence-view-toggle" role="group" aria-label="Vue des présences">
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm active" data-presence-view="list">Liste</button>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-presence-view="calendar">Calendrier</button>
+            </div>
+
+            <div class="presence-view-list">
+                {% if current_presences %}
+                    <div class="fb-section-head"><h2>En ce moment</h2></div>
+                    <table class="fb-table">
+                        <thead>
+                            <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for presence in current_presences %}
+                                <tr class="presence-current">
+                                    <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                                    <td>{{ presence.start_date|date:"j F Y" }}</td>
+                                    <td>{{ presence.end_date|date:"j F Y" }}</td>
+                                    <td class="fb-table__actions presence-actions">
+                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                        <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
+                                                    onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if future_presences %}
+                    <div class="fb-section-head"><h2>À venir</h2></div>
+                    <table class="fb-table">
+                        <thead>
+                            <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                        </thead>
+                        <tbody>
+                            {% for presence in future_presences %}
+                                <tr>
+                                    <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                                    <td>{{ presence.start_date|date:"j F Y" }}</td>
+                                    <td>{{ presence.end_date|date:"j F Y" }}</td>
+                                    <td class="fb-table__actions presence-actions">
+                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                        <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
+                                                    onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+
+                {% if not current_presences and not future_presences %}
+                    {% include "annuaire/_empty.html" with title="Aucune présence en cours ou à venir" body="Personne n'est annoncé dans ce chalet pour le moment." %}
+                {% endif %}
+
+                {% if past_presences %}
+                    <details class="presence-past-details">
+                        <summary>{{ past_presences|length }} présence{{ past_presences|length|pluralize }} passée{{ past_presences|length|pluralize }}</summary>
+                        <table class="fb-table">
+                            <thead>
+                                <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                            </thead>
+                            <tbody>
+                                {% for presence in past_presences %}
+                                    <tr class="presence-past">
+                                        <td><a href="{% url 'personne-detail' presence.person.pk %}">{{ presence.person }}</a></td>
+                                        <td>{{ presence.start_date|date:"j F Y" }}</td>
+                                        <td>{{ presence.end_date|date:"j F Y" }}</td>
+                                        <td class="fb-table__actions presence-actions">
+                                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
+                                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </details>
+                {% endif %}
+            </div><!-- /.presence-view-list -->
+
+            <div class="presence-view-calendar" hidden>
+                {% include "annuaire/_presence_calendar.html" %}
+            </div>
+
+            <script>
+                (function () {
+                    const toggle = document.querySelector('.presence-view-toggle');
+                    const listEl = document.querySelector('.presence-view-list');
+                    const calEl = document.querySelector('.presence-view-calendar');
+                    if (!toggle || !listEl || !calEl) return;
+                    toggle.addEventListener('click', (e) => {
+                        const btn = e.target.closest('[data-presence-view]');
+                        if (!btn) return;
+                        const mode = btn.dataset.presenceView;
+                        toggle.querySelectorAll('[data-presence-view]').forEach((b) => {
+                            b.classList.toggle('active', b === btn);
+                        });
+                        listEl.hidden = (mode !== 'list');
+                        calEl.hidden = (mode !== 'calendar');
+                    });
+                })();
+            </script>
+
+            <div class="fb-section-head"><h2>Ajouter une présence</h2></div>
+            <form method="post" action="{% url 'presence-add' chalet.pk %}" class="fb-card presence-form">
+                {% csrf_token %}
+                <div class="fb-field">
+                    <label class="fb-label" for="presence-person-search-input">Personnes</label>
+                    {% include "annuaire/_person_picker.html" with input_id="presence-person-search-input" %}
+                    {% if presence_form.persons.errors %}<div class="fb-error">{{ presence_form.persons.errors }}</div>{% endif %}
+                </div>
+                <div class="row g-2">
+                    <div class="col-auto fb-field">
+                        <label class="fb-label" for="{{ presence_form.start_date.id_for_label }}">{{ presence_form.start_date.label }}</label>
+                        {{ presence_form.start_date }}
+                    </div>
+                    <div class="col-auto fb-field">
+                        <label class="fb-label" for="{{ presence_form.end_date.id_for_label }}">{{ presence_form.end_date.label }}</label>
+                        {{ presence_form.end_date }}
+                    </div>
+                </div>
+                {% if presence_form.start_date.errors or presence_form.end_date.errors %}
+                    <div class="fb-error">{{ presence_form.start_date.errors }}{{ presence_form.end_date.errors }}</div>
+                {% endif %}
+                <div class="fb-form__actions">
+                    <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Ajouter</button>
+                </div>
+            </form>
+            <script src="{% static 'js/person_picker.js' %}"></script>
+        </div>
+    </div>
 {% endblock content %}

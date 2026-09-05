@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Fiches et articles (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .demo-sep { margin: var(--fb-sp-8) 0 var(--fb-sp-6); border: 0; border-top: 1px dashed var(--fb-border-strong); }
+  .demo-note { font-size: var(--fb-text-sm); color: var(--fb-bark); margin-bottom: var(--fb-sp-5); max-width: var(--fb-measure-max); }
+</style>
+</head>
+<body>
+
+<div class="fb-layout" data-fb-shell data-active="annuaire">
+  <main class="fb-content">
+    <div class="fb-content__inner">
+
+      <!-- ============================================================
+           Archetype D — Record detail (personne, chalet)
+           ============================================================ -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <p class="fb-eyebrow">Annuaire</p>
+          <h1>Alice Bernard</h1>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--quiet fb-btn--sm" href="04-outils.html">Voir dans l'arbre</a>
+          <a class="fb-btn fb-btn--quiet fb-btn--sm" href="05-formulaires.html">Modifier le profil</a>
+        </div>
+      </div>
+
+      <p class="demo-note">
+        <strong>La variation :</strong> deux colonnes. Un rail d'identité collant à gauche
+        (portrait, coordonnées alignées en liste, actions empilées) et le contenu à droite.
+        Aujourd'hui tout est sur une seule colonne pleine largeur : les deux tiers droits de
+        l'écran restent vides, les quatre boutons d'action sont collés à la suite du
+        <code>&lt;h1&gt;</code>, et les relations sont des vignettes de 1,5 em sans nom —
+        impossible de savoir qui est qui sans survoler chacune.
+      </p>
+
+      <div class="fb-record">
+
+        <div class="fb-record__rail">
+          <div class="fb-card fb-record__portrait">
+            <img data-ph="avatar" alt="Photo de profil d'Alice Bernard" class="fb-avatar fb-avatar--lg">
+            <div>
+              <h2 class="fb-record__name">Alice Bernard</h2>
+              <p class="fb-meta">78 ans · Lyon</p>
+            </div>
+          </div>
+
+          <div class="fb-card">
+            <p class="fb-eyebrow" style="margin-bottom: var(--fb-sp-2)">Coordonnées</p>
+            <div class="fb-contact">
+              <p class="fb-contact__row">
+                <span class="fb-contact__icon" aria-hidden="true">📧</span>
+                <span class="fb-contact__value"><a href="#">alice.bernard@example.com</a></span>
+              </p>
+              <p class="fb-contact__row">
+                <span class="fb-contact__icon" aria-hidden="true">☎️</span>
+                <span class="fb-contact__value"><a href="#">+33 6 12 34 56 78</a></span>
+              </p>
+              <p class="fb-contact__row">
+                <span class="fb-contact__icon" aria-hidden="true">🏠</span>
+                <span class="fb-contact__value"><a href="#">1 rue de la République, Lyon</a></span>
+              </p>
+              <p class="fb-contact__row">
+                <span class="fb-contact__icon" aria-hidden="true">🎂</span>
+                <span class="fb-contact__value">10 octobre 1948</span>
+              </p>
+            </div>
+          </div>
+
+          <div class="fb-record__actions">
+            <a class="fb-btn fb-btn--quiet fb-btn--sm" href="05-formulaires.html">Modifier les relations</a>
+            <a class="fb-btn fb-btn--quiet fb-btn--sm" href="05-formulaires.html">Gérer les propriétaires</a>
+          </div>
+        </div>
+
+        <div>
+          <section class="fb-card" style="margin-bottom: var(--fb-sp-5)">
+            <h2>À propos d'Alice</h2>
+            <p>Adore les longues soirées au coin du feu. Monte au chalet dès les premières
+               neiges et repart la dernière. C'est elle qui tient le carnet des présences
+               depuis 1994, à la main, dans un cahier à spirale.</p>
+          </section>
+
+          <section class="fb-relations">
+            <div>
+              <p class="fb-eyebrow fb-relation-group__label">Conjoint</p>
+              <div class="fb-relation-grid">
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Paul Bernard</a>
+              </div>
+            </div>
+            <div>
+              <p class="fb-eyebrow fb-relation-group__label">Parents</p>
+              <div class="fb-relation-grid">
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm fb-avatar--deceased"> Sandrine Busson</a>
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm fb-avatar--deceased"> Henri Busson</a>
+              </div>
+            </div>
+            <div>
+              <p class="fb-eyebrow fb-relation-group__label">Enfants</p>
+              <div class="fb-relation-grid">
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Julien Bernard</a>
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Claire Martin</a>
+                <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Victor Bernard</a>
+              </div>
+            </div>
+          </section>
+        </div>
+
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- Chalet : même archetype, rail rectangulaire + tableau -------- -->
+      <div class="fb-page-head" id="chalet">
+        <div class="fb-page-head__titles">
+          <p class="fb-eyebrow">Chalets PSV</p>
+          <h1>Chalet Belle Vue</h1>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--quiet fb-btn--sm" href="05-formulaires.html">Modifier</a>
+          <a class="fb-btn fb-btn--primary fb-btn--sm" href="05-formulaires.html">+ Ajouter une présence</a>
+        </div>
+      </div>
+
+      <div class="fb-record">
+        <div class="fb-record__rail">
+          <div class="fb-card fb-place-card">
+            <img data-ph="chalet" alt="" class="fb-place-card__media">
+            <div class="fb-place-card__body">
+              <p class="fb-meta">🏠 <a href="#">12 route des Cimes, Praz-sur-Verre</a></p>
+              <p style="margin-top: var(--fb-sp-3)"><span class="fb-chip fb-chip--success">Occupé jusqu'au 4 sept.</span></p>
+            </div>
+          </div>
+          <div class="fb-card">
+            <p class="fb-eyebrow" style="margin-bottom: var(--fb-sp-3)">Propriétaires</p>
+            <div class="fb-relation-grid">
+              <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Nina Martin</a>
+              <a class="fb-relation" href="#"><img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm"> Émile Lefevre</a>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="fb-toolbar" role="group" aria-label="Vue des présences">
+            <button class="fb-btn fb-btn--quiet fb-btn--sm" type="button" aria-pressed="true">Liste</button>
+            <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" aria-pressed="false">Calendrier</button>
+          </div>
+
+          <h2>En ce moment</h2>
+          <table class="fb-table" style="margin-bottom: var(--fb-sp-5)">
+            <thead><tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr></thead>
+            <tbody>
+              <tr class="fb-row--current">
+                <td><a href="#">Nina Martin</a></td><td>1 sept. 2026</td><td>4 sept. 2026</td>
+                <td class="fb-table__actions">
+                  <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Modifier</a>
+                  <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" style="color:var(--fb-danger)">Supprimer</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h2>À venir</h2>
+          <table class="fb-table">
+            <thead><tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><a href="#">Laura Robert</a></td><td>12 sept. 2026</td><td>19 sept. 2026</td>
+                <td class="fb-table__actions">
+                  <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Modifier</a>
+                  <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" style="color:var(--fb-danger)">Supprimer</button>
+                </td>
+              </tr>
+              <tr>
+                <td><a href="#">Quentin Busson</a></td><td>2 oct. 2026</td><td>13 oct. 2026</td>
+                <td class="fb-table__actions">
+                  <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Modifier</a>
+                  <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button" style="color:var(--fb-danger)">Supprimer</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- ============================================================
+           Archetype E — Long-form (publication, document, aide)
+           ============================================================ -->
+      <div class="fb-longform" id="publication">
+        <p class="fb-eyebrow">Publications</p>
+        <h1 class="fb-longform__title">Rénovation du chalet du Lac</h1>
+        <p class="fb-meta" style="margin-bottom: var(--fb-sp-4)">
+          Par <a href="#">Julien Simon</a> — publié le 20 août 2026 (modifié le 22 août)
+        </p>
+        <div class="fb-page-head" style="padding-bottom: 0; margin-bottom: var(--fb-sp-5)"></div>
+
+        <div class="fb-longform__body">
+          <p>Les travaux de la toiture commencent lundi. On a retenu le devis de
+             l'entreprise de Praz-sur-Verre, qui refait aussi la fascia et les rives.</p>
+          <blockquote>Prévoir du bruit les deux premières semaines — mais après, on
+            devrait être tranquilles pour vingt ans.</blockquote>
+          <h2>Le calendrier</h2>
+          <p>Démontage de l'ancienne couverture la première semaine, pose de l'écran
+             sous-toiture la deuxième, puis les tuiles. Si la météo tient, c'est fini
+             avant les premières neiges.</p>
+          <p>Merci à Émile d'avoir fait le tour des artisans du coin — trois devis, et
+             c'est de loin le plus sérieux.</p>
+        </div>
+
+        <div class="fb-section-head"><h2>Pièces jointes</h2><span class="fb-meta">3 fichiers</span></div>
+        <div class="fb-gallery">
+          <figure><img data-ph="photo" alt=""><figcaption>La toiture avant travaux</figcaption></figure>
+          <figure><img data-ph="photo" alt=""><figcaption>Détail des rives</figcaption></figure>
+          <figure><img data-ph="photo" alt=""><figcaption>Vue depuis le lac</figcaption></figure>
+        </div>
+        <p style="margin-top: var(--fb-sp-3)">
+          <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">📎 Devis_toiture.pdf</a>
+        </p>
+
+        <div class="fb-section-head"><h2>Commentaires</h2><span class="fb-meta">2</span></div>
+
+        <article class="fb-comment">
+          <span class="fb-comment__disc">MS</span>
+          <div>
+            <div class="fb-comment__head">
+              <span class="fb-comment__author">Margaux Simon</span>
+              <span class="fb-meta">21 août 2026, 09:14</span>
+            </div>
+            <p>Très bonne nouvelle. Est-ce qu'on garde les vieilles tuiles pour le mur du jardin ?</p>
+          </div>
+        </article>
+        <article class="fb-comment">
+          <span class="fb-comment__disc">JS</span>
+          <div>
+            <div class="fb-comment__head">
+              <span class="fb-comment__author">Julien Simon</span>
+              <span class="fb-meta">21 août 2026, 11:02</span>
+            </div>
+            <p>Oui, elles sont mises de côté derrière la grange.</p>
+          </div>
+        </article>
+
+        <div class="fb-composer">
+          <p class="fb-eyebrow" style="margin-bottom: var(--fb-sp-2)">Votre commentaire</p>
+          <textarea class="fb-textarea" rows="3" placeholder="Écrire un commentaire…"></textarea>
+          <p style="margin-top: var(--fb-sp-3)"><button class="fb-btn fb-btn--primary" type="button">Commenter</button></p>
+        </div>
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- Aide : long-form sans auteur ni commentaires ---------------- -->
+      <div class="fb-longform" id="aide">
+        <p class="fb-eyebrow">Aide</p>
+        <h1 class="fb-longform__title">Comment fonctionne la connexion par lien ?</h1>
+        <div class="fb-page-head" style="padding-bottom: 0; margin-bottom: var(--fb-sp-5)"></div>
+        <div class="fb-longform__body">
+          <p>La connexion par lien (« magic link ») permet de se connecter sans avoir à
+             saisir de mot de passe. Le lien est <strong>à usage unique</strong> et
+             <strong>valable 15 minutes</strong>.</p>
+          <h2>Pourquoi une étape de confirmation ?</h2>
+          <p>Certaines messageries ouvrent automatiquement les liens reçus pour vérifier
+             qu'ils sont sûrs. Le bouton de confirmation garantit que c'est bien vous qui
+             vous connectez.</p>
+        </div>
+        <p style="margin-top: var(--fb-sp-5)">
+          <a class="fb-btn fb-btn--primary" href="06-seuil.html">Recevoir un lien de connexion</a>
+          <a class="fb-btn fb-btn--ghost" href="06-seuil.html">Retour à la connexion</a>
+        </p>
+      </div>
+
+      <p class="fb-meta" style="margin-top: var(--fb-sp-8)">
+        Maquette — archetypes D (fiche) et E (long format).
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

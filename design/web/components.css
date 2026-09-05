@@ -1,0 +1,1007 @@
+/* =========================================================================
+   Famille Busson — component layer  (design pass, not yet wired into Django)
+   =========================================================================
+
+   Depends on tokens.css. Nothing here hardcodes a colour: every value comes
+   from a --fb-* token, so Nightfall costs nothing extra.
+
+   Sections
+     1  Base & typography
+     2  The eaves rule — the one device that unifies every view
+     3  The ridge
+     4  App shell: sidebar, brand block, content column
+     5  Cards: person, place, post, document
+     6  Page furniture: toolbars, chips, empty states, alerts, pagination
+     7  Archetype D — record detail
+     8  Archetype E — long-form
+     9  Archetype F — canvas tools
+    10  Archetype G — forms
+    11  Archetype H — threshold (auth)
+    12  Archetype I — tabular
+    13  Archetype J — destructive confirm
+    14  Vendor re-skins (leaflet, family-chart)
+    15  Motion & focus
+   ========================================================================= */
+
+/* =========================================================================
+   1. Base & typography
+   ========================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    background: var(--fb-parchment);
+    color: var(--fb-ink);
+    font-family: var(--fb-font-body);
+    font-size: var(--fb-text-base);
+    line-height: var(--fb-leading-body);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .fb-display {
+    font-family: var(--fb-font-display);
+    color: var(--fb-ink);
+    margin: 0 0 var(--fb-sp-3);
+    text-wrap: balance;
+}
+
+h1 { font-size: var(--fb-text-h1); font-weight: 700; line-height: var(--fb-leading-tight); letter-spacing: -0.012em; }
+h2 { font-size: var(--fb-text-h2); font-weight: 600; line-height: var(--fb-leading-snug); }
+h3 { font-size: var(--fb-text-h3); font-weight: 600; line-height: 1.4; letter-spacing: 0.005em; }
+
+.fb-display {
+    font-size: var(--fb-text-display);
+    font-weight: 700;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+}
+
+p { margin: 0 0 var(--fb-sp-3); }
+p:last-child { margin-bottom: 0; }
+
+a { color: var(--fb-ember); text-decoration-color: color-mix(in srgb, var(--fb-ember) 35%, transparent); text-underline-offset: 0.16em; }
+a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
+
+/* Meta lines: authorship, dates, counts, captions. */
+.fb-meta {
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Small-caps section label. Replaces the ad-hoc bold-uppercase used today in
+   the sidebar, table heads, and form legends — one class for all three. */
+.fb-eyebrow {
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-eyebrow);
+    color: var(--fb-bark);
+    margin: 0;
+}
+
+/* =========================================================================
+   2. The eaves rule
+   -------------------------------------------------------------------------
+   The emails put a 2px ink rule over a 1px hairline directly beneath the
+   ridge, echoing the fascia trim under a chalet roof. On the web that same
+   double rule becomes the page-header device: a short alpenglow stub above a
+   full-width hairline. One class, applied to every view's <h1> block, is what
+   makes forty templates read as one product.
+   ========================================================================= */
+
+.fb-page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--fb-sp-4);
+    padding-bottom: var(--fb-sp-4);
+    margin-bottom: var(--fb-sp-5);
+    position: relative;
+}
+
+.fb-page-head::before,
+.fb-page-head::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+.fb-page-head::before {   /* the stub */
+    width: 56px;
+    height: 3px;
+    background: var(--fb-alpenglow);
+    border-radius: 2px;
+    z-index: 1;
+}
+
+.fb-page-head::after {    /* the hairline */
+    width: 100%;
+    height: 1px;
+    background: var(--fb-border);
+}
+
+.fb-page-head__titles { min-width: 0; }
+.fb-page-head__titles h1 { margin-bottom: var(--fb-sp-1); }
+.fb-page-head__lede {
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+    max-width: var(--fb-measure-max);
+    margin: 0;
+}
+.fb-page-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fb-sp-2);
+    align-items: center;
+}
+
+/* Section rule inside a page — same grammar, quieter. */
+.fb-section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--fb-sp-4);
+    margin: var(--fb-sp-6) 0 var(--fb-sp-4);
+    padding-bottom: var(--fb-sp-2);
+    border-bottom: 1px solid var(--fb-border);
+}
+.fb-section-head h2 { margin: 0; }
+
+/* =========================================================================
+   3. The ridge
+   -------------------------------------------------------------------------
+   Drawn as SVG here rather than the emails' bordered-triangle hack, because
+   nothing on the web needs to survive Outlook. Same three-uneven-peaks
+   silhouette, same layering (slate-mist behind, spruce in front, snowcap on
+   the tallest), and the two pines from favicon.svg — the only pre-existing
+   brand asset — planted at the base so the icon and the app share a mark.
+
+   It appears in exactly three places: the sidebar brand block, the threshold
+   card header, and as a watermark in empty states. A ridge on every page
+   would be wallpaper; three placements make it a signature.
+   ========================================================================= */
+
+.fb-ridge {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--fb-sky);
+}
+.fb-ridge__far   { fill: var(--fb-slate-mist); }
+.fb-ridge__near  { fill: var(--fb-spruce); }
+.fb-ridge__snow  { fill: var(--fb-snowcap); }
+.fb-ridge__pine  { fill: color-mix(in srgb, var(--fb-spruce) 72%, #000); }
+
+/* The eaves line as it appears under a ridge (not under a page title). */
+.fb-eaves {
+    height: 3px;
+    background: var(--fb-ink);
+    border-bottom: 1px solid var(--fb-border);
+}
+
+.fb-wordmark {
+    font-family: var(--fb-font-display);
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-wordmark);
+    color: var(--fb-ink);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+/* =========================================================================
+   4. App shell
+   ========================================================================= */
+
+.fb-layout {
+    display: flex;
+    min-height: 100vh;
+    align-items: stretch;
+}
+
+.fb-sidebar {
+    width: var(--fb-sidebar-w);
+    flex-shrink: 0;
+    background: var(--fb-panel);
+    border-right: 1px solid var(--fb-border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* --- Brand block: the email header, transplanted ------------------------ */
+.fb-brand {
+    background: var(--fb-sky);
+    position: relative;
+}
+.fb-brand__mark {
+    display: flex;
+    justify-content: center;
+    padding-top: var(--fb-sp-4);
+}
+.fb-brand__ridge { margin-top: -2px; }
+.fb-brand__name {
+    position: absolute;
+    top: var(--fb-sp-4);
+    left: 0;
+    right: 0;
+    text-align: center;
+}
+
+/* --- Identity pill ------------------------------------------------------ */
+.fb-identity {
+    display: flex;
+    align-items: center;
+    gap: var(--fb-sp-3);
+    margin: var(--fb-sp-4);
+    padding: var(--fb-sp-2) var(--fb-sp-3);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    text-decoration: none;
+    color: var(--fb-ink);
+    transition: border-color var(--fb-dur-fast) var(--fb-ease);
+}
+.fb-identity:hover { border-color: var(--fb-alpenglow); color: var(--fb-ink); }
+.fb-identity img {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--fb-border);
+}
+.fb-identity__name { font-weight: 600; font-size: var(--fb-text-sm); line-height: 1.2; }
+.fb-identity__role { font-size: var(--fb-text-xs); color: var(--fb-bark); }
+
+/* --- Nav ---------------------------------------------------------------- */
+.fb-nav { padding: 0 var(--fb-sp-3) var(--fb-sp-5); flex: 1; }
+.fb-nav__group { margin-top: var(--fb-sp-5); }
+.fb-nav__label { padding: 0 var(--fb-sp-3) var(--fb-sp-2); }
+.fb-nav ul { list-style: none; margin: 0; padding: 0; }
+
+.fb-nav a,
+.fb-nav__logout {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--fb-sp-2) var(--fb-sp-3);
+    margin-bottom: 1px;
+    border: 0;
+    border-left: 3px solid transparent;
+    border-radius: 0 var(--fb-radius-sm) var(--fb-radius-sm) 0;
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--fb-ink);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--fb-dur-fast) var(--fb-ease),
+                border-color var(--fb-dur-fast) var(--fb-ease);
+}
+.fb-nav a:hover,
+.fb-nav__logout:hover {
+    background: color-mix(in srgb, var(--fb-card) 70%, transparent);
+    border-left-color: var(--fb-border-strong);
+    color: var(--fb-ink);
+}
+
+/* Today the sidebar has no active state at all — you cannot tell which page
+   you are on. This is that state. */
+.fb-nav a[aria-current="page"] {
+    background: var(--fb-card);
+    border-left-color: var(--fb-alpenglow);
+    font-weight: 600;
+    color: var(--fb-ink);
+}
+
+.fb-nav__foot {
+    margin-top: auto;
+    padding: var(--fb-sp-4) var(--fb-sp-3);
+    border-top: 1px solid var(--fb-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--fb-sp-2);
+}
+
+/* --- Content column ----------------------------------------------------- */
+.fb-content {
+    flex: 1;
+    min-width: 0;   /* keep: wide canvases must scroll inside, not push the shell */
+    padding: var(--fb-sp-6) var(--fb-sp-6) var(--fb-sp-8);
+}
+.fb-content__inner { max-width: var(--fb-content-max); margin: 0 auto; }
+
+/* --- Mobile ------------------------------------------------------------- */
+.fb-topbar {
+    display: none;
+    align-items: center;
+    gap: var(--fb-sp-3);
+    padding: var(--fb-sp-3) var(--fb-sp-4);
+    background: var(--fb-sky);
+    border-bottom: 3px solid var(--fb-ink);
+    box-shadow: inset 0 -4px 0 -1px var(--fb-border);
+    position: sticky;
+    top: 0;
+    z-index: 1040;
+}
+
+@media (max-width: 991.98px) {
+    .fb-topbar { display: flex; }
+    .fb-sidebar { position: static; height: auto; }
+    .fb-content { padding: var(--fb-sp-5) var(--fb-sp-4) var(--fb-sp-7); }
+}
+
+/* =========================================================================
+   5. Cards
+   ========================================================================= */
+
+.fb-card {
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-1);
+    padding: var(--fb-sp-5);
+}
+
+a.fb-card,
+.fb-card--link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    transition: transform var(--fb-dur-fast) var(--fb-ease),
+                box-shadow var(--fb-dur-fast) var(--fb-ease),
+                border-color var(--fb-dur-fast) var(--fb-ease);
+}
+a.fb-card:hover,
+.fb-card--link:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--fb-shadow-2);
+    border-color: color-mix(in srgb, var(--fb-alpenglow) 45%, var(--fb-border));
+    color: inherit;
+}
+
+.fb-grid {
+    display: grid;
+    gap: var(--fb-sp-4);
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+}
+.fb-grid--wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.fb-grid--tiles {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--fb-sp-5);
+    align-items: start;   /* tiles size to content — no more stretched voids */
+}
+
+/* --- Person card: people are round -------------------------------------- */
+.fb-person-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--fb-sp-2);
+    padding: var(--fb-sp-4) var(--fb-sp-3);
+}
+.fb-avatar {
+    width: 76px; height: 76px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--fb-panel);
+    border: 2px solid var(--fb-border);
+    transition: border-color var(--fb-dur-fast) var(--fb-ease);
+}
+.fb-card--link:hover .fb-avatar { border-color: var(--fb-gold); }
+.fb-avatar--sm { width: 40px; height: 40px; border-width: 1px; }
+.fb-avatar--lg { width: 150px; height: 150px; border-width: 3px; }
+
+/* Existing behaviour, recoloured: deceased profiles are greyed and ringed. */
+.fb-avatar--deceased { filter: grayscale(1); border-color: var(--fb-ink); }
+
+.fb-person-card__name { font-weight: 600; font-size: 0.9375rem; line-height: 1.25; }
+
+/* --- Place card: places are rectangular --------------------------------- */
+.fb-place-card { padding: 0; overflow: hidden; }
+.fb-place-card__media {
+    aspect-ratio: 3 / 2;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+    background: var(--fb-sky);
+}
+.fb-place-card__body { padding: var(--fb-sp-3) var(--fb-sp-4) var(--fb-sp-4); }
+.fb-place-card__name { font-family: var(--fb-font-display); font-weight: 600; margin-bottom: 2px; }
+
+/* Placeholder for a chalet with no photo. Replaces the 🏔️ emoji currently
+   used, which renders as a tofu box wherever the system has no emoji font —
+   already visible in the project's own screenshots. */
+.fb-place-placeholder {
+    aspect-ratio: 3 / 2;
+    background: var(--fb-sky);
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+}
+
+/* --- Post card ---------------------------------------------------------- */
+.fb-post-card {
+    position: relative;
+    padding-left: calc(var(--fb-sp-5) + 3px);
+    margin-bottom: var(--fb-sp-4);
+}
+.fb-post-card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    border-radius: var(--fb-radius) 0 0 var(--fb-radius);
+    background: var(--fb-alpenglow);
+}
+.fb-post-card--bc::before { background: var(--fb-gold); }
+.fb-post-card__title { font-size: 1.25rem; margin-bottom: var(--fb-sp-1); }
+.fb-post-card__title a { text-decoration: none; color: var(--fb-ink); }
+.fb-post-card__title a:hover { color: var(--fb-ember); }
+.fb-post-card__excerpt {
+    margin: var(--fb-sp-3) 0 0;
+    color: var(--fb-bark);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* =========================================================================
+   6. Page furniture
+   ========================================================================= */
+
+/* --- Chip / badge ------------------------------------------------------- */
+.fb-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fb-sp-1);
+    padding: 2px var(--fb-sp-2);
+    border-radius: var(--fb-radius-pill);
+    border: 1px solid var(--fb-border);
+    background: var(--fb-parchment);
+    font-size: var(--fb-text-xs);
+    font-weight: 600;
+    color: var(--fb-bark);
+    white-space: nowrap;
+}
+.fb-chip--accent  { background: var(--fb-ember-soft);   border-color: color-mix(in srgb, var(--fb-alpenglow) 40%, transparent); color: var(--fb-ember); }
+.fb-chip--gold    { background: var(--fb-warning-soft); border-color: color-mix(in srgb, var(--fb-gold) 55%, transparent); color: var(--fb-ink); }
+.fb-chip--success { background: var(--fb-success-soft); border-color: color-mix(in srgb, var(--fb-success) 40%, transparent); color: var(--fb-ink); }
+.fb-chip--danger  { background: var(--fb-danger-soft);  border-color: color-mix(in srgb, var(--fb-danger) 40%, transparent); color: var(--fb-ink); }
+.fb-chip--lock    { border-style: dashed; }
+
+/* --- Toolbar ------------------------------------------------------------ */
+/* A filter/search/action strip. Reads as one object with whatever it sits on
+   (a results grid, a canvas), not as a floating row of loose controls. */
+.fb-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fb-sp-2);
+    padding: var(--fb-sp-3);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    margin-bottom: var(--fb-sp-4);
+}
+.fb-toolbar--attached {
+    border-radius: var(--fb-radius) var(--fb-radius) 0 0;
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+.fb-toolbar__spacer { margin-left: auto; }
+
+.fb-search {
+    flex: 1 1 240px;
+    min-width: 180px;
+    max-width: 340px;
+}
+
+/* --- Empty state -------------------------------------------------------- */
+/* Today every "nothing here" is a bare <p>. Fifteen of them across the app.
+   One component, with the ridge as a faint watermark. */
+.fb-empty {
+    text-align: center;
+    padding: var(--fb-sp-7) var(--fb-sp-4);
+    color: var(--fb-bark);
+    border: 1px dashed var(--fb-border-strong);
+    border-radius: var(--fb-radius);
+    background: color-mix(in srgb, var(--fb-card) 55%, transparent);
+}
+.fb-empty__ridge {
+    width: 120px;
+    margin: 0 auto var(--fb-sp-3);
+    opacity: 0.5;
+    background: none;
+}
+/* The watermark reads off the card, not off the sky — so it uses the far-ridge
+   haze rather than spruce, which in Nightfall is nearly the card colour itself. */
+.fb-empty__ridge .fb-ridge__near { fill: var(--fb-slate-mist); }
+.fb-empty__ridge .fb-ridge__snow { fill: var(--fb-bark); }
+.fb-empty__title { font-family: var(--fb-font-display); font-weight: 600; color: var(--fb-ink); margin-bottom: var(--fb-sp-1); }
+.fb-empty p { font-size: var(--fb-text-sm); }
+.fb-empty__action { margin-top: var(--fb-sp-4); }
+
+/* --- Alerts ------------------------------------------------------------- */
+/* Ground is tinted, text is always --fb-ink: AA by construction, whatever the
+   status. Fixes today's split personality where .alert-error is hand-rolled
+   and success/info/warning fall through to stock Bootstrap. */
+.fb-alert {
+    display: block;   /* block, not flex: the body is inline prose with <strong>
+                         and links in it, which a flex container would blow apart
+                         into one column item per text run. */
+    padding: var(--fb-sp-3) var(--fb-sp-4);
+    border: 1px solid var(--fb-border);
+    border-left: 3px solid var(--fb-bark);
+    border-radius: var(--fb-radius-sm);
+    background: var(--fb-card);
+    color: var(--fb-ink);
+    margin-bottom: var(--fb-sp-3);
+    font-size: 0.9375rem;
+}
+.fb-alert--success { background: var(--fb-success-soft); border-left-color: var(--fb-success); }
+.fb-alert--info    { background: var(--fb-info-soft);    border-left-color: var(--fb-info); }
+.fb-alert--warning { background: var(--fb-warning-soft); border-left-color: var(--fb-warning); }
+.fb-alert--error,
+.fb-alert--danger  { background: var(--fb-danger-soft);  border-left-color: var(--fb-danger); }
+
+/* --- Buttons ------------------------------------------------------------ */
+/* Stock .btn inherits the palette through the Bootstrap bridge; these are the
+   two shapes the bridge cannot express. */
+.fb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--fb-sp-2);
+    padding: 0.5rem 1rem;
+    border-radius: var(--fb-radius-sm);
+    border: 1px solid transparent;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--fb-dur-fast) var(--fb-ease),
+                border-color var(--fb-dur-fast) var(--fb-ease),
+                color var(--fb-dur-fast) var(--fb-ease);
+}
+/* Filled with ember, not alpenglow: card-tinted text on alpenglow is 2.98:1
+   and fails AA. On ember it is 5.90:1. Alpenglow stays the hover. */
+.fb-btn--primary { background: var(--fb-ember); color: var(--fb-card); }
+.fb-btn--primary:hover { background: var(--fb-alpenglow); color: var(--fb-card); }
+
+.fb-btn--quiet { background: var(--fb-card); border-color: var(--fb-border-strong); color: var(--fb-ink); }
+.fb-btn--quiet:hover { border-color: var(--fb-alpenglow); color: var(--fb-ember); }
+
+.fb-btn--danger { background: var(--fb-danger); color: var(--fb-card); }
+.fb-btn--ghost { background: none; color: var(--fb-bark); padding-inline: var(--fb-sp-2); }
+.fb-btn--ghost:hover { color: var(--fb-ember); }
+.fb-btn--sm { padding: 0.25rem 0.625rem; font-size: var(--fb-text-sm); }
+
+/* --- Pagination --------------------------------------------------------- */
+.fb-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--fb-sp-4);
+    margin-top: var(--fb-sp-6);
+    padding-top: var(--fb-sp-4);
+    border-top: 1px solid var(--fb-border);
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+}
+
+/* =========================================================================
+   7. Archetype D — record detail (personne, chalet)
+   -------------------------------------------------------------------------
+   Today a person page is one full-width column: an image that grows on hover,
+   an <h1> with four buttons crammed inline after it, emoji-bulleted contact
+   lines, then relations as 1.5em avatars with no names — and two thirds of
+   the screen empty. This splits it into a sticky identity rail and a content
+   column, and gives relations back their names.
+   ========================================================================= */
+
+.fb-record {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: var(--fb-sp-6);
+    align-items: start;
+}
+@media (max-width: 767.98px) {
+    .fb-record { grid-template-columns: minmax(0, 1fr); gap: var(--fb-sp-5); }
+}
+
+.fb-record__rail { position: sticky; top: var(--fb-sp-5); display: grid; gap: var(--fb-sp-4); }
+.fb-record__portrait { display: flex; flex-direction: column; align-items: center; text-align: center; gap: var(--fb-sp-3); }
+.fb-record__name { font-size: 1.5rem; margin: 0; }
+.fb-record__actions { display: grid; gap: var(--fb-sp-2); }
+
+/* Contact rows: the emoji stays (it is warm, and it is free), but it moves
+   into a fixed-width muted column so the values align into a real list. */
+.fb-contact { display: grid; gap: 0; }
+.fb-contact__row {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(0, 1fr);
+    align-items: baseline;
+    gap: var(--fb-sp-2);
+    padding: var(--fb-sp-2) 0;
+    border-bottom: 1px solid var(--fb-border);
+    font-size: 0.9375rem;
+}
+.fb-contact__row:last-child { border-bottom: 0; }
+.fb-contact__icon { opacity: 0.75; font-size: 0.9rem; }
+.fb-contact__value { min-width: 0; overflow-wrap: anywhere; }
+
+/* Relations, with names. */
+.fb-relations { display: grid; gap: var(--fb-sp-5); }
+.fb-relation-group__label { margin-bottom: var(--fb-sp-3); }
+.fb-relation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    gap: var(--fb-sp-3);
+}
+.fb-relation {
+    display: flex;
+    align-items: center;
+    gap: var(--fb-sp-3);
+    padding: var(--fb-sp-2);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius-pill);
+    background: var(--fb-card);
+    text-decoration: none;
+    color: var(--fb-ink);
+    font-size: var(--fb-text-sm);
+    font-weight: 600;
+    transition: border-color var(--fb-dur-fast) var(--fb-ease);
+}
+.fb-relation:hover { border-color: var(--fb-alpenglow); color: var(--fb-ink); }
+
+/* =========================================================================
+   8. Archetype E — long-form (publication, document, help)
+   ========================================================================= */
+
+.fb-longform { max-width: var(--fb-measure-max); }
+.fb-longform__title { font-size: 2.25rem; line-height: 1.1; margin-bottom: var(--fb-sp-3); }
+.fb-longform__body {
+    font-size: var(--fb-text-lg);
+    line-height: var(--fb-leading-long);
+}
+.fb-longform__body > h2 { margin-top: var(--fb-sp-6); }
+.fb-longform__body > h3 { margin-top: var(--fb-sp-5); }
+.fb-longform__body blockquote {
+    margin: var(--fb-sp-5) 0;
+    padding-left: var(--fb-sp-4);
+    border-left: 3px solid var(--fb-alpenglow);
+    color: var(--fb-bark);
+    font-style: italic;
+}
+.fb-longform__body pre,
+.fb-longform__body code { background: var(--fb-parchment); border-radius: var(--fb-radius-sm); }
+.fb-longform__body pre { padding: var(--fb-sp-3) var(--fb-sp-4); border: 1px solid var(--fb-border); overflow-x: auto; }
+.fb-longform__body img { max-width: 100%; height: auto; border-radius: var(--fb-radius-sm); }
+
+/* Attachments gallery */
+.fb-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: var(--fb-sp-3);
+}
+.fb-gallery figure { margin: 0; }
+.fb-gallery img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--fb-radius-sm);
+    border: 1px solid var(--fb-border);
+    display: block;
+}
+.fb-gallery figcaption { font-size: var(--fb-text-xs); color: var(--fb-bark); margin-top: var(--fb-sp-1); }
+
+/* Comments */
+.fb-comment {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    gap: var(--fb-sp-3);
+    padding: var(--fb-sp-4) 0;
+    border-bottom: 1px solid var(--fb-border);
+}
+.fb-comment__disc {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--fb-ember-soft);
+    color: var(--fb-ember);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--fb-font-display);
+    font-weight: 700;
+    font-size: var(--fb-text-sm);
+}
+.fb-comment__head { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--fb-sp-2); margin-bottom: var(--fb-sp-1); }
+.fb-comment__author { font-weight: 700; }
+
+/* "Your turn": recessed ground inside the card so the composer reads as a
+   different surface from the comments above it. */
+.fb-composer {
+    margin-top: var(--fb-sp-5);
+    padding: var(--fb-sp-4);
+    background: var(--fb-parchment);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+}
+
+/* =========================================================================
+   9. Archetype F — canvas tools (carte, généalogie, visionneuse)
+   -------------------------------------------------------------------------
+   Rule for this archetype: the chrome recedes. Page head, then a toolbar
+   welded to the canvas so the two form one instrument.
+   ========================================================================= */
+
+.fb-canvas {
+    height: 70vh;
+    min-height: 340px;
+    border: 1px solid var(--fb-border);
+    border-radius: 0 0 var(--fb-radius) var(--fb-radius);
+    background: var(--fb-card);
+    overflow: hidden;
+    position: relative;
+    z-index: 0;   /* keep: traps leaflet's panes below positioned siblings */
+}
+.fb-canvas--stage {
+    background: var(--fb-parchment);
+    display: flex;
+    align-items: safe center;
+    justify-content: safe center;
+    overflow: auto;
+    padding: var(--fb-sp-3);
+}
+
+.fb-canvas__aside {
+    width: 320px;
+    padding: var(--fb-sp-4);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-2);
+}
+
+/* =========================================================================
+   10. Archetype G — forms
+   ========================================================================= */
+
+.fb-form { max-width: 46rem; }
+.fb-fieldset {
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    background: var(--fb-card);
+    box-shadow: var(--fb-shadow-1);
+    padding: var(--fb-sp-5);
+    margin: 0 0 var(--fb-sp-5);
+}
+.fb-fieldset > legend {
+    float: left;          /* keep the legend in flow so padding applies */
+    width: 100%;
+    padding: 0 0 var(--fb-sp-4);
+    margin: 0;
+    font-family: var(--fb-font-display);
+    font-size: var(--fb-text-h2);
+    font-weight: 600;
+    color: var(--fb-ink);
+    border-bottom: 1px solid var(--fb-border);
+    margin-bottom: var(--fb-sp-4);
+}
+/* The floated legend above is what lets padding apply to it; every sibling
+   after it has to clear that float, or a flex/grid child shrink-wraps beside
+   it instead of starting on its own line. */
+.fb-fieldset > legend ~ * { clear: both; }
+
+.fb-field { margin-bottom: var(--fb-sp-4); }
+.fb-field > label,
+.fb-label {
+    display: block;
+    font-size: var(--fb-text-sm);
+    font-weight: 700;
+    color: var(--fb-ink);
+    margin-bottom: var(--fb-sp-1);
+}
+.fb-input,
+.fb-select,
+.fb-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    font-size: 0.9375rem;
+    color: var(--fb-ink);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border-strong);
+    border-radius: var(--fb-radius-sm);
+    transition: border-color var(--fb-dur-fast) var(--fb-ease),
+                box-shadow var(--fb-dur-fast) var(--fb-ease);
+}
+.fb-input:focus,
+.fb-select:focus,
+.fb-textarea:focus {
+    outline: none;
+    border-color: var(--fb-alpenglow);
+    box-shadow: 0 0 0 3px rgba(217, 121, 63, 0.18);
+}
+.fb-input::placeholder { color: var(--fb-bark); opacity: 0.7; }
+.fb-help { font-size: var(--fb-text-sm); color: var(--fb-bark); margin-top: var(--fb-sp-1); }
+.fb-error { font-size: var(--fb-text-sm); color: var(--fb-danger); font-weight: 600; margin-top: var(--fb-sp-1); }
+.fb-field--invalid .fb-input { border-color: var(--fb-danger); }
+
+.fb-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fb-sp-3);
+    padding-top: var(--fb-sp-4);
+    border-top: 1px solid var(--fb-border);
+}
+
+/* =========================================================================
+   11. Archetype H — threshold (login, signup, magic link, password reset)
+   -------------------------------------------------------------------------
+   These pages get NO sidebar. A logged-out visitor should not be looking at a
+   nav full of links that will all bounce back to the login form.
+
+   The card is deliberately the transactional email's card, 1:1 — same ridge,
+   same wordmark, same eaves line, same 600px column feel. Clicking a magic
+   link and landing here should feel like walking through the email's front
+   door rather than arriving somewhere else.
+   ========================================================================= */
+
+.fb-threshold {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--fb-sp-6) var(--fb-sp-4);
+    background: var(--fb-parchment);
+}
+.fb-threshold__card {
+    width: 100%;
+    max-width: 460px;
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius-lg);
+    box-shadow: var(--fb-shadow-3);
+    overflow: hidden;
+}
+.fb-threshold__head { background: var(--fb-sky); padding-top: var(--fb-sp-5); text-align: center; }
+.fb-threshold__body { padding: var(--fb-sp-6); }
+.fb-threshold__body h1 { font-size: 1.5rem; text-align: left; }
+.fb-threshold__links {
+    margin-top: var(--fb-sp-5);
+    padding-top: var(--fb-sp-4);
+    border-top: 1px solid var(--fb-border);
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+    display: grid;
+    gap: var(--fb-sp-2);
+}
+.fb-threshold__foot {
+    text-align: center;
+    margin-top: var(--fb-sp-4);
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bark);
+}
+
+/* The restrained variant, matching the transactional emails: no peaks, one
+   flat horizon line. Used for password reset / magic link / account setup. */
+.fb-horizon { height: 14px; background: var(--fb-spruce); }
+
+/* =========================================================================
+   12. Archetype I — tabular (groupes, création de comptes en masse)
+   ========================================================================= */
+
+.fb-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    overflow: hidden;
+    font-size: 0.9375rem;
+}
+.fb-table thead th {
+    background: var(--fb-panel);
+    text-align: left;
+    padding: var(--fb-sp-3) var(--fb-sp-4);
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-eyebrow);
+    color: var(--fb-bark);
+    border-bottom: 1px solid var(--fb-border);
+    white-space: nowrap;
+}
+.fb-table td {
+    padding: var(--fb-sp-3) var(--fb-sp-4);
+    border-bottom: 1px solid var(--fb-border);
+    vertical-align: middle;
+}
+.fb-table tbody tr:last-child td { border-bottom: 0; }
+.fb-table tbody tr:hover { background: color-mix(in srgb, var(--fb-parchment) 60%, transparent); }
+.fb-table__actions { display: flex; gap: var(--fb-sp-2); justify-content: flex-end; }
+
+/* Presence rows keep their semantic tint, retuned to the palette. */
+.fb-row--current { background: var(--fb-success-soft); }
+.fb-row--past td { color: var(--fb-bark); }
+
+/* =========================================================================
+   13. Archetype J — destructive confirm
+   ========================================================================= */
+
+.fb-confirm {
+    max-width: 34rem;
+    border-left: 3px solid var(--fb-danger);
+}
+.fb-confirm h1 { font-size: 1.5rem; }
+.fb-confirm__consequences {
+    margin: var(--fb-sp-4) 0;
+    padding: var(--fb-sp-3) var(--fb-sp-4);
+    background: var(--fb-danger-soft);
+    border-radius: var(--fb-radius-sm);
+    font-size: 0.9375rem;
+}
+.fb-confirm__consequences ul { margin: 0; padding-left: 1.1rem; }
+
+/* =========================================================================
+   14. Vendor re-skins
+   -------------------------------------------------------------------------
+   Exact replacements for the hardcoded Bootstrap-default colours currently
+   sitting in main.css's leaflet and family-chart override blocks. Vendor CSS
+   itself is never edited — same rule as today.
+   ========================================================================= */
+
+.map-marker-avatar        { border-color: var(--fb-card); box-shadow: var(--fb-shadow-2); background: var(--fb-card); }
+.map-marker-avatar-emoji  { background: var(--fb-panel); }
+.map-marker-cluster-badge { background: var(--fb-ember); color: var(--fb-card); border-color: var(--fb-card); }
+
+.f3 .link { stroke: var(--fb-bark); }
+.genealogie-search .f3-autocomplete input,
+.genealogie-search .f3-autocomplete-items,
+.genealogie-search .f3-autocomplete-item > div {
+    background-color: var(--fb-card);
+    color: var(--fb-ink);
+    border-color: var(--fb-border-strong);
+}
+.genealogie-search .f3-autocomplete-item > div:hover,
+.genealogie-search .f3-autocomplete-item.f3-selected > div {
+    background-color: var(--fb-ember);
+    color: var(--fb-card);
+}
+.genealogie-search .f3-autocomplete-toggle { color: var(--fb-ink); }
+.genealogie-search .f3-autocomplete input:focus { outline: 2px solid var(--fb-alpenglow); }
+
+/* =========================================================================
+   15. Motion & focus
+   ========================================================================= */
+
+/* Today only the genealogy search has a focus ring. This gives every
+   interactive element one, in the accent colour. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--fb-alpenglow);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

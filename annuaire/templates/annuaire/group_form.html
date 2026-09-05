@@ -1,17 +1,22 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
-    <div class="form">
-        <form method="post">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>{% if object %}Modifier « {{ object.name }} »{% else %}Nouveau groupe{% endif %}</legend>
-                {{ form.name|as_crispy_field }}
-            </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
-                <a href="{% url 'group-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-            </div>
-        </form>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>{% if object %}Modifier « {{ object.name }} »{% else %}Nouveau groupe{% endif %}</h1>
+        </div>
     </div>
+
+    <form method="post" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Le groupe</legend>
+            {{ form.name|as_crispy_field }}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        </div>
+    </form>
 {% endblock content %}

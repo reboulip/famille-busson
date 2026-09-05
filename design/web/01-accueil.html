@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Accueil (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  /* Mockup-only: the hub's ridge banner. Ships as part of home.html. */
+  .hub-banner {
+      position: relative;
+      border-radius: var(--fb-radius);
+      overflow: hidden;
+      border: 1px solid var(--fb-border);
+      margin-bottom: var(--fb-sp-6);
+      background: var(--fb-sky);
+  }
+  .hub-banner__ridge { height: 112px; }
+  .hub-banner__ridge .fb-ridge { height: 112px; }
+  .hub-banner__body {
+      background: var(--fb-card);
+      padding: var(--fb-sp-5) var(--fb-sp-6) var(--fb-sp-5);
+      border-top: 3px solid var(--fb-ink);
+      box-shadow: inset 0 1px 0 0 var(--fb-border);
+  }
+  .hub-banner__body h1 { margin-bottom: var(--fb-sp-2); }
+  .tile__head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      gap: var(--fb-sp-3);
+      padding-bottom: var(--fb-sp-3);
+      margin-bottom: var(--fb-sp-4);
+      border-bottom: 1px solid var(--fb-border);
+  }
+  .tile__head h2 { margin: 0; font-size: 1.125rem; }
+  .tile__link { font-size: var(--fb-text-sm); font-weight: 600; text-decoration: none; white-space: nowrap; }
+  .mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--fb-sp-3); }
+  .mini { display: flex; flex-direction: column; align-items: center; gap: var(--fb-sp-1); text-decoration: none; color: inherit; text-align: center; }
+  .mini img { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; border: 2px solid var(--fb-border); transition: border-color 120ms; }
+  .mini:hover img { border-color: var(--fb-gold); }
+  .mini span { font-size: var(--fb-text-xs); line-height: 1.2; color: var(--fb-ink); }
+  .feed { display: grid; gap: 0; }
+  .feed__item { padding: var(--fb-sp-3) 0; border-bottom: 1px solid var(--fb-border); }
+  .feed__item:first-child { padding-top: 0; }
+  .feed__item:last-child { border-bottom: 0; padding-bottom: 0; }
+  .feed__item a { text-decoration: none; font-weight: 600; color: var(--fb-ink); }
+  .feed__item a:hover { color: var(--fb-ember); }
+  .stay { display: flex; align-items: center; gap: var(--fb-sp-3); }
+  .stay__dates { margin-left: auto; }
+</style>
+</head>
+<body>
+
+<div class="fb-layout" data-fb-shell data-active="accueil">
+  <main class="fb-content">
+    <div class="fb-content__inner">
+
+      <!-- ============================================================
+           Archetype A — Hub. The one page that earns the full ridge in
+           the content column: it is the front door, and it is the only
+           view with no subject of its own to lead with.
+           ============================================================ -->
+      <section class="hub-banner">
+        <div class="hub-banner__ridge">
+          <svg class="fb-ridge" viewBox="0 0 240 76" preserveAspectRatio="none" role="img" aria-label="Crête de montagne">
+            <path class="fb-ridge__far"  d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>
+            <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+            <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+            <g class="fb-ridge__pine">
+              <path d="M18,50 L25,62 L11,62 Z"/><path d="M18,58 L26,72 L10,72 Z"/><rect x="16.6" y="71" width="2.8" height="5"/>
+              <path d="M222,52 L229,64 L215,64 Z"/><path d="M222,60 L230,73 L214,73 Z"/><rect x="220.6" y="72" width="2.8" height="4"/>
+            </g>
+          </svg>
+        </div>
+        <div class="hub-banner__body">
+          <h1 class="fb-display">Famille Busson</h1>
+          <p class="fb-meta">Mardi 3 septembre — 22 profils, 5 chalets, 3 personnes à Praz-sur-Verre cette semaine.</p>
+        </div>
+      </section>
+
+      <div class="fb-grid fb-grid--tiles">
+
+        <!-- Annuaire -->
+        <section class="fb-card">
+          <div class="tile__head">
+            <h2>Annuaire</h2>
+            <a class="tile__link" href="02-collections.html">Voir tout →</a>
+          </div>
+          <div class="mini-grid">
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Marie-Charlotte<br>Reboulleau</span></a>
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Émile<br>Lefevre</span></a>
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Laura<br>Robert</span></a>
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Romain<br>Simon</span></a>
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Quentin<br>Busson</span></a>
+            <a class="mini" href="03-details.html"><img data-ph="avatar" alt=""><span>Camille<br>Lefevre</span></a>
+          </div>
+        </section>
+
+        <!-- Chalets + présences -->
+        <section class="fb-card">
+          <div class="tile__head">
+            <h2>Chalets PSV</h2>
+            <a class="tile__link" href="02-collections.html#chalets">Voir tout →</a>
+          </div>
+          <div class="mini-grid" style="margin-bottom: var(--fb-sp-4)">
+            <a class="mini" href="03-details.html#chalet"><img data-ph="chalet" alt="" style="border-radius:var(--fb-radius-sm)"><span>Belle Vue</span></a>
+            <a class="mini" href="03-details.html#chalet"><img data-ph="chalet" alt="" style="border-radius:var(--fb-radius-sm)"><span>Edelweiss</span></a>
+            <a class="mini" href="03-details.html#chalet"><img data-ph="chalet" alt="" style="border-radius:var(--fb-radius-sm)"><span>Les Aiguilles</span></a>
+          </div>
+          <p class="fb-eyebrow" style="margin-bottom: var(--fb-sp-2)">Prochaines présences</p>
+          <div class="feed">
+            <div class="feed__item stay">
+              <img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm">
+              <span><a href="#">Nina Martin</a><br><span class="fb-meta">Chalet Belle Vue</span></span>
+              <span class="fb-meta stay__dates">1 → 4 sept.</span>
+            </div>
+            <div class="feed__item stay">
+              <img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm">
+              <span><a href="#">Laura Robert</a><br><span class="fb-meta">Chalet Edelweiss</span></span>
+              <span class="fb-meta stay__dates">2 → 9 sept.</span>
+            </div>
+            <div class="feed__item stay">
+              <img data-ph="avatar" alt="" class="fb-avatar fb-avatar--sm">
+              <span><a href="#">Quentin Busson</a><br><span class="fb-meta">Chalet des Cimes</span></span>
+              <span class="fb-meta stay__dates">6 → 8 sept.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Publications -->
+        <section class="fb-card">
+          <div class="tile__head">
+            <h2>Dernières publications</h2>
+            <a class="tile__link" href="02-collections.html#publications">Voir tout →</a>
+          </div>
+          <div class="feed">
+            <div class="feed__item">
+              <a href="03-details.html#publication">Rénovation du chalet du Lac</a>
+              <p class="fb-meta">Julien Simon — 20 août</p>
+            </div>
+            <div class="feed__item">
+              <a href="03-details.html#publication">Photos de la randonnée du Mont-Blanc</a>
+              <p class="fb-meta">Margaux Simon — 20 août</p>
+            </div>
+            <div class="feed__item">
+              <a href="03-details.html#publication">Recette : tarte tatin façon grand-mère</a>
+              <p class="fb-meta">Alice Bernard — 18 août <span class="fb-chip fb-chip--gold">Busson connection</span></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Commentaires -->
+        <section class="fb-card">
+          <div class="tile__head"><h2>Derniers commentaires</h2></div>
+          <div class="feed">
+            <div class="fb-comment" style="padding-top:0">
+              <span class="fb-comment__disc">MS</span>
+              <div>
+                <div class="fb-comment__head">
+                  <span class="fb-comment__author">Margaux Simon</span>
+                  <span class="fb-meta">sur « Photos de la randonnée »</span>
+                </div>
+                <p>Super photos, on se croirait sur place.</p>
+              </div>
+            </div>
+            <div class="fb-comment">
+              <span class="fb-comment__disc">VS</span>
+              <div>
+                <div class="fb-comment__head">
+                  <span class="fb-comment__author">Valentine Simon</span>
+                  <span class="fb-meta">sur « Réservation des chalets »</span>
+                </div>
+                <p>Magnifique, à refaire !</p>
+              </div>
+            </div>
+            <div class="fb-comment" style="border-bottom:0">
+              <span class="fb-comment__disc">ID</span>
+              <div>
+                <div class="fb-comment__head">
+                  <span class="fb-comment__author">Inès Dubois</span>
+                  <span class="fb-meta">sur « Voyage en Italie »</span>
+                </div>
+                <p>Trop drôle, je me souviens très bien.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Empty-state component, shown here as a tile that has nothing yet -->
+        <section class="fb-card">
+          <div class="tile__head"><h2>Anniversaires du mois</h2></div>
+          <div class="fb-empty">
+            <svg class="fb-ridge fb-empty__ridge" viewBox="0 0 240 76" preserveAspectRatio="none" aria-hidden="true">
+              <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+              <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+            </svg>
+            <p class="fb-empty__title">Aucun anniversaire en septembre</p>
+            <p>Le prochain est celui d'Alice, le 10 octobre.</p>
+          </div>
+        </section>
+
+      </div>
+
+      <p class="fb-meta" style="margin-top: var(--fb-sp-8)">
+        Maquette — archetype A (hub). Voir <a href="SPEC.md">SPEC.md</a> pour la grammaire complète.
+        Le bouton <strong>◐ Nightfall</strong> en bas de la barre latérale bascule la palette.
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

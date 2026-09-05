@@ -1,19 +1,34 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="form">
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Documents</p>
+            <h1>Supprimer une catégorie ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
         <h1>Supprimer la catégorie « {{ object.name }} » ?</h1>
         {% if document_count or child_count %}
-            <div class="alert alert-warning" role="alert">
+            <div class="fb-alert fb-alert--warning" role="alert">
                 Cette catégorie contient {{ document_count }} document{{ document_count|pluralize }}
                 et {{ child_count }} sous-catégorie{{ child_count|pluralize }}. Supprimez-les d'abord.
             </div>
         {% else %}
-            <p>Cette catégorie est vide.</p>
+            <div class="fb-confirm__consequences">
+                <p class="fb-confirm__lead">Cette catégorie est vide : rien d'autre ne sera supprimé.</p>
+            </div>
         {% endif %}
         <form method="POST">
             {% csrf_token %}
-            <button class="btn btn-outline-danger" type="submit" {% if document_count or child_count %}disabled{% endif %}>Supprimer définitivement</button>
-            <a href="{% url 'category-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit" {% if document_count or child_count %}disabled{% endif %}>
+                    {% icon "trash" size=16 %} Supprimer définitivement
+                </button>
+                <a href="{% url 'category-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
         </form>
     </div>
 {% endblock content %}

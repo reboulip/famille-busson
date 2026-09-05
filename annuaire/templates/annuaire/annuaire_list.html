@@ -1,23 +1,35 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Annuaire</h1>
-        <form method="get" action="{% url 'directory' %}" class="search-form" id="directory-filter-form"
-              data-live-filter="#directory-results" autocomplete="off">
-            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input" id="directory-search" aria-label="Rechercher par nom ou prénom">
-            <select name="sort" class="form-select" data-live-filter-default="recent">
-                <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récents d'abord</option>
-                <option value="name_asc" {% if sort == "name_asc" %}selected{% endif %}>Nom (A → Z)</option>
-                <option value="name_desc" {% if sort == "name_desc" %}selected{% endif %}>Nom (Z → A)</option>
-                <option value="birth_asc" {% if sort == "birth_asc" %}selected{% endif %}>Date de naissance (croissant)</option>
-                <option value="birth_desc" {% if sort == "birth_desc" %}selected{% endif %}>Date de naissance (décroissant)</option>
-            </select>
-            <a href="{% url 'directory' %}" class="btn btn-outline-secondary" data-live-filter-reset
-               {% if not query and sort == "recent" %}hidden{% endif %}>Effacer</a>
-        </form>
-        <a href="{% url 'person-create' %}" class="btn btn-outline-primary">Ajouter un membre de la famille sans compte</a>
+    {# Archetype B — collection grid. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Annuaire</h1>
+            <p class="fb-page-head__lede">Tous les membres de la famille, avec ou sans compte.</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'person-create' %}" class="fb-btn fb-btn--primary">
+                {% icon "plus" size=16 %} Ajouter un membre de la famille sans compte
+            </a>
+        </div>
     </div>
+
+    <form method="get" action="{% url 'directory' %}" class="fb-toolbar" id="directory-filter-form"
+          data-live-filter="#directory-results" autocomplete="off">
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…"
+               class="fb-input fb-search" id="directory-search" aria-label="Rechercher par nom ou prénom">
+        <select name="sort" class="fb-select" style="width:auto" data-live-filter-default="recent" aria-label="Trier">
+            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Plus récents d'abord</option>
+            <option value="name_asc" {% if sort == "name_asc" %}selected{% endif %}>Nom (A → Z)</option>
+            <option value="name_desc" {% if sort == "name_desc" %}selected{% endif %}>Nom (Z → A)</option>
+            <option value="birth_asc" {% if sort == "birth_asc" %}selected{% endif %}>Date de naissance (croissant)</option>
+            <option value="birth_desc" {% if sort == "birth_desc" %}selected{% endif %}>Date de naissance (décroissant)</option>
+        </select>
+        <span class="fb-toolbar__spacer"></span>
+        <a href="{% url 'directory' %}" class="fb-btn fb-btn--ghost fb-btn--sm" data-live-filter-reset
+           {% if not query and sort == "recent" %}hidden{% endif %}>Effacer</a>
+    </form>
 
     <div id="directory-results" aria-live="polite">
         {% include "annuaire/_annuaire_results.html" %}

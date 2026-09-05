@@ -1,73 +1,80 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <div class="form">
-        <form method="POST" enctype="multipart/form-data" id="blogpost-form" data-empty-prefix="__prefix__">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>
-                    {% if object %}Modifier « {{ object.title }} »{% else %}Nouvelle publication{% endif %}
-                </legend>
-                {{ form.media }}
-                {{ form.title|as_crispy_field }}
-                {{ form.post_type|as_crispy_field }}
-                {{ form.body|as_crispy_field }}
-                <div class="mb-3">
-                    <label class="form-label fw-semibold" for="author-search-input">Auteur(s)</label>
-                    {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label="Chercher un auteur" %}
-                    {% if form.authors.errors %}<div class="text-danger small">{{ form.authors.errors }}</div>{% endif %}
-                </div>
-            </fieldset>
-
-            {% with subform=formsets.0 %}
-                <fieldset class="form-group attachments-fieldset">
-                    <legend class="formset-legend">Pièces jointes</legend>
-                    {{ subform.management_form }}
-
-                    <div class="attachment-formset-rows" hidden>
-                        {% for inline_form in subform.forms %}
-                            <div class="attachment-row" data-existing="{% if inline_form.instance.pk %}1{% else %}0{% endif %}">
-                                {{ inline_form.id }}
-                                {{ inline_form.file }}
-                                {{ inline_form.caption }}
-                                {{ inline_form.DELETE }}
-                            </div>
-                        {% endfor %}
-                    </div>
-
-                    <div class="attachment-badges" id="attachment-badges" aria-live="polite"></div>
-
-                    <button type="button" class="btn btn-outline-secondary mt-2" id="add-attachment-btn">
-                        + Ajouter une pièce jointe
-                    </button>
-                    {# No accept list: publications.Attachment has no extension validator, so a
-                       blog post may carry anything (a family video, a .heic photo, an audio
-                       clip). Borrowing the documents app's ALLOWED_EXTENSIONS here filtered
-                       those out of the file dialog while the server kept accepting them (#116). #}
-                    <input type="file" id="attachment-picker" multiple hidden>
-
-                    <template id="attachment-row-template">
-                        <div class="attachment-row" data-existing="0">
-                            <input type="file" name="{{ subform.prefix }}-__prefix__-file" id="id_{{ subform.prefix }}-__prefix__-file">
-                            <input type="text" name="{{ subform.prefix }}-__prefix__-caption" id="id_{{ subform.prefix }}-__prefix__-caption" maxlength="255">
-                            <input type="hidden" name="{{ subform.prefix }}-__prefix__-id" id="id_{{ subform.prefix }}-__prefix__-id">
-                            <input type="checkbox" name="{{ subform.prefix }}-__prefix__-DELETE" id="id_{{ subform.prefix }}-__prefix__-DELETE">
-                        </div>
-                    </template>
-                </fieldset>
-            {% endwith %}
-
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
-                {% if object %}
-                    <a href="{% url 'blogpost-detail' object.pk %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-                {% else %}
-                    <a href="{% url 'blogpost-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-                {% endif %}
-            </div>
-        </form>
+    {# Archetype G — form. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Publications</p>
+            <h1>{% if object %}Modifier « {{ object.title }} »{% else %}Nouvelle publication{% endif %}</h1>
+        </div>
     </div>
+
+    <form method="POST" enctype="multipart/form-data" id="blogpost-form" data-empty-prefix="__prefix__" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Le billet</legend>
+            {{ form.media }}
+            {{ form.title|as_crispy_field }}
+            {{ form.post_type|as_crispy_field }}
+            {{ form.body|as_crispy_field }}
+            <div class="fb-field">
+                <label class="fb-label" for="author-search-input">Auteur(s)</label>
+                {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label="Chercher un auteur" %}
+                {% if form.authors.errors %}<div class="fb-error">{{ form.authors.errors }}</div>{% endif %}
+            </div>
+        </fieldset>
+
+        {% with subform=formsets.0 %}
+            <fieldset class="fb-fieldset">
+                <legend>Pièces jointes</legend>
+                {{ subform.management_form }}
+
+                <div class="attachment-formset-rows" hidden>
+                    {% for inline_form in subform.forms %}
+                        <div class="attachment-row" data-existing="{% if inline_form.instance.pk %}1{% else %}0{% endif %}">
+                            {{ inline_form.id }}
+                            {{ inline_form.file }}
+                            {{ inline_form.caption }}
+                            {{ inline_form.DELETE }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <div class="attachment-badges" id="attachment-badges" aria-live="polite"></div>
+
+                <button type="button" class="fb-btn fb-btn--quiet" id="add-attachment-btn">
+                    {% icon "plus" size=16 %} Ajouter une pièce jointe
+                </button>
+                {% comment %}
+                    No accept list: publications.Attachment has no extension validator, so a
+                    blog post may carry anything (a family video, a .heic photo, an audio
+                    clip). Borrowing the documents app's ALLOWED_EXTENSIONS here filtered
+                    those out of the file dialog while the server kept accepting them (#116).
+                {% endcomment %}
+                <input type="file" id="attachment-picker" multiple hidden>
+
+                <template id="attachment-row-template">
+                    <div class="attachment-row" data-existing="0">
+                        <input type="file" name="{{ subform.prefix }}-__prefix__-file" id="id_{{ subform.prefix }}-__prefix__-file">
+                        <input type="text" name="{{ subform.prefix }}-__prefix__-caption" id="id_{{ subform.prefix }}-__prefix__-caption" maxlength="255">
+                        <input type="hidden" name="{{ subform.prefix }}-__prefix__-id" id="id_{{ subform.prefix }}-__prefix__-id">
+                        <input type="checkbox" name="{{ subform.prefix }}-__prefix__-DELETE" id="id_{{ subform.prefix }}-__prefix__-DELETE">
+                    </div>
+                </template>
+            </fieldset>
+        {% endwith %}
+
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            {% if object %}
+                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% else %}
+                <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% endif %}
+        </div>
+    </form>
     <script src="{% static 'js/person_picker.js' %}"></script>
     <script src="{% static 'js/publication_attachments.js' %}"></script>
 {% endblock content %}

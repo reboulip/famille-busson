@@ -1,24 +1,42 @@
 {% extends "annuaire/base.html" %}
 {% load markdown_extras %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <h1>{{ document.title }}</h1>
-    <p class="document-card-meta">
-        <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
-        {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
-        {% if document.redactor %} — rédigé par {{ document.redactor }}{% endif %}
-        {% if document.uploaded_by %} — déposé par {{ document.uploaded_by }}{% endif %}
-    </p>
+    {# Archetypes E (the text) and F (the viewers below it). #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <nav class="category-breadcrumb" aria-label="Fil d'ariane">
+                <a href="{% url 'document-list' %}">Documents</a> /
+                <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
+            </nav>
+            <h1>{{ document.title }}</h1>
+            {% comment %}
+                Separators are emitted *before* each part only once something has
+                already been written, so a document with no date does not open on a
+                dangling em-dash.
+            {% endcomment %}
+            <p class="fb-page-head__lede">
+                {% if document.document_date %}{{ document.document_date|date:"j F Y" }}{% endif %}
+                {% if document.redactor %}{% if document.document_date %} — {% endif %}rédigé par {{ document.redactor }}{% endif %}
+                {% if document.uploaded_by %}{% if document.document_date or document.redactor %} — {% endif %}déposé par {{ document.uploaded_by }}{% endif %}
+            </p>
+        </div>
+        {% if can_edit %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'document-edit' document.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'document-delete' document.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+            </div>
+        {% endif %}
+    </div>
+
     {% if document.description %}
-        <div class="markdown-body">{{ document.description|markdown }}</div>
-    {% endif %}
-    {% if can_edit %}
-        <div class="mb-3">
-            <a href="{% url 'document-edit' document.pk %}" class="btn btn-outline-secondary">Modifier</a>
-            <a href="{% url 'document-delete' document.pk %}" class="btn btn-outline-danger">Supprimer</a>
+        <div class="fb-longform" style="margin-bottom: var(--fb-sp-6)">
+            <div class="fb-longform__body markdown-body">{{ document.description|markdown }}</div>
         </div>
     {% endif %}
-    <h2>Fichiers</h2>
+
+    <div class="fb-section-head"><h2>Fichiers</h2></div>
     <div class="document-file-list">
         {% if image_files %}
             <div class="document-viewer" data-file-id="{{ image_files.0.pk }}">
@@ -28,11 +46,11 @@
                     </span>
                     <div class="document-viewer-actions">
                         {% if image_files|length > 1 %}
-                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-carousel-prev" aria-label="Image précédente">‹</button>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="Image précédente">{% icon "chevron-left" size=16 %}</button>
                             <span class="document-viewer-carousel-counter">1 / {{ image_files|length }}</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-carousel-next" aria-label="Image suivante">›</button>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Image suivante">{% icon "chevron-right" size=16 %}</button>
                         {% endif %}
-                        <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-fullscreen-btn">⛶ Plein écran</button>
+                        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
                     </div>
                 </div>
                 {% if image_files|length > 1 %}
@@ -62,12 +80,12 @@
                     <span class="document-viewer-caption">{{ file.caption|default:file.filename }}</span>
                     <div class="document-viewer-actions">
                         <div class="document-viewer-zoom" role="group" aria-label="Zoom">
-                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-zoom-out" aria-label="Réduire">−</button>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-out" aria-label="Réduire">−</button>
                             <span class="document-viewer-zoom-level" aria-live="polite">100 %</span>
-                            <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-zoom-in" aria-label="Agrandir">+</button>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-in" aria-label="Agrandir">+</button>
                         </div>
-                        <a href="{% url 'document-file' file.pk %}?download=1" class="btn btn-sm btn-outline-secondary">📥 Télécharger</a>
-                        <button type="button" class="btn btn-sm btn-outline-secondary document-viewer-fullscreen-btn">⛶ Plein écran</button>
+                        <a href="{% url 'document-file' file.pk %}?download=1" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "download" size=16 %} Télécharger</a>
+                        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
                     </div>
                 </div>
                 <div class="document-viewer-stage">
@@ -82,12 +100,14 @@
         {% endfor %}
         {% for file in other_files %}
             <div class="document-file">
-                {% if file.caption %}<p>{{ file.caption }}</p>{% endif %}
-                <a href="{% url 'document-file' file.pk %}?download=1" class="btn btn-outline-secondary">📎 Télécharger {{ file.filename }}</a>
+                {% if file.caption %}<p class="fb-meta">{{ file.caption }}</p>{% endif %}
+                <a href="{% url 'document-file' file.pk %}?download=1" class="fb-btn fb-btn--quiet">
+                    {% icon "clip" size=16 %} Télécharger {{ file.filename }}
+                </a>
             </div>
         {% endfor %}
         {% if not image_files and not pdf_files and not other_files %}
-            <p>Aucun fichier.</p>
+            {% include "annuaire/_empty.html" with title="Aucun fichier" body="Ce document n'a pas encore de pièce attachée." %}
         {% endif %}
     </div>
 {% endblock content %}

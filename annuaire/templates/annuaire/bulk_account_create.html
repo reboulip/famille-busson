@@ -1,153 +1,165 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load icons %}
 {% block content %}
-<h1>Créer des comptes</h1>
+    {# Archetype I — tabular. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Créer des comptes</h1>
+            <p class="fb-page-head__lede">Créer, réinitialiser et renvoyer les invitations de connexion.</p>
+        </div>
+    </div>
 
-{% if results %}
-<div class="alert alert-success">
-    <strong>Opération terminée.</strong> {{ results|length }} compte(s) traité(s).
-</div>
-<table class="table table-bordered mt-3">
-    <thead>
-        <tr>
-            <th>Email</th>
-            <th>Statut</th>
-            <th>Email</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for row in results %}
-        <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
-            <td>{{ row.email }}</td>
-            <td>
-                {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% elif row.status == 'resent' %}Renvoyé{% else %}Échec de création{% endif %}
-            </td>
-            <td>
-                {% if row.status == 'error' %}
-                    <span class="text-muted">—</span>
-                {% elif row.email_sent %}
-                    <span class="badge text-bg-success">Envoyé</span>
-                {% else %}
-                    <span class="badge text-bg-danger">Échec</span>
-                    <br><small>Lien à transmettre manuellement : <code>{{ row.reset_url }}</code></small>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-<hr>
-<h2 class="mt-4">Créer d'autres comptes</h2>
-{% endif %}
+    {% if results %}
+        <div class="fb-alert fb-alert--success">
+            <strong>Opération terminée.</strong> {{ results|length }} compte(s) traité(s).
+        </div>
+        <table class="fb-table">
+            <thead>
+                <tr><th>Email</th><th>Statut</th><th>Invitation</th></tr>
+            </thead>
+            <tbody>
+                {% for row in results %}
+                    <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
+                        <td>{{ row.email }}</td>
+                        <td>
+                            {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% elif row.status == 'resent' %}Renvoyé{% else %}Échec de création{% endif %}
+                        </td>
+                        <td>
+                            {% if row.status == 'error' %}
+                                <span class="fb-meta">—</span>
+                            {% elif row.email_sent %}
+                                <span class="fb-chip fb-chip--success">Envoyé</span>
+                            {% else %}
+                                <span class="fb-chip fb-chip--danger">Échec</span>
+                                <br><small class="fb-meta">Lien à transmettre manuellement : <code>{{ row.reset_url }}</code></small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 
-<h2 class="mt-4">Comptes sans profil</h2>
-{% if pending_accounts %}
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="resend">
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th><input type="checkbox" id="pending-select-all"></th>
-                <th>Email</th>
-                <th>Dernière connexion</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for acc in pending_accounts %}
-            <tr>
-                <td><input type="checkbox" name="accounts" value="{{ acc.pk }}" class="pending-account-checkbox"></td>
-                <td>{{ acc.email }}</td>
-                <td>
-                    {% if acc.last_login %}
-                        Dernière connexion le {{ acc.last_login|date:"j F Y H:i" }}
-                    {% else %}
-                        <span class="badge text-bg-secondary">Jamais connecté</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    <button type="submit" class="btn btn-outline-primary mt-2">Renvoyer le lien d'invitation</button>
-</form>
-<script>
-(function () {
-    const selectAll = document.getElementById('pending-select-all');
-    if (selectAll) {
-        selectAll.addEventListener('change', function () {
-            document.querySelectorAll('.pending-account-checkbox').forEach(function (cb) {
-                cb.checked = selectAll.checked;
-            });
-        });
-    }
-})();
-</script>
-{% else %}
-<p>Tous les comptes sont rattachés à un profil.</p>
-{% endif %}
+    <div class="fb-section-head">
+        <h2>Comptes sans profil</h2>
+        {% if pending_accounts %}<span class="fb-meta">{{ pending_accounts|length }} en attente</span>{% endif %}
+    </div>
 
-<div id="email-warnings" class="alert alert-warning d-none" role="alert">
-    <strong>Attention :</strong> les adresses suivantes ont déjà un compte — leur mot de passe sera réinitialisé :
-    <ul id="email-warnings-list" class="mb-0 mt-1"></ul>
-</div>
+    {% if pending_accounts %}
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="resend">
+            <table class="fb-table">
+                <thead>
+                    <tr>
+                        <th style="width:2.5rem"><input type="checkbox" id="pending-select-all" aria-label="Tout sélectionner"></th>
+                        <th>Email</th>
+                        <th>Dernière connexion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for acc in pending_accounts %}
+                        <tr>
+                            <td><input type="checkbox" name="accounts" value="{{ acc.pk }}" class="pending-account-checkbox"></td>
+                            <td>{{ acc.email }}</td>
+                            <td>
+                                {% if acc.last_login %}
+                                    <span class="fb-meta">Dernière connexion le {{ acc.last_login|date:"j F Y H:i" }}</span>
+                                {% else %}
+                                    <span class="fb-chip">Jamais connecté</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="fb-form__actions">
+                <button type="submit" class="fb-btn fb-btn--primary">Renvoyer le lien d'invitation</button>
+            </div>
+        </form>
+        <script>
+        (function () {
+            const selectAll = document.getElementById('pending-select-all');
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    document.querySelectorAll('.pending-account-checkbox').forEach(function (cb) {
+                        cb.checked = selectAll.checked;
+                    });
+                });
+            }
+        })();
+        </script>
+    {% else %}
+        {% include "annuaire/_empty.html" with title="Tous les comptes sont rattachés à un profil" %}
+    {% endif %}
 
-<form method="post" id="bulk-create-form">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-primary mt-2">Créer / réinitialiser les comptes</button>
-</form>
+    <div class="fb-section-head"><h2>Créer ou réinitialiser des comptes</h2></div>
 
-<script>
-(function () {
-    const textarea = document.getElementById('id_emails');
-    const warningBox = document.getElementById('email-warnings');
-    const warningList = document.getElementById('email-warnings-list');
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const checkUrl = '{% url "check-emails-ajax" %}';
+    <div id="email-warnings" class="fb-alert fb-alert--warning d-none" role="alert">
+        <strong>Attention :</strong> les adresses suivantes ont déjà un compte — leur mot de passe sera réinitialisé :
+        <ul id="email-warnings-list" class="fb-alert__list"></ul>
+    </div>
 
-    let debounceTimer;
+    <form method="post" id="bulk-create-form" class="fb-form fb-card">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">Créer / réinitialiser les comptes</button>
+        </div>
+    </form>
 
-    function parseEmails(text) {
-        return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    }
+    <script>
+    (function () {
+        const textarea = document.getElementById('id_emails');
+        const warningBox = document.getElementById('email-warnings');
+        const warningList = document.getElementById('email-warnings-list');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const checkUrl = '{% url "check-emails-ajax" %}';
 
-    function showWarnings(existing) {
-        warningList.innerHTML = '';
-        if (existing.length > 0) {
-            existing.forEach(email => {
-                const li = document.createElement('li');
-                li.textContent = email;
-                warningList.appendChild(li);
-            });
-            warningBox.classList.remove('d-none');
-        } else {
-            warningBox.classList.add('d-none');
+        let debounceTimer;
+
+        function parseEmails(text) {
+            return text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
         }
-    }
 
-    function checkEmails() {
-        const emails = parseEmails(textarea.value);
-        if (emails.length === 0) {
-            showWarnings([]);
-            return;
+        function showWarnings(existing) {
+            warningList.innerHTML = '';
+            if (existing.length > 0) {
+                existing.forEach(email => {
+                    const li = document.createElement('li');
+                    li.textContent = email;
+                    warningList.appendChild(li);
+                });
+                warningBox.classList.remove('d-none');
+            } else {
+                warningBox.classList.add('d-none');
+            }
         }
-        fetch(checkUrl, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
-            body: JSON.stringify({emails: emails}),
-        })
-        .then(r => r.json())
-        .then(data => showWarnings(data.existing || []))
-        .catch(() => {});
-    }
 
-    if (textarea) {
-        textarea.addEventListener('input', function () {
-            clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(checkEmails, 400);
-        });
-    }
-})();
-</script>
+        function checkEmails() {
+            const emails = parseEmails(textarea.value);
+            if (emails.length === 0) {
+                showWarnings([]);
+                return;
+            }
+            fetch(checkUrl, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken},
+                body: JSON.stringify({emails: emails}),
+            })
+            .then(r => r.json())
+            .then(data => showWarnings(data.existing || []))
+            .catch(() => {});
+        }
+
+        if (textarea) {
+            textarea.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(checkEmails, 400);
+            });
+        }
+    })();
+    </script>
 {% endblock content %}

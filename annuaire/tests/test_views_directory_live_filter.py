@@ -68,7 +68,9 @@ def test_directory_search_button_is_removed(auth_client):
 def test_directory_no_minimum_query_length_returns_empty_grid_message(auth_client):
     Person.objects.all().delete()
     response = auth_client.get(reverse("directory"), {"q": "z"})
-    assert "Aucune personne trouvée." in response.content.decode()
+    # Copy lost its trailing period when the bare <p>Aucun…</p> became the shared
+    # empty-state component (annuaire/_empty.html), where it is a title, not a sentence.
+    assert "Aucune personne trouvée" in response.content.decode()
 
 
 @pytest.mark.django_db

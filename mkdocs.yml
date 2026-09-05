@@ -27,6 +27,8 @@ nav:
   - Home: README.md
   - Data model: data_model.md
   - Deployment: deployment.md
+  - Design system: design_system.md
+  - Emails: emails.md
   - Permissions: permissions.md
   - Authentication: authentication.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

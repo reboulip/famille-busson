@@ -1,59 +1,75 @@
 {% extends "annuaire/base.html" %}
 {% load markdown_extras %}
 {% load documents_extras %}
+{% load icons %}
 {% block content %}
-    {% if ancestors %}
-        <nav class="category-breadcrumb" aria-label="Fil d'ariane">
-            {% for ancestor in ancestors %}
-                <a href="{% url 'category-detail' ancestor.pk %}">{{ ancestor.name }}</a> /
-            {% endfor %}
-            {{ category.name }}
-        </nav>
-    {% endif %}
-    <h1>{{ category.name }}</h1>
-    <p class="category-access-line">
-        Visible par :
-        {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
-    </p>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            {% if ancestors %}
+                <nav class="category-breadcrumb" aria-label="Fil d'ariane">
+                    {% for ancestor in ancestors %}
+                        <a href="{% url 'category-detail' ancestor.pk %}">{{ ancestor.name }}</a> /
+                    {% endfor %}
+                    {{ category.name }}
+                </nav>
+            {% else %}
+                <p class="fb-eyebrow">Documents</p>
+            {% endif %}
+            <h1>{{ category.name }}</h1>
+            <p class="fb-page-head__lede">
+                Visible par :
+                {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
+            </p>
+        </div>
+        <div class="fb-page-head__actions">
+            {% if can_access %}
+                <a href="{% url 'document-create' %}?category={{ category.pk }}" class="fb-btn fb-btn--primary">
+                    {% icon "plus" size=16 %} Ajouter un document
+                </a>
+            {% endif %}
+            {% if user.is_staff %}
+                <a href="{% url 'category-edit' category.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'category-delete' category.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+            {% endif %}
+        </div>
+    </div>
+
     {% if children %}
-        <div class="category-children mb-3">
-            <strong>Sous-catégories :</strong>
-            <ul>
+        <div class="fb-card" style="margin-bottom: var(--fb-sp-5)">
+            <p class="fb-eyebrow fb-card__label">Sous-catégories</p>
+            <ul class="category-tree">
                 {% for child in children %}
                     <li>
                         {% if child|can_access:request.user %}
-                            <a href="{% url 'category-detail' child.pk %}">{{ child.name }}</a>
+                            <a class="category-tree__name" href="{% url 'category-detail' child.pk %}">
+                                {% icon "folder" size=16 %} {{ child.name }}
+                            </a>
                         {% else %}
-                            <span class="category-locked">🔒 {{ child.name }}</span>
+                            <span class="category-tree__name category-tree__name--locked">
+                                {% icon "lock" size=16 %} {{ child.name }}
+                            </span>
                         {% endif %}
                     </li>
                 {% endfor %}
             </ul>
         </div>
     {% endif %}
+
     {% if not can_access %}
-        <div class="alert alert-warning" role="alert">
+        <div class="fb-alert fb-alert--warning" role="alert">
             Cette catégorie est réservée.
         </div>
     {% else %}
         {% if category.description %}
-            <div class="markdown-body">{{ category.description|markdown }}</div>
+            <div class="fb-card markdown-body" style="margin-bottom: var(--fb-sp-5)">{{ category.description|markdown }}</div>
         {% endif %}
-        <div class="mb-3">
-            <a href="{% url 'document-create' %}?category={{ category.pk }}" class="btn btn-outline-primary">+ Ajouter un document</a>
-        </div>
-        {% if user.is_staff %}
-            <div class="mb-3">
-                <a href="{% url 'category-edit' category.pk %}" class="btn btn-outline-secondary">Modifier</a>
-                <a href="{% url 'category-delete' category.pk %}" class="btn btn-outline-danger">Supprimer</a>
-            </div>
-        {% endif %}
-        <h2>Documents</h2>
-        <div class="document-list">
+
+        <div class="fb-section-head"><h2>Documents</h2></div>
+        <div>
             {% for document in documents %}
                 {% include "documents/_document_card.html" %}
             {% empty %}
-                <p>Aucun document dans cette catégorie.</p>
+                {% include "annuaire/_empty.html" with title="Aucun document dans cette catégorie" body="Déposez-en un pour commencer à la remplir." %}
             {% endfor %}
         </div>
     {% endif %}

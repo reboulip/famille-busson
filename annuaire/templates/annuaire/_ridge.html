@@ -1,0 +1,35 @@
+{% comment %}
+The ridge — one of the three signature devices (see design/web/SPEC.md §2).
+
+Three uneven peaks (real skylines are not symmetric): slate-mist behind,
+spruce in front, a zigzag snowcap on the tallest — the same zigzag as
+favicon.svg — and the favicon's two pines planted at the base, so the app icon
+and the app itself share a mark.
+
+Drawn as SVG rather than the emails' bordered-triangle technique, because
+nothing on the web has to survive Outlook's Word rendering engine.
+
+Used in exactly three places, deliberately: the sidebar brand block, the
+threshold card header, and as a watermark in empty states. A ridge on every
+page would be wallpaper.
+
+Params:
+  variant  "full" (default) — peaks, snowcap and pines
+           "plain"          — peaks and snowcap only, no pines (small sizes)
+           "mark"           — near ridge + snowcap only (empty-state watermark)
+  css_class  extra classes on the <svg>
+{% endcomment %}
+<svg class="fb-ridge {{ css_class }}" viewBox="0 0 240 76" preserveAspectRatio="none"
+     {% if alt %}role="img" aria-label="{{ alt }}"{% else %}aria-hidden="true"{% endif %}>
+    {% if variant != "mark" %}
+        <path class="fb-ridge__far" d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>
+    {% endif %}
+    <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+    <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+    {% if not variant or variant == "full" %}
+        <g class="fb-ridge__pine">
+            <path d="M18,50 L25,62 L11,62 Z"/><path d="M18,58 L26,72 L10,72 Z"/><rect x="16.6" y="71" width="2.8" height="5"/>
+            <path d="M222,52 L229,64 L215,64 Z"/><path d="M222,60 L230,73 L214,73 Z"/><rect x="220.6" y="72" width="2.8" height="4"/>
+        </g>
+    {% endif %}
+</svg>

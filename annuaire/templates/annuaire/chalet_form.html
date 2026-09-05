@@ -2,31 +2,36 @@
 {% load crispy_forms_filters %}
 {% load static %}
 {% block content %}
-    <div class="form">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            <fieldset class="form-group">
-                <legend>{% if object %}Modifier {{ object.name }}{% else %}Créer un chalet{% endif %}</legend>
-                {{ form.media }}
-                {{ form.name|as_crispy_field }}
-                {{ form.address|as_crispy_field }}
-                {{ form.latitude }}
-                {{ form.longitude }}
-                {{ form.photo|as_crispy_field }}
-                {% if show_owner_picker %}
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" for="owner-search-input">Propriétaire(s)</label>
-                        {% include "annuaire/_person_picker.html" with input_id="owner-search-input" field_name="owners" initial_json=owners_initial_json aria_label="Chercher un propriétaire" %}
-                        {% if form.owners.errors %}<div class="text-danger small">{{ form.owners.errors }}</div>{% endif %}
-                    </div>
-                {% endif %}
-            </fieldset>
-            <div class="form-group">
-                <button class="btn btn-outline-primary" type="submit">Enregistrer</button>
-                <a href="{% url 'chalet-list' %}" class="btn btn-outline-secondary ms-2">Annuler</a>
-            </div>
-        </form>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Chalets PSV</p>
+            <h1>{% if object %}Modifier {{ object.name }}{% else %}Créer un chalet{% endif %}</h1>
+        </div>
     </div>
+
+    <form method="POST" enctype="multipart/form-data" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Le chalet</legend>
+            {{ form.media }}
+            {{ form.name|as_crispy_field }}
+            {{ form.address|as_crispy_field }}
+            {{ form.latitude }}
+            {{ form.longitude }}
+            {{ form.photo|as_crispy_field }}
+            {% if show_owner_picker %}
+                <div class="fb-field">
+                    <label class="fb-label" for="owner-search-input">Propriétaire(s)</label>
+                    {% include "annuaire/_person_picker.html" with input_id="owner-search-input" field_name="owners" initial_json=owners_initial_json aria_label="Chercher un propriétaire" %}
+                    {% if form.owners.errors %}<div class="fb-error">{{ form.owners.errors }}</div>{% endif %}
+                </div>
+            {% endif %}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <a href="{% url 'chalet-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        </div>
+    </form>
     {% if show_owner_picker %}
         <script src="{% static 'js/person_picker.js' %}"></script>
     {% endif %}

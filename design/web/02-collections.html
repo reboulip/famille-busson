@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr" data-bs-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Famille Busson — Collections (maquette)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="components.css">
+<style>
+  .demo-sep { margin: var(--fb-sp-8) 0 var(--fb-sp-6); border: 0; border-top: 1px dashed var(--fb-border-strong); }
+  .demo-note { font-size: var(--fb-text-sm); color: var(--fb-bark); margin-bottom: var(--fb-sp-5); max-width: var(--fb-measure-max); }
+  .cat-tree { list-style: none; margin: 0; padding: 0; }
+  .cat-tree ul { list-style: none; margin: var(--fb-sp-2) 0 0; padding-left: var(--fb-sp-4); border-left: 1px solid var(--fb-border); }
+  .cat-tree li { margin-bottom: var(--fb-sp-3); }
+  .cat-tree__name { font-family: var(--fb-font-display); font-weight: 600; text-decoration: none; }
+  .cat-tree__excerpt { font-size: var(--fb-text-sm); color: var(--fb-bark); margin: 2px 0 0; }
+</style>
+</head>
+<body>
+
+<div class="fb-layout" data-fb-shell data-active="annuaire">
+  <main class="fb-content">
+    <div class="fb-content__inner">
+
+      <!-- ============================================================
+           Archetype B — Collection grid (Annuaire, Chalets)
+           ============================================================ -->
+      <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+          <h1>Annuaire</h1>
+          <p class="fb-page-head__lede">Tous les membres de la famille, avec ou sans compte.</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="05-formulaires.html">+ Ajouter un membre</a>
+        </div>
+      </div>
+
+      <div class="fb-toolbar">
+        <input class="fb-input fb-search" type="search" placeholder="Rechercher par nom ou prénom…" aria-label="Rechercher">
+        <select class="fb-select" style="width:auto" aria-label="Trier">
+          <option>Plus récents d'abord</option>
+          <option>Nom (A → Z)</option>
+          <option>Date de naissance</option>
+        </select>
+        <span class="fb-toolbar__spacer"></span>
+        <span class="fb-meta">22 profils</span>
+        <button class="fb-btn fb-btn--ghost fb-btn--sm" type="button">Effacer</button>
+      </div>
+
+      <div class="fb-grid">
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Marie-Charlotte<br>Reboulleau-Dumontier</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Émile Lefevre</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Laura Robert</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Romain Simon</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Quentin Busson</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Camille Lefevre</span>
+        </a>
+        <!-- Deceased: greyed photo, ink ring, and a chip that says so in words
+             rather than relying on the treatment alone. -->
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar fb-avatar--deceased">
+          <span class="fb-person-card__name">Sandrine Busson</span>
+          <span class="fb-chip">1931 – 2019</span>
+        </a>
+        <a class="fb-card fb-card--link fb-person-card" href="03-details.html">
+          <img data-ph="avatar" alt="" class="fb-avatar">
+          <span class="fb-person-card__name">Alice Bernard</span>
+        </a>
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- Chalets: same grid, different card shape ------------------- -->
+      <div class="fb-page-head" id="chalets">
+        <div class="fb-page-head__titles">
+          <h1>Chalets PSV</h1>
+          <p class="fb-page-head__lede">Les chalets de la famille à Praz-sur-Verre et leurs présences.</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="05-formulaires.html">+ Créer un chalet</a>
+        </div>
+      </div>
+
+      <p class="demo-note">
+        <strong>La variation :</strong> personnes et lieux partagent la grille et la carte,
+        mais pas la forme du médaillon — les gens sont ronds, les lieux sont rectangulaires.
+        Aujourd'hui les chalets réutilisent <code>.personne-card</code> et sont donc ronds
+        eux aussi, avec un emoji 🏔️ en secours qui s'affiche en carré blanc partout où le
+        système n'a pas de police emoji.
+      </p>
+
+      <div class="fb-grid fb-grid--wide">
+        <a class="fb-card fb-card--link fb-place-card" href="03-details.html#chalet">
+          <img data-ph="chalet" alt="" class="fb-place-card__media">
+          <div class="fb-place-card__body">
+            <p class="fb-place-card__name">Chalet Belle Vue</p>
+            <p class="fb-meta">12 route des Cimes, Praz-sur-Verre</p>
+            <p style="margin-top: var(--fb-sp-3)"><span class="fb-chip fb-chip--success">Occupé jusqu'au 4 sept.</span></p>
+          </div>
+        </a>
+        <a class="fb-card fb-card--link fb-place-card" href="03-details.html#chalet">
+          <img data-ph="chalet" alt="" class="fb-place-card__media">
+          <div class="fb-place-card__body">
+            <p class="fb-place-card__name">Chalet Edelweiss</p>
+            <p class="fb-meta">4 chemin du Verre, Praz-sur-Verre</p>
+            <p style="margin-top: var(--fb-sp-3)"><span class="fb-chip">Libre</span></p>
+          </div>
+        </a>
+        <!-- No photo: the ridge, not an emoji. -->
+        <a class="fb-card fb-card--link fb-place-card" href="03-details.html#chalet">
+          <div class="fb-place-placeholder">
+            <svg class="fb-ridge" viewBox="0 0 240 76" preserveAspectRatio="none" aria-hidden="true">
+              <path class="fb-ridge__far"  d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>
+              <path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>
+              <path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>
+            </svg>
+          </div>
+          <div class="fb-place-card__body">
+            <p class="fb-place-card__name">Chalet des Aiguilles</p>
+            <p class="fb-meta">Route du col, Praz-sur-Verre</p>
+            <p style="margin-top: var(--fb-sp-3)"><span class="fb-chip">Pas de photo</span></p>
+          </div>
+        </a>
+      </div>
+
+      <hr class="demo-sep">
+
+      <!-- ============================================================
+           Archetype C — Collection feed (Publications, Documents)
+           ============================================================ -->
+      <div class="fb-page-head" id="publications">
+        <div class="fb-page-head__titles">
+          <h1>Publications</h1>
+          <p class="fb-page-head__lede">Nouvelles, souvenirs et annonces de la famille.</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="05-formulaires.html">Nouvelle publication</a>
+        </div>
+      </div>
+
+      <p class="demo-note">
+        <strong>La variation :</strong> pas de médaillon du tout — un billet n'a pas de
+        portrait. À la place, un liseré de 3 px sur le bord gauche qui code le type
+        (<em>alpenglow</em> = publication normale, <em>or</em> = Busson connection), le
+        titre en Bitter, et l'extrait tronqué à deux lignes.
+        Aujourd'hui <code>.blogpost-card</code>, <code>.document-card</code> et
+        <code>.badge-bc</code> n'ont <em>aucune</em> règle CSS : ces listes s'affichent en
+        flux HTML brut.
+      </p>
+
+      <article class="fb-card fb-post-card">
+        <h2 class="fb-post-card__title"><a href="03-details.html#publication">Rénovation du chalet du Lac</a></h2>
+        <p class="fb-meta">Par <a href="03-details.html">Julien Simon</a> — 20 août 2026 · 4 commentaires</p>
+        <p class="fb-post-card__excerpt">Les travaux de la toiture commencent lundi. On a retenu le devis de l'entreprise de Praz-sur-Verre, qui refait aussi la fascia et les rives. Prévoir du bruit les deux premières semaines…</p>
+      </article>
+
+      <article class="fb-card fb-post-card fb-post-card--bc">
+        <h2 class="fb-post-card__title">
+          <a href="03-details.html#publication">Recette : tarte tatin façon grand-mère</a>
+        </h2>
+        <p class="fb-meta">
+          Par <a href="03-details.html">Alice Bernard</a> — 18 août 2026
+          <span class="fb-chip fb-chip--gold">Busson connection</span>
+        </p>
+        <p class="fb-post-card__excerpt">Elle la faisait dans un moule en cuivre qui doit encore être quelque part au grenier du chalet. Le secret, c'est de ne pas toucher au caramel une fois qu'il a pris…</p>
+      </article>
+
+      <article class="fb-card fb-post-card">
+        <h2 class="fb-post-card__title"><a href="03-details.html#publication">Photos de la randonnée du Mont-Blanc</a></h2>
+        <p class="fb-meta">Par <a href="03-details.html">Margaux Simon</a>, <a href="03-details.html">Romain Simon</a> — 20 août 2026 · 12 pièces jointes</p>
+        <p class="fb-post-card__excerpt">Trois jours, deux refuges et beaucoup trop de fromage. Les photos du deuxième jour sont les plus réussies, la lumière était incroyable au lever…</p>
+      </article>
+
+      <nav class="fb-pagination">
+        <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">← Précédent</a>
+        <span>Page 1 / 4</span>
+        <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#">Suivant →</a>
+      </nav>
+
+      <hr class="demo-sep">
+
+      <!-- Documents ------------------------------------------------- -->
+      <div class="fb-page-head" id="documents">
+        <div class="fb-page-head__titles">
+          <h1>Documents</h1>
+          <p class="fb-page-head__lede">Actes, plans, comptes rendus et archives de la famille.</p>
+        </div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="05-formulaires.html">+ Ajouter un document</a>
+        </div>
+      </div>
+
+      <div class="fb-toolbar">
+        <input class="fb-input fb-search" type="search" placeholder="Rechercher…" aria-label="Rechercher un document">
+        <select class="fb-select" style="width:auto" aria-label="Catégorie">
+          <option>Toutes les catégories</option>
+          <option>Chalets · Grand chalet</option>
+          <option>Archives familiales</option>
+        </select>
+        <span class="fb-toolbar__spacer"></span>
+        <span class="fb-meta">3 documents</span>
+      </div>
+
+      <article class="fb-card fb-post-card">
+        <h2 class="fb-post-card__title"><a href="03-details.html#document">Plan cadastral du grand chalet</a></h2>
+        <p class="fb-meta">
+          <a href="#">Chalets · Grand chalet</a> — 14 mars 1978
+          <span class="fb-chip">PDF · 3 pages</span>
+        </p>
+        <p class="fb-post-card__excerpt">Relevé cadastral d'origine, avec les limites de parcelle avant le rachat de la bande est. Sert de référence pour toutes les discussions de bornage.</p>
+      </article>
+
+      <article class="fb-card fb-post-card">
+        <h2 class="fb-post-card__title"><a href="03-details.html#document">Album photo : vacances 1964</a></h2>
+        <p class="fb-meta">
+          <a href="#">Archives familiales</a> — été 1964
+          <span class="fb-chip">18 images</span>
+          <span class="fb-chip fb-chip--accent">Trouvé dans le contenu</span>
+        </p>
+        <p class="fb-post-card__excerpt">Numérisation de l'album relié qu'avait Sandrine. Les légendes au crayon ont été recopiées telles quelles, y compris les deux qu'on n'arrive pas à lire.</p>
+      </article>
+
+      <hr class="demo-sep">
+
+      <!-- Catégories : l'arborescence ------------------------------- -->
+      <div class="fb-page-head" id="categories">
+        <div class="fb-page-head__titles"><h1>Catégories de documents</h1></div>
+        <div class="fb-page-head__actions">
+          <a class="fb-btn fb-btn--primary" href="05-formulaires.html">+ Nouvelle catégorie</a>
+        </div>
+      </div>
+
+      <div class="fb-card">
+        <ul class="cat-tree">
+          <li>
+            <a class="cat-tree__name" href="#">Chalets</a>
+            <p class="cat-tree__excerpt">Tout ce qui concerne les bâtiments : plans, devis, assurances.</p>
+            <ul>
+              <li>
+                <a class="cat-tree__name" href="#">Grand chalet</a>
+                <p class="cat-tree__excerpt">Le bâtiment principal, propriété de la SCI.</p>
+              </li>
+              <li>
+                <!-- Locked: dashed chip + muted name, so "you may not open this"
+                     is legible without colour alone carrying it. -->
+                <span class="cat-tree__name" style="color: var(--fb-bark)">Comptes SCI</span>
+                <span class="fb-chip fb-chip--lock">🔒 Réservé au groupe SCI</span>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <a class="cat-tree__name" href="#">Archives familiales</a>
+            <p class="cat-tree__excerpt">Photos anciennes, correspondance, actes d'état civil.</p>
+          </li>
+        </ul>
+      </div>
+
+      <p class="fb-meta" style="margin-top: var(--fb-sp-8)">
+        Maquette — archetypes B (grille) et C (flux).
+      </p>
+
+    </div>
+  </main>
+</div>
+
+<script src="shell.js"></script>
+</body>
+</html>

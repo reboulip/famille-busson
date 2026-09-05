@@ -1,23 +1,34 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Documents</h1>
-        <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}"
-           class="btn btn-outline-primary" data-live-filter-carry="category">+ Ajouter un document</a>
+    {# Archetype C — collection feed. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Documents</h1>
+            <p class="fb-page-head__lede">Actes, plans, comptes rendus et archives de la famille.</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}"
+               class="fb-btn fb-btn--primary" data-live-filter-carry="category">{% icon "plus" size=16 %} Ajouter un document</a>
+        </div>
     </div>
-    <form method="get" action="{% url 'document-list' %}" class="search-form mb-3" id="document-filter-form"
+
+    <form method="get" action="{% url 'document-list' %}" class="fb-toolbar" id="document-filter-form"
           data-live-filter="#document-results" autocomplete="off">
-        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…" class="search-input" aria-label="Rechercher un document">
-        <select name="category" aria-label="Filtrer par catégorie">
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…"
+               class="fb-input fb-search" aria-label="Rechercher un document">
+        <select name="category" class="fb-select" style="width:auto" aria-label="Filtrer par catégorie">
             <option value="">Toutes les catégories</option>
             {% for cat in filter_categories %}
                 <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
-        <a href="{% url 'document-list' %}" class="btn btn-outline-secondary" data-live-filter-reset
+        <span class="fb-toolbar__spacer"></span>
+        <a href="{% url 'document-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm" data-live-filter-reset
            {% if not query and not selected_category %}hidden{% endif %}>Effacer</a>
     </form>
+
     <div id="document-results" aria-live="polite">
         {% include "documents/_document_results.html" %}
     </div>

@@ -1,38 +1,42 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% block content %}
-    <div class="page-header">
-        <h1>Rattacher mon compte à une fiche existante</h1>
-        <form method="get" action="{% url 'profile-claim' %}" class="search-form">
-            <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…" class="search-input">
-            <button type="submit" class="btn btn-outline-primary">Rechercher</button>
-            {% if query %}
-                <a href="{% url 'profile-claim' %}" class="btn btn-outline-secondary">Effacer</a>
-            {% endif %}
-        </form>
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>Rattacher mon compte à une fiche existante</h1>
+        </div>
     </div>
 
-    <div class="alert alert-warning">
+    <div class="fb-alert fb-alert--warning">
         Cette action est <strong>définitive</strong> : une fois votre compte rattaché à
         une fiche, seul un administrateur pourra le dérattacher. Ne choisissez que votre
         propre fiche.
     </div>
 
-    <div class="annuaire-grid">
+    <form method="get" action="{% url 'profile-claim' %}" class="fb-toolbar">
+        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…"
+               class="fb-input fb-search" aria-label="Rechercher par nom ou prénom">
+        <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Rechercher</button>
+        <span class="fb-toolbar__spacer"></span>
+        {% if query %}
+            <a href="{% url 'profile-claim' %}" class="fb-btn fb-btn--ghost fb-btn--sm">Effacer</a>
+        {% endif %}
+    </form>
+
+    <div class="fb-grid">
         {% for person in persons %}
-            <form method="post" class="personne-card">
+            <form method="post" class="fb-card fb-person-card">
                 {% csrf_token %}
                 <input type="hidden" name="person" value="{{ person.pk }}">
                 <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
-                     alt="{{ person.first_name }} {{ person.last_name }}" class="personne-card-photo">
-                <div class="personne-card-info">
-                    <strong>{{ person.first_name }} {{ person.last_name }}</strong>
-                    {% if person.birth_date %}<div class="text-muted small">Né(e) en {{ person.birth_date|date:"Y" }}</div>{% endif %}
-                </div>
-                <button type="submit" class="btn btn-sm btn-outline-primary mt-2">C'est moi</button>
+                     alt="{{ person.first_name }} {{ person.last_name }}" class="fb-avatar">
+                <span class="fb-person-card__name">{{ person.first_name }} {{ person.last_name }}</span>
+                {% if person.birth_date %}<span class="fb-meta">Né(e) en {{ person.birth_date|date:"Y" }}</span>{% endif %}
+                <button type="submit" class="fb-btn fb-btn--primary fb-btn--sm">C'est moi</button>
             </form>
         {% empty %}
-            <p>Aucune fiche sans compte trouvée.</p>
+            {% include "annuaire/_empty.html" with title="Aucune fiche sans compte trouvée" body="Toutes les fiches sont déjà rattachées à un compte, ou votre recherche ne renvoie rien." %}
         {% endfor %}
     </div>
 {% endblock content %}

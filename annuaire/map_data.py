@@ -22,8 +22,11 @@ _QUANTIZE = Decimal("0.00001")
 
 # Chalets without a photo carry this sentinel instead of an image URL (there's no
 # default chalet photo asset the way there is a default person avatar) -- map_init.js
-# renders the 🏔️ placeholder used everywhere else in the app for this prefix.
-EMOJI_PREFIX = "emoji::"
+# draws the ridge mark for it, the same placeholder used everywhere else in the app.
+# Was "emoji::🏔️" until the Alpenglow design pass: an emoji renders as a tofu box on
+# any system without an emoji font, and cannot follow the theme's colours.
+PLACEHOLDER_PREFIX = "placeholder::"
+CHALET_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}chalet"
 
 
 def _quantize(value: Decimal) -> Decimal:
@@ -74,6 +77,6 @@ def build_chalet_map_groups() -> list[dict]:
         entry_func=lambda chalet: {
             "name": chalet.name,
             "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
-            "avatar": chalet.photo.url if chalet.photo else f"{EMOJI_PREFIX}🏔️",
+            "avatar": chalet.photo.url if chalet.photo else CHALET_PLACEHOLDER,
         },
     )

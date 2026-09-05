@@ -1,27 +1,33 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% block content %}
-    <div class="form">
-        <form method="POST" enctype="multipart/form-data">
-            {% csrf_token %}
-            {% include "annuaire/_profile_edit_actions.html" %}
-            <fieldset class="form-group">
-                <legend>
-                    {% if form_title %}
-                        {{ form_title }}
-                    {% else %}
-                        Modification de {{ form.instance }}
-                    {% endif %}
-                </legend>
-                {{ form.media }}
-                {{ form|crispy }}
-            </fieldset>
-            <fieldset class="form-group">
-                <legend>Notifications</legend>
-                {{ settings_form|crispy }}
-            </fieldset>
-            {% include "annuaire/_profile_edit_actions.html" %}
-        </form>
+    {# Archetype G — form. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Annuaire</p>
+            <h1>
+                {% if form_title %}{{ form_title }}{% else %}Modification de {{ form.instance }}{% endif %}
+            </h1>
+        </div>
     </div>
+
+    <form method="POST" enctype="multipart/form-data" class="fb-form">
+        {% csrf_token %}
+        {% comment %}
+            Actions appear top and bottom: this form is long enough that scrolling
+            back down to save is a nuisance. Asserted by test_views_profile_edit_buttons.
+        {% endcomment %}
+        {% include "annuaire/_profile_edit_actions.html" %}
+        <fieldset class="fb-fieldset">
+            <legend>Le profil</legend>
+            {{ form.media }}
+            {{ form|crispy }}
+        </fieldset>
+        <fieldset class="fb-fieldset">
+            <legend>Notifications</legend>
+            {{ settings_form|crispy }}
+        </fieldset>
+        {% include "annuaire/_profile_edit_actions.html" %}
+    </form>
     {% include "annuaire/_profile_photo_size_check.html" %}
 {% endblock content %}

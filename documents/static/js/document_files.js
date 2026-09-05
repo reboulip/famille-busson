@@ -28,7 +28,7 @@
 
     function makeBadge(row, displayName) {
         const badge = document.createElement('span');
-        badge.className = 'badge bg-secondary me-1 mb-1 document-file-badge';
+        badge.className = 'fb-chip me-1 mb-1 document-file-badge';
 
         const label = document.createElement('span');
         label.className = 'document-file-badge-name';

@@ -1,0 +1,14 @@
+{% load static %}
+{% comment %}
+One related person, as a named card.
+
+Replaces the bare 1.5em avatar previously used on the profile page, where the
+only way to find out who someone was was to hover for the title tooltip.
+
+Param: related — a Person
+{% endcomment %}
+<a class="fb-relation" href="{% url 'personne-detail' related.pk %}">
+    <img src="{% if related.profile_photo %}{{ related.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+         alt="" class="fb-avatar fb-avatar--sm{% if related.deceased %} fb-avatar--deceased person-photo--deceased{% endif %}">
+    <span>{{ related.first_name }} {{ related.last_name }}</span>
+</a>

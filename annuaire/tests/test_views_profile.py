@@ -910,7 +910,7 @@ def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
     chalet.save()
     response = auth_client.get(reverse("carte"))
     chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["entries"][0]["avatar"] == "emoji::🏔️"
+    assert chalets[0]["entries"][0]["avatar"] == "placeholder::chalet"
 
 
 @pytest.mark.django_db

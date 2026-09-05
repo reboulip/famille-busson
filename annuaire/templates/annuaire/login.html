@@ -1,21 +1,30 @@
-{% extends 'annuaire/base.html' %}
+{% extends "annuaire/base_threshold.html" %}
 {% load static %}
 {% load crispy_forms_filters %}
-
+{% block title %}Connexion — Famille Busson{% endblock title %}
+{% block heading %}Content de vous revoir{% endblock heading %}
+{% block lede %}
+    <p class="fb-meta fb-threshold__lede">
+        Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications.
+    </p>
+{% endblock lede %}
 {% block content %}
-    <h2>Connexion</h2>
-
     <form method="post">
         {% csrf_token %}
         {{ form.media }}
         {{ form|crispy }}
-        <button type="submit">Se connecter</button>
+        <button type="submit" class="fb-btn fb-btn--primary fb-btn--block">Se connecter</button>
     </form>
-
-    <p>Tu n'as pas encore créé ton compte ? <a href="{% url 'signup' %}">C'est par ici</a>.</p>
-    <p>Mot de passe oublié ? <a href="{% url 'password-reset' %}">Réinitialise-le ici</a>.</p>
-    <p>Pas envie de saisir ton mot de passe ? <a href="{% url 'magic-link-request' %}">Recevez un lien de connexion par email</a> (<a href="{% url 'magic-link-help' %}">comment ça marche ?</a>).</p>
-{% endblock %}
+{% endblock content %}
+{% block links %}
+    <div class="fb-threshold__links">
+        <span>Pas envie de saisir votre mot de passe ?
+            <a href="{% url 'magic-link-request' %}">Recevez un lien de connexion par email</a>
+            (<a href="{% url 'magic-link-help' %}">comment ça marche ?</a>).</span>
+        <span>Mot de passe oublié ? <a href="{% url 'password-reset' %}">Réinitialisez-le ici</a>.</span>
+        <span>Pas encore de compte ? <a href="{% url 'signup' %}">C'est par ici</a>.</span>
+    </div>
+{% endblock links %}
 {% block extra_js %}
     <script src="{% static 'js/password_toggle.js' %}"></script>
 {% endblock extra_js %}

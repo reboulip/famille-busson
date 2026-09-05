@@ -68,7 +68,7 @@ function initPicker(picker) {
         selectedIds.add(String(id));
 
         const badge = document.createElement('span');
-        badge.className = 'badge bg-secondary me-1 mb-1 person-picker-badge';
+        badge.className = 'fb-chip me-1 mb-1 person-picker-badge';
         badge.dataset.id = id;
         badge.textContent = name + ' ';
         const closeBtn = document.createElement('button');

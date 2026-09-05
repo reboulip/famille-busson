@@ -1,0 +1,44 @@
+{% extends "annuaire/emails/_base.html" %}
+{% comment %}
+Magic link (passwordless login) — restrained treatment.
+
+Same shell as the password reset, different strings and a much shorter validity
+window (settings.MAGIC_LINK_TIMEOUT, passed in as validity_minutes by
+MagicLinkRequestView's extra_email_context).
+{% endcomment %}
+{% block ridge %}{% include "annuaire/emails/_horizon.html" %}{% endblock ridge %}
+{% block title %}Votre lien de connexion{% endblock title %}
+{% block preheader %}Connectez-vous au site de la famille Busson sans mot de passe.{% endblock preheader %}
+
+{% block body %}
+<tr>
+  <td class="em-pad" style="padding: 40px 48px 0;">
+    <h1 class="em-ink" style="margin:0; font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:24px; line-height:1.3; font-weight:700; color:#3A2C1E;">
+      Votre lien de connexion
+    </h1>
+  </td>
+</tr>
+<tr>
+  <td class="em-pad" style="padding: 16px 48px 0;">
+    <p class="em-ink" style="margin:0; font-family: 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif; font-size:16px; line-height:1.6; color:#3A2C1E;">
+      Vous avez demandé un lien de connexion pour votre compte sur le site de la famille
+      Busson ({{ email }}).
+    </p>
+  </td>
+</tr>
+{% url 'magic-link-confirm-token' uidb64=uid token=token as magic_path %}
+{% include "annuaire/emails/_button.html" with url=protocol|add:"://"|add:domain|add:magic_path label="Se connecter" %}
+<tr>
+  <td class="em-pad" style="padding: 20px 48px 0;">
+    <p class="em-muted" style="margin:0; font-family: 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#7A6650;">
+      Ce lien est à usage unique et expire dans {{ validity_minutes }}&nbsp;minutes. Si
+      vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.
+    </p>
+  </td>
+</tr>
+{% endblock body %}
+
+{% block footer %}
+  Cet email vous a été envoyé par le site privé de la famille Busson à la suite d'une
+  demande de connexion par lien.
+{% endblock footer %}

@@ -1,32 +1,39 @@
 {% extends "annuaire/base.html" %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Groupes</h1>
-        <a href="{% url 'group-create' %}" class="btn btn-outline-primary">+ Créer un groupe</a>
+    {# Archetype I — tabular. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Groupes</h1>
+            <p class="fb-page-head__lede">Les groupes réservent certaines catégories de documents à quelques membres.</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'group-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Créer un groupe</a>
+        </div>
     </div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Membres</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for group in groups %}
-                <tr>
-                    <td>{{ group.name }}</td>
-                    <td>{{ group.account_set.count }}</td>
-                    <td>
-                        <a href="{% url 'group-members-edit' group.pk %}" class="btn btn-sm btn-outline-secondary">Membres</a>
-                        <a href="{% url 'group-edit' group.pk %}" class="btn btn-sm btn-outline-secondary">Modifier</a>
-                        <a href="{% url 'group-delete' group.pk %}" class="btn btn-sm btn-outline-danger">Supprimer</a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr><td colspan="3">Aucun groupe.</td></tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    {% if groups %}
+        <table class="fb-table table">
+            <thead>
+                <tr><th>Nom</th><th>Membres</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                    <tr>
+                        <td class="fb-table__strong">{{ group.name }}</td>
+                        <td><span class="fb-chip">{{ group.account_set.count }}</span></td>
+                        <td class="fb-table__actions">
+                            <a href="{% url 'group-members-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Membres</a>
+                            <a href="{% url 'group-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                            <a href="{% url 'group-delete' group.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">Supprimer</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% url 'group-create' as create_url %}
+        {% include "annuaire/_empty.html" with title="Aucun groupe" body="Les groupes servent à réserver certaines catégories de documents à quelques membres." action_url=create_url action_label="Créer le premier groupe" %}
+    {% endif %}
 {% endblock content %}

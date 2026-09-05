@@ -1,0 +1,170 @@
+{% load static %}{% spaceless %}{% endspaceless %}<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+{% comment %}
+Shared HTML email shell — implements design/emails/SPEC.md.
+
+Email-safe by necessity, which is why nothing here looks like the rest of the
+codebase: table-based layout, inline CSS on every element, no custom webfonts, no
+external stylesheet. The `<style>` block below only carries what *must* be a rule
+rather than an inline style (dark-mode overrides and the mobile breakpoint) —
+inline styles otherwise win over both.
+
+Two treatments, one identity (SPEC.md §"Why these choices"):
+  full        — ridge with peaks + snowcap. Birthday and new-post notifications.
+  restrained  — one flat horizon line. Password reset, magic link, account setup.
+                A credential email that looks understated reads as more trustworthy,
+                and heavy styling on transactional mail weighs against spam filters.
+Override {% block ridge %} to switch; `full` is the default.
+
+The mountain is built from bordered-div triangles rather than an image because most
+clients block images until the reader clicks "download images" — including on first
+open, which is exactly when these emails are read. Outlook's Word engine renders that
+technique unreliably, so the whole ridge sits inside an MSO conditional and Outlook
+gets a flat sky band with the wordmark instead. Both read as "Famille Busson".
+
+Blocks: preheader, ridge, body, footer.
+{% endcomment %}
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="color-scheme" content="light dark" />
+<meta name="supported-color-schemes" content="light dark" />
+<meta name="x-apple-disable-message-reformatting" />
+<meta name="format-detection" content="telephone=no, date=no, address=no, email=no" />
+<title>{% block title %}{{ site_name }}{% endblock title %}</title>
+<!--[if mso]>
+<noscript>
+<xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml>
+</noscript>
+<![endif]-->
+<style>
+  body, table, td { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+  img { -ms-interpolation-mode: bicubic; border: 0; line-height: 100%; outline: none; text-decoration: none; }
+  body { margin: 0; padding: 0; width: 100% !important; height: 100% !important; }
+  a { text-decoration: none; }
+
+  /* Nightfall. The explicit color-scheme meta above is what tells a supporting
+     client "this message already has an intentional dark mode, do not auto-invert
+     it" — the main risk now that Nightfall exists as a deliberate palette. */
+  @media (prefers-color-scheme: dark) {
+    .em-page { background-color: #221810 !important; }
+    .em-card { background-color: #2C2119 !important; }
+    .em-border { border-color: #4A3B2E !important; }
+    .em-ink { color: #F2E6D5 !important; }
+    .em-muted { color: #B9A68F !important; }
+    .em-sky { background-color: #3A3450 !important; }
+    .em-horizon { background-color: #28331F !important; }
+    .em-ridge-far { border-bottom-color: #6B7FA0 !important; }
+    .em-ridge-near { border-bottom-color: #28331F !important; }
+    .em-snowcap { border-bottom-color: #D8DEE6 !important; }
+    .em-eaves1 { background-color: #F2E6D5 !important; }
+    .em-eaves2 { background-color: #4A3B2E !important; }
+    .em-btn { background-color: #E2914E !important; }
+    .em-btn-text { color: #2C2119 !important; }
+    .em-ring { border-color: #E8B85B !important; }
+    .em-avatar { background-color: #E2914E !important; }
+    .em-avatar-text { color: #2C2119 !important; }
+  }
+
+  @media screen and (max-width: 600px) {
+    .em-container { width: 100% !important; }
+    .em-pad { padding-left: 24px !important; padding-right: 24px !important; }
+  }
+</style>
+</head>
+<body class="em-page" style="margin:0; padding:0; background-color:#F6EEE0;">
+
+  {# Hidden preview text — the line a client shows next to the subject in the list. #}
+  <div style="display:none; max-height:0; overflow:hidden; opacity:0;">{% block preheader %}{% endblock preheader %}</div>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="em-page" style="background-color:#F6EEE0;">
+    <tr>
+      <td align="center" style="padding: 32px 16px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="em-container" style="width:600px; max-width:600px;">
+
+          {% block ridge %}
+          <tr>
+            <td class="em-sky" style="background-color:#F3D9B1; padding:0;">
+
+              <!--[if !mso]><!-->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding: 18px 0 0; text-align:center;">
+                    <span class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">Famille&nbsp;Busson</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 10px 0 0;">
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td width="17%">&nbsp;</td>
+                        <td width="16%" valign="bottom" align="center">
+                          <div class="em-ridge-far" style="width:0; height:0; border-left:32px solid transparent; border-right:32px solid transparent; border-bottom:42px solid #9FB0AE;"></div>
+                        </td>
+                        <td width="20%" valign="bottom" align="center">
+                          <div class="em-snowcap" style="width:0; height:0; border-left:9px solid transparent; border-right:9px solid transparent; border-bottom:15px solid #FBF6EC; margin:0 auto -9px;"></div>
+                          <div class="em-ridge-near" style="width:0; height:0; border-left:46px solid transparent; border-right:46px solid transparent; border-bottom:74px solid #4B5D3F;"></div>
+                        </td>
+                        <td width="14%" valign="bottom" align="center">
+                          <div class="em-ridge-near" style="width:0; height:0; border-left:26px solid transparent; border-right:26px solid transparent; border-bottom:34px solid #4B5D3F;"></div>
+                        </td>
+                        <td width="16%" valign="bottom" align="center">
+                          <div class="em-ridge-far" style="width:0; height:0; border-left:30px solid transparent; border-right:30px solid transparent; border-bottom:38px solid #9FB0AE;"></div>
+                        </td>
+                        <td width="17%">&nbsp;</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              <!--<![endif]-->
+
+              <!--[if mso]>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="padding: 22px 0 30px; text-align:center; font-family: Georgia, serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">
+                    Famille&nbsp;Busson
+                  </td>
+                </tr>
+              </table>
+              <![endif]-->
+
+            </td>
+          </tr>
+          {% endblock ridge %}
+
+          {# Eaves line: the fascia trim under a chalet roof edge. #}
+          <tr>
+            <td style="line-height:0; font-size:0;">
+              <div class="em-eaves2" style="height:1px; background-color:#E6D8C3;"></div>
+              <div class="em-eaves1" style="height:2px; background-color:#3A2C1E;"></div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="em-card em-border" style="background-color:#FFFAF0; border-left:1px solid #E6D8C3; border-right:1px solid #E6D8C3; border-bottom:1px solid #E6D8C3;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                {% block body %}{% endblock body %}
+                <tr>
+                  <td class="em-pad" style="padding: 32px 48px 40px;">
+                    <div class="em-border" style="border-top:1px solid #E6D8C3; padding-top:20px;">
+                      <p class="em-muted" style="margin:0; font-family: 'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#7A6650;">
+                        {% block footer %}{% endblock footer %}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

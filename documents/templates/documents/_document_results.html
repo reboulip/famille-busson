@@ -1,18 +1,18 @@
-<div class="document-list">
+<div>
     {% for document in documents %}
         {% include "documents/_document_card.html" %}
     {% empty %}
-        <p>Aucun document trouvé.</p>
+        {% include "annuaire/_empty.html" with title="Aucun document trouvé" body="Essayez un autre terme, ou changez de catégorie." %}
     {% endfor %}
 </div>
 {% if is_paginated %}
-    <nav class="pagination">
+    <nav class="fb-pagination pagination">
         {% if page_obj.has_previous %}
-            <a href="{% querystring page=page_obj.previous_page_number %}" class="btn btn-outline-secondary">&larr; Précédent</a>
+            <a href="{% querystring page=page_obj.previous_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
         {% endif %}
         <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
         {% if page_obj.has_next %}
-            <a href="{% querystring page=page_obj.next_page_number %}" class="btn btn-outline-secondary">Suivant &rarr;</a>
+            <a href="{% querystring page=page_obj.next_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
         {% endif %}
     </nav>
 {% endif %}

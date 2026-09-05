@@ -1,0 +1,18 @@
+{% comment %}
+The restrained treatment: the ridge band collapses to a single flat horizon line at
+a fraction of the height — no peaks, no snowcap, no gold. Used by the credential
+flows (password reset, magic link, account setup), matching how the email spec
+splits full vs. restrained.
+
+No MSO conditional needed here: there is no fragile triangle technique to guard
+against, just coloured table cells that Outlook renders fine.
+
+Drop into a template as:  {% block ridge %}{% include "annuaire/emails/_horizon.html" %}{% endblock %}
+{% endcomment %}
+<tr>
+  <td class="em-sky" style="background-color:#F3D9B1; padding: 16px 0 0; text-align:center;">
+    <span class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">Famille&nbsp;Busson</span>
+    <div style="height:16px; line-height:16px; font-size:0;">&nbsp;</div>
+    <div class="em-horizon" style="height:14px; background-color:#4B5D3F; line-height:14px; font-size:0;">&nbsp;</div>
+  </td>
+</tr>

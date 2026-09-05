@@ -1,19 +1,26 @@
-{% extends 'annuaire/base.html' %}
+{% extends "annuaire/base_threshold.html" %}
 {% load static %}
 {% load crispy_forms_filters %}
-
+{% block title %}Inscription — Famille Busson{% endblock title %}
+{% block heading %}Créer votre compte{% endblock heading %}
+{% block lede %}
+    <p class="fb-meta fb-threshold__lede">
+        Votre adresse email doit déjà être connue de la famille pour que le compte soit rattaché à votre fiche.
+    </p>
+{% endblock lede %}
 {% block content %}
-    <h2>Inscription</h2>
-
     <form method="post">
         {% csrf_token %}
         {{ form.media }}
         {{ form|crispy }}
-        <button type="submit">S'inscrire</button>
+        <button type="submit" class="fb-btn fb-btn--primary fb-btn--block">S'inscrire</button>
     </form>
-
-    <p>Tu as déjà un compte ? <a href="{% url 'login' %}">Connecte-toi ici</a>.</p>
-{% endblock %}
+{% endblock content %}
+{% block links %}
+    <div class="fb-threshold__links">
+        <span>Vous avez déjà un compte ? <a href="{% url 'login' %}">Connectez-vous ici</a>.</span>
+    </div>
+{% endblock links %}
 {% block extra_js %}
     <script src="{% static 'js/password_toggle.js' %}"></script>
 {% endblock extra_js %}

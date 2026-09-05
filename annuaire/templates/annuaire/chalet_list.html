@@ -1,29 +1,44 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load icons %}
 {% block content %}
-    <div class="page-header">
-        <h1>Chalets PSV</h1>
-        <a href="{% url 'chalet-create' %}" class="btn btn-outline-primary">+ Créer un chalet</a>
+    {% comment %}
+        Archetype B — collection grid, place variant: rectangular media, not
+        round medallions. People are round, places are rectangular.
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Chalets PSV</h1>
+            <p class="fb-page-head__lede">Les chalets de la famille et le calendrier des présences.</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'chalet-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Créer un chalet</a>
+        </div>
     </div>
 
-    <div class="annuaire-grid">
+    <div class="fb-grid fb-grid--wide">
         {% for chalet in chalets %}
-            <a href="{% url 'chalet-detail' chalet.pk %}" class="personne-card">
+            <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-card fb-card--link fb-place-card">
                 {% if chalet.photo %}
-                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="personne-card-photo">
+                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="fb-place-card__media">
                 {% else %}
-                    <div class="chalet-photo-placeholder">🏔️</div>
+                    <span class="fb-place-placeholder">
+                        {% include "annuaire/_ridge.html" %}
+                    </span>
                 {% endif %}
-                <div class="personne-card-info">
-                    <strong>{{ chalet.name }}</strong>
-                    <span>{{ chalet.address }}</span>
-                </div>
+                <span class="fb-place-card__body">
+                    <span class="fb-place-card__name">{{ chalet.name }}</span>
+                    <span class="fb-meta">{{ chalet.address }}</span>
+                </span>
             </a>
         {% empty %}
-            <p>Aucun chalet enregistré.</p>
+            {% url 'chalet-create' as create_url %}
+            {% include "annuaire/_empty.html" with title="Aucun chalet enregistré" body="Les chalets servent à noter qui monte, et quand." action_url=create_url action_label="Créer un chalet" %}
         {% endfor %}
     </div>
 
-    <h2 class="mt-4">Calendrier global des présences</h2>
+    <div class="fb-section-head">
+        <h2>Calendrier global des présences</h2>
+    </div>
     {% include "annuaire/_presence_calendar.html" %}
 {% endblock content %}
