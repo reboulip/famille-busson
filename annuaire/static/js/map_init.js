@@ -38,11 +38,21 @@ document.addEventListener('DOMContentLoaded', function () {
     const MARKER_SIZE = 60;
     document.documentElement.style.setProperty('--map-marker-size', `${MARKER_SIZE}px`);
 
-    // Metres between neighbouring pins of a co-located group once spread onto a ring
-    // (see spreadEntries). Sets the zoom at which a household finally separates:
-    // ~20m of ground apart clears the 60px medallions at about zoom 18 of 19.
-    const COLOCATED_SPACING_M = 20;
+    // Where a co-located group separates, and how close its pins sit when it does
+    // (see spreadEntries). markercluster splits by *screen* distance, so the ring is
+    // sized in pixels at a chosen zoom and only then converted to ground metres.
+    // Sizing it in ground metres directly is what used to push the split out to
+    // maximum zoom: a fixed ground distance shrinks on screen as you zoom out, so
+    // lowering that number raises the split zoom instead of lowering it.
+    const COLOCATED_SPLIT_ZOOM = 17;
+    const COLOCATED_SPACING_PX = MARKER_SIZE + 6;
+    const EQUATOR_M = 40075016.686;
     const METRES_PER_DEGREE_LAT = 111320;
+
+    // Web Mercator ground resolution: metres covered by one screen pixel.
+    function metresPerPixel(latitude, zoom) {
+        return (EQUATOR_M * Math.cos((latitude * Math.PI) / 180)) / 2 ** (zoom + 8);
+    }
 
     function buildAvatarElement(avatarUrl, entryName) {
         const avatar = document.createElement('div');
@@ -128,7 +138,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // clusters by screen distance, and that distance stays zero. Spread each
     // co-located group onto a small ring around its true point (display only; the
     // stored coordinates are untouched) so zooming in eventually separates them.
-    // The radius grows with the group size to keep neighbours ~COLOCATED_SPACING_M
+    // The radius grows with the group size to keep neighbours a fixed distance
     // apart: n points on a ring of radius r sit 2*r*sin(pi/n) apart. (#114)
     function spreadEntries(groups) {
         const spread = [];
@@ -138,7 +148,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 spread.push({ lat: group.lat, lon: group.lon, entry: group.entries[0] });
                 return;
             }
-            const radius = COLOCATED_SPACING_M / (2 * Math.sin(Math.PI / count));
+            // Ground spacing that renders as COLOCATED_SPACING_PX at the split zoom.
+            // The ring is fixed in ground units, so pins keep spreading apart as you
+            // zoom past that point -- deliberate, and cheaper than re-spreading on
+            // every zoom, which would fight zoomToShowLayer and the initial fitBounds.
+            const spacingM = COLOCATED_SPACING_PX * metresPerPixel(group.lat, COLOCATED_SPLIT_ZOOM);
+            const radius = spacingM / (2 * Math.sin(Math.PI / count));
             const metresPerDegreeLon = METRES_PER_DEGREE_LAT * Math.cos((group.lat * Math.PI) / 180);
             group.entries.forEach((entry, index) => {
                 // Start at the top and go clockwise -- deterministic, so a reload

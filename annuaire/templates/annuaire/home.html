@@ -15,6 +15,17 @@
         <div class="fb-hub-banner__body">
             <h1 class="fb-display">Famille Busson</h1>
             <p class="fb-meta">{% now "l j F Y" %}</p>
+            {% if upcoming_birthdays %}
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% for item in upcoming_birthdays %}
+                        <a class="fb-chip fb-chip--gold" href="{% url 'personne-detail' item.person.pk %}">
+                            {% icon "cake" size=14 %}
+                            {{ item.person }} ·
+                            {% if item.days_until == 0 %}aujourd'hui{% else %}{{ item.date|date:"j M" }}{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </section>
 

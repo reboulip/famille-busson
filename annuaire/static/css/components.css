@@ -594,6 +594,39 @@ a.fb-card:hover,
     outline-offset: 2px;
 }
 
+/* --- Documents list row (#123) ------------------------------------------ */
+/* Scoped to a documents modifier: the same post card renders the publications
+   feed, which keeps its roomier spacing. Two-class selector because the base
+   rule has identical specificity and would otherwise win on source order. */
+.fb-post-card.fb-post-card--doc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--fb-sp-1) var(--fb-sp-4);
+    padding: var(--fb-sp-4);
+    padding-left: calc(var(--fb-sp-4) + 3px);
+    margin-bottom: var(--fb-sp-3);
+}
+
+/* Basis rather than a fixed width: the meta drops onto its own line on a phone
+   instead of overflowing next to a long title. */
+.fb-post-card--doc .fb-post-card__body {
+    flex: 1 1 16rem;
+    min-width: 0;
+}
+
+.fb-post-card--doc .fb-post-card__meta {
+    margin-left: auto;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.fb-post-card--doc .fb-post-card__excerpt {
+    font-size: var(--fb-text-sm);
+    line-height: 1.4;
+    margin-top: var(--fb-sp-1);
+}
+
 /* =========================================================================
    6. Page furniture
    ========================================================================= */

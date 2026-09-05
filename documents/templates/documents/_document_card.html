@@ -1,17 +1,19 @@
 {% load markdown_extras %}
 {% load icons %}
-<article class="fb-card fb-post-card">
-    <h3 class="fb-post-card__title">
-        <a class="stretched-link" href="{% url 'document-detail' document.pk %}">{{ document.title }}</a>
-    </h3>
-    <p class="fb-meta">
+<article class="fb-card fb-post-card fb-post-card--doc">
+    <div class="fb-post-card__body">
+        <h3 class="fb-post-card__title">
+            <a class="stretched-link" href="{% url 'document-detail' document.pk %}">{{ document.title }}</a>
+        </h3>
+        {% if document.description %}
+            <p class="fb-post-card__excerpt">{{ document.description|markdown_plain|truncatechars:200 }}</p>
+        {% endif %}
+    </div>
+    <p class="fb-meta fb-post-card__meta">
         <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
         {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
         {% if query and document.content_match and query|lower not in document.title|lower %}
             <span class="fb-chip fb-chip--accent">Trouvé dans le contenu</span>
         {% endif %}
     </p>
-    {% if document.description %}
-        <p class="fb-post-card__excerpt">{{ document.description|markdown_plain|truncatechars:200 }}</p>
-    {% endif %}
 </article>

@@ -66,6 +66,60 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     flex-wrap: wrap;
 }
 
+/* --- Profile record (#124) ---------------------------------------------- */
+/* Page-scoped on purpose: the .fb-record component is shared with the chalet
+   detail page, so these rules hang off .profile-record instead. */
+
+/* The actions moved out of the rail to below the relations, where they read as
+   "edit what you just looked at" rather than page-level chrome. Laid out as a
+   row here; the rail's own grid stacking was only right in a 280px column. */
+.profile-record__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fb-sp-2);
+    margin-top: var(--fb-sp-5);
+}
+
+/* Below this width .fb-record collapses to one column, which is also where the
+   sticky rail stops working: in a single-row grid area a sticky box has no
+   travel. Turning the record into a block container gives it some, and only the
+   identity card sticks -- the info card scrolls away as normal.
+   --profile-sticky-top is measured and published by profile_sticky_identity.js;
+   the literal is only the no-JS fallback. */
+@media (max-width: 767.98px) {
+    .profile-record { display: block; }
+
+    .profile-record .fb-record__rail { display: block; }
+    .profile-record .fb-record__rail > * { margin-bottom: var(--fb-sp-4); }
+
+    .profile-record .profile-identity {
+        position: sticky;
+        top: var(--profile-sticky-top, 68px);
+        /* Well under the top bar's own layer, which must stay above this. */
+        z-index: 3;
+        transition: padding var(--fb-dur-fast) var(--fb-ease);
+    }
+
+    /* Condensed: photo and name side by side, everything else stood down. */
+    .profile-record .profile-identity--pinned {
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: var(--fb-sp-3);
+        padding: var(--fb-sp-3);
+    }
+
+    .profile-record .profile-identity--pinned .profile-portrait {
+        width: 44px;
+        height: 44px;
+        border-width: 2px;
+    }
+
+    .profile-record .profile-identity--pinned .fb-record__name { font-size: 1.125rem; }
+
+    .profile-record .profile-identity--pinned .fb-meta { display: none; }
+}
+
 /* =========================================================================
    2. Presence calendar
    ========================================================================= */

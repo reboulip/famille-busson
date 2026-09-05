@@ -12,7 +12,7 @@
   (`publications/templates/publications/blogpost_list.html`) and documents
   (`documents/templates/documents/document_list.html`, `category_list.html`) lists
   currently link only via the title text. [#128]
-- [ ] 7.2 · Documents list row cleanup (`document_list.html`, `category_list.html`):
+- [x] 7.2 · Documents list row cleanup (`document_list.html`, `category_list.html`):
   replace the subtitle copy, shrink the description font, move category+date to the
   right of the row, tighten row padding/line-height. [#123]
 
@@ -20,7 +20,7 @@
 
 - [x] 7.3 · Rename the "Coordonnées" section heading to "Informations" on the profile
   view (`annuaire/templates/annuaire/personne_detail.html`). [#122]
-- [ ] 7.4 · Mobile profile view (`personne_detail.html`): shrink the sticky identity
+- [x] 7.4 · Mobile profile view (`personne_detail.html`): shrink the sticky identity
   rail on scroll to show only name+photo instead of the full info card, and move
   "Modifier les relations" to the bottom of the page after the relations display
   (optionally same placement on web). [#124]
@@ -40,13 +40,13 @@
 
 ### Cluster: Carte
 
-- [ ] 7.8 · Map same-address clustering (`annuaire/static/js/map_init.js`): lower the
+- [x] 7.8 · Map same-address clustering (`annuaire/static/js/map_init.js`): lower the
   zoom threshold at which a cluster explodes into individual markers, and tighten
   marker spacing once exploded so photos sit closer without overlapping. [#126]
 
 ### Cluster: Accueil
 
-- [ ] 7.9 · Add an upcoming-birthdays widget to the home page (`annuaire/views.py`'s
+- [x] 7.9 · Add an upcoming-birthdays widget to the home page (`annuaire/views.py`'s
   `home()`), listing people with a birthday in the next 8 days, positioned just under
   the date. [#120]
 
