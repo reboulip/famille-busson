@@ -133,7 +133,7 @@ the default one-branch-per-issue rule above still applies.
 
 ## 9. Toolchain
 - **Test command:** `uv run --group test pytest` (see `/test-select` and `dev-commands`).
-- **Full test suite runtime:** ~12s for 237 tests (measured 2026-08-18, with cov). The
+- **Full test suite runtime:** ~52s for 1062 tests (measured 2026-09-05, with cov). The
   previous ~1490s figure (2026-08-15) was caused by Django's default PBKDF2 password
   hasher — deliberately slow for production security — running on every
   `Account.objects.create_user(...)` call across the suite, worst-case in
