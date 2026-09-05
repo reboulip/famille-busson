@@ -115,6 +115,38 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
    the restrained treatment, mirroring how the emails split full vs. restrained.
 6. **Status is never carried by colour alone** — pair the treatment with words (a chip,
    a label, a date range).
+7. **Card-style list items should be clickable across their whole surface**, not just
+   the title. Give the card `position: relative` and put Bootstrap's `.stretched-link`
+   on the existing title/name `<a>` — its `::after` overlay stretches to fill the
+   nearest positioned ancestor, so no JS is needed. `.fb-post-card` (blog posts,
+   documents) and `.category-tree__row` (category tree rows) both do this. Any other
+   link inside the card that must stay independently clickable (an author link, a
+   category link in the `.fb-meta` line) needs `position: relative; z-index: 2` so it
+   sits above the overlay. An item with no link (e.g. a locked category) gets no
+   `.stretched-link` and stays inert.
+8. **Give a one-consumer layout variant a modifier class, paired with the base class
+   in the selector** — `.fb-post-card.fb-post-card--doc`, not a single-class override.
+   Both classes give the override the same specificity as the base `.fb-post-card`
+   rule, so which one wins is decided by source order (the modifier comes after) —
+   a single-class selector would instead win or lose unpredictably as the stylesheet
+   grows. The documents list row (`fb-post-card--doc`) is the current example: it
+   re-flows `.fb-post-card__body` and `.fb-post-card__meta` into a row without
+   touching the publications feed's `.fb-post-card`.
+9. **Page-specific rules on a component shared by more than one page go in `main.css`
+   under a page-scoped class, never in `components.css`.** `.fb-record` is shared by
+   the profile and chalet detail pages; the profile's mobile sticky-identity condensing
+   hangs off a `.profile-record` class added only in `personne_detail.html`, so chalet
+   detail's layout is untouched. A test (`test_the_shared_record_component_is_not_
+   restyled_for_the_profile_page`) asserts `components.css` never mentions the
+   page-scoped class at all.
+10. **To collapse a button's caption to icon-only on small screens**, wrap the caption
+    text in `<span class="…__label">`, hide that span with CSS below the breakpoint, and
+    mirror the same text into `aria-label` and `title` on the button — so the control
+    keeps its accessible name once the text is not painted, and (in this codebase) the
+    text stays in the DOM for any source-text test that asserts on the rendered label
+    string. The genealogy toolbar's three buttons (`genealogie-export`,
+    `genealogie-export-image`, `genealogie-fullscreen`) are the current example, using
+    `.genealogie-toolbar__label`.
 
 ## 6. The ridge
 
@@ -134,9 +166,48 @@ sync if either changes.
 - **Several CSS rules exist to defeat a specific vendor bug** and say so at length in
   their comments (`.fb-content { min-width: 0 }`, `.map-container { z-index: 0 }`,
   `align-items: safe center` on the viewer stage, the two-class zoom specificity fix,
-  the family-chart label width pair). Port the comment with the rule; do not "tidy" them.
+  the family-chart label width pair, `.f3 div.card` neutralizing Bootstrap's `.card`
+  component from painting a square behind family-chart's identically-named node
+  wrapper — `background`/`border`/`border-radius` only, `display` is deliberately left
+  alone). Port the comment with the rule; do not "tidy" them.
 - **Some class names are pinned by tests**: `contact-line`, `genealogie-toolbar` (must
   come first in its class attribute), `genealogie-detail d-none d-lg-block` (exact
-  string), `markdown-editor-toolbar-btn` (exact attribute order).
+  string), `markdown-editor-toolbar-btn` (exact attribute order), `category-tree__row`,
+  `fb-post-card--doc`, `fb-post-card__body`, `fb-post-card__meta`, `profile-record`,
+  `profile-record__actions`, `profile-identity`, `profile-identity--pinned`,
+  `profile-identity-sentinel`, `genealogie-toolbar__label`. `.fb-post-card` and
+  `.fb-post-card .fb-meta a` (components.css), `.f3 div.card` (main.css), and the
+  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`
+  rules also carry source-text-tested declarations, not just names — see below.
 - **`{# … #}` comments are single-line only.** A multi-line one renders as visible text
   on the page. Use `{% comment %}…{% endcomment %}`.
+- **`.stretched-link`'s overlay fills the nearest `position`ed ancestor** — get that
+  ancestor's scope wrong and the overlay swallows either too little (nothing happens on
+  most of the card) or too much (nested interactive content goes dead). The category
+  tree row wraps only the row itself, deliberately excluding the child `<ul>`, so child
+  rows stay independently clickable. Anything meant to stay clickable above the overlay
+  needs `position: relative; z-index: 2` of its own — and the `.stretched-link` element
+  itself must **not** be positioned, or the overlay re-anchors to it instead of the
+  card. The technique also makes body text over the card unselectable; that's an
+  accepted trade-off, not a bug to fix.
+- **A `position: sticky` child has no room to travel inside a grid area that only
+  spans one row** — the row auto-sizes to the sticky element's own height, so it
+  never scrolls past it. `.fb-record`'s mobile layout collapses to a single-column
+  grid, so the sticky rule on `.profile-identity` was inert there until the mobile
+  media query first set `.profile-record`/its rail to `display: block`, giving the
+  identity card a normal block ancestor it can travel — and stick — within.
+- **The source-text tests' `_rule_body()` helper cannot see inside an `@media`
+  block** — its regex finds the first top-level occurrence of a selector, so a rule
+  that only exists inside a media query (the mobile sticky/condensing rules in
+  `main.css`) has to be sliced out by brace-balance first (see `_mobile_block()` in
+  `test_profile_mobile_rail.py`) and asserted on as a raw substring, not through
+  `_rule_body()`.
+- **`vh` resolves against the *largest* viewport** — as if a mobile browser's
+  collapsible bottom bar were already hidden — so a `vh`-sized element's bottom edge
+  sits underneath that bar while it's showing on screen. `dvh` (dynamic viewport
+  height) tracks the bar as it shows and hides. `.genealogie-container`'s mobile rule
+  (in `main.css`'s `@media (max-width: 991.98px)` block for the genealogy section)
+  declares `height: 70vh;` first — kept as the fallback for browsers without `dvh`
+  support — then overrides it with `height: calc(100dvh - 13rem);`; the `13rem` is an
+  estimate of the page chrome above the chart (top bar, page head, toolbar), not a
+  measured value, and the base rule's `min-height: 320px` still floors it.

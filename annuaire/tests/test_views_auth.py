@@ -155,3 +155,18 @@ def test_signup_valid_creates_account_and_logs_in(client, db):
     )
     assert Account.objects.filter(email="carol@example.com").exists()
     assert response.status_code == 302
+
+
+@pytest.mark.django_db
+def test_home_context_has_upcoming_birthdays(auth_client, person):
+    import datetime
+
+    today = datetime.date.today()
+    # Built against a leap year so the fixture is still constructible when the
+    # suite happens to run on 29 February.
+    person.birth_date = datetime.date(1992, today.month, today.day)
+    person.save()
+    response = auth_client.get(reverse("home"))
+    assert "upcoming_birthdays" in response.context
+    assert person in [entry.person for entry in response.context["upcoming_birthdays"]]
+    assert str(person) in response.content.decode()

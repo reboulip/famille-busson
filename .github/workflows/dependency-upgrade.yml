@@ -1,0 +1,173 @@
+name: Weekly Dependency Upgrade
+
+# Weekly: bumps the pinned Python minor version, upgrades every uv-managed package,
+# and upgrades the vendored front-end assets under annuaire/static/vendor/ (via
+# `manage.py upgrade_vendored_assets`, see that command's docstring and
+# docs/deployment.md) to their latest published versions. Runs the same gates a human
+# contributor would (lint, ty, collectstatic sanity check, full test suite) *before*
+# opening anything -- a red run here simply fails the job with no PR, so a bad upstream
+# release never reaches main unreviewed.
+#
+# Opens its PR straight to `main` (not `develop`) as a documented exception to
+# CLAUDE.md's branch model, on the same footing as hotfix/* -- see CLAUDE.md's Branch
+# Model / Merge rules sections. Like a hotfix, once this PR is merged someone needs to
+# merge `main` back into `develop` so the upgrade isn't lost on the next release; this
+# workflow does not do that merge itself.
+#
+# Requires the repo setting "Allow GitHub Actions to create and approve pull requests"
+# (Settings -> Actions -> General) to be enabled, otherwise `gh pr create` below is
+# rejected regardless of the `pull-requests: write` permission granted here.
+
+on:
+  schedule:
+    # 23:00 UTC every Friday -- ~00:00/01:00 Saturday in Europe/Paris depending on DST
+    # (cron in GitHub Actions is always UTC; there is no timezone-aware equivalent).
+    - cron: "0 23 * * 5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependency-upgrade
+  cancel-in-progress: false
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Determine the latest stable Python minor version
+        id: python
+        run: |
+          set -e
+          CURRENT=$(cat .python-version)
+          # This project pins Python at major.minor granularity only (.python-version
+          # holds e.g. "3.13", not a patch version), matching the Dockerfile's
+          # `python:3.13-slim` tag, which Docker Hub itself keeps rolling to the latest
+          # 3.13.x patch -- so there is nothing to track below minor granularity.
+          # Same manifest actions/setup-python resolves against.
+          LATEST=$(curl -sf https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json \
+            | jq -r '.[] | select(.stable == true) | .version' \
+            | grep -E '^3\.' \
+            | cut -d. -f1,2 \
+            | sort -u -t. -k2 -n \
+            | tail -1)
+          if [ -z "$LATEST" ]; then
+            echo "Could not resolve a latest stable Python version from the manifest." >&2
+            exit 1
+          fi
+          echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
+          echo "Current: $CURRENT -- Latest stable: $LATEST"
+
+      - name: Bump the Python version pins
+        if: steps.python.outputs.current != steps.python.outputs.latest
+        run: |
+          set -e
+          CURRENT="${{ steps.python.outputs.current }}"
+          LATEST="${{ steps.python.outputs.latest }}"
+          echo "$LATEST" > .python-version
+          sed -i "s/requires-python = \">=${CURRENT}\"/requires-python = \">=${LATEST}\"/" pyproject.toml
+          sed -i "s/FROM python:${CURRENT}-slim/FROM python:${LATEST}-slim/" Dockerfile
+          sed -i "s/target-version = \"py${CURRENT/./}\"/target-version = \"py${LATEST/./}\"/" pyproject.toml
+          sed -i "s/python-version = \"${CURRENT}\"/python-version = \"${LATEST}\"/" pyproject.toml
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Upgrade all uv-managed packages
+        run: uv lock --upgrade
+
+      - name: Sync dependencies (dev + test groups)
+        run: uv sync --group dev --group test
+
+      - name: Upgrade vendored front-end assets
+        run: uv run python manage.py upgrade_vendored_assets --summary-file /tmp/vendor-summary.md
+
+      - name: Ruff check
+        run: uv run ruff check .
+
+      - name: Ruff format check
+        run: uv run ruff format --check .
+
+      - name: ty check
+        run: uv run ty check --exit-zero-on-warning
+
+      - name: Install tesseract-ocr
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-fra
+
+      - name: Run tests with coverage
+        run: uv run --group test pytest
+
+      - name: Static-asset build-sanity check
+        # Mirrors CLAUDE.md's toolchain note: WhiteNoise's collectstatic-time manifest
+        # validation catches a broken/incomplete vendored asset (e.g. a CSS url()
+        # reference to an image that wasn't fetched alongside it) that dev's storage
+        # backend never checks -- exactly the failure mode a vendored-asset auto-bump
+        # could introduce.
+        run: DEBUG=False SECRET_KEY=x uv run python manage.py collectstatic --noinput
+
+      - name: Bump the project's minor version
+        id: version
+        run: |
+          set -e
+          CURRENT=$(grep -m1 '^version = ' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          MINOR=$(echo "$CURRENT" | cut -d. -f2)
+          NEW="${MAJOR}.$((MINOR + 1)).0"
+          sed -i "s/^version = \"${CURRENT}\"/version = \"${NEW}\"/" pyproject.toml
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+      - name: Check whether anything actually changed
+        id: diff
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open the pull request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH="deps/$(date +%Y-%m-%d)"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "chore: weekly dependency upgrade to v${{ steps.version.outputs.new_version }}"
+          git push origin "$BRANCH"
+
+          {
+            echo "Mise à jour hebdomadaire automatique des dépendances."
+            echo
+            if [ "${{ steps.python.outputs.current }}" != "${{ steps.python.outputs.latest }}" ]; then
+              echo "- Python : ${{ steps.python.outputs.current }} -> ${{ steps.python.outputs.latest }}"
+            fi
+            echo "- Paquets uv : voir le diff de \`uv.lock\` dans cette pull request."
+            if [ -s /tmp/vendor-summary.md ]; then
+              echo "- Assets front-end vendorisés :"
+              cat /tmp/vendor-summary.md
+            fi
+            echo
+            echo "Lint, ty, collectstatic et la suite de tests sont tous verts (voir ce workflow run)."
+            echo
+            echo "Après fusion, penser à fusionner \`main\` dans \`develop\` (voir CLAUDE.md, comme pour un hotfix)."
+          } > /tmp/pr-body.md
+
+          gh pr create --base main --head "$BRANCH" \
+            --title "chore: weekly dependency upgrade to v${{ steps.version.outputs.new_version }}" \
+            --body-file /tmp/pr-body.md
+
+      - name: Nothing to upgrade this week
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "Toutes les dépendances sont déjà à jour -- aucune pull request ouverte."

@@ -8,7 +8,7 @@
     {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Chalets PSV</h1>
+            <h1>Chalets et Présences</h1>
             <p class="fb-page-head__lede">Les chalets de la famille et le calendrier des présences.</p>
         </div>
         <div class="fb-page-head__actions">
@@ -16,6 +16,14 @@
         </div>
     </div>
 
+    <div class="fb-section-head">
+        <h2>Calendrier global des présences</h2>
+    </div>
+    {% include "annuaire/_presence_calendar.html" %}
+
+    <div class="fb-section-head">
+        <h2>Les chalets</h2>
+    </div>
     <div class="fb-grid fb-grid--wide">
         {% for chalet in chalets %}
             <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-card fb-card--link fb-place-card">
@@ -36,9 +44,4 @@
             {% include "annuaire/_empty.html" with title="Aucun chalet enregistré" body="Les chalets servent à noter qui monte, et quand." action_url=create_url action_label="Créer un chalet" %}
         {% endfor %}
     </div>
-
-    <div class="fb-section-head">
-        <h2>Calendrier global des présences</h2>
-    </div>
-    {% include "annuaire/_presence_calendar.html" %}
 {% endblock content %}

@@ -37,6 +37,9 @@
     - `annuaire`: users (`Account`), profiles (`Person`), family relations (`Relation`),
       chalets (`Chalet`), and presences (`PresencePSV`)
     - `publications`: blog posts (`BlogPost`), comments (`Comment`), attachments (`Attachment`)
+    - `documents`: protected family-document storage and browsing — `Category` (nested,
+      group-restricted), `Document` + `DocumentFile` (upload, PDF/image preview, OCR text
+      extraction, full-text search). Access rules live in `documents/access.py`
 
 ## 4. Coding Standards & Preferences
 - **Views:** Class-Based Views preferred. Ownership checks go in `get_object()`, raising `PermissionDenied`.
@@ -46,6 +49,18 @@
 - **Style:** Follow PEP 8, use Type Hinting.
 - **Language:** Code in English; all user-facing text and model `verbose_name` in French, but names of classes, methods, variables, and comments must all be in English.
 - **Package manager:** Use `uv` — `uv add <pkg>` to add dependencies, `uv sync` to install. Never suggest `pip install`.
+- **Source-text regression tests:** there is no JS test runner here, so frontend behaviour
+  is guarded by Python tests that read a `.js`/`.css`/template file and assert on its
+  *text* — typically `assert "<token>" not in content` to prove an old behaviour is really
+  gone or a value isn't hardcoded (e.g. `annuaire/tests/test_carte_marker_cluster.py`,
+  `test_templates_base.py`, `test_views_family_tree.py`). Two consequences:
+    - **A comment can trip the very test next to it.** When you write a comment explaining
+      what the old/removed behaviour was, do **not** spell out the literal token the test
+      bans — say "the previous threshold" or write the number out instead of naming the
+      constant. This has happened twice: a comment mentioning `SPREAD_MAX` failed
+      `test_spread_machinery_is_gone`, which asserts that string is absent from the file.
+    - Slice the assertion as narrowly as the guard needs (a function body, not the whole
+      file) so unrelated prose can't collide with it.
 
 ## 5. Signals — auto-sync logic (do not bypass)
 Signals are registered via each app's `AppConfig.ready()`: `annuaire/signals.py` via
@@ -81,6 +96,7 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 | `develop` | Integration branch | Direct push allowed. Receives squash-merges from issue branches. |
 | `<type>/issue-<N>/<summary>` | One GitHub issue = one branch | Sub-branch of `develop`. Squash-merge into `develop` when green (see `issue-workflow`). |
 | `hotfix/<name>` | Urgent fix on top of `main` | Branch from `main`. PR back to `main` (no squash). Then merge `main` → `develop`. |
+| `deps/<date>` | Weekly automated dependency upgrade | Branch from `main`, opened by `.github/workflows/dependency-upgrade.yml`. PR back to `main` (no squash). Then merge `main` → `develop`. |
 
 ### Merge rules
 - **Issue branch → `develop`:** local squash-merge (`git merge --squash`), one commit per
@@ -89,6 +105,16 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   squash-commit per issue) is preserved as-is on `main`. See `/release`.
 - **Hotfix → `main`:** PR only, no squash. Immediately after merging, merge `main` back
   into `develop` so the hotfix isn't lost on the next release.
+- **Dependency upgrade → `main`:** same shape as a hotfix — PR only, no squash, then
+  merge `main` back into `develop`. This is a deliberate, documented exception to the
+  general rule that only `develop`/`hotfix/*` PR into `main`: `dependency-upgrade.yml`
+  runs weekly (every Friday night), branches `deps/<date>` off `main`, upgrades the
+  pinned Python minor version, every uv-managed package, and the vendored front-end
+  assets under `annuaire/static/vendor/` (see §11's manifest note), and only opens the
+  PR if lint/ty/collectstatic-sanity/the full test suite all stay green. It always bumps
+  the **minor** version (another documented exception — see §10), regardless of the
+  general "chore-only commits: ask whether release-worthy" convention, since these
+  commits are never reviewed for release-worthiness before the PR opens.
 - Never push directly to `main`.
 
 ### Phase-grouped issues (carve-out)
@@ -107,7 +133,7 @@ the default one-branch-per-issue rule above still applies.
 
 ## 9. Toolchain
 - **Test command:** `uv run --group test pytest` (see `/test-select` and `dev-commands`).
-- **Full test suite runtime:** ~12s for 237 tests (measured 2026-08-18, with cov). The
+- **Full test suite runtime:** ~52s for 1062 tests (measured 2026-09-05, with cov). The
   previous ~1490s figure (2026-08-15) was caused by Django's default PBKDF2 password
   hasher — deliberately slow for production security — running on every
   `Account.objects.create_user(...)` call across the suite, worst-case in
@@ -145,6 +171,13 @@ the default one-branch-per-issue rule above still applies.
   `GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=<tmp-path> -o StrictHostKeyChecking=accept-new"`.
   Before the first commit, set `git config user.name`/`user.email` (match the GitHub
   account, e.g. via `gh api user`). Neither persists across a fresh container instance.
+- **Splitting one working tree into several commits:** pre-commit stashes unstaged
+  **tracked** changes but leaves **untracked** files in place, and the `ty` hook runs with
+  `pass_filenames: false` — i.e. it type-checks the whole project, not just the staged
+  files. So a partial stage whose new *untracked* module imports from a file stashed back
+  to `HEAD` fails the commit with a large, confusing diagnostic count and no hint of the
+  cause, while `pre-commit run --all-files` passes right afterwards, making it look flaky.
+  Stage in dependency order — the self-contained half first — or make a single commit.
 
 ## 10. Releases
 famille-busson is a continuously-deployed web app, not a published package — there's no
@@ -173,6 +206,10 @@ gate a build/publish step.
 - **Hotfixes** bump the patch version on the `hotfix/*` branch itself, so the PR into
   `main` still carries a version change for the workflow to tag (see `/release`'s
   Hotfix variant).
+- **Weekly dependency upgrades** (`dependency-upgrade.yml`, see §8's Branch Model)
+  always bump the **minor** version directly on the `deps/<date>` branch, regardless of
+  the general bump convention above — there's no human in the loop to ask whether a
+  dependency-only chore is release-worthy, so it's simply always treated as such.
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
 
@@ -182,6 +219,15 @@ gate a build/publish step.
   models. **Auto-generated, never edit by hand** — regenerate with
   `uv run python manage.py generate_data_model_docs` (see `dev-commands`) after any
   `models.py` change. Generator: `annuaire/management/commands/generate_data_model_docs.py`.
+- **`annuaire/static/vendor/manifest.json`** tracks the npm-published version each
+  vendored front-end library (leaflet, d3, family-chart, pdfjs, etc. — not the Django
+  admin's own bundled vendor assets, which upgrade with Django itself) was last synced
+  from, and which package files map to which local files. **Owned by
+  `manage.py upgrade_vendored_assets`** (`annuaire/management/commands/
+  upgrade_vendored_assets.py`) — don't hand-edit the `"version"` fields. Run weekly by
+  `dependency-upgrade.yml` (see §8); manual run: `uv run python manage.py
+  upgrade_vendored_assets` (add `--check-only` to list available upgrades without
+  downloading).
 - **`ROADMAP.md`** tracks pending work only. Shipped items move to
   **`docs/ROADMAP_ARCHIVE.md`** at develop → main release time (see `/release`'s
   release-time housekeeping step).

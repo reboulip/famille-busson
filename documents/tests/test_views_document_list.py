@@ -99,3 +99,10 @@ def test_document_card_strips_markdown_from_description(auth_client, category):
     assert "gras" in content
     assert "<strong>" not in content
     assert "[lien]" not in content
+
+
+@pytest.mark.django_db
+def test_document_list_card_is_clickable_as_a_whole(auth_client, document):
+    # #128: the card used to be reachable only by clicking the title text.
+    content = auth_client.get(reverse("document-list")).content.decode()
+    assert "stretched-link" in content

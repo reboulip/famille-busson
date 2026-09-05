@@ -3,6 +3,52 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.3.0 — Phase 7: polish pass across publications, profil, généalogie, chalets, carte, accueil
+
+> Small, targeted UX fixes across six areas plus a new automated dependency-upgrade
+> pipeline: whole-card click targets, documents list cleanup, profile heading/layout
+> tweaks, a family-tree visual fix and mobile-height fix, a chalets/présences rename and
+> reorder, tighter map clustering, and a home-page birthdays widget.
+
+### Publications & Documents
+- **Whole-card click targets** — publications and documents list cards are now
+  clickable anywhere via Bootstrap `.stretched-link`, not just the title text; inner
+  links (author, category) stay reachable, raised above the overlay. Locked category
+  rows are excluded. [#128]
+- **Documents list row cleanup** — right-aligned category/date meta, smaller excerpt
+  text, tighter row padding, and refreshed subtitle copy for both the documents and
+  category lists. [#123]
+
+### Profil
+- **"Coordonnées" renamed to "Informations"** on the profile view. [#122]
+- **Mobile profile rail** now shrinks to name+photo only on scroll; "Modifier les
+  relations" and "Gérer les propriétaires" moved together to the bottom of the page,
+  after the relations display, on both mobile and web. [#124]
+
+### Généalogie
+- **Fixed square artifacts under circle nodes** in the family tree visual — a
+  Bootstrap `.card` style leaking onto the tree library's node wrapper. [#121]
+- **More vertical space for the tree on mobile** — toolbar buttons compacted to
+  icon-only (labels kept in markup, hidden via CSS) and the tree container switched to
+  `dvh`-based height with a `vh` fallback. [#125]
+
+### Chalets et Présences
+- **"Chalets" renamed to "Chalets et Présences"**, with the presence calendar
+  reordered above the chalet grid and a new "Les chalets" section heading. [#127]
+
+### Carte
+- **Tighter same-address marker clustering** — cluster explosion now happens at a
+  lower zoom level, and exploded markers sit closer together without overlapping. [#126]
+
+### Accueil
+- **Upcoming-birthdays widget** on the home page, showing the next 8 days (inclusive
+  of today), day+month only, excluding deceased profiles. [#120]
+
+### Infrastructure
+- **Weekly automated dependency-upgrade pipeline** — a scheduled workflow that bumps
+  the pinned Python version, uv-managed packages, and vendored front-end assets, opening
+  a PR only when lint/type-check/collectstatic-sanity/the full test suite stay green.
+
 ## v1.2.0 — Phases 5 & 6: one visual identity, in the emails and across the site
 
 > The app had no brand system beyond the mountain/trees favicon. This release gives it

@@ -15,14 +15,48 @@ let browser = null;
 let page = null;
 const consoleLog = [];
 
+// Opens a page on a fresh context and wires the console/pageerror buffers to it.
+// Used by `launch` and by `viewport`, which must recreate the context (viewport,
+// isMobile and hasTouch are context-creation options and cannot be set afterwards).
+async function openPage(contextOptions = {}) {
+  const p = await (await browser.newContext(contextOptions)).newPage();
+  p.on('console', (msg) => consoleLog.push({ type: msg.type(), text: msg.text() }));
+  p.on('pageerror', (err) => consoleLog.push({ type: 'pageerror', text: String(err) }));
+  return p;
+}
+
 const COMMANDS = {
   async launch() {
     if (browser) return console.log('already launched');
     browser = await chromium.launch({ args: ['--no-sandbox'] });
-    page = await (await browser.newContext()).newPage();
-    page.on('console', (msg) => consoleLog.push({ type: msg.type(), text: msg.text() }));
-    page.on('pageerror', (err) => consoleLog.push({ type: 'pageerror', text: String(err) }));
+    page = await openPage();
     console.log('launched.');
+  },
+
+  // viewport <w> <h> [mobile] — resize by recreating the context. Cookies are carried
+  // over via storageState (so a prior `login` survives) and the current URL is reloaded.
+  async viewport(args) {
+    if (!browser) return console.log('ERROR: launch first');
+    const [w, h, flag] = (args || '').trim().split(/\s+/);
+    const width = Number.parseInt(w, 10);
+    const height = Number.parseInt(h, 10);
+    if (!width || !height) return console.log('viewport → ERROR: usage: viewport <w> <h> [mobile]');
+    const isMobile = flag === 'mobile';
+    let url = null, storageState;
+    if (page) {
+      url = page.url();
+      storageState = await page.context().storageState();
+      await page.context().close();
+    }
+    page = await openPage({
+      viewport: { width, height },
+      isMobile,
+      hasTouch: isMobile,
+      deviceScaleFactor: isMobile ? 2 : 1,
+      storageState,
+    });
+    if (url && !url.startsWith('about:')) await page.goto(url, { waitUntil: 'domcontentloaded' });
+    console.log('viewport', `${width}x${height}`, isMobile ? '(mobile)' : '', '→ OK', url ? `reloaded ${url}` : '');
   },
 
   async goto(pathOrUrl) {

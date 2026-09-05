@@ -8,13 +8,31 @@ workflows.
 
 ## CI/CD pipeline
 
-Three workflows run on `main` (all in `.github/workflows/`):
+Four workflows run on `main` (all in `.github/workflows/`):
 
 | Workflow | Trigger | Does |
 |---|---|---|
 | `tests.yml` | push to `develop`/`main`, PRs into `main` | Runs the pytest suite; the gate a `develop` → `main` PR must pass (see the `/release` skill). |
 | `build-and-deploy.yml` | push to `main` | Builds the Docker image, pushes it to GHCR, then deploys it to the VPS over SSH. |
 | `release.yml` | push to `main` | Tags `v<version>` (read from `pyproject.toml`) and creates the GitHub Release, if not already tagged (see `CLAUDE.md` §10). |
+| `dependency-upgrade.yml` | weekly (Friday night, `cron`), or manual (`workflow_dispatch`) | Upgrades the pinned Python minor version, every uv-managed package, and the vendored front-end assets (see below), then opens a `deps/<date>` → `main` PR only if lint/ty/collectstatic-sanity/the full test suite all pass (see `CLAUDE.md` §8/§10/§11). |
+
+### Automated dependency upgrades
+
+`dependency-upgrade.yml` is the only workflow that opens a PR straight to `main` from a
+branch other than `develop`/`hotfix/*` — a documented exception, on the same footing as
+a hotfix (`CLAUDE.md` §8). It runs every gate a human contributor would (ruff, ty,
+`collectstatic` sanity check, full pytest suite) *before* opening the PR — if anything
+fails, the workflow run fails and no PR is opened, so a broken upstream release never
+reaches `main` unreviewed. It always bumps the **minor** version, since there's no human
+in the loop to judge release-worthiness (`CLAUDE.md` §10).
+
+Vendored front-end libraries under `annuaire/static/vendor/` (leaflet, d3, family-chart,
+pdfjs, leaflet.markercluster, html-to-image — not the Django admin's own bundled vendor
+assets, which upgrade with Django itself) have no build tooling of their own; they're
+tracked by `annuaire/static/vendor/manifest.json` (package name, pinned version, and
+npm-package-path → local-file mapping per library) and fetched via jsdelivr by
+`manage.py upgrade_vendored_assets` — see that command's docstring.
 
 ## Docker image
 

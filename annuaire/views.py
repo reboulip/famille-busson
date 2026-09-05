@@ -64,6 +64,7 @@ def media_serve(request, path):
 def home(request):
     import datetime
 
+    from annuaire.birthdays import upcoming_birthdays
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
@@ -83,6 +84,7 @@ def home(request):
             "recent_comments": recent_comments,
             "chalets": chalets,
             "upcoming_presences": upcoming_presences,
+            "upcoming_birthdays": upcoming_birthdays(today),
         },
     )
 

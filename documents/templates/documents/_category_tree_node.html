@@ -2,26 +2,33 @@
 {% load markdown_extras %}
 {% load icons %}
 <li>
-    {% if category|can_access:request.user %}
-        <a class="category-tree__name" href="{% url 'category-detail' category.pk %}">
-            {% icon "folder" size=16 %} {{ category.name }}
-        </a>
-        {% if category.description %}
-            <p class="category-tree-excerpt fb-meta">{{ category.description|markdown_plain|truncatechars:150 }}</p>
+    {% comment %}
+        The row wrapper is what the whole-row click overlay fills: it stops
+        before the nested child list below, which would otherwise be covered
+        and become unclickable.
+    {% endcomment %}
+    <div class="category-tree__row">
+        {% if category|can_access:request.user %}
+            <a class="category-tree__name stretched-link" href="{% url 'category-detail' category.pk %}">
+                {% icon "folder" size=16 %} {{ category.name }}
+            </a>
+            {% if category.description %}
+                <p class="category-tree-excerpt fb-meta">{{ category.description|markdown_plain|truncatechars:150 }}</p>
+            {% endif %}
+        {% else %}
+            {% comment %}
+                Locked: the lock glyph, the dashed chip and the group name all say
+                the same thing, so access is never carried by styling alone.
+            {% endcomment %}
+            <span class="category-tree__name category-tree__name--locked">
+                {% icon "lock" size=16 %} {{ category.name }}
+            </span>
+            <span class="fb-chip fb-chip--lock">
+                Réservé au groupe{{ category|effective_groups|length|pluralize }} :
+                {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
         {% endif %}
-    {% else %}
-        {% comment %}
-            Locked: the lock glyph, the dashed chip and the group name all say
-            the same thing, so access is never carried by styling alone.
-        {% endcomment %}
-        <span class="category-tree__name category-tree__name--locked">
-            {% icon "lock" size=16 %} {{ category.name }}
-        </span>
-        <span class="fb-chip fb-chip--lock">
-            Réservé au groupe{{ category|effective_groups|length|pluralize }} :
-            {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-        </span>
-    {% endif %}
+    </div>
     {% with children=category.children.all %}
         {% if children %}
             <ul>

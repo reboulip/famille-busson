@@ -29,9 +29,15 @@
         </div>
     </div>
 
-    <div class="fb-record">
+    <div class="fb-record profile-record">
         <div class="fb-record__rail">
-            <div class="fb-card fb-record__portrait">
+            {% comment %}
+                Zero-height marker the sticky-identity script watches: once it
+                scrolls out of view the identity card condenses. Kept in the
+                markup rather than derived in JS so the contract is visible here.
+            {% endcomment %}
+            <div class="profile-identity-sentinel" aria-hidden="true"></div>
+            <div class="fb-card fb-record__portrait profile-identity">
                 {% if person.profile_photo %}
                     <a href="{{ person.profile_photo.url }}">
                         <img class="profile-portrait{% if person.deceased %} person-photo--deceased{% endif %}"
@@ -59,7 +65,7 @@
 
             {% if person.email or person.phone_number or person.postal_address or person.birth_date or person.deceased %}
                 <div class="fb-card">
-                    <p class="fb-eyebrow fb-card__label">Coordonnées</p>
+                    <p class="fb-eyebrow fb-card__label">Informations</p>
                     <div class="fb-contact">
                         {% if person.email %}
                             <p class="contact-line fb-contact__row">
@@ -101,14 +107,6 @@
                 </div>
             {% endif %}
 
-            {% if can_edit %}
-                <div class="fb-record__actions">
-                    <a href="{% url 'person-relations-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les relations</a>
-                    {% if not person.account_id %}
-                        <a href="{% url 'person-owners-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Gérer les propriétaires</a>
-                    {% endif %}
-                </div>
-            {% endif %}
         </div>
 
         <div>
@@ -153,14 +151,31 @@
                     <div>
                         <h2>Relations</h2>
                         {% if can_edit %}
-                            {% url 'person-relations-edit' person.pk as relations_url %}
-                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez les parents, enfants ou le conjoint de cette personne." action_url=relations_url action_label="Modifier les relations" %}
+                            {% comment %}
+                                No call to action here: the actions block below the
+                                section already offers it in both states, and two
+                                would render the same button twice.
+                            {% endcomment %}
+                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez les parents, enfants ou le conjoint de cette personne." %}
                         {% else %}
                             {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" %}
                         {% endif %}
                     </div>
                 {% endif %}
             </section>
+
+            {% if can_edit %}
+                <div class="fb-record__actions profile-record__actions">
+                    <a href="{% url 'person-relations-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les relations</a>
+                    {% if not person.account_id %}
+                        <a href="{% url 'person-owners-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Gérer les propriétaires</a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
     </div>
 {% endblock content %}
+
+{% block extra_js %}
+    <script src="{% static 'js/profile_sticky_identity.js' %}"></script>
+{% endblock extra_js %}

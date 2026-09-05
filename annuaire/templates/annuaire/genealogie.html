@@ -28,10 +28,20 @@
             <select id="genealogie-branch-picker" class="fb-select genealogie-branch-picker" hidden></select>
             <div id="genealogie-search" class="genealogie-search"></div>
             <span class="fb-toolbar__spacer"></span>
+            {% comment %}
+                Labels stay in the markup and are hidden with CSS on small screens,
+                where three long captions wrap the toolbar onto several rows and eat
+                the space the tree needs. aria-label carries the same wording so the
+                buttons keep their names once the text is not painted.
+            {% endcomment %}
             <button type="button" id="genealogie-export" class="fb-btn fb-btn--quiet fb-btn--sm"
-                    data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} Exporter le carnet d'adresses en Excel</button>
-            <button type="button" id="genealogie-export-image" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "image" size=16 %} Exporter en image</button>
-            <button type="button" id="genealogie-fullscreen" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "expand" size=16 %} Plein écran</button>
+                    aria-label="Exporter le carnet d'adresses en Excel"
+                    title="Exporter le carnet d'adresses en Excel"
+                    data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">Exporter le carnet d'adresses en Excel</span></button>
+            <button type="button" id="genealogie-export-image" class="fb-btn fb-btn--quiet fb-btn--sm"
+                    aria-label="Exporter en image" title="Exporter en image">{% icon "image" size=16 %} <span class="genealogie-toolbar__label">Exporter en image</span></button>
+            <button type="button" id="genealogie-fullscreen" class="fb-btn fb-btn--quiet fb-btn--sm"
+                    aria-label="Plein écran" title="Plein écran">{% icon "expand" size=16 %} <span class="genealogie-toolbar__label">Plein écran</span></button>
         </div>
 
         <div class="d-lg-flex genealogie-layout">

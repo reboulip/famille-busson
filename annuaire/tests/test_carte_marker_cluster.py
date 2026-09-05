@@ -66,10 +66,16 @@ def test_colocated_entries_are_spread_onto_a_ring_so_zooming_can_separate_them()
     # never split a household -- the ring is what makes "zoom in to separate" possible.
     content = _content()
     assert "function spreadEntries(" in content
-    assert re.search(r"const COLOCATED_SPACING_M\s*=\s*\d+", content)
+    # Spacing is expressed in screen pixels at a chosen split zoom and converted to
+    # ground units, because markercluster splits by screen distance. Stated directly
+    # in ground units, the number moves the split zoom the opposite way from what the
+    # value suggests (#126).
+    assert re.search(r"const COLOCATED_SPLIT_ZOOM\s*=\s*\d+", content)
+    assert re.search(r"const COLOCATED_SPACING_PX\s*=\s*MARKER_SIZE", content)
+    assert "COLOCATED_SPACING_PX * metresPerPixel(group.lat, COLOCATED_SPLIT_ZOOM)" in content
     # Radius solves 2*r*sin(pi/n) = spacing, so neighbours stay a fixed distance apart
     # however large the group is.
-    assert "COLOCATED_SPACING_M / (2 * Math.sin(Math.PI / count))" in content
+    assert "spacingM / (2 * Math.sin(Math.PI / count))" in content
 
 
 def test_ring_placement_is_deterministic_so_reloads_do_not_reshuffle_people():

@@ -282,3 +282,48 @@ def test_family_tree_js_image_export_reads_the_node_it_was_handed():
     assert "mount.querySelectorAll('.link')" not in section
     assert "exportMount.querySelectorAll('.link')" in section
     assert "mount.querySelector('#htmlSvg" not in section
+
+
+def test_genealogy_node_card_neutralizes_the_bootstrap_component_of_the_same_name():
+    """#121: family-chart names its node wrapper with a class Bootstrap also styles,
+    so the framework's background, border and radius drew a filled rounded square
+    behind every circular node."""
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".f3 div.card")
+    assert _declared_value(body, "background") == "none"
+    assert _declared_value(body, "border") == "0"
+    assert _declared_value(body, "border-radius") == "0"
+
+
+def _media_block(css_text: str, query: str) -> str:
+    """Slice one @media block by brace balance.
+
+    _rule_body() cannot be used for these: its body match stops at the first
+    closing brace, so it never sees inside a media block.
+    """
+    start = css_text.index(query)
+    depth = 0
+    for index in range(css_text.index("{", start), len(css_text)):
+        if css_text[index] == "{":
+            depth += 1
+        elif css_text[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return css_text[start : index + 1]
+    raise AssertionError(f"unterminated media block for {query!r}")
+
+
+def test_genealogy_toolbar_labels_are_hidden_on_small_screens():
+    # #125: three long captions wrap the toolbar onto several rows on a phone,
+    # which is the space the tree needs.
+    block = _media_block(MAIN_CSS.read_text(encoding="utf-8"), "@media (max-width: 991.98px)")
+    assert ".genealogie-toolbar__label { display: none; }" in block
+
+
+def test_genealogy_chart_height_follows_the_mobile_browser_bar():
+    # vh resolves against the largest viewport, so the bottom of the chart sat
+    # under the browser's own bar; dvh tracks it. The plain unit stays first as
+    # the fallback for browsers without dvh.
+    block = _media_block(MAIN_CSS.read_text(encoding="utf-8"), "@media (max-width: 991.98px)")
+    assert "height: 70vh;" in block
+    assert "100dvh" in block
+    assert block.index("height: 70vh;") < block.index("100dvh")

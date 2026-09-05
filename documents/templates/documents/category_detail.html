@@ -40,15 +40,17 @@
             <ul class="category-tree">
                 {% for child in children %}
                     <li>
-                        {% if child|can_access:request.user %}
-                            <a class="category-tree__name" href="{% url 'category-detail' child.pk %}">
-                                {% icon "folder" size=16 %} {{ child.name }}
-                            </a>
-                        {% else %}
-                            <span class="category-tree__name category-tree__name--locked">
-                                {% icon "lock" size=16 %} {{ child.name }}
-                            </span>
-                        {% endif %}
+                        <div class="category-tree__row">
+                            {% if child|can_access:request.user %}
+                                <a class="category-tree__name stretched-link" href="{% url 'category-detail' child.pk %}">
+                                    {% icon "folder" size=16 %} {{ child.name }}
+                                </a>
+                            {% else %}
+                                <span class="category-tree__name category-tree__name--locked">
+                                    {% icon "lock" size=16 %} {{ child.name }}
+                                </span>
+                            {% endif %}
+                        </div>
                     </li>
                 {% endfor %}
             </ul>
