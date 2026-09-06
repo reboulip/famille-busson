@@ -4,6 +4,37 @@
 > release time (see the `/release` skill's release-time housekeeping step) — this file
 > only ever tracks pending work.
 
+## Phase 8 — Retours du terrain : e-mails, documents et petites frictions
+
+> Neuf signalements de membres de la famille, accumulés depuis la Phase 7 : deux liens
+> cassés dans les e-mails de notification (ils pointent vers `localhost` au lieu du site
+> en production), un rappel d'anniversaire resté muet, et une poignée d'améliorations
+> ponctuelles côté documents et publications. Rien ici ne dépend du socle que bâtit la
+> Phase 9 — ce sont des correctifs et ajustements à absorber avant de s'y engager.
+
+### Cluster: Notifications par e-mail
+- [ ] 8.1 · Fix notification-email links resolving to `localhost` instead of the
+  production domain — affects the "nouvelle publication" link and the "Gérer mes
+  préférences" link, the latter also pointing at a stale URL name (`profile/edit`
+  instead of `personne/update`). [#132] [#134]
+- [ ] 8.2 · Enrich publication notification emails — add the author's name after
+  "Nouvelle publication", and link the homepage from the banner image and the
+  "site de la famille Busson" footer text. [#135] [#136]
+
+### Cluster: Documents et publications
+- [ ] 8.3 · Document list sorting and filtering — dropdown sort (date de dépôt,
+  alphabétique, rédacteur, date de rédaction, croissant/décroissant, le plus récent par
+  défaut) plus filtering by author and by year of redaction. [#137]
+- [ ] 8.4 · Link a publication to a document — from the publication form, attach an
+  existing `documents.Document` or create a new one linked to the publication,
+  alongside the existing attachment upload. Needs careful UX design for the two entry
+  points (link vs. create). [#133]
+
+### Cluster: Interface
+- [ ] 8.5 · Close button on the publication attachment viewer, to return to the
+  publication without relying on the browser back button. [#131]
+- [ ] 8.6 · Discreet version number in the site footer. [#138]
+
 ## Phase 9 — Socle : correctifs, sauvegardes et tâches de fond
 
 > The archive has no backup, the platform has no shared cache, and it cannot do any work
@@ -18,6 +49,9 @@
   half works; only name and photo should stay pinned. Reopened by the reporter, whose
   explicit condition is that this is verified visually on a real mobile viewport before
   it ships. [#124]
+- [ ] 9.11 · Fix birthday reminder emails not being sent — diagnose and repair
+  `send_birthday_reminders` so day-before/day-of reminders actually go out; independent
+  of the queue migration in 9.6. [#130]
 
 ### Cluster: Sauvegardes et restauration
 - [ ] 9.2 · Automated backups — a repo-tracked script dumping Postgres and archiving
