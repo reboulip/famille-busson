@@ -121,6 +121,12 @@ WSGI_APPLICATION = "famille_busson.wsgi.application"
 DATABASES = {"default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")}
 
 
+# Cache -- shared across gunicorn workers via Valkey/Redis in production (db 0; db 1 is
+# reserved for the background task queue's broker, see docs/deployment.md). Defaults to
+# LocMemCache so dev/tests never need a real cache server.
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+
+
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 

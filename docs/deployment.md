@@ -63,11 +63,36 @@ The entrypoint runs twice per container start:
 | Service | Image | Notes |
 |---|---|---|
 | `db` | `postgres:16-alpine` | Data at `/srv/bubu/data/postgres` on the host; healthcheck gates `web`'s startup. |
+| `cache` | `valkey/valkey:8-alpine` | Data at `/srv/bubu/data/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
 | `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`. |
 
 On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
-from this repo's `docker-compose.prod.yml`), `.env` (see below), and the three data
-volumes above.
+from this repo's `docker-compose.prod.yml`), `.env` (see below), and the data volumes
+above.
+
+### Shared cache
+
+`CACHES` was unset until this item, so every gunicorn worker held its own independent
+`LocMemCache` — a value written by one worker was invisible to the others, which quietly
+undermines anything relying on the cache being actually shared (rate-limiting, in
+particular — see a later item). `famille_busson/settings.py` now reads `CACHES` via
+`django-environ`'s `env.cache("CACHE_URL", default="locmemcache://")`, resolving a
+`redis://`/`valkey://` URL to Django's built-in `django.core.cache.backends.redis.
+RedisCache` (no `django-redis` package needed — only plain `redis`, the client library,
+is a dependency). A warning-level system check (`annuaire.checks`, id `annuaire.W002`)
+flags a `CACHES` that's still `LocMemCache` outside `DEBUG`, same rationale as `W001`:
+checks run before `collectstatic` under `set -euo pipefail`, so it warns rather than
+blocking container boot.
+
+The `cache` container serves **two roles on separate logical DBs**: db 0 is the Django
+cache (this item); db 1 is reserved for the background task queue's broker (a later
+item) — one Valkey instance, not two containers. `--maxmemory-policy noeviction` is
+required, not just a sane default: once the queue shares this instance, an eviction
+policy would silently drop unprocessed jobs along with cache entries under memory
+pressure. `--appendonly yes` persistence means in-flight state (soon: queued jobs)
+survives a container restart. Dev and the test suite never need a real Valkey —
+`CACHE_URL` defaults to `locmemcache://`, and `conftest.py` forces `LocMemCache` plus
+clears it before every test regardless of a developer's local `.env`.
 
 ### Protected document storage
 

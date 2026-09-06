@@ -14,14 +14,35 @@ services:
       timeout: 5s
       retries: 5
 
+  # Serves two roles on separate logical DBs: db 0 is the Django cache (this item),
+  # db 1 is reserved for the background task queue's broker (a later item). noeviction
+  # is required, not just a sane default -- once the queue lands on this same instance,
+  # an eviction policy would silently drop unprocessed jobs, not just cache entries.
+  # Persistence (appendonly) means in-flight state survives a container restart.
+  cache:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    command: ["valkey-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    volumes:
+      - /srv/bubu/data/valkey:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping || redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     image: ghcr.io/reboulip/famille-busson:latest
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+      cache:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      CACHE_URL: ${CACHE_URL:-redis://cache:6379/0}
     volumes:
       - /srv/bubu/data/media:/app/media
       - /srv/bubu/data/documents:/app/documents_data

@@ -67,7 +67,7 @@
   a suspiciously small artifact. (requires: 9.2)
 
 ### Cluster: Cache et file de tâches
-- [ ] 9.5 · Shared cache — add a Valkey/Redis container and set `CACHES`, which is
+- [x] 9.5 · Shared cache — add a Valkey/Redis container and set `CACHES`, which is
   currently unset, so every gunicorn worker holds its own `LocMemCache`. Compose, env and
   deployment docs updated together.
 - [ ] 9.6 · Background task queue — add a job runner and move `send_birthday_reminders`
