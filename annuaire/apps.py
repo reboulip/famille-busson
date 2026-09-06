@@ -6,6 +6,7 @@ class DirectoryConfig(AppConfig):
     name = "annuaire"
 
     def ready(self) -> None:
+        import annuaire.checks  # noqa: F401 -- registers the SITE_BASE_URL system check
         import annuaire.signals  # noqa: F401 -- registers the @receiver signal handlers
 
         return super().ready()

@@ -227,7 +227,25 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@bubu.reboulip.fr")
 
+
+def _default_site_base_url(csrf_trusted_origins: list[str], allowed_hosts: list[str]) -> str:
+    """Best-effort non-localhost fallback for SITE_BASE_URL when it's left unset.
+
+    Emails are built outside a request, so the domain can't come from
+    request.build_absolute_uri() -- silently defaulting to localhost there is worse
+    than deriving a real host from settings already known to be correct in production.
+    """
+    if csrf_trusted_origins:
+        return csrf_trusted_origins[0]
+    for host in allowed_hosts:
+        if host in ("*", "localhost", "127.0.0.1") or host.startswith("."):
+            continue
+        return f"https://{host}"
+    return "http://localhost:8000"
+
+
 # Base URL used to build absolute links in emails sent outside a request context
 # (birthday reminders, blog post notifications) -- request.build_absolute_uri() isn't
-# available there. Production sets this to the real domain.
-SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")
+# available there. Production sets this explicitly; the derived fallback above only
+# guards against it being forgotten (see annuaire.checks for the accompanying warning).
+SITE_BASE_URL = env("SITE_BASE_URL", default=_default_site_base_url(CSRF_TRUSTED_ORIGINS, ALLOWED_HOSTS))

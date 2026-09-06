@@ -105,6 +105,17 @@ def test_birthday_photo_reader_skips_an_oversized_photo(person, monkeypatch):
     assert emails.birthday_photo(person) is None
 
 
+def test_birthday_reminder_settings_link_falls_back_without_a_recipient(person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None)
+    assert "/annuaire/profile/edit" in message.html_body
+
+
+def test_birthday_reminder_settings_link_targets_the_recipient_directly(person, other_person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert f"/annuaire/personne/{other_person.pk}/update#notifications" in message.html_body
+    assert "/annuaire/profile/edit" not in message.html_body
+
+
 def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
     """A row whose upload was cleaned up, or a media volume that isn't mounted, must
     fall back to initials rather than break the whole batch."""
@@ -156,6 +167,12 @@ def test_new_post_email_survives_an_empty_body(db):
 
 def test_new_post_subject_is_unchanged(post):
     assert emails.new_blog_post(post, "d@example.com").subject == f"Nouvel article : {post.title}"
+
+
+def test_new_post_settings_link_targets_the_recipient_directly(post, person):
+    message = emails.new_blog_post(post, "d@example.com", recipient=person)
+    assert f"/annuaire/personne/{person.pk}/update#notifications" in message.html_body
+    assert "/annuaire/profile/edit" not in message.html_body
 
 
 # ---------------------------------------------------------------------------

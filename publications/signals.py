@@ -24,5 +24,8 @@ def notify_subscribers_of_new_post(sender, instance, created, **kwargs):
     )
     if not subscribers:
         return
-    messages = [emails.new_blog_post(instance, subscriber.person.email) for subscriber in subscribers]
+    messages = [
+        emails.new_blog_post(instance, subscriber.person.email, recipient=subscriber.person)
+        for subscriber in subscribers
+    ]
     send_bulk_emails(messages)

@@ -56,7 +56,11 @@ class Command(BaseCommand):
             # same bytes are attached to every copy of that person's message.
             photo = emails.birthday_photo(birthday_person)
             for subscriber in subscribers:
-                messages.append(emails.birthday_reminder(birthday_person, subscriber.person.email, photo))
+                messages.append(
+                    emails.birthday_reminder(
+                        birthday_person, subscriber.person.email, photo, recipient=subscriber.person
+                    )
+                )
 
         sent, failed = send_bulk_emails(messages)
         self.stdout.write(f"{len(sent)} email(s) envoyé(s), {len(failed)} échec(s).")

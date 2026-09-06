@@ -105,7 +105,10 @@ class Command(BaseCommand):
         if flow == "birthday":
             person = Person.objects.exclude(deceased=True).order_by("pk").first() or _StubPerson()
             photo = emails.birthday_photo(person)
-            return emails.birthday_reminder(person, recipient, photo)
+            # _StubPerson isn't a real Person -- only pass it as the deep-link recipient
+            # when the database actually produced one.
+            settings_recipient = person if isinstance(person, Person) else None
+            return emails.birthday_reminder(person, recipient, photo, recipient=settings_recipient)
 
         if flow == "new-post":
             from publications.models import BlogPost

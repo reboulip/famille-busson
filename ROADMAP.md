@@ -13,7 +13,7 @@
 > Phase 9 — ce sont des correctifs et ajustements à absorber avant de s'y engager.
 
 ### Cluster: Notifications par e-mail
-- [ ] 8.1 · Fix notification-email links resolving to `localhost` instead of the
+- [x] 8.1 · Fix notification-email links resolving to `localhost` instead of the
   production domain — affects the "nouvelle publication" link and the "Gérer mes
   préférences" link, the latter also pointing at a stale URL name (`profile/edit`
   instead of `personne/update`). [#132] [#134]
