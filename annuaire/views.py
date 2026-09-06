@@ -530,6 +530,7 @@ class AccountPasswordResetView(PasswordResetView):
     html_email_template_name = "annuaire/emails/password_reset.html"
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
+    extra_email_context = {"site_base_url": settings.SITE_BASE_URL.rstrip("/")}
 
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
@@ -550,7 +551,10 @@ class MagicLinkRequestView(PasswordResetView):
     success_url = reverse_lazy("magic-link-sent")
     # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
     # lazy settings object is already configured by the time views.py imports).
-    extra_email_context = {"validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60}
+    extra_email_context = {
+        "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
+        "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+    }
 
 
 class MagicLinkSentView(PasswordResetDoneView):

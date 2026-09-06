@@ -17,12 +17,12 @@
   production domain — affects the "nouvelle publication" link and the "Gérer mes
   préférences" link, the latter also pointing at a stale URL name (`profile/edit`
   instead of `personne/update`). [#132] [#134]
-- [ ] 8.2 · Enrich publication notification emails — add the author's name after
+- [x] 8.2 · Enrich publication notification emails — add the author's name after
   "Nouvelle publication", and link the homepage from the banner image and the
   "site de la famille Busson" footer text. [#135] [#136]
 
 ### Cluster: Documents et publications
-- [ ] 8.3 · Document list sorting and filtering — dropdown sort (date de dépôt,
+- [x] 8.3 · Document list sorting and filtering — dropdown sort (date de dépôt,
   alphabétique, rédacteur, date de rédaction, croissant/décroissant, le plus récent par
   défaut) plus filtering by author and by year of redaction. [#137]
 - [ ] 8.4 · Link a publication to a document — from the publication form, attach an

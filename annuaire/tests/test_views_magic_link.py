@@ -44,6 +44,18 @@ def test_magic_link_request_post_valid_email_sends_link_and_redirects(client, ac
 
 
 @pytest.mark.django_db
+def test_magic_link_email_wordmark_links_to_the_homepage(client, account):
+    # MagicLinkRequestView.extra_email_context is a class attribute evaluated at
+    # import time -- assert against whatever SITE_BASE_URL the process resolved to.
+    from annuaire.views import MagicLinkRequestView
+
+    client.post(reverse("magic-link-request"), {"email": account.email})
+    assert len(mail.outbox) == 1
+    html_body = mail.outbox[0].alternatives[0][0]
+    assert f'href="{MagicLinkRequestView.extra_email_context["site_base_url"]}"' in html_body
+
+
+@pytest.mark.django_db
 def test_magic_link_request_post_unknown_email_still_redirects_no_email_sent(client, db):
     response = client.post(reverse("magic-link-request"), {"email": "nobody@example.com"})
     assert response.status_code == 302

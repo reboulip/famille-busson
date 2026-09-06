@@ -6,4 +6,5 @@ Un petit mot fait toujours plaisir : passez lui souhaiter un joyeux anniversaire
 
 --
 Vous recevez ce rappel car vous êtes abonné·e aux rappels d'anniversaire sur le site
-de la famille Busson. Pour vous désabonner, modifiez votre profil : {{ settings_url }}
+de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
+profil : {{ settings_url }}

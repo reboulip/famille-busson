@@ -24,9 +24,31 @@
                 <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
+        <select name="redactor" class="fb-select" style="width:auto" aria-label="Filtrer par rédacteur">
+            <option value="">Tous les rédacteurs</option>
+            {% for redactor in filter_redactors %}
+                <option value="{{ redactor.pk }}" {% if selected_redactor == redactor.pk|stringformat:"s" %}selected{% endif %}>{{ redactor }}</option>
+            {% endfor %}
+        </select>
+        <select name="year" class="fb-select" style="width:auto" aria-label="Filtrer par année de rédaction">
+            <option value="">Toutes les années</option>
+            {% for d in filter_years %}
+                <option value="{{ d.year }}" {% if selected_year == d.year|stringformat:"s" %}selected{% endif %}>{{ d.year }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort" class="fb-select" style="width:auto" data-live-filter-default="recent" aria-label="Trier">
+            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Date de dépôt (récent → ancien)</option>
+            <option value="deposit_asc" {% if sort == "deposit_asc" %}selected{% endif %}>Date de dépôt (ancien → récent)</option>
+            <option value="title_asc" {% if sort == "title_asc" %}selected{% endif %}>Titre (A → Z)</option>
+            <option value="title_desc" {% if sort == "title_desc" %}selected{% endif %}>Titre (Z → A)</option>
+            <option value="redactor_asc" {% if sort == "redactor_asc" %}selected{% endif %}>Rédacteur (A → Z)</option>
+            <option value="redactor_desc" {% if sort == "redactor_desc" %}selected{% endif %}>Rédacteur (Z → A)</option>
+            <option value="date_asc" {% if sort == "date_asc" %}selected{% endif %}>Date de rédaction (ancien → récent)</option>
+            <option value="date_desc" {% if sort == "date_desc" %}selected{% endif %}>Date de rédaction (récent → ancien)</option>
+        </select>
         <span class="fb-toolbar__spacer"></span>
         <a href="{% url 'document-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm" data-live-filter-reset
-           {% if not query and not selected_category %}hidden{% endif %}>Effacer</a>
+           {% if not query and not selected_category and not selected_redactor and not selected_year and sort == "recent" %}hidden{% endif %}>Effacer</a>
     </form>
 
     <div id="document-results" aria-live="polite">

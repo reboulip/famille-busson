@@ -25,6 +25,20 @@ def test_attachment_marks_non_image_extensions(blog_post, filename):
 
 
 @pytest.mark.django_db
+@pytest.mark.parametrize("filename", ["a.pdf", "A.PDF"])
+def test_attachment_marks_pdf_extension(blog_post, filename):
+    attachment = Attachment.objects.create(post=blog_post, file=SimpleUploadedFile(filename, b"bytes"))
+    assert attachment.is_pdf is True
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("filename", ["a.jpg", "a.docx", "a.txt"])
+def test_attachment_is_pdf_false_for_non_pdf_extensions(blog_post, filename):
+    attachment = Attachment.objects.create(post=blog_post, file=SimpleUploadedFile(filename, b"bytes"))
+    assert attachment.is_pdf is False
+
+
+@pytest.mark.django_db
 def test_blogpost_str_returns_title(blog_post):
     assert str(blog_post) == "Première publication"
 

@@ -282,6 +282,19 @@ def test_password_reset_post_valid_email_sends_link_and_redirects(client, accoun
 
 
 @pytest.mark.django_db
+def test_password_reset_email_wordmark_links_to_the_homepage(client, account):
+    # AccountPasswordResetView.extra_email_context is a class attribute evaluated at
+    # import time -- override_settings(SITE_BASE_URL=...) can't reach it, so this
+    # asserts against whatever SITE_BASE_URL the process actually resolved to.
+    from annuaire.views import AccountPasswordResetView
+
+    client.post(reverse("password-reset"), {"email": account.email})
+    assert len(mail.outbox) == 1
+    html_body = mail.outbox[0].alternatives[0][0]
+    assert f'href="{AccountPasswordResetView.extra_email_context["site_base_url"]}"' in html_body
+
+
+@pytest.mark.django_db
 def test_password_reset_post_unknown_email_still_redirects_no_email_sent(client, db):
     response = client.post(reverse("password-reset"), {"email": "nobody@example.com"})
     assert response.status_code == 302

@@ -5,6 +5,7 @@ from django.db import models
 from annuaire.models import Person
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+PDF_EXTENSIONS = {".pdf"}
 
 
 class BlogPost(models.Model):
@@ -66,6 +67,10 @@ class Attachment(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.file.name)
+
+    @property
+    def is_pdf(self) -> bool:
+        return os.path.splitext(self.file.name)[1].lower() in PDF_EXTENSIONS
 
 
 class Comment(models.Model):

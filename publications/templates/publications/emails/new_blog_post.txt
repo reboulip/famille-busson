@@ -9,4 +9,5 @@ Par {{ authors }}{% endif %}
 
 --
 Vous recevez cette notification car vous êtes abonné·e aux nouvelles publications sur
-le site de la famille Busson. Pour vous désabonner, modifiez votre profil : {{ settings_url }}
+le site de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
+profil : {{ settings_url }}

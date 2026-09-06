@@ -128,10 +128,11 @@ def test_blogpost_detail_renders_image_inline(auth_client, image_attachment):
 
 
 @pytest.mark.django_db
-def test_blogpost_detail_renders_pdf_as_download_link(auth_client, pdf_attachment):
+def test_blogpost_detail_renders_pdf_in_the_document_viewer(auth_client, pdf_attachment):
     response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": pdf_attachment.post.pk}))
-    assert b"download" in response.content
-    assert pdf_attachment.file.url.encode() in response.content
+    content = response.content.decode()
+    assert "document-viewer-pdf-pages" in content
+    assert pdf_attachment.file.url in content
 
 
 # ---------------------------------------------------------------------------

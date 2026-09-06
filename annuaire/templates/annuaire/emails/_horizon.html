@@ -11,7 +11,7 @@ Drop into a template as:  {% block ridge %}{% include "annuaire/emails/_horizon.
 {% endcomment %}
 <tr>
   <td class="em-sky" style="background-color:#F3D9B1; padding: 16px 0 0; text-align:center;">
-    <span class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">Famille&nbsp;Busson</span>
+    {% include "annuaire/emails/_wordmark.html" with url=site_base_url %}
     <div style="height:16px; line-height:16px; font-size:0;">&nbsp;</div>
     <div class="em-horizon" style="height:14px; background-color:#4B5D3F; line-height:14px; font-size:0;">&nbsp;</div>
   </td>

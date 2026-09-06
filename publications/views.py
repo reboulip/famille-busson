@@ -73,6 +73,19 @@ class BlogPostDetailView(LoginRequiredMixin, DetailView):
         context = super().get_context_data(**kwargs)
         context.setdefault("comment_form", CommentForm())
         context["can_edit"] = self._can_edit(self.object)
+        # is_image/is_pdf are Python properties, not queryset-filterable fields -- group
+        # in Python over the already-prefetched attachments rather than issuing 3 queries.
+        image_attachments, pdf_attachments, other_attachments = [], [], []
+        for attachment in self.object.attachments.all():
+            if attachment.is_image:
+                image_attachments.append(attachment)
+            elif attachment.is_pdf:
+                pdf_attachments.append(attachment)
+            else:
+                other_attachments.append(attachment)
+        context["image_attachments"] = image_attachments
+        context["pdf_attachments"] = pdf_attachments
+        context["other_attachments"] = other_attachments
         return context
 
     def post(self, request, *args, **kwargs):

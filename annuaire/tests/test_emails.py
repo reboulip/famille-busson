@@ -169,6 +169,20 @@ def test_new_post_subject_is_unchanged(post):
     assert emails.new_blog_post(post, "d@example.com").subject == f"Nouvel article : {post.title}"
 
 
+def test_new_post_email_links_the_wordmark_and_footer_to_the_homepage(post, settings):
+    settings.SITE_BASE_URL = "https://bubu.reboulip.fr/"
+    message = emails.new_blog_post(post, "d@example.com")
+    assert 'href="https://bubu.reboulip.fr"' in message.html_body
+    assert "https://bubu.reboulip.fr" in message.text_body
+
+
+def test_birthday_reminder_links_the_wordmark_and_footer_to_the_homepage(person, settings):
+    settings.SITE_BASE_URL = "https://bubu.reboulip.fr/"
+    message = emails.birthday_reminder(person, "d@example.com", photo=None)
+    assert 'href="https://bubu.reboulip.fr"' in message.html_body
+    assert "https://bubu.reboulip.fr" in message.text_body
+
+
 def test_new_post_settings_link_targets_the_recipient_directly(post, person):
     message = emails.new_blog_post(post, "d@example.com", recipient=person)
     assert f"/annuaire/personne/{person.pk}/update#notifications" in message.html_body
