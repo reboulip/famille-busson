@@ -91,9 +91,28 @@ VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` contain
 directly, while `DATABASE_URL` is what Django (`famille_busson/settings.py`, via
 `django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
 to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP. `SITE_BASE_URL`
-(default `http://localhost:8000`) is used to build absolute links in emails sent outside
-a request context — birthday reminders and blog post notifications — and should be set
-to `https://bubu.reboulip.fr` in production.
+is used to build absolute links in emails sent outside a request context — birthday
+reminders and blog post notifications — and should still be set explicitly to
+`https://bubu.reboulip.fr` in production. If left unset, `famille_busson/settings.py`'s
+`_default_site_base_url()` now derives a non-localhost fallback from
+`CSRF_TRUSTED_ORIGINS` (first entry) or, failing that, the first non-wildcard,
+non-localhost `ALLOWED_HOSTS` entry — falling back to `http://localhost:8000` only if
+neither yields anything. This is a safety net, not a substitute: a warning-level system
+check (`annuaire.checks`, id `annuaire.W001`) flags a `SITE_BASE_URL` that still resolves
+to localhost outside `DEBUG`.
+
+## App version
+
+`APP_VERSION` (`famille_busson/settings.py`) is read once at import time from
+`pyproject.toml`'s `[project].version`, via `tomllib` directly — not
+`importlib.metadata`, which has no dist-info to look up on this uv *virtual* project
+(no `[build-system]` table, `--no-install-project` in the Dockerfile). It's exposed to
+every template through the new `annuaire.context_processors.site_version` context
+processor and shown as a discreet `v<version>` line in the footer, on both the
+authenticated app shell and the anonymous/login threshold pages. Falls back to an empty
+string (footer line omitted) rather than a 500 if `pyproject.toml` is missing or
+malformed. This is also the seam Phase 15.1's planned `SiteConfig` context processor is
+expected to build on.
 
 ## Scheduled tasks
 

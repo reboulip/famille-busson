@@ -30,6 +30,7 @@ This was a rendering swap.
 | `annuaire/email_utils.py` | `OutgoingEmail`, `InlineImage`, `build_message`, `send_bulk_emails`. Transport and MIME. |
 | `annuaire/templates/annuaire/emails/_base.html` | The shared shell: ridge, wordmark, eaves line, card, footer. |
 | `annuaire/templates/annuaire/emails/_horizon.html` | The restrained ridge (credential flows). |
+| `annuaire/templates/annuaire/emails/_wordmark.html` | The "Famille Busson" wordmark, linked to `site_base_url` when given, plain text otherwise. Included by both `_base.html` and `_horizon.html`. |
 | `annuaire/templates/annuaire/emails/_button.html` | The single call to action. |
 | `annuaire/management/commands/preview_emails.py` | Renders or sends any flow on demand. |
 
@@ -56,6 +57,28 @@ decided in exactly one place.
   alpenglow measures 2.98:1 and fails AA for the button label; on ember it is 5.90:1.
 - **Subjects are frozen.** Members may filter on them. Changing one is a product
   decision, not a styling one.
+- **The "Gérer mes préférences" link is recipient-aware, when a recipient is known.**
+  `birthday_reminder()`/`new_blog_post()` take an optional keyword-only
+  `recipient: Person | None` and, when given, deep-link `settings_url` to that person's
+  own `/personne/<pk>/update#notifications` instead of the generic `edit-my-profile`
+  redirect. Dropping the `recipient` argument silently falls back to the generic link —
+  easy to miss at a new call site. Absolute URLs (including this one) are built from
+  `SITE_BASE_URL`, which must resolve to the real domain outside a request context — see
+  [`deployment.md`](deployment.md#environment-variables).
+- **The wordmark and "site de la famille Busson" footer text link home, when a base URL
+  is available.** `_wordmark.html` renders an `<a href="{{ url }}">` when `url` is
+  passed, or falls back to a plain `<span>` otherwise — needed because the two Django
+  stock flows (password reset, magic link) render through `PasswordResetView`'s own
+  machinery rather than `annuaire.emails`' builders, so `AccountPasswordResetView`/
+  `MagicLinkRequestView` pass `site_base_url` in via `extra_email_context` instead.
+  Forgetting that on a new Django-stock email flow silently degrades to plain text, not
+  an error.
+- **New-post notifications are sent from `transaction.on_commit`, not straight off
+  `post_save`.** `BlogPost`'s authors are a M2M, attached by the view *after* the row is
+  saved — a notification built directly in the `post_save` receiver saw an empty author
+  list and rendered "Par " with no names. Deferring the send until the surrounding
+  transaction commits lets the view's M2M writes land first. This is a stopgap, not the
+  final fix — Phase 9.7's outbound-email queue is expected to supersede it.
 
 ## The embedded birthday photo
 
