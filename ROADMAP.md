@@ -59,7 +59,10 @@
   in `docs/deployment.md` alongside the existing scheduled-task entries.
 - [ ] 9.3 · Tested restore procedure — a runbook plus an actually-executed restore into a
   scratch container, with the result recorded. A backup nobody has restored is not a
-  backup. (requires: 9.2)
+  backup. (requires: 9.2) — **infra shipped** (`scripts/restore.sh`,
+  `docker-compose.restore.yml`, `docs/restore.md`); the drill itself is not yet executed
+  — see `docs/restore.md`'s empty drill log. Check this off once a drill has actually run
+  and been recorded.
 - [ ] 9.4 · Backup monitoring — alert when a run fails, doesn't happen at all, or produces
   a suspiciously small artifact. (requires: 9.2)
 

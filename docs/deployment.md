@@ -151,7 +151,7 @@ same pattern as above:
 
 ## Sauvegardes
 
-`scripts/backup.sh` dumps Postgres, archives `media/` and `documents_data/`, encrypts a
+`scripts/backup.sh` dumps Postgres, archives `media/` and `documents/`, encrypts a
 copy of `.env`, and copies the result off-VPS via `rclone`. It's a plain host-side bash
 script (not run inside a container, unlike the scheduled tasks above) — it shells out to
 `docker compose exec` itself for the parts that need the running containers. It ships
@@ -187,7 +187,7 @@ change and bump its `manifest_version` field.
 - Generate an age keypair (`age-keygen`); put the public key in `BACKUP_AGE_RECIPIENT`,
   keep the private key safe and *off* the VPS's own backup (a backup that can decrypt
   itself defeats the point) — this is also what `scripts/restore.sh` needs to decrypt
-  `env.age` later (see `restore.md`).
+  `env.age` later (see [`restore.md`](restore.md)).
 - Configure an `rclone` remote matching `BACKUP_REMOTE` (`rclone config`).
 - If using a dead-man's-switch monitor, create the check and set `BACKUP_PING_URL`.
 - `mkdir -p /srv/bubu/logs` if it doesn't already exist, for the cron entry's log

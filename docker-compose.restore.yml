@@ -1,0 +1,41 @@
+services:
+  # Scratch stack for the restore drill (see docs/restore.md) -- everything here is a
+  # named (non-persistent-by-intent) volume, never a bind mount to a real host data
+  # directory, so `docker compose -f docker-compose.restore.yml -p bubu-restore-drill
+  # down -v` leaves nothing behind. Mirrors docker-compose.prod.yml's db service
+  # exactly (same Postgres major version) so a restored dump behaves the same way it
+  # would in prod.
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bubu_db}
+      POSTGRES_USER: ${POSTGRES_USER:-bubu_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-drill}
+    volumes:
+      - restore-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bubu_user} -d ${POSTGRES_DB:-bubu_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    image: ghcr.io/reboulip/famille-busson:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DEBUG: "False"
+      SECRET_KEY: drill-only-not-a-real-secret
+      ALLOWED_HOSTS: "*"
+      DATABASE_URL: postgres://${POSTGRES_USER:-bubu_user}:${POSTGRES_PASSWORD:-drill}@db:5432/${POSTGRES_DB:-bubu_db}
+    volumes:
+      - restore-media:/app/media
+      - restore-documents:/app/documents_data
+    ports:
+      - "8002:8000"
+
+volumes:
+  restore-postgres-data:
+  restore-media:
+  restore-documents:

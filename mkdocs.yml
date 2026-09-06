@@ -27,6 +27,7 @@ nav:
   - Home: README.md
   - Data model: data_model.md
   - Deployment: deployment.md
+  - Restore: restore.md
   - Design system: design_system.md
   - Emails: emails.md
   - Permissions: permissions.md
