@@ -915,6 +915,14 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     min-height: 0;
 }
 
+/* Close button only makes sense once fullscreen has replaced the whole publication
+   view (#131) -- inline, the viewer already sits in the page, so there's nothing to
+   return to. The enter-fullscreen button hides in turn so the toolbar doesn't carry
+   two exit-shaped controls at once. */
+.document-viewer-close-btn { display: none; }
+.document-viewer--fullscreen .document-viewer-close-btn { display: inline-block; }
+.document-viewer--fullscreen .document-viewer-fullscreen-btn { display: none; }
+
 .document-file-preview-image {
     max-width: 100%;
     max-height: 100%;

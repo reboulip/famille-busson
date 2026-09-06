@@ -31,7 +31,7 @@
   points (link vs. create). [#133]
 
 ### Cluster: Interface
-- [ ] 8.5 · Close button on the publication attachment viewer, to return to the
+- [x] 8.5 · Close button on the publication attachment viewer, to return to the
   publication without relying on the browser back button. [#131]
 - [x] 8.6 · Discreet version number in the site footer. [#138]
 

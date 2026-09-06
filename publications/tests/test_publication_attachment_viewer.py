@@ -35,6 +35,20 @@ def test_pdf_attachment_uses_the_document_viewer(auth_client, pdf_attachment):
 
 
 @pytest.mark.django_db
+def test_image_viewer_has_a_close_button(auth_client, image_attachment):
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": image_attachment.post.pk}))
+    content = response.content.decode()
+    assert "document-viewer-close-btn" in content
+
+
+@pytest.mark.django_db
+def test_pdf_viewer_has_a_close_button(auth_client, pdf_attachment):
+    response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": pdf_attachment.post.pk}))
+    content = response.content.decode()
+    assert "document-viewer-close-btn" in content
+
+
+@pytest.mark.django_db
 def test_viewer_script_loads_only_when_there_is_something_to_view(auth_client, blog_post):
     response = auth_client.get(reverse("blogpost-detail", kwargs={"pk": blog_post.pk}))
     assert "document_viewer.js" not in response.content.decode()

@@ -49,6 +49,7 @@
                                 <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Image suivante">{% icon "chevron-right" size=16 %}</button>
                             {% endif %}
                             <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
                         </div>
                     </div>
                     {% if image_attachments|length > 1 %}
@@ -84,6 +85,7 @@
                             </div>
                             <a href="{{ attachment.file.url }}" class="fb-btn fb-btn--quiet fb-btn--sm" download>{% icon "download" size=16 %} Télécharger</a>
                             <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
                         </div>
                     </div>
                     <div class="document-viewer-stage">

@@ -29,22 +29,26 @@ document.addEventListener('DOMContentLoaded', () => {
     // keeps the toolbar (caption, download, exit) visible and usable.
     document.querySelectorAll('.document-viewer').forEach((viewer) => {
         const fullscreenBtn = viewer.querySelector('.document-viewer-fullscreen-btn');
+        const closeBtn = viewer.querySelector('.document-viewer-close-btn');
         const strip = viewer.querySelector('.document-viewer-strip');
         const carousel = strip ? initImageCarousel(viewer, strip) : null;
         const pdf = viewer.querySelector('.document-viewer-pdf-pages') ? initPdfViewer(viewer) : null;
 
         const setFullscreen = (active) => {
             viewer.classList.toggle('document-viewer--fullscreen', active);
-            if (fullscreenBtn) fullscreenBtn.textContent = active ? '✕ Quitter le plein écran' : '⛶ Plein écran';
             // The stage just changed width; PDF pages are sized in real pixels, so they
             // have to be re-measured and re-rendered or fullscreen shows the same small
             // page inside a bigger box (#109).
             if (pdf) pdf.relayout();
         };
         if (fullscreenBtn) {
-            fullscreenBtn.addEventListener('click', () => {
-                setFullscreen(!viewer.classList.contains('document-viewer--fullscreen'));
-            });
+            fullscreenBtn.addEventListener('click', () => setFullscreen(true));
+        }
+        // Explicit close button (#131): fullscreen is a fixed overlay with no history
+        // entry of its own, so without this the only way out was Escape or the browser
+        // back button -- which navigates away from the publication entirely.
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => setFullscreen(false));
         }
         document.addEventListener('keydown', (e) => {
             if (!viewer.classList.contains('document-viewer--fullscreen')) return;
