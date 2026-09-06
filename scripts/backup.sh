@@ -43,6 +43,16 @@ BACKUP_REMOTE="${BACKUP_REMOTE:-}"
 BACKUP_PING_URL="${BACKUP_PING_URL:-}"
 BACKUP_MIN_DB_BYTES="${BACKUP_MIN_DB_BYTES:-1000}"
 BACKUP_MIN_MEDIA_BYTES="${BACKUP_MIN_MEDIA_BYTES:-0}"
+BACKUP_MIN_DOCUMENTS_BYTES="${BACKUP_MIN_DOCUMENTS_BYTES:-0}"
+# Relative-size checks catch a slow-creeping truncation an absolute floor set once
+# would miss (e.g. a dump that silently produces half its expected rows every night,
+# each one individually clearing BACKUP_MIN_DB_BYTES). 0 disables a given check; 0.5
+# means "this run's artifact must be at least half the size of the previous run's" --
+# deliberately loose, since a real family site's day-to-day size swings (someone
+# deletes an old document, say) are plausible and shouldn't page anyone.
+BACKUP_MIN_DB_RATIO="${BACKUP_MIN_DB_RATIO:-0.5}"
+BACKUP_MIN_MEDIA_RATIO="${BACKUP_MIN_MEDIA_RATIO:-0.5}"
+BACKUP_MIN_DOCUMENTS_RATIO="${BACKUP_MIN_DOCUMENTS_RATIO:-0}"
 BACKUP_AGE_RECIPIENT="${BACKUP_AGE_RECIPIENT:-}"
 
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
@@ -95,6 +105,7 @@ DB_SIZE="$(size_of "$RUN_DIR/db.dump")"
 if [ "$DB_SIZE" -lt "$BACKUP_MIN_DB_BYTES" ]; then
     fail "db.dump is only $DB_SIZE bytes (< BACKUP_MIN_DB_BYTES=$BACKUP_MIN_DB_BYTES) -- looks truncated"
 fi
+check_relative_size db.dump "$DB_SIZE" "$BACKUP_MIN_DB_RATIO"
 
 POSTGRES_VERSION="$(cd "$COMPOSE_DIR" && docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -tAc "SELECT version();"' | tr -d '\r' || echo unknown)"
 APP_VERSION="$(cd "$COMPOSE_DIR" && docker compose exec -T web python manage.py shell -c 'from django.conf import settings; print(settings.APP_VERSION)' 2>/dev/null | tr -d '\r' || echo unknown)"
@@ -112,6 +123,57 @@ archive_tree() {
     fi
 }
 
+# Relative-size checks: compare this run's artifact against the immediately preceding
+# run's manifest.json, catching a slow-creeping truncation an absolute floor (set once,
+# in bytes) would miss. Reads manifest.json with grep/sed rather than a JSON parser --
+# the format is one we control ourselves (see the manifest-writing block below), so a
+# plain pattern match is enough and keeps this script's only dependencies bash+coreutils.
+previous_manifest() {
+    local -a runs
+    mapfile -t runs < <(find "$BACKUP_DIR" -mindepth 1 -maxdepth 1 -type d -name '????????T??????Z' | sort)
+    local prev=""
+    local run
+    for run in "${runs[@]}"; do
+        [ "$run" = "$RUN_DIR" ] && continue
+        prev="$run"
+    done
+    if [ -n "$prev" ] && [ -f "$prev/manifest.json" ]; then
+        echo "$prev/manifest.json"
+    fi
+}
+
+previous_artifact_size() {
+    local manifest="$1" artifact="$2"
+    grep -o "\"${artifact}\": {\"size_bytes\": [0-9]*" "$manifest" 2>/dev/null | grep -o '[0-9]*$' || true
+}
+
+check_relative_size() {
+    # $1: artifact filename, $2: this run's size in bytes, $3: minimum ratio of the
+    # previous run's size (0 disables the check).
+    local artifact="$1" current_size="$2" ratio="$3"
+    [ "$ratio" = "0" ] && return 0
+
+    local manifest
+    manifest="$(previous_manifest)"
+    if [ -z "$manifest" ]; then
+        log "no previous backup to compare $artifact against -- skipping relative-size check"
+        return 0
+    fi
+
+    local previous_size
+    previous_size="$(previous_artifact_size "$manifest" "$artifact")"
+    if [ -z "$previous_size" ]; then
+        log "previous manifest has no size recorded for $artifact -- skipping relative-size check"
+        return 0
+    fi
+
+    local threshold
+    threshold="$(awk -v p="$previous_size" -v r="$ratio" 'BEGIN { printf "%d", p * r }')"
+    if [ "$current_size" -lt "$threshold" ]; then
+        fail "$artifact is only $current_size bytes, less than ${ratio}x the previous run's $previous_size bytes (threshold ~$threshold) -- looks like a regression, not normal variance"
+    fi
+}
+
 log "archiving media/ to $RUN_DIR/media.tar.gz"
 archive_tree media "$RUN_DIR/media.tar.gz"
 
@@ -122,6 +184,13 @@ MEDIA_SIZE="$(size_of "$RUN_DIR/media.tar.gz")"
 if [ "$MEDIA_SIZE" -lt "$BACKUP_MIN_MEDIA_BYTES" ]; then
     fail "media.tar.gz is only $MEDIA_SIZE bytes (< BACKUP_MIN_MEDIA_BYTES=$BACKUP_MIN_MEDIA_BYTES)"
 fi
+check_relative_size media.tar.gz "$MEDIA_SIZE" "$BACKUP_MIN_MEDIA_RATIO"
+
+DOCUMENTS_SIZE="$(size_of "$RUN_DIR/documents.tar.gz")"
+if [ "$DOCUMENTS_SIZE" -lt "$BACKUP_MIN_DOCUMENTS_BYTES" ]; then
+    fail "documents.tar.gz is only $DOCUMENTS_SIZE bytes (< BACKUP_MIN_DOCUMENTS_BYTES=$BACKUP_MIN_DOCUMENTS_BYTES)"
+fi
+check_relative_size documents.tar.gz "$DOCUMENTS_SIZE" "$BACKUP_MIN_DOCUMENTS_RATIO"
 
 if [ -n "$BACKUP_AGE_RECIPIENT" ] && [ -f "$ENV_FILE" ]; then
     log "encrypting $ENV_FILE to $RUN_DIR/env.age"

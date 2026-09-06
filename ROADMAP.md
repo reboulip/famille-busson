@@ -63,7 +63,7 @@
   `docker-compose.restore.yml`, `docs/restore.md`); the drill itself is not yet executed
   — see `docs/restore.md`'s empty drill log. Check this off once a drill has actually run
   and been recorded.
-- [ ] 9.4 · Backup monitoring — alert when a run fails, doesn't happen at all, or produces
+- [x] 9.4 · Backup monitoring — alert when a run fails, doesn't happen at all, or produces
   a suspiciously small artifact. (requires: 9.2)
 
 ### Cluster: Cache et file de tâches

@@ -1,4 +1,4 @@
-"""Guards for the automated backup script (9.2).
+"""Guards for the automated backup script (9.2) and its monitoring extensions (9.4).
 
 There is no docker/postgres/rclone available in CI or the dev sandbox, so
 scripts/backup.sh cannot be executed here -- these are source-text checks only,
@@ -92,3 +92,29 @@ def test_the_documented_cron_entry_points_at_the_shipped_script_path():
 def test_the_deploy_workflow_ships_the_scripts_directory():
     workflow = (REPO_ROOT / ".github" / "workflows" / "build-and-deploy.yml").read_text(encoding="utf-8")
     assert "scripts" in workflow
+
+
+def test_relative_size_checks_run_for_every_artifact_with_a_floor():
+    content = _script_text()
+    assert 'check_relative_size db.dump "$DB_SIZE" "$BACKUP_MIN_DB_RATIO"' in content
+    assert 'check_relative_size media.tar.gz "$MEDIA_SIZE" "$BACKUP_MIN_MEDIA_RATIO"' in content
+    assert 'check_relative_size documents.tar.gz "$DOCUMENTS_SIZE" "$BACKUP_MIN_DOCUMENTS_RATIO"' in content
+
+
+def test_relative_size_check_fails_open_with_no_prior_history():
+    # A fresh VPS's very first backup has nothing to compare against -- the check
+    # must skip, never fail, when there's no previous run or no previous manifest.
+    content = _script_text()
+    assert 'if [ -z "$manifest" ]; then' in content
+    assert 'if [ -z "$previous_size" ]; then' in content
+
+
+def test_a_ratio_of_zero_disables_the_check():
+    content = _script_text()
+    assert '[ "$ratio" = "0" ] && return 0' in content
+
+
+def test_documents_gets_an_absolute_size_floor_like_db_and_media():
+    content = _script_text()
+    assert "BACKUP_MIN_DOCUMENTS_BYTES" in content
+    assert '"$DOCUMENTS_SIZE" -lt "$BACKUP_MIN_DOCUMENTS_BYTES"' in content

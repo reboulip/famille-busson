@@ -180,16 +180,23 @@ change and bump its `manifest_version` field.
 | `BACKUP_REMOTE` | An `rclone` remote path (e.g. `b2:famille-busson-backups/`) to copy each run to. Empty disables off-site copy entirely. |
 | `BACKUP_AGE_RECIPIENT` | The [age](https://github.com/FiloSottile/age) public key/recipient `.env` is encrypted to. Empty skips encrypting `.env` (it's still excluded from the backup, which then loses `SECRET_KEY`/the DB password if the VPS is lost — set this up before relying on the backup for disaster recovery). |
 | `BACKUP_PING_URL` | A dead-man's-switch base URL (e.g. a healthchecks.io check) — pinged at start, on success (`/0`), and on failure (`/fail`). Empty disables monitoring pings. |
-| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` | Sanity floors: a dump/archive smaller than this aborts the run rather than shipping a silently truncated backup. |
+| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` / `BACKUP_MIN_DOCUMENTS_BYTES` | Absolute sanity floors: a dump/archive smaller than this aborts the run rather than shipping a silently truncated backup. All disabled (`0`) except the DB floor by default. |
+| `BACKUP_MIN_DB_RATIO` / `BACKUP_MIN_MEDIA_RATIO` / `BACKUP_MIN_DOCUMENTS_RATIO` | Relative sanity floors: this run's artifact must be at least this fraction of the *previous* run's size for the same artifact, or the run aborts. Catches a slow-creeping truncation that stays individually above the absolute floor every night. `0` disables the check (the default for documents, since that archive can legitimately shrink a lot in one run). Deliberately loose defaults (`0.5`) — a family site's day-to-day size swings shouldn't page anyone. |
+
+### Backup monitoring
+
+- **A run that fails, or produces an artifact under one of the floors above**: `scripts/backup.sh`'s `fail()` pings `$BACKUP_PING_URL/fail` and exits non-zero. Both absolute and relative floors route through the same `fail()` path.
+- **A run that doesn't happen at all**: this is what the dead-man's-switch itself is for, not something this script can detect from inside its own run — a healthchecks.io-style check has its own schedule and grace period configured on its dashboard, and it alerts on its own once a `/0` ping doesn't arrive in time. Set the check's schedule to match the cron frequency (daily) and its grace period to something comfortably longer than a normal run (an hour is generous). No Django/Python code is needed for this case; don't build one.
 
 **Manual VPS setup this needs, once**, none of it automated by CI/CD:
 - Install `age` and `rclone` on the VPS.
 - Generate an age keypair (`age-keygen`); put the public key in `BACKUP_AGE_RECIPIENT`,
   keep the private key safe and *off* the VPS's own backup (a backup that can decrypt
-  itself defeats the point) — this is also what `scripts/restore.sh` needs to decrypt
-  `env.age` later (see [`restore.md`](restore.md)).
+  itself defeats the point) — the operator uses this same private key by hand later, per
+  [`restore.md`](restore.md), to decrypt `env.age` if a restore ever needs it.
 - Configure an `rclone` remote matching `BACKUP_REMOTE` (`rclone config`).
-- If using a dead-man's-switch monitor, create the check and set `BACKUP_PING_URL`.
+- If using a dead-man's-switch monitor: create the check, set its schedule and grace
+  period as above, and set `BACKUP_PING_URL`.
 - `mkdir -p /srv/bubu/logs` if it doesn't already exist, for the cron entry's log
   redirect.
 
