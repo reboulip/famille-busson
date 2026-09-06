@@ -24,6 +24,20 @@
                 {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label="Chercher un auteur" %}
                 {% if form.authors.errors %}<div class="fb-error">{{ form.authors.errors }}</div>{% endif %}
             </div>
+            <div class="fb-field">
+                <label class="fb-label" for="document-search-input">Documents liés</label>
+                {% comment %}
+                    Deliberate reuse of the person-picker component under a document-flavoured
+                    search URL -- it's already generic (data-search-url/data-field-name driven),
+                    so a second implementation would just be duplication.
+                {% endcomment %}
+                {% url 'document-search-ajax' as document_search_url %}
+                {% include "annuaire/_person_picker.html" with input_id="document-search-input" field_name="documents" search_url=document_search_url initial_json=documents_initial_json aria_label="Chercher un document" %}
+                {% if form.documents.errors %}<div class="fb-error">{{ form.documents.errors }}</div>{% endif %}
+                <a href="{% url 'document-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "plus" size=16 %} Déposer un nouveau document
+                </a>
+            </div>
         </fieldset>
 
         {% with subform=formsets.0 %}

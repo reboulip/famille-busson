@@ -12,11 +12,13 @@ from .views import (
     DocumentFileView,
     DocumentListView,
     DocumentUpdateView,
+    document_search_ajax,
 )
 
 urlpatterns = [
     path("", DocumentListView.as_view(), name="document-list"),
     path("new/", DocumentCreateView.as_view(), name="document-create"),
+    path("search/", document_search_ajax, name="document-search-ajax"),
     path("<int:pk>/", DocumentDetailView.as_view(), name="document-detail"),
     path("<int:pk>/edit/", DocumentUpdateView.as_view(), name="document-edit"),
     path("<int:pk>/delete/", DocumentDeleteView.as_view(), name="document-delete"),

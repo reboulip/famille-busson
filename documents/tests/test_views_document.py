@@ -66,6 +66,23 @@ def test_document_detail_hides_redactor_when_unset(auth_client, document):
 
 
 @pytest.mark.django_db
+def test_document_detail_shows_linked_publications(auth_client, document):
+    from publications.models import BlogPost
+
+    post = BlogPost.objects.create(title="Billet lié")
+    post.documents.add(document)
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "Publications liées" in response.content.decode()
+    assert post.title in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_document_detail_hides_publications_section_when_none_linked(auth_client, document):
+    response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))
+    assert "Publications liées" not in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_document_detail_hides_edit_delete_for_non_uploader(auth_client, other_person, category):
     document = Document.objects.create(title="Document de Bob", category=category, uploaded_by=other_person)
     response = auth_client.get(reverse("document-detail", kwargs={"pk": document.pk}))

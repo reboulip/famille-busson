@@ -172,6 +172,7 @@
                     </div>
                 {% endif %}
                 {% block content %}{% endblock content %}
+                {% if site_version %}<footer class="fb-footer">v{{ site_version }}</footer>{% endif %}
             </div>
         </main>
     </div>

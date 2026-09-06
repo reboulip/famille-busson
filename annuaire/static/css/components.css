@@ -422,6 +422,12 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     padding: var(--fb-sp-6) var(--fb-sp-6) var(--fb-sp-8);
 }
 .fb-content__inner { max-width: var(--fb-content-max); margin: 0 auto; }
+.fb-footer {
+    margin-top: var(--fb-sp-8);
+    text-align: center;
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bark);
+}
 
 /* --- Mobile ------------------------------------------------------------- */
 .fb-topbar {

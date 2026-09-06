@@ -18,6 +18,7 @@ erDiagram
     Person ||--o{ PresencePSV : "person"
     Chalet ||--o{ PresencePSV : "chalet"
     BlogPost }o--o{ Person : "authors"
+    BlogPost }o--o{ Document : "documents"
     BlogPost ||--o{ Attachment : "post"
     BlogPost ||--o{ Comment : "post"
     Person ||--o{ Comment : "author"
@@ -136,6 +137,7 @@ erDiagram
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 | `authors` | ManyToManyField | Auteur(s) | → Person (M2M), related_name='blog_posts' |
+| `documents` | ManyToManyField | Documents liés | → Document (M2M), related_name='publications' |
 
 ### `Attachment`
 

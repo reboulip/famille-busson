@@ -11,12 +11,28 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
+import tomllib
 from pathlib import Path
 
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _read_app_version() -> str:
+    """Read pyproject.toml's version for the footer -- never importlib.metadata:
+    this is a uv *virtual* project (no [build-system] table, --no-install-project
+    in the Dockerfile), so no dist-info exists to look up. Empty string on any
+    failure (missing/malformed file) -- a wrong footer is fine, a 500 is not."""
+    try:
+        with open(BASE_DIR / "pyproject.toml", "rb") as f:
+            return tomllib.load(f)["project"]["version"]
+    except (OSError, tomllib.TOMLDecodeError, KeyError):
+        return ""
+
+
+APP_VERSION = _read_app_version()
 
 env = environ.Env(
     DEBUG=(bool, True),
@@ -85,6 +101,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "annuaire.context_processors.site_version",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",

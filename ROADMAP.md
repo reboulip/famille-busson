@@ -25,7 +25,7 @@
 - [x] 8.3 · Document list sorting and filtering — dropdown sort (date de dépôt,
   alphabétique, rédacteur, date de rédaction, croissant/décroissant, le plus récent par
   défaut) plus filtering by author and by year of redaction. [#137]
-- [ ] 8.4 · Link a publication to a document — from the publication form, attach an
+- [x] 8.4 · Link a publication to a document — from the publication form, attach an
   existing `documents.Document` or create a new one linked to the publication,
   alongside the existing attachment upload. Needs careful UX design for the two entry
   points (link vs. create). [#133]
@@ -33,7 +33,7 @@
 ### Cluster: Interface
 - [ ] 8.5 · Close button on the publication attachment viewer, to return to the
   publication without relying on the browser back button. [#131]
-- [ ] 8.6 · Discreet version number in the site footer. [#138]
+- [x] 8.6 · Discreet version number in the site footer. [#138]
 
 ## Phase 9 — Socle : correctifs, sauvegardes et tâches de fond
 

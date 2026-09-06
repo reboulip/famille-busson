@@ -16,6 +16,7 @@ from django.views.generic import (
 
 from annuaire.models import Person
 from annuaire.views import StaffRequiredMixin
+from documents.access import accessible_documents
 
 from .forms import AttachmentFormSet, BlogPostForm, CommentForm
 from .models import BlogPost, Comment
@@ -33,6 +34,24 @@ def _authors_initial_json(view):
         profile = getattr(request.user, "profile", None)
         persons = [profile] if profile is not None else []
     return json.dumps([{"id": p.pk, "name": str(p)} for p in persons])
+
+
+def _documents_initial_json(view):
+    """Build the JSON payload used by the document-picker to pre-populate `documents`.
+
+    Scoped to the requesting user's accessible documents, same as the form field
+    itself -- a failed-validation redisplay must not leak a restricted document's
+    title just because its pk was in the (rejected) POST data."""
+    request = view.request
+    accessible = accessible_documents(request.user)
+    if request.method == "POST":
+        ids = [int(pk) for pk in request.POST.getlist("documents") if pk.isdigit()]
+        docs = list(accessible.filter(pk__in=ids).order_by("title"))
+    elif getattr(view, "object", None) is not None:
+        docs = list(view.object.documents.filter(pk__in=accessible).order_by("title"))
+    else:
+        docs = []
+    return json.dumps([{"id": d.pk, "name": d.title} for d in docs])
 
 
 class AuthorOrStaffRequiredMixin(LoginRequiredMixin):
@@ -86,6 +105,9 @@ class BlogPostDetailView(LoginRequiredMixin, DetailView):
         context["image_attachments"] = image_attachments
         context["pdf_attachments"] = pdf_attachments
         context["other_attachments"] = other_attachments
+        # Re-checked at render time, never a stored snapshot: a document later moved
+        # into a locked category must silently disappear from the publication page.
+        context["linked_documents"] = accessible_documents(self.request.user).filter(publications=self.object)
         return context
 
     def post(self, request, *args, **kwargs):
@@ -120,6 +142,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs["current_person"] = getattr(self.request.user, "profile", None)
+        kwargs["user"] = self.request.user
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -129,6 +152,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
         else:
             context["formsets"] = [AttachmentFormSet()]
         context["authors_initial_json"] = _authors_initial_json(self)
+        context["documents_initial_json"] = _documents_initial_json(self)
         return context
 
     def form_valid(self, form):
@@ -151,6 +175,14 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
     form_class = BlogPostForm
     template_name = "publications/blogpost_form.html"
 
+    def get_form_kwargs(self):
+        # Without this, BlogPostForm defaults to user=None -> documents queryset is
+        # empty -> the M2M ModelForm validates fine and silently clears every linked
+        # document on save. See test_blogpost_edit_preserves_linked_documents.
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
@@ -160,6 +192,7 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
         else:
             context["formsets"] = [AttachmentFormSet(instance=self.object)]
         context["authors_initial_json"] = _authors_initial_json(self)
+        context["documents_initial_json"] = _documents_initial_json(self)
         return context
 
     def form_valid(self, form):

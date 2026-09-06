@@ -27,6 +27,12 @@ class BlogPost(models.Model):
         related_name="blog_posts",
         verbose_name="Auteur(s)",
     )
+    documents = models.ManyToManyField(
+        "documents.Document",
+        blank=True,
+        related_name="publications",
+        verbose_name="Documents liés",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
 

@@ -106,6 +106,19 @@
         </section>
     {% endif %}
 
+    {% if linked_documents %}
+        <section class="fb-longform">
+            <div class="fb-section-head"><h2>Documents liés</h2></div>
+            {% for document in linked_documents %}
+                <p>
+                    <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{% url 'document-detail' document.pk %}">
+                        {% icon "clip" size=16 %} {{ document.title }}
+                    </a>
+                </p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
     <section class="fb-longform">
         <div class="fb-section-head">
             <h2>Commentaires</h2>
