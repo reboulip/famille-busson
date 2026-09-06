@@ -76,6 +76,15 @@ def test_the_condensed_state_stands_down_everything_but_name_and_photo():
     assert re.search(r"\.profile-identity--pinned \.fb-meta \{ display: none; \}", block)
 
 
+def test_the_rail_does_not_generate_its_own_box_on_mobile():
+    # #124, reopened: display: block still carried the shared component's sticky
+    # rule, pinning the whole rail (identity + info) instead of just the identity
+    # card. display: contents removes the rail's box so only .profile-identity's
+    # own sticky rule (asserted above) applies.
+    block = _mobile_block(MAIN_CSS.read_text(encoding="utf-8"))
+    assert ".profile-record .fb-record__rail { display: contents; }" in block
+
+
 def test_the_shared_record_component_is_not_restyled_for_the_profile_page():
     # .fb-record is also the chalet detail page's layout -- the profile's rules
     # hang off .profile-record so that page is untouched.

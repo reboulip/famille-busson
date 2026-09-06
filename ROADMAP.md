@@ -44,12 +44,12 @@
 > nobody has ever restored.
 
 ### Cluster: Correctifs
-- [ ] 9.1 · Fix the mobile sticky profile rail — on mobile the "Informations" panel starts
+- [x] 9.1 · Fix the mobile sticky profile rail — on mobile the "Informations" panel starts
   scrolling but never collapses, so the Phase 7 fix (`profile_sticky_identity.js`) only
   half works; only name and photo should stay pinned. Reopened by the reporter, whose
   explicit condition is that this is verified visually on a real mobile viewport before
   it ships. [#124]
-- [ ] 9.11 · Fix birthday reminder emails not being sent — diagnose and repair
+- [x] 9.11 · Fix birthday reminder emails not being sent — diagnose and repair
   `send_birthday_reminders` so day-before/day-of reminders actually go out; independent
   of the queue migration in 9.6. [#130]
 

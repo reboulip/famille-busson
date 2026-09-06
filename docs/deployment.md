@@ -121,10 +121,20 @@ send_birthday_reminders.py`) emails subscribed members for each person whose bir
 today, but only when it's actually run — it must be scheduled on the VPS via cron or a
 systemd timer, set up by hand outside this repo's CI/CD. A daily cron entry running it
 inside the `web` container from `/srv/bubu` (where `docker-compose.yml` lives, see
-above):
+above), with its output redirected to a log file — cron's own output otherwise goes
+nowhere, so a failure is invisible until someone notices reminders never arrived:
 
 ```
-0 8 * * * cd /srv/bubu && docker compose exec -T web python manage.py send_birthday_reminders
+0 8 * * * cd /srv/bubu && mkdir -p logs && docker compose exec -T web python manage.py send_birthday_reminders >> logs/birthday-reminders.log 2>&1
+```
+
+The command exits non-zero (and logs at ERROR level) if any reminder fails to send, so a
+non-empty exit status in the log is a real failure, not noise. Use `--date YYYY-MM-DD` to
+run it for a specific day (e.g. to verify the cron entry works without waiting for a real
+birthday) and `--dry-run` to see who would receive a reminder without sending anything:
+
+```
+docker compose exec -T web python manage.py send_birthday_reminders --date 2026-06-10 --dry-run
 ```
 
 `extract_document_content` (`documents/management/commands/extract_document_content.py`)

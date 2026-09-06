@@ -1,8 +1,8 @@
-"""Upcoming-birthday lookup for the home page hub banner.
+"""Upcoming-birthday lookup and reminder sending.
 
-Kept out of views.py so the window logic can be tested against a fixed date
-instead of whatever day the suite happens to run on -- hence `today` being an
-explicit parameter rather than read from the clock here.
+Kept out of views.py/the management command so the logic can be tested against
+a fixed date instead of whatever day the suite happens to run on -- hence
+`today` being an explicit parameter rather than read from the clock here.
 """
 
 from __future__ import annotations
@@ -13,7 +13,10 @@ from typing import NamedTuple
 
 from django.db.models import Q
 
+from annuaire import emails
+from annuaire.email_utils import send_bulk_emails
 from annuaire.models import Person
+from annuaire.models import Settings as NotificationSettings
 
 BIRTHDAY_WINDOW_DAYS = 8
 
@@ -69,3 +72,51 @@ def upcoming_birthdays(today: datetime.date, days: int = BIRTHDAY_WINDOW_DAYS) -
     ]
     entries.sort(key=lambda entry: (entry.days_until, entry.person.last_name, entry.person.first_name))
     return entries
+
+
+def birthday_reminder_messages(today: datetime.date) -> list:
+    """The reminder emails due for `today`'s birthdays, unsent.
+
+    Split out from `send_birthday_reminders` so `--dry-run` can report exactly
+    what would go out (recipient count, addresses) without sending anything.
+    """
+    birthday_filter = Q(birth_date__month=today.month, birth_date__day=today.day)
+    observed = _observed_month_day(today)
+    if observed is not None:
+        birthday_filter |= Q(birth_date__month=observed[0], birth_date__day=observed[1])
+    birthday_people = list(Person.objects.filter(birthday_filter).exclude(deceased=True))
+    if not birthday_people:
+        return []
+
+    subscribers = (
+        NotificationSettings.objects.filter(notify_on_birthday=True)
+        .exclude(person__email__isnull=True)
+        .exclude(person__email="")
+        .exclude(person__deceased=True)
+        .select_related("person")
+    )
+    if not subscribers:
+        return []
+
+    messages = []
+    for birthday_person in birthday_people:
+        # Read the photo once per birthday person, not once per subscriber: the
+        # same bytes are attached to every copy of that person's message.
+        photo = emails.birthday_photo(birthday_person)
+        for subscriber in subscribers:
+            messages.append(
+                emails.birthday_reminder(birthday_person, subscriber.person.email, photo, recipient=subscriber.person)
+            )
+    return messages
+
+
+def send_birthday_reminders(today: datetime.date) -> tuple[list[str], list[str]]:
+    """Email every subscribed member for each person whose birthday is `today`.
+
+    Returns `(sent, failed)` lists of recipient email addresses, same contract
+    as `send_bulk_emails`.
+    """
+    messages = birthday_reminder_messages(today)
+    if not messages:
+        return [], []
+    return send_bulk_emails(messages)

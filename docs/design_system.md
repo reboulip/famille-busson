@@ -194,8 +194,13 @@ sync if either changes.
   spans one row** — the row auto-sizes to the sticky element's own height, so it
   never scrolls past it. `.fb-record`'s mobile layout collapses to a single-column
   grid, so the sticky rule on `.profile-identity` was inert there until the mobile
-  media query first set `.profile-record`/its rail to `display: block`, giving the
-  identity card a normal block ancestor it can travel — and stick — within.
+  media query gave `.profile-record` a normal block layout. The rail itself
+  (`.fb-record__rail`) is set to `display: contents` at that breakpoint, not
+  `display: block` — a block box would still carry the shared component's own
+  sticky rule and pin the whole rail (identity card + info card together, #124),
+  where `display: contents` removes the rail's box entirely and lets its children
+  flow straight into `.profile-record`, leaving only `.profile-identity`'s own
+  sticky rule in effect.
 - **The source-text tests' `_rule_body()` helper cannot see inside an `@media`
   block** — its regex finds the first top-level occurrence of a selector, so a rule
   that only exists inside a media query (the mobile sticky/condensing rules in
