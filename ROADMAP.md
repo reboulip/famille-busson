@@ -54,7 +54,7 @@
   of the queue migration in 9.6. [#130]
 
 ### Cluster: Sauvegardes et restauration
-- [ ] 9.2 · Automated backups — a repo-tracked script dumping Postgres and archiving
+- [x] 9.2 · Automated backups — a repo-tracked script dumping Postgres and archiving
   `media/` and `documents_data/`, with a retention policy and an off-VPS copy, documented
   in `docs/deployment.md` alongside the existing scheduled-task entries.
 - [ ] 9.3 · Tested restore procedure — a runbook plus an actually-executed restore into a

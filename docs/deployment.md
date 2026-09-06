@@ -149,6 +149,53 @@ same pattern as above:
 */15 * * * * cd /srv/bubu && docker compose exec -T web python manage.py extract_document_content
 ```
 
+## Sauvegardes
+
+`scripts/backup.sh` dumps Postgres, archives `media/` and `documents_data/`, encrypts a
+copy of `.env`, and copies the result off-VPS via `rclone`. It's a plain host-side bash
+script (not run inside a container, unlike the scheduled tasks above) — it shells out to
+`docker compose exec` itself for the parts that need the running containers. It ships
+with the repo and is copied to the VPS by `build-and-deploy.yml` alongside
+`docker-compose.prod.yml`, so a fix to it reaches production the same way any other code
+change does; it still has to be scheduled by hand, same as the jobs above:
+
+```
+0 3 * * * cd /srv/bubu && bash scripts/backup.sh >> logs/backup.log 2>&1
+```
+
+Each run writes to `$BACKUP_DIR/<UTC-timestamp>/` (e.g. `backups/20260906T030000Z/`):
+`db.dump` (`pg_dump -Fc`), `media.tar.gz`, `documents.tar.gz`, an age-encrypted `env.age`,
+and a `manifest.json` recording per-artifact size and sha256, the app and Postgres
+versions, start/end time, and exit status. `manifest.json`'s shape is a contract other
+tooling reads (the restore script, backup monitoring) — treat a change to it as a breaking
+change and bump its `manifest_version` field.
+
+**Configuration** (`.env.example`'s `BACKUP_*` block):
+
+| Var | Meaning |
+|---|---|
+| `BACKUP_DIR` | Where run directories are written on the VPS. |
+| `BACKUP_KEEP_DAILY` / `BACKUP_KEEP_WEEKLY` | Local retention: the most recent N runs, plus M older ones kept roughly weekly. |
+| `BACKUP_KEEP_MONTHLY` | Extra off-site-only retention, beyond daily+weekly — off-site storage is cheap, VPS disk is not. |
+| `BACKUP_REMOTE` | An `rclone` remote path (e.g. `b2:famille-busson-backups/`) to copy each run to. Empty disables off-site copy entirely. |
+| `BACKUP_AGE_RECIPIENT` | The [age](https://github.com/FiloSottile/age) public key/recipient `.env` is encrypted to. Empty skips encrypting `.env` (it's still excluded from the backup, which then loses `SECRET_KEY`/the DB password if the VPS is lost — set this up before relying on the backup for disaster recovery). |
+| `BACKUP_PING_URL` | A dead-man's-switch base URL (e.g. a healthchecks.io check) — pinged at start, on success (`/0`), and on failure (`/fail`). Empty disables monitoring pings. |
+| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` | Sanity floors: a dump/archive smaller than this aborts the run rather than shipping a silently truncated backup. |
+
+**Manual VPS setup this needs, once**, none of it automated by CI/CD:
+- Install `age` and `rclone` on the VPS.
+- Generate an age keypair (`age-keygen`); put the public key in `BACKUP_AGE_RECIPIENT`,
+  keep the private key safe and *off* the VPS's own backup (a backup that can decrypt
+  itself defeats the point) — this is also what `scripts/restore.sh` needs to decrypt
+  `env.age` later (see `restore.md`).
+- Configure an `rclone` remote matching `BACKUP_REMOTE` (`rclone config`).
+- If using a dead-man's-switch monitor, create the check and set `BACKUP_PING_URL`.
+- `mkdir -p /srv/bubu/logs` if it doesn't already exist, for the cron entry's log
+  redirect.
+
+Run `bash scripts/backup.sh --dry-run` after setup to verify configuration without
+writing anything.
+
 ## One-time setup
 
 Some features ship with a manual backfill step that only needs to run once on the VPS,
