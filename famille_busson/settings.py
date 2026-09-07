@@ -58,6 +58,11 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     USE_X_FORWARDED_HOST = True
+    # Otherwise the compose healthcheck's plain-HTTP request gets a 301 and never
+    # actually executes the view -- silently reporting healthy either way (curl -f
+    # treats a 3xx as success) or falsely failing. Matched against the path with no
+    # leading slash, per SECURE_REDIRECT_EXEMPT's own semantics.
+    SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
 
 
 # Application definition

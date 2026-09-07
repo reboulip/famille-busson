@@ -64,7 +64,7 @@ The entrypoint runs twice per container start:
 |---|---|---|
 | `db` | `postgres:16-alpine` | Data at `/srv/bubu/data/postgres` on the host; healthcheck gates `web`'s startup. |
 | `cache` | `valkey/valkey:8-alpine` | Data at `/srv/bubu/data/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
-| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`. |
+| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`; healthcheck via `/healthz` (see below). |
 
 On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
 from this repo's `docker-compose.prod.yml`), `.env` (see below), and the data volumes
@@ -85,14 +85,63 @@ checks run before `collectstatic` under `set -euo pipefail`, so it warns rather 
 blocking container boot.
 
 The `cache` container serves **two roles on separate logical DBs**: db 0 is the Django
-cache (this item); db 1 is reserved for the background task queue's broker (a later
-item) — one Valkey instance, not two containers. `--maxmemory-policy noeviction` is
-required, not just a sane default: once the queue shares this instance, an eviction
-policy would silently drop unprocessed jobs along with cache entries under memory
-pressure. `--appendonly yes` persistence means in-flight state (soon: queued jobs)
-survives a container restart. Dev and the test suite never need a real Valkey —
-`CACHE_URL` defaults to `locmemcache://`, and `conftest.py` forces `LocMemCache` plus
-clears it before every test regardless of a developer's local `.env`.
+cache; db 1 is the background task queue's broker (see
+[`background_tasks.md`](background_tasks.md)) — one Valkey instance, not two
+containers. `--maxmemory-policy noeviction` is required, not just a sane default: with
+the queue sharing this instance, an eviction policy would silently drop unprocessed
+jobs along with cache entries under memory pressure. `--appendonly yes` persistence
+means in-flight state (queued jobs included) survives a container restart. Dev and the
+test suite never need a real Valkey — `CACHE_URL` defaults to `locmemcache://`, and
+`conftest.py` forces `LocMemCache` plus clears it before every test regardless of a
+developer's local `.env`.
+
+### `/healthz`
+
+Deepened beyond "the process is up" to actually check the database, cache, queue and
+storage backends — see `annuaire/health.py`. Response contract:
+
+```json
+{
+  "status": "ok|degraded|error",
+  "checks": {
+    "database": {"status": "ok", "duration_ms": 1.2},
+    "cache": {"status": "ok", "duration_ms": 0.4},
+    "queue": {"status": "ok", "duration_ms": 2.1},
+    "media_storage": {"status": "ok", "duration_ms": 0.3},
+    "documents_storage": {"status": "ok", "duration_ms": 0.3}
+  },
+  "version": "1.3.0"
+}
+```
+
+`Content-Type: application/json`, `Cache-Control: no-store`. Status vocabulary is
+exactly `ok` / `degraded` / `error` (per-check) — never a raw exception message or
+traceback, which for the database check in particular could leak the DSN host/user;
+full detail goes to the structured log (`logging.getLogger("django")`, `WARNING`) only.
+
+**Criticality is not uniform.** `database`, `media_storage` and `documents_storage` are
+critical: any failure makes the *overall* `status` `"error"` and the HTTP status `503`.
+`cache` and `queue` are not: a failure there makes the overall `status` `"degraded"`
+but the HTTP status stays `200` — this is what keeps a local dev `curl -sf
+.../healthz` (no Valkey running locally) reporting healthy, and what stops a Valkey
+blip from taking the whole site down in production.
+
+**The compose healthcheck** (`docker-compose.prod.yml`'s `web` service) runs
+`scripts/healthcheck.py` rather than `curl`/`wget` — neither exists in the
+`python:3.13-slim` base image. It sends an explicit `Host` header matching
+`ALLOWED_HOSTS`'s first entry, because `SECURE_SSL_REDIRECT` (on by default outside
+`DEBUG`) would otherwise turn a plain-HTTP in-container request into a 301 that never
+reaches the view, and a request without a matching `Host` header gets a `DisallowedHost`
+400 instead — `famille_busson/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
+half, the explicit header covers the second. A 503 response makes the script exit
+non-zero (via the propagating `HTTPError`), which is what marks the container unhealthy
+in `docker ps`/`docker compose ps` — this is visibility, not recovery; nothing restarts
+`web` automatically on an unhealthy status.
+
+**External uptime monitoring** is a manual dashboard step, not code: register
+`https://bubu.reboulip.fr/healthz` with a free-tier monitor (e.g. UptimeRobot) doing a
+keyword match on `"status": "ok"` in the response body — a `"degraded"` or `"error"`
+response, or no response at all, fails the match and triggers the monitor's alert.
 
 ### Protected document storage
 

@@ -39,9 +39,17 @@ over JSON output stable as the codebase grows.
 `X-Request-ID` header if the reverse proxy already sets one, otherwise a generated
 one), echoes it back in the response's `X-Request-ID` header, and makes it available
 to every log line emitted while handling that request via a `contextvars`-backed log
-filter — no call site needs to pass `request_id` by hand. This is what lets several
-log lines from one request (a view, a signal, a task it enqueues) be grepped together
-by `request_id` when something goes wrong.
+filter — no call site needs to pass `request_id` by hand. This is what lets every log
+line emitted synchronously while handling one request (a view, a signal fired during
+it) be grepped together by `request_id` when something goes wrong.
+
+In production, the `contextvars` value doesn't cross into the [background
+queue](background_tasks.md): a task a signal enqueues runs in a separate `worker`
+process, which never shares the request's `contextvars` context, so its own log lines
+won't carry the enqueuing request's id unless it's explicitly passed along as a task
+argument — none of the current tasks do. (Under `Q_CLUSTER["sync"]`, dev/tests' mode,
+the task runs inline on the same call stack and happens to inherit the id there —
+don't rely on that holding in production.)
 
 ## Error monitoring (Sentry)
 
@@ -70,6 +78,6 @@ own defaults.
 
 ## `/healthz`
 
-Deepening `/healthz` to check the database, cache, queue and storage backends, and
-wiring it into the compose healthcheck and an external uptime monitor, is a separate
-item — see [`deployment.md`](deployment.md) for the current state.
+Checks the database, cache, queue and storage backends, wired into the compose
+healthcheck and an external uptime monitor — see [`deployment.md`'s `/healthz`
+section](deployment.md#healthz) for the response contract and criticality rules.

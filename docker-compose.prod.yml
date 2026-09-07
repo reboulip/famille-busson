@@ -49,6 +49,15 @@ services:
       - /srv/bubu/data/documents:/app/documents_data
     ports:
       - "8001:8000"
+    healthcheck:
+      # python, not curl/wget -- the python:3.13-slim base image ships neither. See
+      # scripts/healthcheck.py for why this can't be a bare curl one-liner anyway
+      # (SECURE_SSL_REDIRECT/ALLOWED_HOSTS need a matching Host header).
+      test: ["CMD", "python", "scripts/healthcheck.py"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   # Runs the same code as `web`, on the same schedule/task definitions -- just the
   # queue's consumer instead of the HTTP server. Shares web's volumes: forgetting
