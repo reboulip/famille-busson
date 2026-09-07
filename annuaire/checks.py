@@ -41,3 +41,22 @@ def cache_backend_check(app_configs, **kwargs):
             )
         ]
     return []
+
+
+@register()
+def sentry_dsn_check(app_configs, **kwargs):
+    """Warn (never error) when SENTRY_DSN is unset outside DEBUG.
+
+    Warning, not error: same rationale as W001/W002 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. Without this, 9.9
+    ships as a silent no-op until someone notices errors were never reaching Sentry.
+    """
+    if not settings.DEBUG and not settings.SENTRY_DSN:
+        return [
+            Warning(
+                "SENTRY_DSN is unset outside of DEBUG -- errors are not being reported.",
+                hint="Set SENTRY_DSN in the environment to enable error monitoring.",
+                id="annuaire.W003",
+            )
+        ]
+    return []

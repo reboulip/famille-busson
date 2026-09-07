@@ -15,6 +15,7 @@ import tomllib
 from pathlib import Path
 
 import environ
+from sentry_sdk.types import Event, Hint
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,6 +80,9 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Early, so every log line from anywhere further down the chain (including
+    # error responses) carries the same request_id.
+    "annuaire.middleware.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -226,27 +230,95 @@ DOCUMENTS_ROOT = os.path.join(BASE_DIR, "documents_data")
 # (RequireDebugTrue filter) -- in prod (DEBUG=False) that made every 500 invisible in
 # `docker logs`, since ADMINS/mail_admins isn't configured either. Force errors to
 # console unconditionally so gunicorn's stdout (captured by Docker) always has them.
+#
+# LOG_FORMAT selects plain console output (readable in a dev terminal) or
+# one-JSON-object-per-line (grep/log-aggregator friendly), independent of DEBUG so
+# either can be forced for local debugging. A root ("") logger is what makes
+# __name__-based loggers elsewhere (e.g. annuaire/file_cleanup.py) actually reach a
+# handler -- previously only "django"/"django.request" were configured, so anything
+# else fell through to logging's unformatted lastResort handler.
+LOG_FORMAT = env("LOG_FORMAT", default="console" if DEBUG else "json")
+_ACTIVE_LOG_HANDLER = "json" if LOG_FORMAT == "json" else "console"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "annuaire.middleware.RequestIdLogFilter"},
+    },
+    "formatters": {
+        "console": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+        "json": {"()": "annuaire.log_formatters.JsonFormatter"},
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "console",
         },
+        "json": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": [_ACTIVE_LOG_HANDLER],
+        "level": "INFO",
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": [_ACTIVE_LOG_HANDLER],
             "level": "INFO",
             "propagate": False,
         },
         "django.request": {
-            "handlers": ["console"],
+            "handlers": [_ACTIVE_LOG_HANDLER],
             "level": "ERROR",
             "propagate": False,
         },
     },
 }
+
+# Error monitoring (Sentry) -- inert (no-op) unless SENTRY_DSN is set, so dev/CI/tests
+# are entirely unaffected. send_default_pii is always False: this site holds personal
+# data on identifiable EU residents. Errors only, never performance/profiling data.
+
+
+def _sentry_before_send(event: Event, hint: Hint) -> Event:
+    """Defense in depth against exactly the kind of personal data this site holds:
+    drop cookies wholesale, and any extra/context value filed under a key literally
+    named "email" (case-insensitive), regardless of where it came from.
+
+    A module-level function (not a closure) so it's importable and unit-testable
+    without needing a real `sentry_sdk.init()` call -- same reasoning as
+    `_default_site_base_url` above.
+    """
+    request = event.get("request")
+    if request:
+        request.pop("cookies", None)
+    for section in ("extra", "contexts"):
+        data = event.get(section)
+        if isinstance(data, dict):
+            for key in list(data):
+                if key.lower() == "email":
+                    data.pop(key)
+    return event
+
+
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        release=APP_VERSION,
+        environment=env("SENTRY_ENVIRONMENT", default="development" if DEBUG else "production"),
+        send_default_pii=False,
+        before_send=_sentry_before_send,
+        traces_sample_rate=0.0,
+        profiles_sample_rate=0.0,
+    )
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

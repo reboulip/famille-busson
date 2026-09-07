@@ -81,7 +81,7 @@
   throttle a second worker can't trivially bypass. (requires: 9.5)
 
 ### Cluster: Observabilité
-- [ ] 9.9 · Error monitoring — surface 500s without reading `docker logs`: structured
+- [x] 9.9 · Error monitoring — surface 500s without reading `docker logs`: structured
   logging plus an error tracker (Sentry or a self-hosted equivalent).
 - [ ] 9.10 · Deepen `/healthz` — check database, cache, queue and storage writability, and
   wire it to the compose healthcheck and an external uptime monitor. (requires: 9.5, 9.6)
