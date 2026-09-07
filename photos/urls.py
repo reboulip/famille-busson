@@ -7,6 +7,7 @@ from .views import (
     AlbumListView,
     AlbumUpdateView,
     PhotoFileView,
+    PhotoTagView,
     PhotoUploadView,
 )
 
@@ -20,4 +21,5 @@ urlpatterns = [
     path("photos/<int:pk>/", PhotoFileView.as_view(variant="file"), name="photo-file"),
     path("photos/<int:pk>/web/", PhotoFileView.as_view(variant="web"), name="photo-file-web"),
     path("photos/<int:pk>/vignette/", PhotoFileView.as_view(variant="thumbnail"), name="photo-file-thumbnail"),
+    path("photos/<int:pk>/personnes/", PhotoTagView.as_view(), name="photo-tag"),
 ]

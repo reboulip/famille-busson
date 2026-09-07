@@ -1,0 +1,29 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Personnes sur cette photo</h1>
+        </div>
+    </div>
+
+    <div class="fb-card" style="margin-bottom: var(--fb-sp-5)">
+        <img src="{% url 'photo-file-web' photo.pk %}" alt="{{ photo.caption }}"
+             style="max-width: 100%; border-radius: var(--fb-radius-sm)">
+    </div>
+
+    <form method="post" class="fb-form fb-card">
+        {% csrf_token %}
+        <div class="fb-field">
+            <label class="fb-label" for="photo-tag-search-input">Identifier des personnes</label>
+            {% include "annuaire/_person_picker.html" with input_id="photo-tag-search-input" field_name="persons" initial_json=tagged_persons_initial_json %}
+            <p class="fb-help form-text">Cliquez sur une suggestion pour identifier une personne, ou sur la croix d'un badge pour la retirer.</p>
+        </div>
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
+            <a href="{% url 'album-detail' photo.album_id %}" class="fb-btn fb-btn--ghost">Retour à l'album</a>
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}

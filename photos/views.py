@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import os
 
@@ -6,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count
 from django.http import FileResponse, Http404, JsonResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
@@ -15,7 +16,7 @@ from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .access import effective_groups, user_can_access_album
 from .forms import AlbumForm, PhotoUploadForm
-from .models import Album, Photo
+from .models import Album, PersonTag, Photo
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 
@@ -109,6 +110,46 @@ class PhotoUploadView(LoginRequiredMixin, View):
                 "thumbnail_url": reverse("photo-file-thumbnail", kwargs={"pk": photo.pk}),
             }
         )
+
+
+class PhotoTagView(LoginRequiredMixin, View):
+    """Dedicated tagging page, reusing the generic person-picker component
+    (never a bespoke one) -- there is no photo-detail page yet, a later item
+    adds one and will link here instead of standing up its own destination.
+    Any member who can access the photo's album may tag/untag people, the
+    same collaborative posture as PhotoUploadView."""
+
+    template_name = "photos/photo_tag_form.html"
+
+    def _get_photo(self, pk):
+        photo = get_object_or_404(Photo.objects.select_related("album"), pk=pk)
+        if not user_can_access_album(self.request.user, photo.album):
+            raise PermissionDenied("Vous n'avez pas accès à cette photo.")
+        return photo
+
+    def get(self, request, pk):
+        photo = self._get_photo(pk)
+        return render(request, self.template_name, self._context(photo))
+
+    def post(self, request, pk):
+        photo = self._get_photo(pk)
+        person_ids = {int(raw) for raw in request.POST.getlist("persons") if raw.isdigit()}
+        existing_ids = set(photo.person_tags.values_list("person_id", flat=True))
+
+        photo.person_tags.filter(person_id__in=existing_ids - person_ids).delete()
+
+        tagged_by = getattr(request.user, "profile", None)
+        for person_id in person_ids - existing_ids:
+            PersonTag.objects.create(photo=photo, person_id=person_id, tagged_by=tagged_by)
+
+        return redirect("album-detail", pk=photo.album_id)
+
+    def _context(self, photo):
+        tagged = [tag.person for tag in photo.person_tags.select_related("person")]
+        return {
+            "photo": photo,
+            "tagged_persons_initial_json": json.dumps([{"id": p.pk, "name": str(p)} for p in tagged]),
+        }
 
 
 class AlbumCreateView(LoginRequiredMixin, CreateView):

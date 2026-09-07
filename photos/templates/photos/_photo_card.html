@@ -1,9 +1,8 @@
 {# No photo-detail route yet -- plain (non-link) tile, upgraded once it lands. #}
 <span class="fb-card fb-place-card">
     <img src="{% url 'photo-file-thumbnail' photo.pk %}" alt="{{ photo.caption }}" class="fb-place-card__media">
-    {% if photo.caption %}
-        <span class="fb-place-card__body">
-            <span class="fb-meta">{{ photo.caption }}</span>
-        </span>
-    {% endif %}
+    <span class="fb-place-card__body">
+        {% if photo.caption %}<span class="fb-meta">{{ photo.caption }}</span>{% endif %}
+        <a href="{% url 'photo-tag' photo.pk %}" class="fb-meta">Identifier des personnes</a>
+    </span>
 </span>

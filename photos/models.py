@@ -141,3 +141,44 @@ class Photo(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.file.name)
+
+
+class PersonTag(models.Model):
+    """Identifies a Person in a Photo. The region box is stored (normalized
+    0-1 floats, all-or-none) but not yet drawn anywhere -- a future item adds
+    the drawing UI. Any member who can access the photo's album may tag or
+    untag people (the same collaborative posture as document/relation
+    editing on this site); tagged_by records who did it."""
+
+    photo = models.ForeignKey(Photo, on_delete=models.CASCADE, related_name="person_tags", verbose_name="Photo")
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="tagged_photos", verbose_name="Personne")
+    region_x = models.FloatField(null=True, blank=True, verbose_name="Position X")
+    region_y = models.FloatField(null=True, blank=True, verbose_name="Position Y")
+    region_width = models.FloatField(null=True, blank=True, verbose_name="Largeur de la zone")
+    region_height = models.FloatField(null=True, blank=True, verbose_name="Hauteur de la zone")
+    tagged_by = models.ForeignKey(
+        Person,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Identifié par",
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date d'identification")
+
+    class Meta:
+        verbose_name = "Personne identifiée sur une photo"
+        verbose_name_plural = "Personnes identifiées sur une photo"
+        constraints = [
+            models.UniqueConstraint(fields=["photo", "person"], name="unique_photo_person_tag"),
+        ]
+
+    def __str__(self):
+        return f"{self.person} sur {self.photo}"
+
+    def clean(self):
+        region_fields = [self.region_x, self.region_y, self.region_width, self.region_height]
+        if any(f is not None for f in region_fields) and not all(f is not None for f in region_fields):
+            raise ValidationError(
+                "La zone de la photo doit être définie entièrement (les quatre valeurs) ou pas du tout."
+            )

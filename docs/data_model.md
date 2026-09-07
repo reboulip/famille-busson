@@ -37,6 +37,9 @@ erDiagram
     Group ||--o{ AlbumGroupAccess : "group"
     Album ||--o{ Photo : "album"
     Person ||--o{ Photo : "uploaded_by"
+    Photo ||--o{ PersonTag : "photo"
+    Person ||--o{ PersonTag : "person"
+    Person ||--o{ PersonTag : "tagged_by"
 ```
 
 ## `annuaire`
@@ -278,3 +281,19 @@ erDiagram
 | `derivative_status` | CharField | Statut des dérivés | max_length=20, choices: pending=En attente, done=Terminé, error=Erreur, default='pending', required |
 | `derivative_error` | CharField | Erreur de dérivés | max_length=255, default='', optional |
 | `derivatives_generated_at` | DateTimeField | Dérivés générés le | optional |
+
+### `PersonTag`
+
+*App:* `photos` · *verbose name:* Personne identifiée sur une photo / Personnes identifiées sur une photo · *table:* `photos_persontag`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `photo` | ForeignKey | Photo | → Photo (on_delete=CASCADE), related_name='person_tags', required |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='tagged_photos', required |
+| `region_x` | FloatField | Position X | optional |
+| `region_y` | FloatField | Position Y | optional |
+| `region_width` | FloatField | Largeur de la zone | optional |
+| `region_height` | FloatField | Hauteur de la zone | optional |
+| `tagged_by` | ForeignKey | Identifié par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `created_at` | DateTimeField | Date d'identification | auto_now_add, optional |

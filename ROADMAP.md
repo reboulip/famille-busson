@@ -115,7 +115,7 @@
   download. (requires: 10.1)
 
 ### Cluster: Personnes et mémoire
-- [ ] 10.7 · Tag people in a photo — a through-model linking `Photo` to `Person` via the
+- [x] 10.7 · Tag people in a photo — a through-model linking `Photo` to `Person` via the
   existing person-picker component; a region box is stored but not yet drawn.
   (requires: 10.1)
 - [ ] 10.8 · Photos tab on the profile — every photo a person is tagged in, on their own
