@@ -1,0 +1,42 @@
+{% extends "annuaire/base.html" %}
+{% load photos_extras %}
+{% load icons %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Albums</h1>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'album-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvel album</a>
+        </div>
+    </div>
+
+    {% if albums %}
+        <div class="fb-card">
+            <ul class="album-list">
+                {% for album in albums %}
+                    <li class="album-list__row">
+                        {% if album|can_access:request.user %}
+                            {# No album-detail route until 10.4 lands -- plain text for now. #}
+                            <span class="album-list__name">
+                                {% icon "image" size=16 %} {{ album.title }}
+                            </span>
+                        {% else %}
+                            <span class="album-list__name album-list__name--locked">
+                                {% icon "lock" size=16 %} {{ album.title }}
+                            </span>
+                            <span class="fb-chip fb-chip--lock">
+                                Réservé au groupe{{ album|effective_groups|length|pluralize }} :
+                                {% for g in album|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                            </span>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        {% url 'album-create' as create_url %}
+        {% include "annuaire/_empty.html" with title="Aucun album" body="Les albums rassemblent les photos de la famille par événement ou par période." action_url=create_url action_label="Créer un album" %}
+    {% endif %}
+{% endblock content %}

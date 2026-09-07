@@ -30,6 +30,13 @@ erDiagram
     Person ||--o{ Document : "uploaded_by"
     Person ||--o{ Document : "redactor"
     Document ||--o{ DocumentFile : "document"
+    Photo ||--o{ Album : "cover"
+    Person ||--o{ Album : "created_by"
+    Album }o--o{ Group : "groups"
+    Album ||--o{ AlbumGroupAccess : "album"
+    Group ||--o{ AlbumGroupAccess : "group"
+    Album ||--o{ Photo : "album"
+    Person ||--o{ Photo : "uploaded_by"
 ```
 
 ## `annuaire`
@@ -221,3 +228,53 @@ erDiagram
 | `extracted_at` | DateTimeField | Date d'extraction | optional |
 | `ocr_used` | BooleanField | OCR utilisé | default=False, required |
 | `thumbnail` | FileField | Vignette | max_length=100, optional |
+
+## `photos`
+
+### `Album`
+
+*App:* `photos` · *verbose name:* Album / Albums · *table:* `photos_album`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `title` | CharField | Titre | max_length=200, required |
+| `description` | TextField | Description | default='', optional |
+| `date_start` | DateField | Date de début | optional |
+| `date_end` | DateField | Date de fin | optional |
+| `cover` | ForeignKey | Photo de couverture | → Photo (on_delete=SET_NULL), related_name='+', optional |
+| `created_by` | ForeignKey | Créé par | → Person (on_delete=SET_NULL), related_name='created_albums', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `groups` | ManyToManyField | Groupes autorisés | → Group (M2M), related_name='photo_albums' |
+
+### `AlbumGroupAccess`
+
+*App:* `photos` · *verbose name:* Accès groupe à album / Accès groupes à albums · *table:* `photos_albumgroupaccess`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `album` | ForeignKey | Album | → Album (on_delete=CASCADE), required |
+| `group` | ForeignKey | Groupe | → Group (on_delete=PROTECT), required |
+
+### `Photo`
+
+*App:* `photos` · *verbose name:* Photo / Photos · *table:* `photos_photo`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `album` | ForeignKey | Album | → Album (on_delete=CASCADE), related_name='photos', required |
+| `file` | FileField | Fichier | max_length=100, required |
+| `caption` | CharField | Légende | max_length=255, default='', optional |
+| `taken_at` | DateTimeField | Pris le | optional |
+| `uploaded_by` | ForeignKey | Déposé par | → Person (on_delete=SET_NULL), related_name='uploaded_photos', optional |
+| `uploaded_at` | DateTimeField | Date de téléversement | auto_now_add, optional |
+| `width` | PositiveIntegerField | Largeur | optional |
+| `height` | PositiveIntegerField | Hauteur | optional |
+| `thumbnail` | FileField | Vignette | max_length=100, optional |
+| `web` | FileField | Rendu web | max_length=100, optional |
+| `derivative_status` | CharField | Statut des dérivés | max_length=20, choices: pending=En attente, done=Terminé, error=Erreur, default='pending', required |
+| `derivative_error` | CharField | Erreur de dérivés | max_length=255, default='', optional |
+| `derivatives_generated_at` | DateTimeField | Dérivés générés le | optional |

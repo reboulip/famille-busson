@@ -25,6 +25,7 @@ dependencies = [
     "nh3>=0.3.1",
     "openpyxl>=3.1.5",
     "pillow>=11.1.0",
+    "pillow-heif>=1.7.0",
     "psycopg[binary]>=3.3.4",
     "pycparser>=3.0",
     "pymupdf>=1.28.2",
@@ -59,11 +60,11 @@ test = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "famille_busson.settings"
 pythonpath = ["."]
-testpaths = ["annuaire/tests", "publications/tests", "documents/tests"]
-addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
+testpaths = ["annuaire/tests", "publications/tests", "documents/tests", "photos/tests"]
+addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov=photos --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
 
 [tool.coverage.run]
-source = ["annuaire", "publications", "documents"]
+source = ["annuaire", "publications", "documents", "photos"]
 omit = ["*/migrations/*", "*/tests/*", "manage.py"]
 
 [tool.coverage.report]

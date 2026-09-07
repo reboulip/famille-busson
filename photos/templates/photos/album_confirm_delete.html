@@ -1,0 +1,34 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Supprimer un album ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <h1>Supprimer l'album « {{ object.title }} » ?</h1>
+        <div class="fb-confirm__consequences">
+            {% if photo_count %}
+                <p class="fb-confirm__lead fb-alert fb-alert--warning">
+                    {{ photo_count }} photo{{ photo_count|pluralize }} de cet album ser{{ photo_count|pluralize:"a,ont" }}
+                    définitivement supprimée{{ photo_count|pluralize }} en même temps.
+                </p>
+            {% else %}
+                <p class="fb-confirm__lead">Cet album ne contient aucune photo.</p>
+            {% endif %}
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">
+                    {% icon "trash" size=16 %} Supprimer définitivement
+                </button>
+                <a href="{% url 'album-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

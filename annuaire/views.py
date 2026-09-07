@@ -369,6 +369,7 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         context["member_count"] = self.object.account_set.count()
         context["blocked_by"] = list(self.object.document_categories.values_list("name", flat=True))
+        context["blocked_by_albums"] = list(self.object.photo_albums.values_list("title", flat=True))
         return context
 
     def post(self, request, *args, **kwargs):
@@ -377,10 +378,17 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
             return super().post(request, *args, **kwargs)
         except ProtectedError:
             blocked_by = list(self.object.document_categories.values_list("name", flat=True))
-            category_names = ", ".join(f"« {name} »" for name in blocked_by)
+            blocked_by_albums = list(self.object.photo_albums.values_list("title", flat=True))
+            parts = []
+            if blocked_by:
+                category_names = ", ".join(f"« {name} »" for name in blocked_by)
+                parts.append(f"les catégories {category_names}")
+            if blocked_by_albums:
+                album_names = ", ".join(f"« {name} »" for name in blocked_by_albums)
+                parts.append(f"les albums {album_names}")
             messages.error(
                 request,
-                f"Impossible de supprimer ce groupe : il est utilisé par les catégories {category_names}.",
+                f"Impossible de supprimer ce groupe : il est utilisé par {' et '.join(parts)}.",
             )
             return self.get(request, *args, **kwargs)
 

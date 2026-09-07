@@ -31,10 +31,20 @@
                 {% endif %}
             </div>
         {% endif %}
+        {% if blocked_by_albums %}
+            <div class="fb-alert fb-alert--warning" role="alert">
+                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                {% if blocked_by_albums|length == 1 %}
+                    l'album « {{ blocked_by_albums.0 }} ». Retirez d'abord la restriction sur cet album.
+                {% else %}
+                    aux albums : {{ blocked_by_albums|join:", " }}. Retirez d'abord la restriction sur ces albums.
+                {% endif %}
+            </div>
+        {% endif %}
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by %}disabled{% endif %}>
+                <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by or blocked_by_albums %}disabled{% endif %}>
                     {% icon "trash" size=16 %} Supprimer définitivement
                 </button>
                 <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>

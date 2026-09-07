@@ -93,7 +93,7 @@
 > This phase gives them a home of their own.
 
 ### Cluster: Modèle et dépôt
-- [ ] 10.1 · `Album` and `Photo` models — album (title, markdown description, date range,
+- [x] 10.1 · `Album` and `Photo` models — album (title, markdown description, date range,
   cover, group-restricted visibility mirroring `documents.Category`) and photo (file,
   caption, `taken_at`, uploader, dimensions). Photos are family-private, so they follow
   the protected-storage and access-checked-endpoint pattern of `documents`, never

@@ -1,0 +1,127 @@
+import mimetypes
+import os
+
+from django.contrib import messages
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.http import FileResponse, Http404
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.utils.decorators import method_decorator
+from django.views import View
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+
+from .access import user_can_access_album
+from .forms import AlbumForm
+from .models import Album, Photo
+
+INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
+
+# Photo file bytes are access-checked; they must never sit in a shared/public
+# cache, so `private` is not negotiable here (see PhotoFileView below).
+FILE_CACHE_CONTROL = "private, max-age=604800"
+
+
+class AlbumListView(LoginRequiredMixin, ListView):
+    """Minimal "visible but locked" album list -- every album is listed, a
+    locked one renders name-only with a lock badge (see the template), never
+    Album.objects.all() *filtered*, which would hide it entirely. 10.4 replaces
+    this template with the real grid/covers/counts UX; the queryset here is
+    already the security-relevant part."""
+
+    model = Album
+    template_name = "photos/album_list.html"
+    context_object_name = "albums"
+
+    def get_queryset(self):
+        return Album.objects.all().prefetch_related("groups")
+
+
+class AlbumCreateView(LoginRequiredMixin, CreateView):
+    model = Album
+    form_class = AlbumForm
+    template_name = "photos/album_form.html"
+    success_url = reverse_lazy("album-list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not hasattr(request.user, "profile"):
+            messages.error(request, "Vous devez compléter votre profil avant de créer un album.")
+            return redirect("profile-create")
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.created_by = getattr(self.request.user, "profile", None)
+        return super().form_valid(form)
+
+
+class AlbumOwnerOrStaffRequiredMixin(LoginRequiredMixin):
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return obj
+        profile = getattr(user, "profile", None)
+        if profile is None or obj.created_by_id != profile.pk:
+            raise PermissionDenied("Vous n'êtes pas le créateur de cet album.")
+        return obj
+
+
+class AlbumUpdateView(AlbumOwnerOrStaffRequiredMixin, UpdateView):
+    model = Album
+    form_class = AlbumForm
+    template_name = "photos/album_form.html"
+    success_url = reverse_lazy("album-list")
+
+
+class AlbumDeleteView(AlbumOwnerOrStaffRequiredMixin, DeleteView):
+    model = Album
+    template_name = "photos/album_confirm_delete.html"
+    success_url = reverse_lazy("album-list")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["photo_count"] = self.object.photos.count()
+        return context
+
+
+@method_decorator(xframe_options_sameorigin, name="dispatch")
+class PhotoFileView(LoginRequiredMixin, View):
+    """Serves a Photo's `file`/`web`/`thumbnail` by pk only -- never by path,
+    which kills path traversal outright. This is the ONLY way to reach a
+    photo's bytes: PhotoStorage.url() raises rather than producing a public
+    URL. Access is re-checked on every request, independent of whatever list
+    the client was browsing from.
+
+    Unlike documents.DocumentFileView's thumbnail variant (which 404s when
+    absent), a missing derivative here falls back to the original -- 10.3
+    generates derivatives asynchronously, so a 404 would mean visibly broken
+    images in the window between upload and the queue picking up the job."""
+
+    variant = "file"
+
+    def get(self, request, pk):
+        photo = get_object_or_404(Photo, pk=pk)
+        if not user_can_access_album(request.user, photo.album):
+            raise PermissionDenied("Vous n'avez pas accès à cette photo.")
+
+        field_file = {"web": photo.web, "thumbnail": photo.thumbnail}.get(self.variant)
+        if not field_file:
+            field_file = photo.file
+        if not field_file:
+            raise Http404("Fichier introuvable.")
+
+        filename = os.path.basename(field_file.name)
+        safe_filename = filename.replace('"', "")
+        extension = os.path.splitext(filename)[1].lower()
+        content_type = mimetypes.guess_type(filename)[0] or "application/octet-stream"
+
+        force_download = request.GET.get("download") == "1"
+        inline = extension in INLINE_EXTENSIONS and not force_download
+        disposition = "inline" if inline else "attachment"
+
+        response = FileResponse(field_file.open("rb"), content_type=content_type)
+        response["Content-Disposition"] = f'{disposition}; filename="{safe_filename}"'
+        response["X-Content-Type-Options"] = "nosniff"
+        response["Cache-Control"] = FILE_CACHE_CONTROL
+        return response

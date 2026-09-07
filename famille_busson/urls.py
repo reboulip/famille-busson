@@ -34,6 +34,7 @@ urlpatterns = [
     path("annuaire/", include("annuaire.urls")),
     path("publications/", include("publications.urls")),
     path("documents/", include("documents.urls")),
+    path("photos/", include("photos.urls")),
     path("", root_redirect),
     # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
     # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)

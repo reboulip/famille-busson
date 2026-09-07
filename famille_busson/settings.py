@@ -80,6 +80,7 @@ INSTALLED_APPS = [
     "annuaire",
     "publications",
     "documents",
+    "photos",
 ]
 
 MIDDLEWARE = [
@@ -230,6 +231,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # (see documents/storage.py). No MEDIA_URL-style public URL: files are only ever
 # served through documents' own access-checked endpoint.
 DOCUMENTS_ROOT = os.path.join(BASE_DIR, "documents_data")
+
+# Protected photo storage -- same posture as DOCUMENTS_ROOT above (see
+# photos/storage.py). Deliberately nested *inside* documents_data rather than a
+# sibling volume: documents_data is the one volume scripts/backup.sh,
+# scripts/restore.sh, docker-compose.prod.yml and annuaire/health.py already
+# know about, so nesting here means the family photo archive is backed up for
+# free instead of silently missing from a forgotten new volume.
+PHOTOS_ROOT = os.path.join(DOCUMENTS_ROOT, "photos")
 
 # Django's default LOGGING only sends the 'console' handler output when DEBUG=True
 # (RequireDebugTrue filter) -- in prod (DEBUG=False) that made every 500 invisible in
