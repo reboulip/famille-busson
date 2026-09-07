@@ -13,11 +13,12 @@ from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
-from django.views.generic import CreateView, DeleteView, ListView, UpdateView
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
-from .access import accessible_albums, effective_groups, user_can_access_album
-from .forms import AlbumForm, PhotoUploadForm
+from .access import accessible_albums, accessible_photos, effective_groups, user_can_access_album
+from .forms import AlbumForm, PhotoCaptionForm, PhotoUploadForm
 from .models import Album, PersonTag, Photo
+from .queries import neighbours
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 
@@ -166,6 +167,61 @@ class PhotoTagView(LoginRequiredMixin, View):
             "photo": photo,
             "tagged_persons_initial_json": json.dumps([{"id": p.pk, "name": str(p)} for p in tagged]),
         }
+
+
+class PhotoDetailView(LoginRequiredMixin, DetailView):
+    """Locked-photo policy mirrors documents.DocumentDetailView: the queryset
+    itself is scoped to accessible_photos(user), so a photo in a restricted
+    album 404s directly -- never "visible but locked" like an album is.
+    Unlike DocumentDetailView, there's no separate "is this locked" branch to
+    get wrong, since a locked photo is invisible to get_object() entirely."""
+
+    model = Photo
+    template_name = "photos/photo_detail.html"
+    context_object_name = "photo"
+
+    def get_queryset(self):
+        return accessible_photos(self.request.user).select_related("album", "uploaded_by")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        profile = getattr(user, "profile", None)
+        context["can_edit"] = (
+            user.is_staff or user.is_superuser or (profile is not None and self.object.uploaded_by_id == profile.pk)
+        )
+        context["tagged_persons"] = [tag.person for tag in self.object.person_tags.select_related("person")]
+        context["previous_photo"], context["next_photo"] = neighbours(self.object)
+        return context
+
+
+class PhotoOwnerOrStaffRequiredMixin(LoginRequiredMixin):
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        user = self.request.user
+        if user.is_staff or user.is_superuser:
+            return obj
+        profile = getattr(user, "profile", None)
+        if profile is None or obj.uploaded_by_id != profile.pk:
+            raise PermissionDenied("Vous n'êtes pas le déposant de cette photo.")
+        return obj
+
+
+class PhotoUpdateView(PhotoOwnerOrStaffRequiredMixin, UpdateView):
+    model = Photo
+    form_class = PhotoCaptionForm
+    template_name = "photos/photo_form.html"
+
+    def get_success_url(self):
+        return reverse("photo-detail", kwargs={"pk": self.object.pk})
+
+
+class PhotoDeleteView(PhotoOwnerOrStaffRequiredMixin, DeleteView):
+    model = Photo
+    template_name = "photos/photo_confirm_delete.html"
+
+    def get_success_url(self):
+        return reverse("album-detail", kwargs={"pk": self.object.album_id})
 
 
 class AlbumCreateView(LoginRequiredMixin, CreateView):

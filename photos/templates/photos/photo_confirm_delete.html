@@ -1,0 +1,30 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Supprimer cette photo ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <h1>Supprimer « {{ object.caption|default:"cette photo" }} » ?</h1>
+        <p class="fb-meta">Dans l'album « {{ object.album.title }} ».</p>
+        <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <ul>
+                <li>la photo et sa légende ;</li>
+                <li>le fichier original et ses vignettes.</li>
+            </ul>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <a href="{% url 'photo-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

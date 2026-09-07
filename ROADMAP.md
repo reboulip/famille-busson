@@ -111,7 +111,7 @@
 - [x] 10.5 · Lightbox viewer — full-screen, keyboard and swipe navigation, one image at a
   time on mobile. Extends the existing document image viewer and carousel rather than
   adding a second implementation. (requires: 10.4)
-- [ ] 10.6 · Photo detail — caption, date, uploader, the people in it, and an original-file
+- [x] 10.6 · Photo detail — caption, date, uploader, the people in it, and an original-file
   download. (requires: 10.1)
 
 ### Cluster: Personnes et mémoire

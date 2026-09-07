@@ -11,6 +11,7 @@
          loading="lazy">
     <p class="document-viewer-strip-caption">
         {% if photo.caption %}{{ photo.caption }}<br>{% endif %}
-        <a href="{% url 'photo-tag' photo.pk %}">Identifier des personnes</a>
+        <a href="{% url 'photo-detail' photo.pk %}">Détails</a>
+        · <a href="{% url 'photo-tag' photo.pk %}">Identifier des personnes</a>
     </p>
 </div>

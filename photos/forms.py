@@ -37,3 +37,9 @@ class PhotoUploadForm(forms.ModelForm):
     class Meta:
         model = Photo
         fields = ["file"]
+
+
+class PhotoCaptionForm(forms.ModelForm):
+    class Meta:
+        model = Photo
+        fields = ["caption"]

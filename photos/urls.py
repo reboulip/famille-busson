@@ -6,8 +6,11 @@ from .views import (
     AlbumDetailView,
     AlbumListView,
     AlbumUpdateView,
+    PhotoDeleteView,
+    PhotoDetailView,
     PhotoFileView,
     PhotoTagView,
+    PhotoUpdateView,
     PhotoUploadView,
     album_search_ajax,
 )
@@ -24,4 +27,7 @@ urlpatterns = [
     path("photos/<int:pk>/web/", PhotoFileView.as_view(variant="web"), name="photo-file-web"),
     path("photos/<int:pk>/vignette/", PhotoFileView.as_view(variant="thumbnail"), name="photo-file-thumbnail"),
     path("photos/<int:pk>/personnes/", PhotoTagView.as_view(), name="photo-tag"),
+    path("photos/<int:pk>/detail/", PhotoDetailView.as_view(), name="photo-detail"),
+    path("photos/<int:pk>/modifier/", PhotoUpdateView.as_view(), name="photo-edit"),
+    path("photos/<int:pk>/supprimer/", PhotoDeleteView.as_view(), name="photo-delete"),
 ]
