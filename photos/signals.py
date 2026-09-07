@@ -31,7 +31,10 @@ register_search_index(
         source_fields=frozenset({"caption"}),
         accessible=accessible_photos,
         label="Photos",
-        card_template="photos/_photo_card.html",
+        # Not _photo_card.html: that partial is coupled to the document-viewer
+        # lightbox strip (document_viewer.js expects the surrounding markup a
+        # search results page doesn't have) -- a plain tile instead.
+        card_template="photos/_photo_search_card.html",
         order=["uploaded_at"],
     ),
 )

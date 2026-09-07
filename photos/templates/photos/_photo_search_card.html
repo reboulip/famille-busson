@@ -1,0 +1,10 @@
+{# A plain result tile for global search -- unlike _photo_card.html, not coupled
+   to the document-viewer lightbox strip, since a search results page doesn't
+   provide that surrounding markup/JS context. #}
+<a href="{% url 'photo-detail' photo.pk %}" class="fb-card fb-card--link fb-place-card">
+    <img src="{% url 'photo-file-thumbnail' photo.pk %}" alt="{{ photo.caption }}" class="fb-place-card__media">
+    <span class="fb-place-card__body">
+        <span class="fb-place-card__name">{{ photo.caption|default:"Photo" }}</span>
+        <span class="fb-meta">{{ photo.album.title }}</span>
+    </span>
+</a>

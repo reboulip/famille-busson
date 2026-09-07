@@ -41,6 +41,9 @@
             {% icon "menu" size=22 %}
         </button>
         <span class="fb-wordmark">Famille Busson</span>
+        {% if user.is_authenticated %}
+            {% include "annuaire/_search_form.html" with input_id="global-search-input-topbar" %}
+        {% endif %}
     </header>
 
     <div class="fb-layout">
@@ -81,6 +84,8 @@
                             to the form they just came from.
                         {% endcomment %}
                         {% if user.is_authenticated %}
+                        {% include "annuaire/_search_form.html" with input_id="global-search-input-sidebar" %}
+
                         <div class="fb-nav__group">
                             <ul>
                                 <li><a href="{% url 'home' %}" {% if un == 'home' %}aria-current="page"{% endif %}>Accueil</a></li>
@@ -94,6 +99,13 @@
                                 <li><a href="{% url 'genealogie' %}" {% if un == 'genealogie' or un == 'genealogie-person' %}aria-current="page"{% endif %}>Généalogie</a></li>
                                 <li><a href="{% url 'carte' %}" {% if un == 'carte' %}aria-current="page"{% endif %}>Carte</a></li>
                                 <li><a href="{% url 'chalet-list' %}" {% if un == 'chalet-list' or un == 'chalet-detail' %}aria-current="page"{% endif %}>Chalets et Présences</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Photothèque</p>
+                            <ul>
+                                <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>Tous les albums</a></li>
                             </ul>
                         </div>
 

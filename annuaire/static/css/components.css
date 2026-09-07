@@ -429,6 +429,16 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     color: var(--fb-bark);
 }
 
+/* --- Search form ---------------------------------------------------------
+   Mounted twice (annuaire/_search_form.html): in .fb-topbar (mobile) and at
+   the top of .fb-sidebar's <nav> (desktop) -- .fb-topbar is mobile-only,
+   see below. */
+.fb-search-form { margin: 0; }
+.fb-topbar .fb-search-form { flex: 1 1 auto; min-width: 0; }
+.fb-topbar .fb-search-form .fb-input { width: 100%; }
+.fb-nav .fb-search-form { margin-bottom: var(--fb-sp-5); }
+.fb-nav .fb-search-form .fb-input { width: 100%; }
+
 /* --- Mobile ------------------------------------------------------------- */
 .fb-topbar {
     display: none;

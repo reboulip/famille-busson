@@ -24,7 +24,7 @@ def _js() -> str:
 def test_directory_ajax_request_returns_only_the_results_partial(auth_client, person):
     response = auth_client.get(reverse("directory"), headers={"x-requested-with": "XMLHttpRequest"})
     assert response.status_code == 200
-    assert [t.name for t in response.templates] == ["annuaire/_annuaire_results.html"]
+    assert [t.name for t in response.templates] == ["annuaire/_annuaire_results.html", "annuaire/_person_card.html"]
     content = response.content.decode()
     assert "<h1>Annuaire</h1>" not in content
     assert "directory-filter-form" not in content

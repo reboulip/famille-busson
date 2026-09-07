@@ -139,7 +139,7 @@
 - [x] 11.2 · Search indexes — a `SearchVectorField` and GIN index on `Person`, `BlogPost`,
   `Document` (folding in the existing `extracted_text`), `Album` and `Photo`, refreshed on
   the queue when a row changes. (requires: 9.6, 10.1, 11.1)
-- [ ] 11.3 · Global search UI — a search field in the topbar and a results page grouped by
+- [x] 11.3 · Global search UI — a search field in the topbar and a results page grouped by
   type, enforcing every existing access rule: a locked `documents.Category`'s content must
   never surface in results. (requires: 11.2)
 

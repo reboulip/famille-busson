@@ -1278,3 +1278,38 @@ class DeletePresenceView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+
+
+MIN_SEARCH_QUERY_LENGTH = 2
+
+
+class GlobalSearchView(LoginRequiredMixin, TemplateView):
+    template_name = "annuaire/search_results.html"
+
+    def get_context_data(self, **kwargs):
+        from .search.service import search_all, search_one
+
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "").strip()
+        context["query"] = query
+        context["groups"] = []
+        context["expanded"] = None
+        if len(query) < MIN_SEARCH_QUERY_LENGTH:
+            return context
+
+        type_key = self.request.GET.get("type", "")
+        if type_key:
+            result = search_one(self.request.user, query, type_key)
+            if result is not None:
+                spec, ranked = result
+                paginator = Paginator(ranked, 20)
+                context["expanded"] = {
+                    "key": type_key,
+                    "label": spec.label,
+                    "card_template": spec.card_template,
+                    "page_obj": paginator.get_page(self.request.GET.get("page")),
+                }
+        else:
+            context["groups"] = search_all(self.request.user, query, per_type_limit=5)
+            context["has_results"] = any(group.results for group in context["groups"])
+        return context
