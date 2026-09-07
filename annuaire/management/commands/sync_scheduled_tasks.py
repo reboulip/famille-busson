@@ -26,6 +26,10 @@ HELP_TEXT = __doc__ or ""
 # 07:00 UTC -- 08:00-09:00 Paris depending on DST, closest match to the crontab entry
 # this schedule replaces (0 8 * * *, which ran in the web container's UTC clock).
 BIRTHDAY_REMINDER_HOUR_UTC = 7
+# A safety net for a lost reindex enqueue, not a primary index-freshness mechanism
+# (that's the signal-driven reindexing) -- run well off-peak, after the birthday
+# reminder job.
+SEARCH_REINDEX_HOUR_UTC = 3
 
 
 def _next_occurrence_at(hour: int) -> datetime.datetime:
@@ -60,6 +64,12 @@ class Command(BaseCommand):
                 "schedule_type": Schedule.MINUTES,
                 "minutes": 15,
                 "initial_next_run": timezone.now(),
+            },
+            {
+                "name": "reindex_all_search_indexes",
+                "func": "annuaire.tasks.reindex_all_search_indexes",
+                "schedule_type": Schedule.DAILY,
+                "initial_next_run": _next_occurrence_at(SEARCH_REINDEX_HOUR_UTC),
             },
         ]
 

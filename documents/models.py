@@ -1,6 +1,7 @@
 import os
 
 from django.contrib.auth.models import Group
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.signals import m2m_changed
@@ -148,6 +149,8 @@ class Document(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
 
     class Meta:
         ordering = ["-created_at"]

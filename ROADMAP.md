@@ -136,7 +136,7 @@
 - [x] 11.1 · Search backend — a shared abstraction over Postgres full-text search
   (`SearchVector`/`SearchQuery`, unaccented and ranked) with a SQLite fallback, because
   production is Postgres while development and the entire test suite run on SQLite.
-- [ ] 11.2 · Search indexes — a `SearchVectorField` and GIN index on `Person`, `BlogPost`,
+- [x] 11.2 · Search indexes — a `SearchVectorField` and GIN index on `Person`, `BlogPost`,
   `Document` (folding in the existing `extracted_text`), `Album` and `Photo`, refreshed on
   the queue when a row changes. (requires: 9.6, 10.1, 11.1)
 - [ ] 11.3 · Global search UI — a search field in the topbar and a results page grouped by

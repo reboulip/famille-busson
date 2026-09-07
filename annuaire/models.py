@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Group, Permission, PermissionsMixin
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 
@@ -66,6 +67,8 @@ class Person(models.Model):
         blank=True,
         verbose_name="Propriétaires",
     )
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

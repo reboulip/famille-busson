@@ -1,6 +1,7 @@
 import os
 
 from django.contrib.auth.models import Group
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -55,6 +56,8 @@ class Album(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
 
     class Meta:
         ordering = ["-created_at"]
@@ -127,6 +130,8 @@ class Photo(models.Model):
     )
     derivative_error = models.CharField(max_length=255, blank=True, default="", verbose_name="Erreur de dérivés")
     derivatives_generated_at = models.DateTimeField(null=True, blank=True, verbose_name="Dérivés générés le")
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
 
     objects = PhotoManager()
 

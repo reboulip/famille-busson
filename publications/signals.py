@@ -1,15 +1,45 @@
 from django.db import transaction
-from django.db.models.signals import post_save
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 
 from annuaire.file_cleanup import register_file_cleanup
+from annuaire.markdown_utils import markdown_to_text
 from annuaire.models import Settings as NotificationSettings
+from annuaire.search.indexing import enqueue_reindex, register_search_index
+from annuaire.search.registry import SearchSpec
 
 from .models import Attachment, BlogPost
 from .tasks import send_blog_post_notification
 
 register_file_cleanup(Attachment, "file")
+
+
+def _blogpost_body_and_tags(post):
+    tag_names = " ".join(post.tags.values_list("name", flat=True))
+    return f"{markdown_to_text(post.body)} {tag_names}"
+
+
+register_search_index(
+    BlogPost,
+    SearchSpec(
+        weights={"A": lambda p: p.title, "B": _blogpost_body_and_tags},
+        source_fields=frozenset({"title", "body"}),
+        accessible=lambda user: BlogPost.objects.all(),
+        label="Publications",
+        card_template="publications/_blogpost_card.html",
+        order=["-created_at"],
+    ),
+)
+
+
+@receiver(m2m_changed, sender=BlogPost.tags.through)
+def reindex_on_tag_change(sender, instance, action, **kwargs):
+    """`.tags.set()`/`.add()`/`.remove()` never fire BlogPost's own post_save, so
+    the generic reindex_on wiring in register_search_index() can't see a tag
+    change -- enqueue directly instead."""
+    if action in {"post_add", "post_remove", "post_clear"}:
+        enqueue_reindex(BlogPost, instance.pk)
 
 
 @receiver(post_save, sender=BlogPost)

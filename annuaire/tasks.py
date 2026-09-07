@@ -35,3 +35,32 @@ def send_daily_birthday_reminders() -> None:
         logger.error("send_daily_birthday_reminders: %d failure(s) for %s: %s", len(failed), today, failed)
     else:
         logger.info("send_daily_birthday_reminders: %d email(s) sent for %s", len(sent), today)
+
+
+def reindex_search_object(app_label: str, model_name: str, pk: int) -> None:
+    """Re-derive one row's search index from its current state. Called with a
+    plain (app_label, model_name, pk) payload rather than the instance itself,
+    so the worker (a separate process/connection) always re-queries fresh."""
+    from django.apps import apps
+
+    from annuaire.search.indexing import apply_index, build_index_payload
+    from annuaire.search.registry import get_spec
+
+    model = apps.get_model(app_label, model_name)
+    try:
+        instance = model.objects.get(pk=pk)
+    except model.DoesNotExist:
+        logger.info("reindex_search_object: %s.%s pk=%s no longer exists, skipping", app_label, model_name, pk)
+        return
+    spec = get_spec(model)
+    apply_index(model, pk, build_index_payload(instance, spec))
+
+
+def reindex_all_search_indexes() -> None:
+    """Nightly safety net for a reindex that never got enqueued (e.g. a worker
+    down at save time) -- mirrors the existing lost-enqueue safety nets for
+    photo derivatives and document extraction."""
+    from annuaire.search.indexing import backfill_search_indexes
+
+    count = backfill_search_indexes()
+    logger.info("reindex_all_search_indexes: reindexed %d row(s)", count)

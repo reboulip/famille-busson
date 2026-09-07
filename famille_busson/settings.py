@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "django_q",
+    "django.contrib.postgres",
     "annuaire",
     "publications",
     "documents",

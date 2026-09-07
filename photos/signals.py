@@ -4,9 +4,37 @@ from django.dispatch import receiver
 from django_q.tasks import async_task
 
 from annuaire.file_cleanup import register_file_cleanup
+from annuaire.markdown_utils import markdown_to_text
+from annuaire.search.indexing import register_search_index
+from annuaire.search.registry import SearchSpec
 
-from .models import Photo
+from .access import accessible_albums, accessible_photos
+from .models import Album, Photo
 from .tasks import generate_photo_derivatives
+
+register_search_index(
+    Album,
+    SearchSpec(
+        weights={"A": lambda a: a.title, "B": lambda a: markdown_to_text(a.description)},
+        source_fields=frozenset({"title", "description"}),
+        accessible=accessible_albums,
+        label="Albums",
+        card_template="photos/_album_card.html",
+        order=["-created_at"],
+    ),
+)
+
+register_search_index(
+    Photo,
+    SearchSpec(
+        weights={"A": lambda p: p.caption or "", "B": lambda p: markdown_to_text(p.album.description)},
+        source_fields=frozenset({"caption"}),
+        accessible=accessible_photos,
+        label="Photos",
+        card_template="photos/_photo_card.html",
+        order=["uploaded_at"],
+    ),
+)
 
 
 @receiver(pre_save, sender=Photo)

@@ -2,10 +2,31 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .file_cleanup import register_file_cleanup
+from .markdown_utils import markdown_to_text
 from .models import Account, Chalet, Person, Relation, Settings
+from .search.indexing import register_search_index
+from .search.registry import SearchSpec
 
 register_file_cleanup(Person, "profile_photo")
 register_file_cleanup(Chalet, "photo")
+
+register_search_index(
+    Person,
+    SearchSpec(
+        weights={
+            "A": lambda p: f"{p.first_name} {p.last_name}",
+            "B": lambda p: markdown_to_text(p.description),
+        },
+        # email/phone_number/postal_address are deliberately excluded: they're
+        # already visible on the profile, but making them *searchable* enables
+        # reverse lookup by phone/address, a materially different exposure.
+        source_fields=frozenset({"first_name", "last_name", "description"}),
+        accessible=lambda user: Person.objects.all(),
+        label="Personnes",
+        card_template="annuaire/_person_card.html",
+        order=["last_name", "first_name"],
+    ),
+)
 
 
 @receiver(post_save, sender=Account)

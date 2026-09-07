@@ -83,6 +83,8 @@ erDiagram
 | `deceased` | BooleanField | Décédé·e | default=False, required |
 | `death_date` | DateField | Date de décès | optional |
 | `description` | TextField | Infos utiles | optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='managed_profiles' |
 
 ### `Settings`
@@ -158,6 +160,8 @@ erDiagram
 | `post_type` | CharField | Type de publication | max_length=10, choices: BC=Busson connection, NORMAL=Publication normale, default='NORMAL', required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
 | `tags` | ManyToManyField | Étiquettes | → Tag (M2M), related_name='posts' |
 | `authors` | ManyToManyField | Auteur(s) | → Person (M2M), related_name='blog_posts' |
 | `documents` | ManyToManyField | Documents liés | → Document (M2M), related_name='publications' |
@@ -227,6 +231,8 @@ erDiagram
 | `redactor` | ForeignKey | Rédigé par | → Person (on_delete=SET_NULL), related_name='redacted_documents', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
 
 ### `DocumentFile`
 
@@ -263,6 +269,8 @@ erDiagram
 | `created_by` | ForeignKey | Créé par | → Person (on_delete=SET_NULL), related_name='created_albums', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
 | `groups` | ManyToManyField | Groupes autorisés | → Group (M2M), related_name='photo_albums' |
 
 ### `AlbumGroupAccess`
@@ -295,6 +303,8 @@ erDiagram
 | `derivative_status` | CharField | Statut des dérivés | max_length=20, choices: pending=En attente, done=Terminé, error=Erreur, default='pending', required |
 | `derivative_error` | CharField | Erreur de dérivés | max_length=255, default='', optional |
 | `derivatives_generated_at` | DateTimeField | Dérivés générés le | optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
 
 ### `PersonTag`
 
