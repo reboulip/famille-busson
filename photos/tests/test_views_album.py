@@ -28,6 +28,32 @@ def test_album_list_shows_locked_album_name_but_not_as_link(auth_client, restric
 
 
 @pytest.mark.django_db
+def test_album_list_shows_photo_count(auth_client, album):
+    Photo.objects.create(album=album, file=make_uploaded_image())
+    Photo.objects.create(album=album, file=make_uploaded_image())
+    response = auth_client.get(reverse("album-list"))
+    albums = {a.pk: a for a in response.context["albums"]}
+    assert albums[album.pk].photo_count == 2
+
+
+@pytest.mark.django_db
+def test_album_list_locked_album_hides_photo_count_and_cover(auth_client, restricted_album):
+    photo = Photo.objects.create(album=restricted_album, file=make_uploaded_image())
+    restricted_album.cover = photo
+    restricted_album.save()
+    response = auth_client.get(reverse("album-list"))
+    content = response.content.decode()
+    assert "photo-file-web" not in content
+    assert str(restricted_album.photos.count()) + " photo" not in content
+
+
+@pytest.mark.django_db
+def test_album_list_public_album_links_to_detail(auth_client, album):
+    response = auth_client.get(reverse("album-list"))
+    assert reverse("album-detail", kwargs={"pk": album.pk}) in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_album_create_requires_profile(client, account):
     client.force_login(account)
     response = client.post(reverse("album-create"), {"title": "Nouvel album", "description": "", "groups": []})

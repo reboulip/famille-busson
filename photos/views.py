@@ -4,15 +4,16 @@ import os
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.db.models import Count
 from django.http import FileResponse, Http404
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .access import user_can_access_album
+from .access import effective_groups, user_can_access_album
 from .forms import AlbumForm
 from .models import Album, Photo
 
@@ -24,25 +25,67 @@ FILE_CACHE_CONTROL = "private, max-age=604800"
 
 
 class AlbumListView(LoginRequiredMixin, ListView):
-    """Minimal "visible but locked" album list -- every album is listed, a
-    locked one renders name-only with a lock badge (see the template), never
-    Album.objects.all() *filtered*, which would hide it entirely. 10.4 replaces
-    this template with the real grid/covers/counts UX; the queryset here is
-    already the security-relevant part."""
+    """ "Visible but locked" album list -- every album is listed, a locked one
+    renders name-only with a lock badge (see the template), never
+    Album.objects.all() *filtered*, which would hide it entirely."""
 
     model = Album
     template_name = "photos/album_list.html"
     context_object_name = "albums"
 
     def get_queryset(self):
-        return Album.objects.all().prefetch_related("groups")
+        return (
+            Album.objects.all()
+            .select_related("cover")
+            .prefetch_related("groups")
+            .annotate(photo_count=Count("photos"))
+        )
+
+
+class AlbumDetailView(LoginRequiredMixin, ListView):
+    """Paginated as a ListView over the album's own photos (with the album
+    added to context), rather than DetailView + a hand-rolled Paginator --
+    simpler, and GET-param pagination comes for free.
+
+    Locked-album policy mirrors documents.CategoryDetailView: the album
+    itself resolves via a plain get_object_or_404 (the page isn't secret),
+    but its description/photos render only when user_can_access_album() is
+    true -- otherwise a locked placeholder naming the unlocking group(s),
+    with no leakage."""
+
+    template_name = "photos/album_detail.html"
+    context_object_name = "photos"
+    paginate_by = 24
+
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        self.album = get_object_or_404(Album.objects.select_related("cover"), pk=kwargs["pk"])
+
+    def get_queryset(self):
+        if not user_can_access_album(self.request.user, self.album):
+            return Photo.objects.none()
+        return self.album.photos.chronological()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        profile = getattr(user, "profile", None)
+        context["album"] = self.album
+        context["can_access"] = user_can_access_album(user, self.album)
+        context["access_groups"] = effective_groups(self.album)
+        context["can_edit"] = (
+            user.is_staff or user.is_superuser or (profile is not None and self.album.created_by_id == profile.pk)
+        )
+        return context
 
 
 class AlbumCreateView(LoginRequiredMixin, CreateView):
     model = Album
     form_class = AlbumForm
     template_name = "photos/album_form.html"
-    success_url = reverse_lazy("album-list")
+
+    def get_success_url(self):
+        return reverse("album-detail", kwargs={"pk": self.object.pk})
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
@@ -71,7 +114,9 @@ class AlbumUpdateView(AlbumOwnerOrStaffRequiredMixin, UpdateView):
     model = Album
     form_class = AlbumForm
     template_name = "photos/album_form.html"
-    success_url = reverse_lazy("album-list")
+
+    def get_success_url(self):
+        return reverse("album-detail", kwargs={"pk": self.object.pk})
 
 
 class AlbumDeleteView(AlbumOwnerOrStaffRequiredMixin, DeleteView):

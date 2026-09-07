@@ -106,7 +106,7 @@
   (requires: 9.6, 10.1)
 
 ### Cluster: Parcours
-- [ ] 10.4 · Album list and album detail — responsive grid, cover images, photo counts,
+- [x] 10.4 · Album list and album detail — responsive grid, cover images, photo counts,
   and the shared empty state. (requires: 10.1)
 - [ ] 10.5 · Lightbox viewer — full-screen, keyboard and swipe navigation, one image at a
   time on mobile. Extends the existing document image viewer and carousel rather than

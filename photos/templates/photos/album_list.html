@@ -1,7 +1,10 @@
 {% extends "annuaire/base.html" %}
-{% load photos_extras %}
 {% load icons %}
 {% block content %}
+    {% comment %}
+        Archetype B — collection grid, place variant: rectangular media
+        (chalet_list.html's pattern), not round medallions.
+    {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
             <p class="fb-eyebrow">Photothèque</p>
@@ -13,27 +16,10 @@
     </div>
 
     {% if albums %}
-        <div class="fb-card">
-            <ul class="album-list">
-                {% for album in albums %}
-                    <li class="album-list__row">
-                        {% if album|can_access:request.user %}
-                            {# No album-detail route until 10.4 lands -- plain text for now. #}
-                            <span class="album-list__name">
-                                {% icon "image" size=16 %} {{ album.title }}
-                            </span>
-                        {% else %}
-                            <span class="album-list__name album-list__name--locked">
-                                {% icon "lock" size=16 %} {{ album.title }}
-                            </span>
-                            <span class="fb-chip fb-chip--lock">
-                                Réservé au groupe{{ album|effective_groups|length|pluralize }} :
-                                {% for g in album|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                            </span>
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            </ul>
+        <div class="fb-grid fb-grid--wide">
+            {% for album in albums %}
+                {% include "photos/_album_card.html" with album=album %}
+            {% endfor %}
         </div>
     {% else %}
         {% url 'album-create' as create_url %}

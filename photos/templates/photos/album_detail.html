@@ -1,0 +1,56 @@
+{% extends "annuaire/base.html" %}
+{% load markdown_extras %}
+{% load icons %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>{{ album.title }}</h1>
+            <p class="fb-page-head__lede">
+                {% if album.date_start or album.date_end %}
+                    {{ album.date_start|default:"?" }} – {{ album.date_end|default:"?" }} ·
+                {% endif %}
+                Visible par :
+                {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
+            </p>
+        </div>
+        {% if can_edit %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'album-edit' album.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'album-delete' album.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not can_access %}
+        <div class="fb-alert fb-alert--warning" role="alert">
+            Cet album est réservé.
+        </div>
+    {% else %}
+        {% if album.description %}
+            <div class="fb-card markdown-body" style="margin-bottom: var(--fb-sp-5)">{{ album.description|markdown }}</div>
+        {% endif %}
+
+        <div class="fb-section-head"><h2>Photos</h2></div>
+        {% if photos %}
+            <div class="fb-grid fb-grid--tiles">
+                {% for photo in photos %}
+                    {% include "photos/_photo_card.html" with photo=photo %}
+                {% endfor %}
+            </div>
+            {% if is_paginated %}
+                <nav class="fb-pagination pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="{% querystring page=page_obj.previous_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                    {% endif %}
+                    <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="{% querystring page=page_obj.next_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            {% include "annuaire/_empty.html" with title="Aucune photo dans cet album" body="Les photos apparaîtront ici une fois déposées." %}
+        {% endif %}
+    {% endif %}
+{% endblock content %}
