@@ -4,6 +4,8 @@ from django.core.exceptions import ValidationError
 
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif"}
 MAX_PHOTO_SIZE = 25 * 1024 * 1024  # 25 Mo
+MAX_FILES_PER_SELECTION = 200
+MAX_CONCURRENT_UPLOADS = 3
 
 
 def validate_photo_extension(file):

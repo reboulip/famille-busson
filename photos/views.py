@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
@@ -14,7 +14,7 @@ from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
 from .access import effective_groups, user_can_access_album
-from .forms import AlbumForm
+from .forms import AlbumForm, PhotoUploadForm
 from .models import Album, Photo
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
@@ -77,6 +77,38 @@ class AlbumDetailView(LoginRequiredMixin, ListView):
             user.is_staff or user.is_superuser or (profile is not None and self.album.created_by_id == profile.pk)
         )
         return context
+
+
+class PhotoUploadView(LoginRequiredMixin, View):
+    """Per-file XHR upload endpoint backing photo_upload.js's progress UI --
+    one file per POST, unlike documents' hidden-formset transport, so
+    xhr.upload.onprogress can report real per-file progress and one corrupt
+    file never loses the rest of the batch. Any member who can access the
+    album may upload into it (the same posture as tagging people in a
+    photo -- collaborative, not uploader/staff-restricted)."""
+
+    def post(self, request, pk):
+        album = get_object_or_404(Album, pk=pk)
+        if not user_can_access_album(request.user, album):
+            raise PermissionDenied("Vous n'avez pas accès à cet album.")
+
+        form = PhotoUploadForm(request.POST, request.FILES)
+        if not form.is_valid():
+            error = next(iter(form.errors.get("file", [])), "Fichier invalide.")
+            return JsonResponse({"error": error}, status=400)
+
+        photo = form.save(commit=False)
+        photo.album = album
+        photo.uploaded_by = getattr(request.user, "profile", None)
+        photo.save()
+
+        return JsonResponse(
+            {
+                "id": photo.pk,
+                "filename": photo.filename,
+                "thumbnail_url": reverse("photo-file-thumbnail", kwargs={"pk": photo.pk}),
+            }
+        )
 
 
 class AlbumCreateView(LoginRequiredMixin, CreateView):

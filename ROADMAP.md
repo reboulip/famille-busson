@@ -98,10 +98,10 @@
   caption, `taken_at`, uploader, dimensions). Photos are family-private, so they follow
   the protected-storage and access-checked-endpoint pattern of `documents`, never
   `MEDIA_URL`.
-- [ ] 10.2 · Bulk upload — a multi-file picker with per-file progress and a client-side
+- [x] 10.2 · Bulk upload — a multi-file picker with per-file progress and a client-side
   cap, reusing the accept-list template tag and server-side validators already written
   for `documents`. (requires: 10.1)
-- [ ] 10.3 · Async derivatives — thumbnails, web-size renditions, and EXIF capture date
+- [x] 10.3 · Async derivatives — thumbnails, web-size renditions, and EXIF capture date
   and orientation, generated on the queue rather than inside the upload request.
   (requires: 9.6, 10.1)
 

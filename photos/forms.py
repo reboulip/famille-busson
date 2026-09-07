@@ -2,7 +2,7 @@ from django import forms
 
 from annuaire.widgets import MarkdownEditorWidget
 
-from .models import Album
+from .models import Album, Photo
 
 
 class AlbumForm(forms.ModelForm):
@@ -25,3 +25,15 @@ class AlbumForm(forms.ModelForm):
         else:
             self.fields["cover"].queryset = self.fields["cover"].queryset.none()
             self.fields["cover"].widget = forms.HiddenInput()
+
+
+class PhotoUploadForm(forms.ModelForm):
+    """One instantiation per uploaded file -- PhotoUploadView's per-file XHR
+    endpoint validates and saves exactly one Photo per POST. `album` and
+    `uploaded_by` aren't form fields: the view sets them (and they're excluded
+    from ModelForm's instance validation as a result), same shape as
+    DocumentCreateView setting `uploaded_by` before calling form.save()."""
+
+    class Meta:
+        model = Photo
+        fields = ["file"]

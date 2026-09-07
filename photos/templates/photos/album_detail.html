@@ -1,5 +1,7 @@
 {% extends "annuaire/base.html" %}
+{% load static %}
 {% load markdown_extras %}
+{% load photos_extras %}
 {% load icons %}
 {% block content %}
     <div class="fb-page-head">
@@ -32,6 +34,23 @@
         {% endif %}
 
         <div class="fb-section-head"><h2>Photos</h2></div>
+        <div
+            class="photo-upload"
+            data-photo-upload
+            data-upload-url="{% url 'photo-upload' album.pk %}"
+            data-max-files="{% max_files_per_selection %}"
+            data-max-bytes="{% max_photo_size_bytes %}"
+            data-max-concurrent="{% max_concurrent_uploads %}"
+            style="margin-bottom: var(--fb-sp-4)"
+        >
+            {% csrf_token %}
+            <input type="file" data-photo-picker multiple accept="{% allowed_photo_extensions %}" hidden>
+            <button type="button" data-photo-upload-trigger class="fb-btn fb-btn--quiet fb-btn--sm">
+                {% icon "plus" size=16 %} Ajouter des photos
+            </button>
+            <p class="fb-meta">{% max_photo_size_mb %} Mo max par photo, {% max_files_per_selection %} à la fois.</p>
+            <ul class="photo-upload-list" data-photo-upload-list aria-live="polite"></ul>
+        </div>
         {% if photos %}
             <div class="fb-grid fb-grid--tiles">
                 {% for photo in photos %}
@@ -54,3 +73,8 @@
         {% endif %}
     {% endif %}
 {% endblock content %}
+{% block extra_js %}
+    {% if can_access %}
+        <script src="{% static 'js/photo_upload.js' %}"></script>
+    {% endif %}
+{% endblock extra_js %}

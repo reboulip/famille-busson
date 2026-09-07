@@ -44,6 +44,7 @@ to check instead of a crontab nobody remembers configuring.
 |---|---|---|---|
 | Birthday reminders | Daily, 07:00 UTC | `annuaire.tasks.send_daily_birthday_reminders` | Guarded by a same-day cache lock, so a `catch_up` run or an overlap with the old crontab entry during a deploy can never send the same day's reminders twice. |
 | Document extraction | Every 15 minutes | `documents.tasks.process_pending_document_files` | Naturally idempotent — only ever processes rows still `extraction_status="pending"`. |
+| Photo derivative generation | Every 15 minutes | `photos.tasks.process_pending_photos` | Safety net for a lost enqueue (worker down at upload time) — the normal path is the on-demand enqueue below. Naturally idempotent, same shape as document extraction: only ever processes rows still `derivative_status="pending"`. |
 
 ## On-demand tasks
 
@@ -53,6 +54,7 @@ should happen as soon as possible after an event rather than on a fixed tick.
 | Trigger | Task | Notes |
 |---|---|---|
 | A new `BlogPost` is saved | `publications.tasks.send_blog_post_notification(post_pk, recipient_email)` | Enqueued once per subscriber from `publications/signals.py`'s `post_save` receiver, inside `transaction.on_commit` so the enqueue waits for the post (and its M2M authors) to actually be committed. The task re-queries the post fresh and calls `annuaire.email_utils.send_one_email`, which raises on failure so django-q2 retries that one recipient — a provider hiccup no longer silently drops the whole batch, and one recipient's failure never affects another's. A deleted post is logged and skipped, not retried (retrying can't make it exist again). |
+| A new `Photo` is saved | `photos.tasks.generate_photo_derivatives(photo_pk)` | Enqueued from `photos/signals.py`'s `post_save` receiver, inside `transaction.on_commit`, never from the upload view directly (`PhotoUploadView` stays fully decoupled from derivative generation). Builds a thumbnail and a web-size WebP rendition, and extracts EXIF capture date/orientation. A deleted photo is logged and skipped, not retried. |
 
 Enqueue by plain values (a PK, an email string), never a built message or model
 instance — the task re-queries current state itself, so nothing enqueued can go stale or

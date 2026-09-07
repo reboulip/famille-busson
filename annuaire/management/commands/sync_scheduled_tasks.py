@@ -54,6 +54,13 @@ class Command(BaseCommand):
                 "minutes": 15,
                 "initial_next_run": timezone.now(),
             },
+            {
+                "name": "generate_pending_photo_derivatives",
+                "func": "photos.tasks.process_pending_photos",
+                "schedule_type": Schedule.MINUTES,
+                "minutes": 15,
+                "initial_next_run": timezone.now(),
+            },
         ]
 
         for entry in schedules:
