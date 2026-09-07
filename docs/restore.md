@@ -72,13 +72,18 @@ After `restore.sh` reports it has finished:
    ```
    should list the app's tables, non-empty.
 3. **Files referenced in the database exist on disk** — spot-check a handful
-   of `DocumentFile`/`Attachment`/`Person.profile_photo` rows against the
-   restored `media`/`documents_data` trees:
+   of `DocumentFile`/`Attachment`/`Person.profile_photo`/`Photo` rows against the
+   restored `media`/`documents_data` trees (`Photo` lives under
+   `documents_data/photos`, nested inside the same archive — see
+   `settings.PHOTOS_ROOT`):
    ```
    docker compose -f docker-compose.restore.yml -p bubu-restore-drill exec -T web python manage.py shell -c "
    from documents.models import DocumentFile
+   from photos.models import Photo
    for f in DocumentFile.objects.exclude(file='')[:5]:
        print(f.file.name, f.file.storage.exists(f.file.name))
+   for p in Photo.objects.exclude(file='')[:5]:
+       print(p.file.name, p.file.storage.exists(p.file.name))
    "
    ```
 4. **The app actually serves**:

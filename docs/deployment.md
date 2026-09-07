@@ -192,7 +192,7 @@ expected to build on.
 
 ## Scheduled tasks
 
-Both recurring jobs now run on the background task queue (django-q2's `worker`
+These recurring jobs now run on the background task queue (django-q2's `worker`
 container) instead of crontab — see [`background_tasks.md`](background_tasks.md) for
 the queue itself. This section covers the commands' hand-runnable form, still useful
 for an ad-hoc run or a birthday-reminder backfill.
@@ -218,6 +218,17 @@ every 15 minutes; run it by hand the same way:
 
 ```
 docker compose exec -T web python manage.py extract_document_content
+```
+
+`generate_photo_derivatives` (`photos/management/commands/generate_photo_derivatives.py`)
+backfills `Photo.thumbnail`/`web`/`taken_at` for photos left `derivative_status="pending"`
+— normally each photo's derivatives are generated as soon as it's uploaded (enqueued from
+a `post_save` signal, see `photos/signals.py`), so this is a safety net for photos
+uploaded while a worker was down. Capped at 20 photos per run. The scheduled queue run
+happens every 15 minutes; run it by hand the same way:
+
+```
+docker compose exec -T web python manage.py generate_photo_derivatives
 ```
 
 **Migration step, once, when this deploy first ships**: remove the two old crontab
