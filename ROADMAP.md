@@ -76,7 +76,7 @@
   single VPS); the final choice is a sprint-planning decision. (requires: 9.5)
 - [x] 9.7 · Outbound email through the queue, with retries — today a provider hiccup
   during the blog-post notification signal loses the mail silently. (requires: 9.6)
-- [ ] 9.8 · Throttle unauthenticated email-sending endpoints — rate-limit the
+- [x] 9.8 · Throttle unauthenticated email-sending endpoints — rate-limit the
   password-reset and magic-link request views, now that a shared cache exists to build a
   throttle a second worker can't trivially bypass. (requires: 9.5)
 

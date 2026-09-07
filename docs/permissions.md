@@ -118,6 +118,18 @@ EXEMPT_URL_PREFIXES` also lists `/annuaire/login/magic/`, for the same reason as
 must still be able to complete the magic-link flow instead of being bounced to
 `/password/change/`.
 
+**Rate limiting** (`annuaire.throttling.EmailRateLimitMixin`) applies to the three
+public views above that send email on success: `signup`, `password-reset` and
+`magic-link-request`. 3 requests/hour + 10/day per submitted email, plus a 60/hour
+circuit breaker per endpoint shared across every email — the latter exists because a
+mail-bombing attempt spread across many distinct addresses would otherwise never trip
+the per-email limit at all. Keyed on the normalized submitted email, deliberately never
+on the client IP (the reverse proxy in front of this app is outside this repo, and its
+`X-Forwarded-For` trustworthiness is unconfirmed — trusting a spoofable header would
+make the throttle both bypassable and a way to lock out an innocent IP). A throttled
+request re-renders the form with the same French non-field error at HTTP 429 whether or
+not the submitted email exists — no enumeration signal either way, and no email sent.
+
 ## Superuser vs staff
 
 The ownership checks in `annuaire` (`ProfileUpdateView.get_object()`,

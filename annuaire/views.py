@@ -52,6 +52,7 @@ from .map_data import build_chalet_map_groups, build_person_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
+from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
 
@@ -136,13 +137,21 @@ class CustomLoginView(LoginView):
 
 
 @method_decorator(login_not_required, name="dispatch")
-class SignupView(FormView):
+class SignupView(EmailRateLimitMixin, FormView):
     template_name = "annuaire/signup.html"
     form_class = SignupForm
     success_url = reverse_lazy("edit-my-profile")
+    throttle_scope = "signup"
 
     def form_valid(self, form):
         email = form.cleaned_data.get("email")
+        # Checked first, explicitly, rather than relying on the mixin's own
+        # form_valid()/super() chain: this method already does its own work before
+        # ever reaching FormView's redirect, so a throttled request must be refused
+        # before the account-existence check below, not just before the redirect.
+        if self.is_throttled(email):
+            return self.throttled_response(form)
+
         password = form.cleaned_data.get("password")
 
         if not Person.objects.filter(email=email).exists():
@@ -521,7 +530,7 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
         return response
 
 
-class AccountPasswordResetView(PasswordResetView):
+class AccountPasswordResetView(EmailRateLimitMixin, PasswordResetView):
     template_name = "annuaire/password_reset.html"
     email_template_name = "annuaire/password_reset_email.txt"
     # Django sends email_template_name as the text body and this as an HTML
@@ -531,13 +540,14 @@ class AccountPasswordResetView(PasswordResetView):
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
     extra_email_context = {"site_base_url": settings.SITE_BASE_URL.rstrip("/")}
+    throttle_scope = "password-reset"
 
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
     template_name = "annuaire/password_reset_done.html"
 
 
-class MagicLinkRequestView(PasswordResetView):
+class MagicLinkRequestView(EmailRateLimitMixin, PasswordResetView):
     """Passwordless login entry point: reuses Django's stock PasswordResetForm
     unmodified, so its get_users() (existing, active, usable-password Account
     rows only) is what keeps this closed to signup -- a Person with no linked
@@ -549,6 +559,7 @@ class MagicLinkRequestView(PasswordResetView):
     subject_template_name = "annuaire/magic_link_subject.txt"
     token_generator = magic_link_token_generator
     success_url = reverse_lazy("magic-link-sent")
+    throttle_scope = "magic-link-request"
     # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
     # lazy settings object is already configured by the time views.py imports).
     extra_email_context = {
