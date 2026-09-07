@@ -1,0 +1,46 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% load icons %}
+{% block content %}
+    {# Archetype B-adjacent — a windowed collection, not a paginated list. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>{% icon "calendar" size=24 %} Calendrier</h1>
+            <p class="fb-page-head__lede">Événements, présences et anniversaires de la famille, au même endroit.</p>
+        </div>
+    </div>
+
+    {% if has_entries %}
+        <div class="unified-calendar"
+             data-entries='{{ entries_json|escape }}'
+             data-window-start="{{ window_start }}"
+             data-window-end="{{ window_end }}"
+             data-active-types="{{ active_types|join:',' }}"
+             data-feed-url="{% url 'calendar-feed-ajax' %}">
+            <div class="unified-calendar-toolbar">
+                <div class="fb-btn-group" role="group" aria-label="Navigation">
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="Mois précédent">← Mois</button>
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">Aujourd'hui</button>
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="Mois suivant">Mois →</button>
+                </div>
+                <span class="unified-calendar-range fb-meta"></span>
+            </div>
+            <div class="cal-filters" role="group" aria-label="Filtrer par type">
+                {% for t in all_types %}
+                    <button type="button" class="fb-chip cal-filter-chip cal-type-{{ t }}" data-type="{{ t }}">
+                        {% if t == "event" %}Événements
+                        {% elif t == "presence" %}Présences
+                        {% elif t == "birthday" %}Anniversaires
+                        {% endif %}
+                    </button>
+                {% endfor %}
+            </div>
+            <div class="unified-calendar-month"></div>
+            <div class="unified-calendar-agenda"></div>
+        </div>
+        <script src="{% static 'js/calendar_core.js' %}"></script>
+        <script src="{% static 'js/unified_calendar.js' %}"></script>
+    {% else %}
+        {% include "annuaire/_empty.html" with title="Rien à afficher pour l'instant" body="Les événements, présences et anniversaires à venir apparaîtront ici." %}
+    {% endif %}
+{% endblock content %}

@@ -86,7 +86,7 @@ def test_the_set_covers_every_glyph_the_templates_ask_for():
 
     root = Path(__file__).resolve().parent.parent.parent
     used: set[str] = set()
-    for template_dir in ("annuaire", "publications", "documents"):
+    for template_dir in ("annuaire", "publications", "documents", "photos", "events"):
         for path in (root / template_dir).rglob("*.html"):
             used |= set(re.findall(r'{%\s*icon\s+"([\w-]+)"', path.read_text(encoding="utf-8")))
 

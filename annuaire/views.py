@@ -1354,3 +1354,67 @@ class ActivityFeedView(LoginRequiredMixin, TemplateView):
         # render still shows everything that was actually new for this visit.
         Account.objects.filter(pk=account.pk).update(last_feed_seen_at=timezone.now())
         return context
+
+
+# Bounded window shipped with the initial page render -- never the whole
+# corpus. Navigation past either edge refetches via calendar_feed_ajax.
+CALENDAR_PAGE_WINDOW_MONTHS_BEFORE = 1
+CALENDAR_PAGE_WINDOW_MONTHS_AFTER = 3
+
+
+def _first_of_month(day, months_offset):
+    month_index = day.month - 1 + months_offset
+    year = day.year + month_index // 12
+    month = month_index % 12 + 1
+    return day.replace(year=year, month=month, day=1)
+
+
+class CalendarView(LoginRequiredMixin, TemplateView):
+    """One calendar -- events, chalet présences and anniversaires in a single
+    month/agenda view with per-type filters. Ships a bounded window; the JS
+    (unified_calendar.js) refetches via calendar_feed_ajax on navigation past
+    either edge, never the whole corpus."""
+
+    template_name = "annuaire/calendar.html"
+
+    def get_context_data(self, **kwargs):
+        import datetime
+        from datetime import date
+
+        from .calendar_data import VALID_TYPES, build_calendar_entries, parse_types_param
+
+        context = super().get_context_data(**kwargs)
+        today = date.today()
+        start = _first_of_month(today, -CALENDAR_PAGE_WINDOW_MONTHS_BEFORE)
+        end = _first_of_month(today, CALENDAR_PAGE_WINDOW_MONTHS_AFTER + 1) - datetime.timedelta(days=1)
+        active_types = parse_types_param(self.request.GET.get("types")) or VALID_TYPES
+
+        entries = build_calendar_entries(
+            self.request.user, start, end, types=active_types, host=self.request.get_host()
+        )
+        context["entries_json"] = json.dumps([entry._asdict() for entry in entries])
+        context["has_entries"] = bool(entries)
+        context["window_start"] = start.isoformat()
+        context["window_end"] = end.isoformat()
+        context["active_types"] = sorted(active_types)
+        context["all_types"] = sorted(VALID_TYPES)
+        return context
+
+
+@login_required
+def calendar_feed_ajax(request):
+    """Windowed refresh backing the unified calendar's navigation -- same
+    access scoping and entry shape as CalendarView's initial render."""
+    from datetime import date
+
+    from .calendar_data import build_calendar_entries, parse_types_param
+
+    try:
+        start = date.fromisoformat(request.GET.get("start", ""))
+        end = date.fromisoformat(request.GET.get("end", ""))
+    except ValueError:
+        return JsonResponse({"error": "invalid start/end"}, status=400)
+
+    types = parse_types_param(request.GET.get("types"))
+    entries = build_calendar_entries(request.user, start, end, types=types, host=request.get_host())
+    return JsonResponse({"entries": [entry._asdict() for entry in entries]})

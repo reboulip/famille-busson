@@ -38,6 +38,7 @@ _PATHS: dict[str, str] = {
         '-2 2A13 13 0 0 1 9.5 11l2-2z"/>'
     ),
     "home": '<path d="M4 10.5 12 4l8 6.5"/><path d="M6 10v10h12V10"/><path d="M10 20v-5h4v5"/>',
+    "calendar": '<path d="M4 5.5h16v14H4z"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/>',
     "cake": (
         '<path d="M4 20h16"/><path d="M5 20v-6.5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2V20"/>'
         '<path d="M12 11.5V8"/><path d="M12 5.5a1.5 1.5 0 0 0 0-2c-.6.8-1 1.3-1 1.8a1 1 0 0 0 1 .2z"/>'

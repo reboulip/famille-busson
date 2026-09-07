@@ -169,7 +169,7 @@
   suppression already applied to the other outbound mail. (requires: 9.6, 12.1)
 
 ### Cluster: Calendrier unifié
-- [ ] 12.4 · One calendar — events, chalet présences and anniversaires in a single
+- [x] 12.4 · One calendar — events, chalet présences and anniversaires in a single
   month/agenda view with per-type filters, generalizing `presence_calendar.js` rather than
   standing up a second calendar implementation. (requires: 12.1)
 - [ ] 12.5 · iCal subscription — a per-account tokenised `.ics` feed, so the family
