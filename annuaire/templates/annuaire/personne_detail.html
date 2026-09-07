@@ -117,6 +117,43 @@
                 </section>
             {% endif %}
 
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link{% if tab != "photos" %} active{% endif %}" href="{% url 'personne-detail' person.pk %}">Relations</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link{% if tab == "photos" %} active{% endif %}" href="?tab=photos">
+                        Photos{% if photo_count %} ({{ photo_count }}){% endif %}
+                    </a>
+                </li>
+            </ul>
+
+            {% if tab == "photos" %}
+                <section class="fb-photos-tab">
+                    {% if photos_page %}
+                        <div class="fb-grid fb-grid--tiles">
+                            {% for photo in photos_page %}
+                                <a href="{% url 'photo-detail' photo.pk %}" class="fb-card fb-place-card">
+                                    <img src="{% url 'photo-file-thumbnail' photo.pk %}" alt="{{ photo.caption }}" class="fb-place-card__media">
+                                </a>
+                            {% endfor %}
+                        </div>
+                        {% if photos_page.has_other_pages %}
+                            <nav class="fb-pagination pagination">
+                                {% if photos_page.has_previous %}
+                                    <a href="?tab=photos&page={{ photos_page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                                {% endif %}
+                                <span>Page {{ photos_page.number }} / {{ photos_page.paginator.num_pages }}</span>
+                                {% if photos_page.has_next %}
+                                    <a href="?tab=photos&page={{ photos_page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                                {% endif %}
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        {% include "annuaire/_empty.html" with title="Aucune photo" body="Aucune photo n'a encore été identifiée pour cette personne." %}
+                    {% endif %}
+                </section>
+            {% else %}
             <section class="fb-relations">
                 {% if partner or parents or children %}
                     {% if partner %}
@@ -163,6 +200,7 @@
                     </div>
                 {% endif %}
             </section>
+            {% endif %}
 
             {% if can_edit %}
                 <div class="fb-record__actions profile-record__actions">

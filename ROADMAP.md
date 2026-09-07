@@ -118,7 +118,7 @@
 - [x] 10.7 · Tag people in a photo — a through-model linking `Photo` to `Person` via the
   existing person-picker component; a region box is stored but not yet drawn.
   (requires: 10.1)
-- [ ] 10.8 · Photos tab on the profile — every photo a person is tagged in, on their own
+- [x] 10.8 · Photos tab on the profile — every photo a person is tagged in, on their own
   profile page. (requires: 10.7)
 - [x] 10.9 · Link an album to a publication — a blog post references an album instead of
   re-uploading its images. Whether existing `publications.Attachment` images migrate into

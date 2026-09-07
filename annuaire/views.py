@@ -13,6 +13,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
@@ -920,6 +921,32 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
         context["children"] = [rel.person2 for rel in child_relations]
 
         context["can_edit"] = can_edit_person(self.request.user, person)
+
+        # Query-param tab (?tab=photos) on this same view/URL, not a separate
+        # one -- a second URL would need the sticky identity rail extracted
+        # into a shared partial, which several source-text tests pin the
+        # exact structure/ordering of (see test_profile_mobile_rail.py).
+        from django.db.models import F
+
+        from photos.access import accessible_photos
+
+        tab = self.request.GET.get("tab", "")
+        context["tab"] = tab
+        # Same ordering Photo.objects.chronological() applies -- can't call that
+        # helper here since it's a manager method, not chainable after .filter().
+        photos_qs = (
+            accessible_photos(self.request.user)
+            .filter(person_tags__person=person)
+            .select_related("album")
+            .order_by(F("taken_at").desc(nulls_last=True), "pk")
+        )
+        # From the same access-scoped queryset as the grid itself -- a raw
+        # person.tagged_photos.count() would leak how many photos exist in
+        # albums the viewer can't see.
+        context["photo_count"] = photos_qs.count()
+        if tab == "photos":
+            paginator = Paginator(photos_qs, 24)
+            context["photos_page"] = paginator.get_page(self.request.GET.get("page"))
 
         return context
 
