@@ -34,12 +34,45 @@ document.addEventListener('DOMContentLoaded', () => {
         const carousel = strip ? initImageCarousel(viewer, strip) : null;
         const pdf = viewer.querySelector('.document-viewer-pdf-pages') ? initPdfViewer(viewer) : null;
 
+        // Resolution swap (photothèque gallery only -- documents/publications strip
+        // images carry no data-full-src, so this is a no-op for them): grid tiles load
+        // cheap thumbnails, and only swap to the web-size rendition once the lightbox
+        // actually opens, rather than paying for full-resolution images nobody enters
+        // fullscreen to see. `loading="lazy"` on non-first items still defers the
+        // actual fetch until each swapped image nears the viewport.
+        let lastFocusedElement = null;
+        const swapToFullResolution = () => {
+            if (!strip) return;
+            strip.querySelectorAll('img[data-full-src]').forEach((img) => {
+                if (img.dataset.fullSrc && img.src !== img.dataset.fullSrc) {
+                    img.src = img.dataset.fullSrc;
+                }
+            });
+        };
+
         const setFullscreen = (active) => {
             viewer.classList.toggle('document-viewer--fullscreen', active);
             // The stage just changed width; PDF pages are sized in real pixels, so they
             // have to be re-measured and re-rendered or fullscreen shows the same small
             // page inside a bigger box (#109).
             if (pdf) pdf.relayout();
+            if (active) {
+                swapToFullResolution();
+                // Minimum a11y for a fixed-overlay modal with no native <dialog>
+                // semantics: announce it as one, and move focus in/out so a keyboard
+                // or screen-reader user isn't left on a now-hidden trigger.
+                viewer.setAttribute('role', 'dialog');
+                viewer.setAttribute('aria-modal', 'true');
+                lastFocusedElement = document.activeElement;
+                if (closeBtn) closeBtn.focus();
+            } else {
+                viewer.removeAttribute('role');
+                viewer.removeAttribute('aria-modal');
+                if (lastFocusedElement && typeof lastFocusedElement.focus === 'function') {
+                    lastFocusedElement.focus();
+                }
+                lastFocusedElement = null;
+            }
         };
         if (fullscreenBtn) {
             fullscreenBtn.addEventListener('click', () => setFullscreen(true));

@@ -1060,3 +1060,31 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
 .photo-upload-row--done .photo-upload-row__status { color: var(--fb-success); }
 .photo-upload-row--error .photo-upload-row__status { color: var(--fb-danger); }
+
+/* Lightbox (#album grid doubling as the document-viewer carousel strip, extended
+   rather than duplicated -- see documents/static/js/document_viewer.js). Only the
+   *normal* (non-fullscreen) layout differs from the document/publication viewers: a
+   grid, since an album is browsed as a grid, not swiped one at a time, until the
+   lightbox (fullscreen) actually opens. Guarded with :not(.document-viewer--fullscreen)
+   rather than relying on selector specificity to beat the existing fullscreen rules
+   below -- once --fullscreen is toggled on, these stop matching entirely and every
+   pre-existing fullscreen rule applies completely unmodified. */
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-stage.document-viewer-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--fb-sp-3);
+    overflow-x: visible;
+    height: auto;
+}
+
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-strip-item {
+    flex: none;
+}
+
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-strip-item img {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    object-fit: cover;
+}

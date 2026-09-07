@@ -52,10 +52,32 @@
             <ul class="photo-upload-list" data-photo-upload-list aria-live="polite"></ul>
         </div>
         {% if photos %}
-            <div class="fb-grid fb-grid--tiles">
-                {% for photo in photos %}
-                    {% include "photos/_photo_card.html" with photo=photo %}
-                {% endfor %}
+            {% comment %}
+                The lightbox (document_viewer.js, extended for galleries via the
+                --gallery modifier) is scoped to the CURRENT PAGE of photos only --
+                album-detail paginates at 24/page, so reaching the last tile on this
+                page does not continue swiping into the next page. Deliberate, not a
+                bug: cross-page lightbox navigation would mean loading every photo in
+                the album up front.
+            {% endcomment %}
+            <div class="document-viewer document-viewer--gallery">
+                <div class="document-viewer-toolbar">
+                    <span class="document-viewer-caption">{{ photos|length }} photo{{ photos|length|pluralize }}</span>
+                    <div class="document-viewer-actions">
+                        {% if photos|length > 1 %}
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="Photo précédente">{% icon "chevron-left" size=16 %}</button>
+                            <span class="document-viewer-carousel-counter">1 / {{ photos|length }}</span>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Photo suivante">{% icon "chevron-right" size=16 %}</button>
+                        {% endif %}
+                        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                        <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                    </div>
+                </div>
+                <div class="document-viewer-stage document-viewer-strip">
+                    {% for photo in photos %}
+                        {% include "photos/_photo_card.html" with photo=photo %}
+                    {% endfor %}
+                </div>
             </div>
             {% if is_paginated %}
                 <nav class="fb-pagination pagination">
@@ -76,5 +98,6 @@
 {% block extra_js %}
     {% if can_access %}
         <script src="{% static 'js/photo_upload.js' %}"></script>
+        <script src="{% static 'js/document_viewer.js' %}"></script>
     {% endif %}
 {% endblock extra_js %}
