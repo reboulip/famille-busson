@@ -247,13 +247,28 @@ def test_send_bulk_emails_still_accepts_legacy_tuples():
     assert not mail.outbox[0].alternatives
 
 
+@pytest.fixture
+def event(db):
+    import datetime
+
+    from django.utils import timezone
+
+    from events.models import Event
+
+    return Event.objects.create(
+        title="Réunion de famille", start=timezone.make_aware(datetime.datetime(2026, 7, 14, 12, 0), datetime.UTC)
+    )
+
+
 @pytest.mark.django_db
-def test_every_flow_ships_a_plain_text_part(person, post):
+def test_every_flow_ships_a_plain_text_part(person, post, event):
     """A multipart message with no text part is both unreadable in text-only clients
     and a spam signal."""
     built = [
         emails.birthday_reminder(person, "d@example.com", photo=None),
         emails.new_blog_post(post, "d@example.com"),
+        emails.event_announcement(event, "d@example.com"),
+        emails.event_reminder(event, "d@example.com"),
         emails.account_setup("d@example.com", "https://example.com/r/", is_reset=False),
     ]
     for message in built:

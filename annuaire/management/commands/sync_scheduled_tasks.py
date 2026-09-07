@@ -30,6 +30,8 @@ BIRTHDAY_REMINDER_HOUR_UTC = 7
 # (that's the signal-driven reindexing) -- run well off-peak, after the birthday
 # reminder job.
 SEARCH_REINDEX_HOUR_UTC = 3
+# Distinct hour from both of the above so none of the three daily jobs overlap.
+EVENT_REMINDER_HOUR_UTC = 8
 
 
 def _next_occurrence_at(hour: int) -> datetime.datetime:
@@ -70,6 +72,12 @@ class Command(BaseCommand):
                 "func": "annuaire.tasks.reindex_all_search_indexes",
                 "schedule_type": Schedule.DAILY,
                 "initial_next_run": _next_occurrence_at(SEARCH_REINDEX_HOUR_UTC),
+            },
+            {
+                "name": "send_event_reminders",
+                "func": "events.tasks.send_event_reminders",
+                "schedule_type": Schedule.DAILY,
+                "initial_next_run": _next_occurrence_at(EVENT_REMINDER_HOUR_UTC),
             },
         ]
 

@@ -104,7 +104,7 @@ class ProfileEditForm(forms.ModelForm):
 class FormSettings(forms.ModelForm):
     class Meta:
         model = Settings
-        fields = ["notify_on_birthday", "notify_on_new_blog_post"]
+        fields = ["notify_on_birthday", "notify_on_new_blog_post", "notify_on_event"]
 
 
 RelationEditFormSet = forms.inlineformset_factory(

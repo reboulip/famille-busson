@@ -14,6 +14,15 @@ def test_creates_both_schedules():
 
 
 @pytest.mark.django_db
+def test_creates_event_reminder_schedule():
+    call_command("sync_scheduled_tasks")
+
+    reminder = Schedule.objects.get(name="send_event_reminders")
+    assert reminder.func == "events.tasks.send_event_reminders"
+    assert reminder.schedule_type == Schedule.DAILY
+
+
+@pytest.mark.django_db
 def test_schedules_point_at_the_right_callables():
     call_command("sync_scheduled_tasks")
 

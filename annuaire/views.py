@@ -699,6 +699,7 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
         # annuaire/signals.py); layer the submitted opt-ins on top of it.
         person.settings.notify_on_birthday = settings_form.cleaned_data["notify_on_birthday"]
         person.settings.notify_on_new_blog_post = settings_form.cleaned_data["notify_on_new_blog_post"]
+        person.settings.notify_on_event = settings_form.cleaned_data["notify_on_event"]
         person.settings.save()
         return redirect("personne-detail", pk=person.pk)
 

@@ -164,7 +164,7 @@
   group-restricted visibility.
 - [x] 12.2 · RSVP — a per-`Person` participation record (oui / non / peut-être, guest
   count, note) with the attendee list shown on the event page. (requires: 12.1)
-- [ ] 12.3 · Event notifications — an announcement on creation and a reminder before the
+- [x] 12.3 · Event notifications — an announcement on creation and a reminder before the
   date, honouring the existing `Settings` notification preferences and the deceased-profile
   suppression already applied to the other outbound mail. (requires: 9.6, 12.1)
 

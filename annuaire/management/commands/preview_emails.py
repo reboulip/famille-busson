@@ -1,4 +1,4 @@
-"""Render (and optionally send) any of the app's five emails without waiting for a
+"""Render (and optionally send) any of the app's emails without waiting for a
 real trigger.
 
 Email rendering is otherwise near-impossible to check: you would have to wait for a
@@ -36,7 +36,15 @@ from annuaire import emails
 from annuaire.email_utils import OutgoingEmail, absolute_url, build_message, email_context
 from annuaire.models import Person
 
-FLOWS = ("birthday", "new-post", "account-setup", "password-reset", "magic-link")
+FLOWS = (
+    "birthday",
+    "new-post",
+    "event-announcement",
+    "event-reminder",
+    "account-setup",
+    "password-reset",
+    "magic-link",
+)
 
 DEFAULT_OUT_DIR = "/tmp/email-preview"
 
@@ -65,6 +73,13 @@ class _StubPost:
             return ["Julien Simon", "Margaux Simon"]
 
     authors = _Authors()
+
+
+class _StubEvent:
+    pk = 1
+    title = "Réunion de famille"
+    start = "14 juillet 2026, 12h00"
+    location = "Chalet des Alpes"
 
 
 class Command(BaseCommand):
@@ -115,6 +130,18 @@ class Command(BaseCommand):
 
             post = BlogPost.objects.prefetch_related("authors").order_by("-pk").first() or _StubPost()
             return emails.new_blog_post(post, recipient)
+
+        if flow == "event-announcement":
+            from events.models import Event
+
+            event = Event.objects.order_by("-pk").first() or _StubEvent()
+            return emails.event_announcement(event, recipient)
+
+        if flow == "event-reminder":
+            from events.models import Event
+
+            event = Event.objects.order_by("-pk").first() or _StubEvent()
+            return emails.event_reminder(event, recipient)
 
         if flow == "account-setup":
             return emails.account_setup(recipient, absolute_url("/annuaire/password/reset/apercu/"), is_reset=False)

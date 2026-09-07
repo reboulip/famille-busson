@@ -87,6 +87,11 @@ class Settings(models.Model):
     notify_on_new_blog_post = models.BooleanField(
         default=True, blank=True, verbose_name="Recevoir une notification pour les nouveaux articles"
     )
+    # Covers both the creation announcement and the pre-event reminder -- one
+    # preference, not two (see events.signals/events.tasks).
+    notify_on_event = models.BooleanField(
+        default=True, blank=True, verbose_name="Recevoir les annonces et rappels d'événements"
+    )
 
     class Meta:
         verbose_name = "Paramètres de notification"

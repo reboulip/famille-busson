@@ -120,6 +120,44 @@ def new_blog_post(post, recipient_email: str, *, recipient: Person | None = None
     )
 
 
+def event_announcement(event, recipient_email: str, *, recipient: Person | None = None) -> OutgoingEmail:
+    context = email_context(
+        event=event,
+        event_url=absolute_url(reverse("event-detail", kwargs={"pk": event.pk})),
+        settings_url=_settings_url(recipient),
+    )
+    html, text = render_email(
+        "events/emails/event_announcement.html",
+        "events/emails/event_announcement.txt",
+        context,
+    )
+    return OutgoingEmail(
+        to=recipient_email,
+        subject=f"Nouvel événement : {event.title}",
+        text_body=text,
+        html_body=html,
+    )
+
+
+def event_reminder(event, recipient_email: str, *, recipient: Person | None = None) -> OutgoingEmail:
+    context = email_context(
+        event=event,
+        event_url=absolute_url(reverse("event-detail", kwargs={"pk": event.pk})),
+        settings_url=_settings_url(recipient),
+    )
+    html, text = render_email(
+        "events/emails/event_reminder.html",
+        "events/emails/event_reminder.txt",
+        context,
+    )
+    return OutgoingEmail(
+        to=recipient_email,
+        subject=f"Rappel : {event.title}",
+        text_body=text,
+        html_body=html,
+    )
+
+
 def account_setup(account_email: str, reset_url: str, is_reset: bool) -> OutgoingEmail:
     subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
     context = email_context(account_email=account_email, reset_url=reset_url, is_reset=is_reset, subject=subject)

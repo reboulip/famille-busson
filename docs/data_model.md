@@ -106,6 +106,7 @@ erDiagram
 | `person` | OneToOneField | Profil | → Person (on_delete=CASCADE), related_name='settings', unique, required |
 | `notify_on_birthday` | BooleanField | Recevoir un rappel pour les anniversaires | default=True, optional |
 | `notify_on_new_blog_post` | BooleanField | Recevoir une notification pour les nouveaux articles | default=True, optional |
+| `notify_on_event` | BooleanField | Recevoir les annonces et rappels d'événements | default=True, optional |
 
 ### `Relation`
 
