@@ -20,6 +20,9 @@
                 (modifié le {{ post.updated_at|date:"j F Y" }})
             {% endif %}
             <span class="fb-chip{% if post.post_type == 'BC' %} fb-chip--gold{% endif %}">{{ post.get_post_type_display }}</span>
+            {% for tag in post.tags.all %}
+                <a class="fb-chip{% if tag.accent %} fb-chip--{{ tag.accent }}{% endif %}" href="{% url 'blogpost-list' %}?tag={{ tag.pk }}">{{ tag.name }}</a>
+            {% endfor %}
         </p>
         <div class="fb-rule"></div>
 

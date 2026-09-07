@@ -144,7 +144,7 @@
   never surface in results. (requires: 11.2)
 
 ### Cluster: Navigation et étiquettes
-- [ ] 11.4 · Tags on publications — a tag many-to-many with chips on cards and filtering,
+- [x] 11.4 · Tags on publications — a tag many-to-many with chips on cards and filtering,
   which also gives the family-specific `BlogPost.post_type` ("Busson connection") a
   generic successor for Phase 16 to migrate onto.
 - [ ] 11.5 · Activity feed — one "Quoi de neuf" view merging new publications, comments,

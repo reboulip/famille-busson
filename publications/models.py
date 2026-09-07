@@ -8,7 +8,28 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 PDF_EXTENSIONS = {".pdf"}
 
 
+class Tag(models.Model):
+    ACCENT_CHOICES = [
+        ("", "Aucun"),
+        ("gold", "Doré"),
+        ("accent", "Alpenglow"),
+    ]
+
+    name = models.CharField(max_length=50, unique=True, verbose_name="Étiquette")
+    accent = models.CharField(max_length=10, choices=ACCENT_CHOICES, blank=True, verbose_name="Accent")
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Étiquette"
+        verbose_name_plural = "Étiquettes"
+
+    def __str__(self):
+        return self.name
+
+
 class BlogPost(models.Model):
+    # post_type ("Busson connection") and tags coexist deliberately: Phase 16.2
+    # migrates post_type onto a tag and removes this field then, not now.
     POST_TYPE_CHOICES = [
         ("BC", "Busson connection"),
         ("NORMAL", "Publication normale"),
@@ -21,6 +42,12 @@ class BlogPost(models.Model):
         choices=POST_TYPE_CHOICES,
         default="NORMAL",
         verbose_name="Type de publication",
+    )
+    tags = models.ManyToManyField(
+        Tag,
+        blank=True,
+        related_name="posts",
+        verbose_name="Étiquettes",
     )
     authors = models.ManyToManyField(
         Person,

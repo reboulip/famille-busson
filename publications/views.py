@@ -21,7 +21,7 @@ from documents.access import accessible_documents
 from photos.access import accessible_albums
 
 from .forms import AttachmentFormSet, BlogPostForm, CommentForm
-from .models import BlogPost, Comment
+from .models import BlogPost, Comment, Tag
 
 
 def _authors_initial_json(view):
@@ -93,7 +93,17 @@ class BlogPostListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return BlogPost.objects.prefetch_related("authors", "attachments").order_by("-created_at")
+        qs = BlogPost.objects.prefetch_related("authors", "attachments", "tags").order_by("-created_at")
+        tag_id = self.request.GET.get("tag", "")
+        if tag_id.isdigit():
+            qs = qs.filter(tags__pk=tag_id)
+        return qs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["selected_tag"] = self.request.GET.get("tag", "")
+        context["filter_tags"] = Tag.objects.filter(posts__isnull=False).distinct().order_by("name")
+        return context
 
 
 class BlogPostDetailView(LoginRequiredMixin, DetailView):
@@ -183,6 +193,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
         context["authors_initial_json"] = _authors_initial_json(self)
         context["documents_initial_json"] = _documents_initial_json(self)
         context["albums_initial_json"] = _albums_initial_json(self)
+        context["all_tag_names"] = Tag.objects.values_list("name", flat=True)
         return context
 
     def form_valid(self, form):
@@ -225,6 +236,7 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
         context["authors_initial_json"] = _authors_initial_json(self)
         context["documents_initial_json"] = _documents_initial_json(self)
         context["albums_initial_json"] = _albums_initial_json(self)
+        context["all_tag_names"] = Tag.objects.values_list("name", flat=True)
         return context
 
     def form_valid(self, form):

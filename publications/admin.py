@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Attachment, BlogPost, Comment
+from .models import Attachment, BlogPost, Comment, Tag
 
 
 class AttachmentInline(admin.TabularInline):
@@ -14,8 +14,14 @@ class BlogPostAdmin(admin.ModelAdmin):
     list_display = ("title", "post_type", "created_at")
     list_filter = ("post_type",)
     search_fields = ("title", "body")
-    filter_horizontal = ("authors",)
+    filter_horizontal = ("authors", "tags")
     inlines = [AttachmentInline]
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    list_display = ("name", "accent")
+    search_fields = ("name",)
 
 
 @admin.register(Comment)

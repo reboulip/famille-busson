@@ -17,6 +17,7 @@ erDiagram
     Chalet }o--o{ Person : "owners"
     Person ||--o{ PresencePSV : "person"
     Chalet ||--o{ PresencePSV : "chalet"
+    BlogPost }o--o{ Tag : "tags"
     BlogPost }o--o{ Person : "authors"
     BlogPost }o--o{ Document : "documents"
     BlogPost }o--o{ Album : "albums"
@@ -135,6 +136,16 @@ erDiagram
 
 ## `publications`
 
+### `Tag`
+
+*App:* `publications` · *verbose name:* Étiquette / Étiquettes · *table:* `publications_tag`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `name` | CharField | Étiquette | max_length=50, unique, required |
+| `accent` | CharField | Accent | max_length=10, choices: =Aucun, gold=Doré, accent=Alpenglow, optional |
+
 ### `BlogPost`
 
 *App:* `publications` · *verbose name:* Publication / Publications · *table:* `publications_blogpost`
@@ -147,6 +158,7 @@ erDiagram
 | `post_type` | CharField | Type de publication | max_length=10, choices: BC=Busson connection, NORMAL=Publication normale, default='NORMAL', required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `tags` | ManyToManyField | Étiquettes | → Tag (M2M), related_name='posts' |
 | `authors` | ManyToManyField | Auteur(s) | → Person (M2M), related_name='blog_posts' |
 | `documents` | ManyToManyField | Documents liés | → Document (M2M), related_name='publications' |
 | `albums` | ManyToManyField | Albums liés | → Album (M2M), related_name='publications' |
