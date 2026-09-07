@@ -153,6 +153,16 @@ def send_bulk_emails(messages):
     return sent, failed
 
 
+def send_one_email(email: OutgoingEmail) -> None:
+    """Send a single `OutgoingEmail`, letting any failure propagate.
+
+    Unlike `send_bulk_emails`, which swallows a per-recipient failure so the rest of
+    a batch isn't lost, this is for a background-queue task sending exactly one
+    message per task: the caller (django-q2) needs to see the exception to retry it.
+    """
+    build_message(email).send(fail_silently=False)
+
+
 def render_email(html_template: str, text_template: str, context: dict) -> tuple[str, str]:
     """Render the HTML and plain-text halves of one message.
 

@@ -73,12 +73,18 @@ decided in exactly one place.
   `MagicLinkRequestView` pass `site_base_url` in via `extra_email_context` instead.
   Forgetting that on a new Django-stock email flow silently degrades to plain text, not
   an error.
-- **New-post notifications are sent from `transaction.on_commit`, not straight off
+- **New-post notifications are enqueued from `transaction.on_commit`, not straight off
   `post_save`.** `BlogPost`'s authors are a M2M, attached by the view *after* the row is
   saved — a notification built directly in the `post_save` receiver saw an empty author
-  list and rendered "Par " with no names. Deferring the send until the surrounding
-  transaction commits lets the view's M2M writes land first. This is a stopgap, not the
-  final fix — Phase 9.7's outbound-email queue is expected to supersede it.
+  list and rendered "Par " with no names. `publications/tasks.py`'s
+  `send_blog_post_notification` re-queries the post (including its authors) from the
+  background queue, by which point the transaction that saved both the row and its M2M
+  has already committed — so the `on_commit` wrapper is what makes the *enqueue* wait
+  for that commit, not what builds the message. One task is enqueued per subscriber
+  (by post PK + plain recipient email, never a model instance), so a provider hiccup on
+  one recipient retries independently instead of the whole batch's message being lost
+  or, before this queue existed, silently dropped for everyone (see
+  [`background_tasks.md`](background_tasks.md)).
 
 ## The embedded birthday photo
 

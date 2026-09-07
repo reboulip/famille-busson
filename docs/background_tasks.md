@@ -1,9 +1,12 @@
 # Background task queue
 
-famille-busson runs recurring and (starting with a later item) on-demand background
-work through [django-q2](https://django-q2.readthedocs.io/), backed by the same Valkey
-instance the shared cache uses (see [`deployment.md`'s "Shared cache"
+famille-busson runs both recurring (scheduled) and on-demand background work through
+[django-q2](https://django-q2.readthedocs.io/), backed by the same Valkey instance the
+shared cache uses (see [`deployment.md`'s "Shared cache"
 section](deployment.md#shared-cache)) — cache on db 0, this queue's broker on db 1.
+On-demand work enqueues a task directly (e.g. `publications/signals.py`, on every new
+blog post) rather than waiting for a `Schedule` row's next tick — see "On-demand tasks"
+below.
 
 ## Why
 
@@ -28,9 +31,12 @@ to check instead of a crontab nobody remembers configuring.
   a routine deploy never pushes an already-ticking schedule's next occurrence back out.
 - **Task modules** — `annuaire/tasks.py` and `documents/tasks.py`, one per app. Each
   function is plain and importable (django-q2 calls it by dotted path from a
-  `Schedule` row); the management commands remain the source of truth for the actual
-  logic and stay hand-runnable (see `deployment.md`'s "Scheduled tasks" section) —
-  tasks call the same extracted callable a command calls, never the other way around.
+  `Schedule` row). Neither a task function nor its management command owns the actual
+  logic itself — both call the same extracted callable
+  (`annuaire.birthdays.send_birthday_reminders`,
+  `documents.tasks.process_pending_document_files`); the management commands are thin
+  wrappers around it too, kept hand-runnable for ad-hoc use (see `deployment.md`'s
+  "Scheduled tasks" section).
 
 ## Current scheduled jobs
 
@@ -38,6 +44,19 @@ to check instead of a crontab nobody remembers configuring.
 |---|---|---|---|
 | Birthday reminders | Daily, 07:00 UTC | `annuaire.tasks.send_daily_birthday_reminders` | Guarded by a same-day cache lock, so a `catch_up` run or an overlap with the old crontab entry during a deploy can never send the same day's reminders twice. |
 | Document extraction | Every 15 minutes | `documents.tasks.process_pending_document_files` | Naturally idempotent — only ever processes rows still `extraction_status="pending"`. |
+
+## On-demand tasks
+
+Enqueued directly from a signal or view, rather than a `Schedule`, whenever the work
+should happen as soon as possible after an event rather than on a fixed tick.
+
+| Trigger | Task | Notes |
+|---|---|---|
+| A new `BlogPost` is saved | `publications.tasks.send_blog_post_notification(post_pk, recipient_email)` | Enqueued once per subscriber from `publications/signals.py`'s `post_save` receiver, inside `transaction.on_commit` so the enqueue waits for the post (and its M2M authors) to actually be committed. The task re-queries the post fresh and calls `annuaire.email_utils.send_one_email`, which raises on failure so django-q2 retries that one recipient — a provider hiccup no longer silently drops the whole batch, and one recipient's failure never affects another's. A deleted post is logged and skipped, not retried (retrying can't make it exist again). |
+
+Enqueue by plain values (a PK, an email string), never a built message or model
+instance — the task re-queries current state itself, so nothing enqueued can go stale or
+fail to serialize between enqueue and execution.
 
 ## Local development
 

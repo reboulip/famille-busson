@@ -74,7 +74,7 @@
   and `extract_document_content` off the VPS crontab onto its scheduler. Leaning
   `django-q2` over Celery (one worker container, no separate result backend, fits a
   single VPS); the final choice is a sprint-planning decision. (requires: 9.5)
-- [ ] 9.7 · Outbound email through the queue, with retries — today a provider hiccup
+- [x] 9.7 · Outbound email through the queue, with retries — today a provider hiccup
   during the blog-post notification signal loses the mail silently. (requires: 9.6)
 - [ ] 9.8 · Throttle unauthenticated email-sending endpoints — rate-limit the
   password-reset and magic-link request views, now that a shared cache exists to build a
