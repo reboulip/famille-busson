@@ -147,7 +147,7 @@
 - [x] 11.4 · Tags on publications — a tag many-to-many with chips on cards and filtering,
   which also gives the family-specific `BlogPost.post_type` ("Busson connection") a
   generic successor for Phase 16 to migrate onto.
-- [ ] 11.5 · Activity feed — one "Quoi de neuf" view merging new publications, comments,
+- [x] 11.5 · Activity feed — one "Quoi de neuf" view merging new publications, comments,
   documents, photos and members since the viewer's last visit.
 - [x] 11.6 · Onboarding empty states — extend the shared `_empty.html` with "commencez
   par…" guidance, so a brand-new member's first visit isn't a series of empty pages.

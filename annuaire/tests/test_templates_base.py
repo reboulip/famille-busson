@@ -81,7 +81,15 @@ def test_anonymous_sidebar_hides_the_login_required_sections(client):
     content = client.get(reverse("magic-link-help")).content.decode()
     assert reverse("magic-link-help") in content
     assert "Se connecter" in content
-    for hidden in ("directory", "genealogie", "carte", "chalet-list", "blogpost-list", "document-list"):
+    for hidden in (
+        "directory",
+        "genealogie",
+        "carte",
+        "chalet-list",
+        "blogpost-list",
+        "document-list",
+        "activity-feed",
+    ):
         assert f'href="{reverse(hidden)}"' not in content, hidden
 
 

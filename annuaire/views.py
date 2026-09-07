@@ -1313,3 +1313,38 @@ class GlobalSearchView(LoginRequiredMixin, TemplateView):
             context["groups"] = search_all(self.request.user, query, per_type_limit=5)
             context["has_results"] = any(group.results for group in context["groups"])
         return context
+
+
+class ActivityFeedView(LoginRequiredMixin, TemplateView):
+    template_name = "annuaire/activity_feed.html"
+    # First visit (last_feed_seen_at is null): show this many days back rather
+    # than the site's entire history.
+    FIRST_VISIT_WINDOW_DAYS = 30
+    OLDER_TAIL_LIMIT = 20
+
+    def get_context_data(self, **kwargs):
+        import datetime
+
+        from django.utils import timezone
+
+        from .activity import activity_since
+
+        context = super().get_context_data(**kwargs)
+        account = self.request.user
+        if account.last_feed_seen_at is None:
+            cutoff = timezone.now() - datetime.timedelta(days=self.FIRST_VISIT_WINDOW_DAYS)
+        else:
+            cutoff = account.last_feed_seen_at
+
+        recent = activity_since(account, cutoff, limit=50)
+        older = activity_since(account, None, limit=self.OLDER_TAIL_LIMIT)
+        recent_keys = {(entry.kind, entry.item.pk) for entry in recent}
+        older = [entry for entry in older if (entry.kind, entry.item.pk) not in recent_keys][: self.OLDER_TAIL_LIMIT]
+
+        context["recent_entries"] = recent
+        context["older_entries"] = older
+
+        # Stamped last, after recent/older are already computed, so this same
+        # render still shows everything that was actually new for this visit.
+        Account.objects.filter(pk=account.pk).update(last_feed_seen_at=timezone.now())
+        return context

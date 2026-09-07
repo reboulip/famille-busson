@@ -12,7 +12,12 @@ def backfill_person_search_index(apps, schema_editor):
     from annuaire.models import Person
 
     spec = get_spec(Person)
-    for person in Person.objects.iterator():
+    # .only() pins this to exactly the columns the Person spec's weights read
+    # (first_name/last_name/description) AND that already exist at this point
+    # in migration history -- a later migration on this same live model (e.g.
+    # 0014 adding created_at) must never cause this historical replay to
+    # SELECT a column that doesn't exist yet during a fresh `migrate`.
+    for person in Person.objects.only("pk", "first_name", "last_name", "description").iterator():
         apply_index(Person, person.pk, build_index_payload(person, spec))
 
 

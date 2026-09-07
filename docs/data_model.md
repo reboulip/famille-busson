@@ -60,6 +60,7 @@ erDiagram
 | `is_active` | BooleanField | Actif | default=True, required |
 | `is_staff` | BooleanField | Membre du personnel | default=False, required |
 | `must_change_password` | BooleanField | Doit changer le mot de passe | default=False, required |
+| `last_feed_seen_at` | DateTimeField | Dernière consultation du fil | optional |
 | `groups` | ManyToManyField | groups | → Group (M2M), related_name='account_set' |
 | `user_permissions` | ManyToManyField | user permissions | → Permission (M2M), related_name='account_set' |
 
@@ -85,6 +86,7 @@ erDiagram
 | `description` | TextField | Infos utiles | optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
 | `search_text` | TextField | Texte de recherche | default='', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='managed_profiles' |
 
 ### `Settings`

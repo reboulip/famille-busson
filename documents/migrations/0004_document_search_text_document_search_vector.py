@@ -12,7 +12,13 @@ def backfill_document_search_index(apps, schema_editor):
     from documents.models import Document
 
     spec = get_spec(Document)
-    for document in Document.objects.iterator():
+    # .only() pins this to exactly the columns the Document spec's weights read
+    # directly (title/description -- child DocumentFile.extracted_text comes
+    # from a separate query, unaffected) AND that already exist at this point
+    # in migration history -- a later migration on this same live model must
+    # never cause this historical replay to SELECT a column that doesn't exist
+    # yet during a fresh `migrate`.
+    for document in Document.objects.only("pk", "title", "description").iterator():
         apply_index(Document, document.pk, build_index_payload(document, spec))
 
 

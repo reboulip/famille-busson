@@ -11,10 +11,21 @@ def backfill_album_and_photo_search_indexes(apps, schema_editor):
     from annuaire.search.registry import get_spec
     from photos.models import Album, Photo
 
-    for model in (Album, Photo):
-        spec = get_spec(model)
-        for instance in model.objects.iterator():
-            apply_index(model, instance.pk, build_index_payload(instance, spec))
+    # .only() pins each queryset to exactly the columns that model's spec
+    # weights read AND that already exist at this point in migration history --
+    # a later migration on either live model must never cause this historical
+    # replay to SELECT a column that doesn't exist yet during a fresh `migrate`.
+    album_spec = get_spec(Album)
+    for album in Album.objects.only("pk", "title", "description").iterator():
+        apply_index(Album, album.pk, build_index_payload(album, album_spec))
+
+    photo_spec = get_spec(Photo)
+    # Deliberately no select_related("album") here: that would pull every
+    # current Album column along with it, reintroducing the exact hazard
+    # .only() exists to avoid. album.description is fetched lazily instead --
+    # one extra query per photo, acceptable at this project's scale.
+    for photo in Photo.objects.only("pk", "caption", "album").iterator():
+        apply_index(Photo, photo.pk, build_index_payload(photo, photo_spec))
 
 
 class Migration(migrations.Migration):

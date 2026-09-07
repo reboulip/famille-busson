@@ -27,6 +27,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
     must_change_password = models.BooleanField(default=False, verbose_name="Doit changer le mot de passe")
     groups = models.ManyToManyField(Group, related_name="account_set", blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name="account_set", blank=True)
+    # Not last_login: Django's own update_last_login receiver overwrites that on
+    # every login, which would make a "since last visit" feed empty for anyone
+    # who just logged in. Stamped at the END of each activity feed GET instead.
+    last_feed_seen_at = models.DateTimeField(null=True, blank=True, verbose_name="Dernière consultation du fil")
     objects = AccountManager()
 
     USERNAME_FIELD = "email"
@@ -69,6 +73,7 @@ class Person(models.Model):
     )
     search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
     search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"

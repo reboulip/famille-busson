@@ -1,0 +1,25 @@
+{% comment %}
+One activity-feed row. `entry` is an annuaire.activity.FeedEntry (kind, item,
+timestamp, count).
+{% endcomment %}
+<div class="fb-feed__item">
+    {% if entry.kind == "post" %}
+        <a href="{% url 'blogpost-detail' entry.item.pk %}">« {{ entry.item.title }} »</a>
+        <span class="fb-meta">nouvelle publication — {{ entry.timestamp|date:"j F" }}</span>
+    {% elif entry.kind == "comment" %}
+        <span class="fb-meta">
+            {{ entry.item.author|default:"Anonyme" }} a commenté
+            <a href="{% url 'blogpost-detail' entry.item.post.pk %}">« {{ entry.item.post.title }} »</a>
+            — {{ entry.timestamp|date:"j F" }}
+        </span>
+    {% elif entry.kind == "document" %}
+        <a href="{% url 'document-detail' entry.item.pk %}">{{ entry.item.title }}</a>
+        <span class="fb-meta">nouveau document — {{ entry.timestamp|date:"j F" }}</span>
+    {% elif entry.kind == "album_photos" %}
+        <a href="{% url 'album-detail' entry.item.pk %}">{{ entry.item.title }}</a>
+        <span class="fb-meta">{{ entry.count }} nouvelle{{ entry.count|pluralize }} photo{{ entry.count|pluralize }} — {{ entry.timestamp|date:"j F" }}</span>
+    {% elif entry.kind == "member" %}
+        <a href="{% url 'personne-detail' entry.item.pk %}">{{ entry.item }}</a>
+        <span class="fb-meta">a rejoint l'annuaire — {{ entry.timestamp|date:"j F" }}</span>
+    {% endif %}
+</div>
