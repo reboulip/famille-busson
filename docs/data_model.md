@@ -47,6 +47,8 @@ erDiagram
     Event }o--o{ Group : "groups"
     Event ||--o{ EventGroupAccess : "event"
     Group ||--o{ EventGroupAccess : "group"
+    Event ||--o{ Rsvp : "event"
+    Person ||--o{ Rsvp : "person"
 ```
 
 ## `annuaire`
@@ -362,3 +364,18 @@ erDiagram
 | `id` | BigAutoField | ID | PK |
 | `event` | ForeignKey | Événement | → Event (on_delete=CASCADE), required |
 | `group` | ForeignKey | Groupe | → Group (on_delete=PROTECT), required |
+
+### `Rsvp`
+
+*App:* `events` · *verbose name:* Participation / Participations · *table:* `events_rsvp`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `event` | ForeignKey | Événement | → Event (on_delete=CASCADE), related_name='rsvps', required |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='rsvps', required |
+| `response` | CharField | Réponse | max_length=10, choices: yes=Oui, no=Non, maybe=Peut-être, required |
+| `guest_count` | PositiveSmallIntegerField | Accompagnants | default=0, required |
+| `note` | CharField | Note | max_length=255, default='', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |

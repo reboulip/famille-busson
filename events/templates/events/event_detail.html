@@ -36,4 +36,7 @@
             <p class="fb-meta">Organisé par {% for p in event.organisers.all %}{{ p }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
         {% endif %}
     </div>
+
+    {% include "events/_rsvp_form.html" %}
+    {% include "events/_attendee_list.html" %}
 {% endblock content %}

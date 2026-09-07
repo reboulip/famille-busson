@@ -1,0 +1,31 @@
+{% comment %}
+RSVP control -- one mini-form per person the viewer can answer for (themself,
+plus any accountless profile they own). Params: event, rsvp_rows (list of
+(person, existing_rsvp_or_None) tuples).
+{% endcomment %}
+{% if rsvp_rows %}
+    <div class="fb-card">
+        <h2>Votre présence</h2>
+        {% for person, existing in rsvp_rows %}
+            <form method="POST" action="{% url 'event-rsvp' event.pk %}" class="fb-form fb-form--inline">
+                {% csrf_token %}
+                <input type="hidden" name="person" value="{{ person.pk }}">
+                <p class="fb-meta">{{ person }}</p>
+                <div class="fb-field">
+                    <label><input type="radio" name="response" value="yes" {% if existing.response == "yes" %}checked{% endif %}> Oui</label>
+                    <label><input type="radio" name="response" value="maybe" {% if existing.response == "maybe" %}checked{% endif %}> Peut-être</label>
+                    <label><input type="radio" name="response" value="no" {% if existing.response == "no" %}checked{% endif %}> Non</label>
+                </div>
+                <div class="fb-field">
+                    <label class="fb-label" for="guest_count_{{ person.pk }}">Accompagnants supplémentaires</label>
+                    <input type="number" min="0" name="guest_count" id="guest_count_{{ person.pk }}" value="{{ existing.guest_count|default:0 }}" class="form-control">
+                </div>
+                <div class="fb-field">
+                    <label class="fb-label" for="note_{{ person.pk }}">Note</label>
+                    <input type="text" name="note" id="note_{{ person.pk }}" maxlength="255" value="{{ existing.note|default:'' }}" class="form-control">
+                </div>
+                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Enregistrer</button>
+            </form>
+        {% endfor %}
+    </div>
+{% endif %}

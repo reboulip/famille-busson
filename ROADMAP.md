@@ -162,7 +162,7 @@
 - [x] 12.1 · `Event` model and CRUD — title, markdown description, start and end, all-day
   flag, location (reusing the address picker and geocoding), organisers, and
   group-restricted visibility.
-- [ ] 12.2 · RSVP — a per-`Person` participation record (oui / non / peut-être, guest
+- [x] 12.2 · RSVP — a per-`Person` participation record (oui / non / peut-être, guest
   count, note) with the attendee list shown on the event page. (requires: 12.1)
 - [ ] 12.3 · Event notifications — an announcement on creation and a reminder before the
   date, honouring the existing `Settings` notification preferences and the deceased-profile

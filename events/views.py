@@ -4,16 +4,19 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.shortcuts import redirect
+from django.db.models import Count, Sum
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from annuaire.models import Person
+from annuaire.views import can_edit_person
 
 from .access import accessible_events, effective_groups
-from .forms import EventForm
-from .models import Event
+from .forms import EventForm, RsvpForm
+from .models import Event, Rsvp
 
 
 def _organisers_initial_json(view):
@@ -73,6 +76,20 @@ class EventDetailView(LoginRequiredMixin, DetailView):
             or (profile is not None and self.object.organisers.filter(pk=profile.pk).exists())
         )
         context["access_groups"] = effective_groups(self.object)
+
+        # RSVP -- anyone the requester can answer for (themself, plus any
+        # accountless profile they own), same rule as annuaire.can_edit_person.
+        answerable_persons = []
+        if profile is not None:
+            answerable_persons.append(profile)
+            answerable_persons.extend(profile.managed_profiles.all())
+        existing_rsvps = {r.person_id: r for r in self.object.rsvps.select_related("person")}
+        context["rsvp_rows"] = [(person, existing_rsvps.get(person.pk)) for person in answerable_persons]
+        context["attendees"] = list(
+            self.object.rsvps.filter(response="yes").select_related("person").order_by("person__last_name")
+        )
+        headcount = self.object.rsvps.filter(response="yes").aggregate(count=Count("id"), extra=Sum("guest_count"))
+        context["attendee_headcount"] = (headcount["count"] or 0) + (headcount["extra"] or 0)
         return context
 
 
@@ -142,3 +159,30 @@ class EventDeleteView(EventOrganiserOrStaffMixin, DeleteView):
 
     def get_success_url(self):
         return reverse("event-list")
+
+
+class EventRsvpView(LoginRequiredMixin, View):
+    """POST-only participation endpoint, mirroring PhotoTagView's shape
+    (access-checked, redirect back). Any member who can access the event may
+    RSVP on behalf of anyone they can_edit_person() for -- the same rule that
+    lets a parent answer for an accountless child."""
+
+    def post(self, request, pk):
+        event = get_object_or_404(accessible_events(request.user), pk=pk)
+        person_id = request.POST.get("person", "")
+        person = get_object_or_404(Person, pk=person_id) if person_id.isdigit() else None
+        if person is None or not can_edit_person(request.user, person):
+            raise PermissionDenied("Vous ne pouvez pas répondre pour cette personne.")
+
+        form = RsvpForm(request.POST)
+        if form.is_valid():
+            Rsvp.objects.update_or_create(
+                event=event,
+                person=person,
+                defaults={
+                    "response": form.cleaned_data["response"],
+                    "guest_count": form.cleaned_data["guest_count"],
+                    "note": form.cleaned_data["note"],
+                },
+            )
+        return redirect("event-detail", pk=event.pk)

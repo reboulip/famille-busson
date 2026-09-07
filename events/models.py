@@ -121,3 +121,31 @@ class EventGroupAccess(models.Model):
 
     def __str__(self):
         return f"{self.event} — {self.group}"
+
+
+RSVP_CHOICES = [
+    ("yes", "Oui"),
+    ("no", "Non"),
+    ("maybe", "Peut-être"),
+]
+
+
+class Rsvp(models.Model):
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="rsvps", verbose_name="Événement")
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="rsvps", verbose_name="Personne")
+    response = models.CharField(max_length=10, choices=RSVP_CHOICES, verbose_name="Réponse")
+    # Additional guests beyond the person themself -- not the total headcount.
+    guest_count = models.PositiveSmallIntegerField(default=0, verbose_name="Accompagnants")
+    note = models.CharField(max_length=255, blank=True, default="", verbose_name="Note")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+
+    class Meta:
+        verbose_name = "Participation"
+        verbose_name_plural = "Participations"
+        constraints = [
+            models.UniqueConstraint(fields=["event", "person"], name="unique_event_person_rsvp"),
+        ]
+
+    def __str__(self):
+        return f"{self.person} — {self.get_response_display()} ({self.event})"
