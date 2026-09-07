@@ -2,6 +2,10 @@
 {% load static %}
 {% load markdown_extras %}
 {% load icons %}
+{% url 'directory' as directory_url %}
+{% url 'chalet-create' as chalet_create_url %}
+{% url 'blogpost-list' as blogpost_list_url %}
+{% url 'blogpost-create' as blogpost_create_url %}
 {% block content %}
     {% comment %}
         Archetype A — hub. The only view that earns the full ridge in the content
@@ -62,7 +66,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" %}
+                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
             {% endif %}
         </section>
 
@@ -85,7 +89,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" %}
+                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" empty_hint="Les chalets permettent de noter les lieux de séjour et de partager les présences." empty_secondary_url=chalet_create_url empty_secondary_label="Créer un chalet" %}
             {% endif %}
 
             {% if upcoming_presences %}
@@ -122,7 +126,11 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucune publication" %}
+                {% if user.is_authenticated %}
+                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Racontez une nouvelle, partagez des photos, ouvrez le bal." empty_secondary_url=blogpost_create_url empty_secondary_label="Écrire la première publication" %}
+                {% else %}
+                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Les membres partagent ici les nouvelles, photos et souvenirs." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
+                {% endif %}
             {% endif %}
         </section>
 
@@ -148,7 +156,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun commentaire" %}
+                {% include "annuaire/_empty.html" with title="Aucun commentaire" empty_hint="Soyez le premier à réagir aux publications et messages de la famille." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
             {% endif %}
         </section>
 

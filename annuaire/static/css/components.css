@@ -710,7 +710,9 @@ a.fb-card:hover,
 .fb-empty__ridge .fb-ridge__snow { fill: var(--fb-bark); }
 .fb-empty__title { font-family: var(--fb-font-display); font-weight: 600; color: var(--fb-ink); margin-bottom: var(--fb-sp-1); }
 .fb-empty p { font-size: var(--fb-text-sm); }
+.fb-empty__hint { color: var(--fb-bark); margin-top: var(--fb-sp-2); }
 .fb-empty__action { margin-top: var(--fb-sp-4); }
+.fb-empty__secondary { margin-top: var(--fb-sp-2); }
 
 /* --- Alerts ------------------------------------------------------------- */
 /* Ground is tinted, text is always --fb-ink: AA by construction, whatever the

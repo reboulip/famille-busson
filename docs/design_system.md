@@ -101,6 +101,17 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
    {% url 'thing-create' as create_url %}
    {% include "annuaire/_empty.html" with title="Aucune chose" body="…" action_url=create_url action_label="Créer" %}
    ```
+   For a first-visit page where a brand-new member needs onboarding guidance, add
+   `empty_hint` (a "commencez par…" line) and/or a quieter `empty_secondary_url`/
+   `empty_secondary_label` action alongside or instead of the primary one:
+   ```html
+   {% url 'directory' as directory_url %}
+   {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
+   ```
+   These four params are prefixed `empty_*` (unlike `title`/`body`/`action_*`)
+   because every `{% include %}` of this partial omits `only`, so an unprefixed name
+   could silently pick up whatever the parent template's own context happens to
+   call it.
 3. **Use `{% icon %}`, not emoji.** Emoji render as tofu boxes wherever the system has
    no emoji font and cannot follow the theme. `{% load icons %}` then
    `{% icon "mail" size=16 %}`. An unknown name raises rather than rendering nothing.

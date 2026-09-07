@@ -133,7 +133,7 @@
 > photos at once.
 
 ### Cluster: Recherche globale
-- [ ] 11.1 · Search backend — a shared abstraction over Postgres full-text search
+- [x] 11.1 · Search backend — a shared abstraction over Postgres full-text search
   (`SearchVector`/`SearchQuery`, unaccented and ranked) with a SQLite fallback, because
   production is Postgres while development and the entire test suite run on SQLite.
 - [ ] 11.2 · Search indexes — a `SearchVectorField` and GIN index on `Person`, `BlogPost`,
@@ -149,7 +149,7 @@
   generic successor for Phase 16 to migrate onto.
 - [ ] 11.5 · Activity feed — one "Quoi de neuf" view merging new publications, comments,
   documents, photos and members since the viewer's last visit.
-- [ ] 11.6 · Onboarding empty states — extend the shared `_empty.html` with "commencez
+- [x] 11.6 · Onboarding empty states — extend the shared `_empty.html` with "commencez
   par…" guidance, so a brand-new member's first visit isn't a series of empty pages.
 
 ## Phase 12 — Événements et calendrier partagé
