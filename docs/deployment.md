@@ -114,10 +114,12 @@ storage backends — see `annuaire/health.py`. Response contract:
 }
 ```
 
-`Content-Type: application/json`, `Cache-Control: no-store`. Status vocabulary is
-exactly `ok` / `degraded` / `error` (per-check) — never a raw exception message or
-traceback, which for the database check in particular could leak the DSN host/user;
-full detail goes to the structured log (`logging.getLogger("django")`, `WARNING`) only.
+`Content-Type: application/json`, `Cache-Control: no-store`. The top-level `status` is
+exactly `ok` / `degraded` / `error`; each individual check's own `status` is only ever
+`ok` or `error` — `degraded` exists solely as the top-level summary for "a non-critical
+check failed." Never a raw exception message or traceback, which for the database check
+in particular could leak the DSN host/user; full detail goes to the structured log
+(`logging.getLogger("django")`, `WARNING`) only.
 
 **Criticality is not uniform.** `database`, `media_storage` and `documents_storage` are
 critical: any failure makes the *overall* `status` `"error"` and the HTTP status `503`.

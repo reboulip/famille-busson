@@ -12,7 +12,7 @@ The site uses the same palettes — see [`design_system.md`](design_system.md).
 
 | Flow | Triggered by | Treatment | Builder |
 |---|---|---|---|
-| Birthday reminder | `manage.py send_birthday_reminders` (daily cron) | full ridge | `annuaire.emails.birthday_reminder` |
+| Birthday reminder | background queue, daily 07:00 UTC (`annuaire.tasks.send_daily_birthday_reminders`) | full ridge | `annuaire.emails.birthday_reminder` |
 | New blog post | `post_save` on `BlogPost` (`publications/signals.py`) | full ridge | `annuaire.emails.new_blog_post` |
 | Account setup / reset | staff bulk-create + resend (`BulkAccountCreateView`) | flat horizon | `annuaire.emails.account_setup` |
 | Password reset | `AccountPasswordResetView` | flat horizon | Django, `html_email_template_name` |
@@ -27,7 +27,7 @@ This was a rendering swap.
 | File | What it holds |
 |---|---|
 | `annuaire/emails.py` | One builder per flow — decides the context, returns an `OutgoingEmail`. |
-| `annuaire/email_utils.py` | `OutgoingEmail`, `InlineImage`, `build_message`, `send_bulk_emails`. Transport and MIME. |
+| `annuaire/email_utils.py` | `OutgoingEmail`, `InlineImage`, `build_message`, `send_bulk_emails`, `send_one_email`. Transport and MIME. |
 | `annuaire/templates/annuaire/emails/_base.html` | The shared shell: ridge, wordmark, eaves line, card, footer. |
 | `annuaire/templates/annuaire/emails/_horizon.html` | The restrained ridge (credential flows). |
 | `annuaire/templates/annuaire/emails/_wordmark.html` | The "Famille Busson" wordmark, linked to `site_base_url` when given, plain text otherwise. Included by both `_base.html` and `_horizon.html`. |
