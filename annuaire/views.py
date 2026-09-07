@@ -67,6 +67,7 @@ def home(request):
     import datetime
 
     from annuaire.birthdays import upcoming_birthdays
+    from annuaire.memories import memories
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
@@ -87,6 +88,7 @@ def home(request):
             "chalets": chalets,
             "upcoming_presences": upcoming_presences,
             "upcoming_birthdays": upcoming_birthdays(today),
+            "memories": memories(today, request.user),
         },
     )
 

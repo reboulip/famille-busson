@@ -123,7 +123,7 @@
 - [x] 10.9 · Link an album to a publication — a blog post references an album instead of
   re-uploading its images. Whether existing `publications.Attachment` images migrate into
   the library is an open decision for sprint planning. (requires: 10.1)
-- [ ] 10.10 · "Il y a X ans" on the home page — resurface a photo or a publication from
+- [x] 10.10 · "Il y a X ans" on the home page — resurface a photo or a publication from
   this date in earlier years, next to the birthdays widget. (requires: 10.3)
 
 ## Phase 11 — Recherche et découverte

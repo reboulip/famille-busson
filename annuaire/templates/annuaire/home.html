@@ -26,6 +26,21 @@
                     {% endfor %}
                 </div>
             {% endif %}
+            {% if memories %}
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% for memory in memories %}
+                        {% if memory.kind == "photo" %}
+                            <a class="fb-chip" href="{% url 'photo-detail' memory.item.pk %}">
+                                {% icon "image" size=14 %} Il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                            </a>
+                        {% else %}
+                            <a class="fb-chip" href="{% url 'blogpost-detail' memory.item.pk %}">
+                                {% icon "clip" size=14 %} « {{ memory.item.title }} » — il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </section>
 
