@@ -38,6 +38,19 @@
                     {% icon "plus" size=16 %} Déposer un nouveau document
                 </a>
             </div>
+            <div class="fb-field">
+                <label class="fb-label" for="album-search-input">Albums liés</label>
+                {% comment %}
+                    Same deliberate reuse of the person-picker component as the
+                    documents field above, under an album-flavoured search URL.
+                {% endcomment %}
+                {% url 'album-search-ajax' as album_search_url %}
+                {% include "annuaire/_person_picker.html" with input_id="album-search-input" field_name="albums" search_url=album_search_url initial_json=albums_initial_json aria_label="Chercher un album" %}
+                {% if form.albums.errors %}<div class="fb-error">{{ form.albums.errors }}</div>{% endif %}
+                <a href="{% url 'album-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "plus" size=16 %} Créer un nouvel album
+                </a>
+            </div>
         </fieldset>
 
         {% with subform=formsets.0 %}

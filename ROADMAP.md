@@ -120,7 +120,7 @@
   (requires: 10.1)
 - [ ] 10.8 · Photos tab on the profile — every photo a person is tagged in, on their own
   profile page. (requires: 10.7)
-- [ ] 10.9 · Link an album to a publication — a blog post references an album instead of
+- [x] 10.9 · Link an album to a publication — a blog post references an album instead of
   re-uploading its images. Whether existing `publications.Attachment` images migrate into
   the library is an open decision for sprint planning. (requires: 10.1)
 - [ ] 10.10 · "Il y a X ans" on the home page — resurface a photo or a publication from

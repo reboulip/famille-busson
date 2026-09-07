@@ -121,6 +121,17 @@
         </section>
     {% endif %}
 
+    {% if linked_albums %}
+        <section class="fb-longform">
+            <div class="fb-section-head"><h2>Albums liés</h2></div>
+            <div class="fb-grid fb-grid--wide">
+                {% for album in linked_albums %}
+                    {% include "photos/_album_card.html" with album=album %}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
     <section class="fb-longform">
         <div class="fb-section-head">
             <h2>Commentaires</h2>

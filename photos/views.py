@@ -3,6 +3,7 @@ import mimetypes
 import os
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count
@@ -14,7 +15,7 @@ from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, ListView, UpdateView
 
-from .access import effective_groups, user_can_access_album
+from .access import accessible_albums, effective_groups, user_can_access_album
 from .forms import AlbumForm, PhotoUploadForm
 from .models import Album, PersonTag, Photo
 
@@ -23,6 +24,21 @@ INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp"}
 # Photo file bytes are access-checked; they must never sit in a shared/public
 # cache, so `private` is not negotiable here (see PhotoFileView below).
 FILE_CACHE_CONTROL = "private, max-age=604800"
+
+
+@login_required
+def album_search_ajax(request):
+    """Backs the album picker on the publication form (annuaire's _person_picker.html
+    reused as-is, driven entirely by data-search-url). Queryset is the same access
+    boundary as the album listing's own accessible-albums helper -- never
+    Album.objects.all()."""
+    q = request.GET.get("q", "").strip()
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+    exclude_ids = [int(x) for x in request.GET.get("exclude", "").split(",") if x.isdigit()]
+    qs = accessible_albums(request.user).filter(title__icontains=q).exclude(pk__in=exclude_ids)
+    qs = qs.order_by("title")[:10]
+    return JsonResponse({"results": [{"id": a.pk, "name": a.title} for a in qs]})
 
 
 class AlbumListView(LoginRequiredMixin, ListView):

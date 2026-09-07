@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.db.models import Count
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
 from django.views.generic import (
@@ -17,6 +18,7 @@ from django.views.generic import (
 from annuaire.models import Person
 from annuaire.views import StaffRequiredMixin
 from documents.access import accessible_documents
+from photos.access import accessible_albums
 
 from .forms import AttachmentFormSet, BlogPostForm, CommentForm
 from .models import BlogPost, Comment
@@ -52,6 +54,24 @@ def _documents_initial_json(view):
     else:
         docs = []
     return json.dumps([{"id": d.pk, "name": d.title} for d in docs])
+
+
+def _albums_initial_json(view):
+    """Build the JSON payload used by the album-picker to pre-populate `albums`.
+
+    Scoped to the requesting user's accessible albums, same as the form field
+    itself -- a failed-validation redisplay must not leak a restricted album's
+    title just because its pk was in the (rejected) POST data."""
+    request = view.request
+    accessible = accessible_albums(request.user)
+    if request.method == "POST":
+        ids = [int(pk) for pk in request.POST.getlist("albums") if pk.isdigit()]
+        albums = list(accessible.filter(pk__in=ids).order_by("title"))
+    elif getattr(view, "object", None) is not None:
+        albums = list(view.object.albums.filter(pk__in=accessible).order_by("title"))
+    else:
+        albums = []
+    return json.dumps([{"id": a.pk, "name": a.title} for a in albums])
 
 
 class AuthorOrStaffRequiredMixin(LoginRequiredMixin):
@@ -108,6 +128,15 @@ class BlogPostDetailView(LoginRequiredMixin, DetailView):
         # Re-checked at render time, never a stored snapshot: a document later moved
         # into a locked category must silently disappear from the publication page.
         context["linked_documents"] = accessible_documents(self.request.user).filter(publications=self.object)
+        # _album_card.html (reused as-is) expects photo_count/cover annotated the same
+        # way AlbumListView.get_queryset() does -- without it the card either crashes
+        # or silently renders a blank count.
+        context["linked_albums"] = (
+            accessible_albums(self.request.user)
+            .filter(publications=self.object)
+            .select_related("cover")
+            .annotate(photo_count=Count("photos"))
+        )
         return context
 
     def post(self, request, *args, **kwargs):
@@ -153,6 +182,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
             context["formsets"] = [AttachmentFormSet()]
         context["authors_initial_json"] = _authors_initial_json(self)
         context["documents_initial_json"] = _documents_initial_json(self)
+        context["albums_initial_json"] = _albums_initial_json(self)
         return context
 
     def form_valid(self, form):
@@ -176,9 +206,10 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
     template_name = "publications/blogpost_form.html"
 
     def get_form_kwargs(self):
-        # Without this, BlogPostForm defaults to user=None -> documents queryset is
-        # empty -> the M2M ModelForm validates fine and silently clears every linked
-        # document on save. See test_blogpost_edit_preserves_linked_documents.
+        # Without this, BlogPostForm defaults to user=None -> documents/albums
+        # querysets are empty -> the M2M ModelForms validate fine and silently
+        # clear every linked document/album on save. See
+        # test_blogpost_edit_preserves_linked_documents.
         kwargs = super().get_form_kwargs()
         kwargs["user"] = self.request.user
         return kwargs
@@ -193,6 +224,7 @@ class BlogPostUpdateView(AuthorOrStaffRequiredMixin, UpdateView):
             context["formsets"] = [AttachmentFormSet(instance=self.object)]
         context["authors_initial_json"] = _authors_initial_json(self)
         context["documents_initial_json"] = _documents_initial_json(self)
+        context["albums_initial_json"] = _albums_initial_json(self)
         return context
 
     def form_valid(self, form):
