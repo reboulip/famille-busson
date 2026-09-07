@@ -43,12 +43,14 @@ def parse_types_param(raw: str | None) -> set[str] | None:
     return parsed or None
 
 
-def _event_entries(user, start: datetime.date, end: datetime.date, host: str | None) -> list[CalendarEntry]:
+def _event_entries(
+    user, start: datetime.date, end: datetime.date, host: str | None, *, strict: bool
+) -> list[CalendarEntry]:
     from events.access import accessible_events
 
     start_dt = timezone.make_aware(datetime.datetime.combine(start, datetime.time.min))
     end_dt = timezone.make_aware(datetime.datetime.combine(end, datetime.time.max))
-    events_qs = accessible_events(user).overlapping(start_dt, end_dt)
+    events_qs = accessible_events(user, bypass_staff=not strict).overlapping(start_dt, end_dt)
     return [
         CalendarEntry(
             type="event",
@@ -127,6 +129,7 @@ def build_calendar_entries(
     end: datetime.date,
     types: set[str] | None = None,
     host: str | None = None,
+    strict: bool = False,
 ) -> list[CalendarEntry]:
     """Entries from every source type overlapping [start, end] (both dates
     inclusive), access-scoped per source, merged and sorted by start.
@@ -136,11 +139,15 @@ def build_calendar_entries(
     stable per-item id iCal clients use to update rather than duplicate an
     entry on refresh (see 12.5). Omit when a real host isn't available (the
     uid is still internally consistent, just not globally unique).
+    `strict`: when True, a staff/superuser account does NOT get the usual
+    "see everything" bypass on events -- used by the iCal feed (12.5), where
+    the recipient is one specific account piping data into a third-party
+    calendar service rather than browsing the site in-app.
     """
     wanted = types if types is not None else VALID_TYPES
     entries: list[CalendarEntry] = []
     if "event" in wanted:
-        entries += _event_entries(user, start, end, host)
+        entries += _event_entries(user, start, end, host, strict=strict)
     if "presence" in wanted:
         entries += _presence_entries(start, end, host)
     if "birthday" in wanted:

@@ -107,6 +107,24 @@ def test_build_calendar_entries_includes_restricted_event_for_group_member(accou
 
 
 @pytest.mark.django_db
+def test_build_calendar_entries_strict_excludes_restricted_event_for_staff_non_member(staff_account, group):
+    today = datetime.date.today()
+    event = Event.objects.create(title="Réunion privée", start=_aware(today.year, today.month, today.day, 12, 0))
+    event.groups.add(group)
+    entries = build_calendar_entries(staff_account, today, today, strict=True)
+    assert not any(e.type == "event" for e in entries)
+
+
+@pytest.mark.django_db
+def test_build_calendar_entries_non_strict_includes_restricted_event_for_staff(staff_account, group):
+    today = datetime.date.today()
+    event = Event.objects.create(title="Réunion privée", start=_aware(today.year, today.month, today.day, 12, 0))
+    event.groups.add(group)
+    entries = build_calendar_entries(staff_account, today, today, strict=False)
+    assert any(e.type == "event" and e.title == event.title for e in entries)
+
+
+@pytest.mark.django_db
 def test_build_calendar_entries_uid_includes_host_when_given(account, person):
     today = datetime.date.today()
     Event.objects.create(title="Barbecue", start=_aware(today.year, today.month, today.day, 12, 0))

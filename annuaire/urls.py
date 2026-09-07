@@ -28,6 +28,7 @@ from .views import (
     GroupListView,
     GroupMembersUpdateView,
     GroupUpdateView,
+    ICalFeedView,
     MagicLinkConfirmView,
     MagicLinkHelpView,
     MagicLinkRequestView,
@@ -51,6 +52,7 @@ from .views import (
     markdown_preview,
     my_profile,
     person_search_ajax,
+    regenerate_calendar_token,
 )
 
 urlpatterns = [
@@ -90,6 +92,8 @@ urlpatterns = [
     path("carte/", MapListView.as_view(), name="carte"),
     path("calendrier/", CalendarView.as_view(), name="calendrier"),
     path("calendrier/donnees/", calendar_feed_ajax, name="calendar-feed-ajax"),
+    path("calendrier/abonnement/regenerer/", regenerate_calendar_token, name="regenerate-calendar-token"),
+    path("calendrier/<str:token>.ics", ICalFeedView.as_view(), name="ical-feed"),
     path("genealogie/", FamilyTreeView.as_view(), name="genealogie"),
     path("genealogie/export/", FamilyTreeExportView.as_view(), name="genealogie-export"),
     path("genealogie/<int:pk>/", FamilyTreeView.as_view(), name="genealogie-person"),

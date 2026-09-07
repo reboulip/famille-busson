@@ -1203,3 +1203,13 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 }
 
 .cal-agenda-item__title { flex: 1; }
+
+.cal-subscribe { margin-bottom: var(--fb-sp-4); }
+
+.cal-subscribe-row {
+    display: flex;
+    gap: var(--fb-sp-2);
+    align-items: center;
+}
+
+.cal-subscribe-row input { flex: 1; }

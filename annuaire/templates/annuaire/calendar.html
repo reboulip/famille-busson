@@ -10,6 +10,8 @@
         </div>
     </div>
 
+    {% include "annuaire/_calendar_subscribe.html" %}
+
     {% if has_entries %}
         <div class="unified-calendar"
              data-entries='{{ entries_json|escape }}'

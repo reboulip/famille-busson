@@ -1,3 +1,5 @@
+import secrets
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Group, Permission, PermissionsMixin
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
@@ -31,6 +33,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
     # every login, which would make a "since last visit" feed empty for anyone
     # who just logged in. Stamped at the END of each activity feed GET instead.
     last_feed_seen_at = models.DateTimeField(null=True, blank=True, verbose_name="Dernière consultation du fil")
+    # Per-account tokenised .ics feed (12.5) -- unique so a lookup by token
+    # resolves exactly one account. Lazily generated, never on a form.
+    calendar_token = models.CharField(
+        max_length=64, unique=True, null=True, blank=True, editable=False, verbose_name="Jeton calendrier"
+    )
     objects = AccountManager()
 
     USERNAME_FIELD = "email"
@@ -38,6 +45,19 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def get_or_create_calendar_token(self) -> str:
+        token = self.calendar_token
+        if not token:
+            token = secrets.token_urlsafe(32)
+            self.calendar_token = token
+            self.save(update_fields=["calendar_token"])
+        return str(token)
+
+    def regenerate_calendar_token(self) -> str:
+        self.calendar_token = secrets.token_urlsafe(32)
+        self.save(update_fields=["calendar_token"])
+        return self.calendar_token
 
 
 class Person(models.Model):

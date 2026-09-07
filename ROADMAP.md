@@ -172,7 +172,7 @@
 - [x] 12.4 · One calendar — events, chalet présences and anniversaires in a single
   month/agenda view with per-type filters, generalizing `presence_calendar.js` rather than
   standing up a second calendar implementation. (requires: 12.1)
-- [ ] 12.5 · iCal subscription — a per-account tokenised `.ics` feed, so the family
+- [x] 12.5 · iCal subscription — a per-account tokenised `.ics` feed, so the family
   calendar appears in Google or Apple Calendar and stays in sync. (requires: 12.4)
 - [ ] 12.6 · Events on the home page and the map — an upcoming-events card, and event
   markers alongside the existing person and chalet markers. (requires: 12.1)

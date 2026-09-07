@@ -11,6 +11,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection
 from django.core.paginator import Paginator
@@ -1398,6 +1399,12 @@ class CalendarView(LoginRequiredMixin, TemplateView):
         context["window_end"] = end.isoformat()
         context["active_types"] = sorted(active_types)
         context["all_types"] = sorted(VALID_TYPES)
+
+        token = self.request.user.get_or_create_calendar_token()
+        feed_path = reverse("ical-feed", kwargs={"token": token})
+        feed_url = self.request.build_absolute_uri(feed_path)
+        context["ical_feed_url"] = feed_url
+        context["ical_webcal_url"] = "webcal://" + feed_url.split("://", 1)[1]
         return context
 
 
@@ -1418,3 +1425,54 @@ def calendar_feed_ajax(request):
     types = parse_types_param(request.GET.get("types"))
     entries = build_calendar_entries(request.user, start, end, types=types, host=request.get_host())
     return JsonResponse({"entries": [entry._asdict() for entry in entries]})
+
+
+# A calendar client (Google/Apple) polls aggressively -- cache the rendered
+# body per (token, types) for a few minutes rather than rebuilding on every
+# fetch.
+ICAL_FEED_CACHE_SECONDS = 300
+# Wide enough to cover a client that syncs a year back and two ahead;
+# birthdays in particular are meaningless without a multi-year window.
+ICAL_FEED_WINDOW_DAYS_BEFORE = 365
+ICAL_FEED_WINDOW_DAYS_AFTER = 730
+
+
+@method_decorator(login_not_required, name="dispatch")
+class ICalFeedView(View):
+    """Unauthenticated per-account .ics feed. Resolves the Account from the
+    URL token (404 on missing/invalid, never a 500/stack trace) and scopes
+    every entry through that SPECIFIC account's own effective access --
+    accessible_events() etc. inside build_calendar_entries() -- never a
+    "show everything" path. Staff status does not expand this feed: it
+    represents exactly what this account would see, not everything."""
+
+    def get(self, request, token):
+        import datetime
+
+        from .calendar_data import VALID_TYPES, build_calendar_entries, parse_types_param
+        from .ical import render_ics
+
+        account = get_object_or_404(Account, calendar_token=token)
+        types = parse_types_param(request.GET.get("types")) or VALID_TYPES
+        cache_key = f"ical_feed:{token}:{','.join(sorted(types))}"
+
+        body = cache.get(cache_key)
+        if body is None:
+            today = date.today()
+            start = today - datetime.timedelta(days=ICAL_FEED_WINDOW_DAYS_BEFORE)
+            end = today + datetime.timedelta(days=ICAL_FEED_WINDOW_DAYS_AFTER)
+            entries = build_calendar_entries(account, start, end, types=types, host=request.get_host(), strict=True)
+            body = render_ics(entries)
+            cache.set(cache_key, body, ICAL_FEED_CACHE_SECONDS)
+
+        response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+        response["Content-Disposition"] = "inline; filename=calendrier.ics"
+        return response
+
+
+@login_required
+@require_POST
+def regenerate_calendar_token(request):
+    request.user.regenerate_calendar_token()
+    messages.success(request, "Le lien de votre calendrier a été régénéré.")
+    return redirect("calendrier")

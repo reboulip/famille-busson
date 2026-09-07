@@ -52,3 +52,20 @@ def test_accessible_events_includes_everything_for_staff(event, restricted_event
     qs = accessible_events(staff_account)
     assert event in qs
     assert restricted_event in qs
+
+
+@pytest.mark.django_db
+def test_accessible_events_bypass_staff_false_excludes_restricted_for_staff_non_member(
+    event, restricted_event, staff_account
+):
+    qs = accessible_events(staff_account, bypass_staff=False)
+    assert event in qs
+    assert restricted_event not in qs
+
+
+@pytest.mark.django_db
+def test_accessible_events_bypass_staff_false_includes_restricted_for_staff_group_member(
+    restricted_event, staff_account, group
+):
+    staff_account.groups.add(group)
+    assert restricted_event in accessible_events(staff_account, bypass_staff=False)
