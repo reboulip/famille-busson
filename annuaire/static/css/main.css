@@ -327,6 +327,18 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     height: 70%;
 }
 
+/* An event marker: a centered calendar glyph, not the bottom-aligned ridge
+   (a different modifier so this doesn't affect the chalet placeholder). */
+.map-marker-avatar-event {
+    align-items: center;
+    justify-content: center;
+}
+
+.map-marker-avatar-event .fb-icon {
+    width: 55%;
+    height: 55%;
+}
+
 .map-marker-cluster {
     position: relative;
     width: var(--map-marker-size, 60px);

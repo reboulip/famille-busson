@@ -50,7 +50,7 @@ from .forms import (
     UpdateRelationForm,
 )
 from .geocoding import search_addresses
-from .map_data import build_chalet_map_groups, build_person_map_groups
+from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
@@ -67,8 +67,11 @@ def media_serve(request, path):
 def home(request):
     import datetime
 
+    from django.utils import timezone
+
     from annuaire.birthdays import upcoming_birthdays
     from annuaire.memories import memories
+    from events.access import accessible_events
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
@@ -79,6 +82,7 @@ def home(request):
     upcoming_presences = (
         PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
     )
+    upcoming_events = accessible_events(request.user).upcoming(timezone.now()).order_by("start")[:5]
     return render(
         request,
         "annuaire/home.html",
@@ -88,6 +92,7 @@ def home(request):
             "recent_comments": recent_comments,
             "chalets": chalets,
             "upcoming_presences": upcoming_presences,
+            "upcoming_events": upcoming_events,
             "upcoming_birthdays": upcoming_birthdays(today),
             "memories": memories(today, request.user),
         },
@@ -841,6 +846,7 @@ class MapListView(LoginRequiredMixin, ListView):
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
         context["chalets_json"] = json.dumps(build_chalet_map_groups())
+        context["events_json"] = json.dumps(build_event_map_groups(self.request.user))
         return context
 
 

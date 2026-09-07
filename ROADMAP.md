@@ -174,7 +174,7 @@
   standing up a second calendar implementation. (requires: 12.1)
 - [x] 12.5 · iCal subscription — a per-account tokenised `.ics` feed, so the family
   calendar appears in Google or Apple Calendar and stays in sync. (requires: 12.4)
-- [ ] 12.6 · Events on the home page and the map — an upcoming-events card, and event
+- [x] 12.6 · Events on the home page and the map — an upcoming-events card, and event
   markers alongside the existing person and chalet markers. (requires: 12.1)
 
 ## Phase 13 — Généalogie approfondie

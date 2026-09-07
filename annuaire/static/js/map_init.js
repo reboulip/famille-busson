@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const persons = JSON.parse(container.dataset.persons || '[]');
     const chalets = JSON.parse(container.dataset.chalets || '[]');
+    const events = JSON.parse(container.dataset.events || '[]');
 
     // Metropolitan France, zoomed out -- sensible default when there's nothing to fit to.
     const map = L.map(container).setView([46.6, 2.4], 6);
@@ -13,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    if (persons.length === 0 && chalets.length === 0) {
+    if (persons.length === 0 && chalets.length === 0 && events.length === 0) {
         return;
     }
 
@@ -30,6 +31,16 @@ document.addEventListener('DOMContentLoaded', function () {
         '<path class="fb-ridge__far" d="M0,76 L26,42 L52,58 L82,30 L108,56 L140,36 L172,60 L200,44 L240,62 L240,76 Z"/>' +
         '<path class="fb-ridge__near" d="M0,76 L38,26 L66,54 L100,10 L136,50 L168,30 L206,58 L240,38 L240,76 Z"/>' +
         '<path class="fb-ridge__snow" d="M100,10 L112,24 L106,21 L100,28 L94,21 L88,24 Z"/>' +
+        '</svg>';
+
+    // Event markers get a calendar glyph instead of the ridge. Path data
+    // duplicated from annuaire/templatetags/icons.py's "calendar" entry --
+    // client-side JS has no access to the {% icon %} templatetag at render
+    // time. Keep the two in sync.
+    const EVENT_SVG =
+        '<svg class="fb-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+        '<path d="M4 5.5h16v14H4z"/><path d="M4 9.5h16"/><path d="M8 3v4"/><path d="M16 3v4"/>' +
         '</svg>';
 
     // Single source of truth for marker medallion size (60 = 40 * 1.5), published
@@ -59,7 +70,13 @@ document.addEventListener('DOMContentLoaded', function () {
         avatar.className = 'map-marker-avatar';
         if (avatarUrl.startsWith(PLACEHOLDER_PREFIX)) {
             avatar.classList.add('map-marker-avatar-placeholder');
-            avatar.innerHTML = RIDGE_SVG;
+            const suffix = avatarUrl.slice(PLACEHOLDER_PREFIX.length);
+            if (suffix === 'event') {
+                avatar.classList.add('map-marker-avatar-event');
+                avatar.innerHTML = EVENT_SVG;
+            } else {
+                avatar.innerHTML = RIDGE_SVG;
+            }
         } else {
             const img = document.createElement('img');
             img.src = avatarUrl;
@@ -205,18 +222,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const personsLayer = buildClusterGroup(persons, 'membres');
     const chaletsLayer = buildClusterGroup(chalets, 'chalets');
+    const eventsLayer = buildClusterGroup(events, 'événements');
     map.addLayer(personsLayer.clusterGroup);
     map.addLayer(chaletsLayer.clusterGroup);
+    map.addLayer(eventsLayer.clusterGroup);
     L.control
-        .layers(null, { Membres: personsLayer.clusterGroup, Chalets: chaletsLayer.clusterGroup })
+        .layers(null, {
+            Membres: personsLayer.clusterGroup,
+            Chalets: chaletsLayer.clusterGroup,
+            Événements: eventsLayer.clusterGroup,
+        })
         .addTo(map);
 
-    const allMarkers = personsLayer.markers.concat(chaletsLayer.markers);
-    // Count distinct group points, not markers/collections -- a person and a
-    // chalet can share the exact same coordinates (two separate arrays, two
-    // markers), which would wrongly skip the single-point branch below and hit
-    // fitBounds on a zero-area box, which zooms to max.
-    const uniquePointCount = new Set(persons.concat(chalets).map((g) => `${g.lat},${g.lon}`)).size;
+    const allMarkers = personsLayer.markers.concat(chaletsLayer.markers).concat(eventsLayer.markers);
+    // Count distinct group points, not markers/collections -- a person, a
+    // chalet and an event can share the exact same coordinates (separate
+    // arrays, separate markers), which would wrongly skip the single-point
+    // branch below and hit fitBounds on a zero-area box, which zooms to max.
+    const uniquePointCount = new Set(persons.concat(chalets).concat(events).map((g) => `${g.lat},${g.lon}`)).size;
     if (uniquePointCount === 1) {
         map.setView(allMarkers[0].getLatLng(), 13);
     } else {

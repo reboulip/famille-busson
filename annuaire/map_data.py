@@ -27,6 +27,9 @@ _QUANTIZE = Decimal("0.00001")
 # any system without an emoji font, and cannot follow the theme's colours.
 PLACEHOLDER_PREFIX = "placeholder::"
 CHALET_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}chalet"
+# Keep this suffix in sync with map_init.js's own PLACEHOLDER_PREFIX branch --
+# both files carry a comment saying so.
+EVENT_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}event"
 
 
 def _quantize(value: Decimal) -> Decimal:
@@ -78,5 +81,27 @@ def build_chalet_map_groups() -> list[dict]:
             "name": chalet.name,
             "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
             "avatar": chalet.photo.url if chalet.photo else CHALET_PLACEHOLDER,
+        },
+    )
+
+
+def build_event_map_groups(user) -> list[dict]:
+    """Unlike persons/chalets, events are access-restricted -- takes `user` and
+    scopes through events.access.accessible_events(), lazy-imported so
+    `annuaire` gains no hard top-level dependency on `events`. Events with no
+    geocoded coordinates (a free-text-only location the address picker never
+    resolved) are excluded entirely, never plotted at (0, 0)."""
+    from events.access import accessible_events
+
+    events = (
+        accessible_events(user).exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("start", "pk")
+    )
+    return _group_by_coordinates(
+        events,
+        key_func=lambda event: (_quantize(event.latitude), _quantize(event.longitude)),
+        entry_func=lambda event: {
+            "name": event.title,
+            "url": reverse("event-detail", kwargs={"pk": event.pk}),
+            "avatar": EVENT_PLACEHOLDER,
         },
     )
