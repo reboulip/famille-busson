@@ -231,6 +231,17 @@ happens every 15 minutes; run it by hand the same way:
 docker compose exec -T web python manage.py generate_photo_derivatives
 ```
 
+`reindex_search` (`annuaire/management/commands/reindex_search.py`) rebuilds every
+registered model's search index (`Person`, `BlogPost`, `Document`, `Album`, `Photo`) from
+scratch — normally each row's index updates on save/delete via a signal (see
+`background_tasks.md`'s on-demand tasks), so this is a safety net or a one-off after
+changing what a `SearchSpec` indexes. The scheduled queue run happens nightly at 03:00
+UTC; run it by hand the same way:
+
+```
+docker compose exec -T web python manage.py reindex_search
+```
+
 **Migration step, once, when this deploy first ships**: remove the two old crontab
 entries that used to run these commands (`send_birthday_reminders` daily,
 `extract_document_content` every 15 minutes) from the VPS's crontab. Leaving them active
