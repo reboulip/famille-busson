@@ -141,22 +141,17 @@ expected to build on.
 
 ## Scheduled tasks
 
-There is no in-app scheduler. `send_birthday_reminders` (`annuaire/management/commands/
-send_birthday_reminders.py`) emails subscribed members for each person whose birthday is
-today, but only when it's actually run — it must be scheduled on the VPS via cron or a
-systemd timer, set up by hand outside this repo's CI/CD. A daily cron entry running it
-inside the `web` container from `/srv/bubu` (where `docker-compose.yml` lives, see
-above), with its output redirected to a log file — cron's own output otherwise goes
-nowhere, so a failure is invisible until someone notices reminders never arrived:
+Both recurring jobs now run on the background task queue (django-q2's `worker`
+container) instead of crontab — see [`background_tasks.md`](background_tasks.md) for
+the queue itself. This section covers the commands' hand-runnable form, still useful
+for an ad-hoc run or a birthday-reminder backfill.
 
-```
-0 8 * * * cd /srv/bubu && mkdir -p logs && docker compose exec -T web python manage.py send_birthday_reminders >> logs/birthday-reminders.log 2>&1
-```
-
-The command exits non-zero (and logs at ERROR level) if any reminder fails to send, so a
-non-empty exit status in the log is a real failure, not noise. Use `--date YYYY-MM-DD` to
-run it for a specific day (e.g. to verify the cron entry works without waiting for a real
-birthday) and `--dry-run` to see who would receive a reminder without sending anything:
+`send_birthday_reminders` (`annuaire/management/commands/send_birthday_reminders.py`)
+emails subscribed members for each person whose birthday is today. The scheduled queue
+run happens once a day; the command exits non-zero (and logs at ERROR level) if any
+reminder fails to send. Use `--date YYYY-MM-DD` to run it for a specific day (e.g. to
+verify things work without waiting for a real birthday) and `--dry-run` to see who would
+receive a reminder without sending anything:
 
 ```
 docker compose exec -T web python manage.py send_birthday_reminders --date 2026-06-10 --dry-run
@@ -167,12 +162,19 @@ backfills `DocumentFile.extracted_text`/`thumbnail` for pending uploads — PDF 
 PyMuPDF with Tesseract OCR fallback for image-only pages/scans, direct OCR for raster
 image uploads, and a first-page thumbnail for PDFs (office docs and plain text files are
 marked "unsupported" and never processed). Capped at 20 files and 20 OCR'd pages per file
-per run, to avoid a pathological upload OOMing gunicorn. A cron entry every 15 minutes,
-same pattern as above:
+per run, to avoid a pathological upload OOMing gunicorn. The scheduled queue run happens
+every 15 minutes; run it by hand the same way:
 
 ```
-*/15 * * * * cd /srv/bubu && docker compose exec -T web python manage.py extract_document_content
+docker compose exec -T web python manage.py extract_document_content
 ```
+
+**Migration step, once, when this deploy first ships**: remove the two old crontab
+entries that used to run these commands (`send_birthday_reminders` daily,
+`extract_document_content` every 15 minutes) from the VPS's crontab. Leaving them active
+alongside the new queue would run both jobs twice — the birthday reminder task has its
+own same-day lock guarding against that specific case, but the extraction job does not,
+and there's no reason to run either path twice regardless.
 
 ## Sauvegardes
 

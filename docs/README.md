@@ -13,6 +13,8 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
   layout, CI/CD workflows, environment variables).
 - [`restore.md`](restore.md) — the backup restore runbook: prerequisites, the drill vs.
   a real restore, verification checklist, and the drill log.
+- [`background_tasks.md`](background_tasks.md) — the django-q2 job queue: architecture,
+  current scheduled jobs, local dev, and monitoring.
 - [`design_system.md`](design_system.md) — the Alpenglow/Nightfall design system:
   where the CSS lives, the colour and typography rules, and the checklist for adding
   a new view. Implements the design pass in `design/web/SPEC.md`.

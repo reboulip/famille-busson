@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_q",
     "annuaire",
     "publications",
     "documents",
@@ -125,6 +126,22 @@ DATABASES = {"default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / '
 # reserved for the background task queue's broker, see docs/deployment.md). Defaults to
 # LocMemCache so dev/tests never need a real cache server.
 CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+
+
+# Background task queue (django-q2) -- reuses db 1 of the same Valkey instance CACHES
+# uses db 0 of. See docs/background_tasks.md.
+Q_CLUSTER = {
+    "name": "famille_busson",
+    "workers": 2,
+    "recycle": 20,  # bounds per-worker memory growth from OCR/PyMuPDF over many runs
+    "timeout": 300,
+    "retry": 600,  # MUST stay > timeout, or django-q2 re-queues a still-running task
+    "max_attempts": 3,
+    "save_limit": 250,  # bounds the django_q success-log table in Postgres
+    "catch_up": True,
+    "redis": env("QUEUE_URL", default="redis://cache:6379/1"),
+    "sync": env.bool("Q_SYNC", default=DEBUG),
+}
 
 
 # Password validation

@@ -14,6 +14,11 @@ def pytest_configure():
     # CACHE_URL -- the suite must never depend on a real Valkey/Redis being reachable.
     settings.CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
+    # Force django-q2 into sync mode: async_task() runs the task inline, in-process,
+    # instead of pushing it onto a real broker -- the suite must never need a real
+    # Valkey/Redis queue either.
+    settings.Q_CLUSTER = {**settings.Q_CLUSTER, "sync": True}
+
 
 @pytest.fixture(autouse=True)
 def _clear_cache():

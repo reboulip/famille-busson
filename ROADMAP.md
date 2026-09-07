@@ -70,7 +70,7 @@
 - [x] 9.5 · Shared cache — add a Valkey/Redis container and set `CACHES`, which is
   currently unset, so every gunicorn worker holds its own `LocMemCache`. Compose, env and
   deployment docs updated together.
-- [ ] 9.6 · Background task queue — add a job runner and move `send_birthday_reminders`
+- [x] 9.6 · Background task queue — add a job runner and move `send_birthday_reminders`
   and `extract_document_content` off the VPS crontab onto its scheduler. Leaning
   `django-q2` over Celery (one worker container, no separate result backend, fits a
   single VPS); the final choice is a sprint-planning decision. (requires: 9.5)

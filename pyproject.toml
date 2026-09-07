@@ -16,6 +16,7 @@ dependencies = [
     "django-allauth>=65.4.1",
     "django-crispy-forms>=2.3",
     "django-environ>=0.14.0",
+    "django-q2>=1.11.1",
     "djangorestframework>=3.16.1",
     "gunicorn>=26.0.0",
     "idna>=3.11",
