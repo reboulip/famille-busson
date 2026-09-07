@@ -41,10 +41,20 @@
                 {% endif %}
             </div>
         {% endif %}
+        {% if blocked_by_events %}
+            <div class="fb-alert fb-alert--warning" role="alert">
+                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                {% if blocked_by_events|length == 1 %}
+                    l'événement « {{ blocked_by_events.0 }} ». Retirez d'abord la restriction sur cet événement.
+                {% else %}
+                    aux événements : {{ blocked_by_events|join:", " }}. Retirez d'abord la restriction sur ces événements.
+                {% endif %}
+            </div>
+        {% endif %}
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by or blocked_by_albums %}disabled{% endif %}>
+                <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by or blocked_by_albums or blocked_by_events %}disabled{% endif %}>
                     {% icon "trash" size=16 %} Supprimer définitivement
                 </button>
                 <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>

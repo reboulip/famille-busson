@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     "publications",
     "documents",
     "photos",
+    "events",
 ]
 
 MIDDLEWARE = [
@@ -192,7 +193,7 @@ MAGIC_LINK_TIMEOUT = env.int("MAGIC_LINK_TIMEOUT", default=15 * 60)
 
 LANGUAGE_CODE = "fr"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Paris"
 
 USE_I18N = True
 

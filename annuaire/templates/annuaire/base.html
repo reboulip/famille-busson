@@ -104,6 +104,13 @@
                         </div>
 
                         <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Événements</p>
+                            <ul>
+                                <li><a href="{% url 'event-list' %}" {% if un == 'event-list' or un == 'event-detail' %}aria-current="page"{% endif %}>Tous les événements</a></li>
+                            </ul>
+                        </div>
+
+                        <div class="fb-nav__group">
                             <p class="fb-eyebrow fb-nav__label">Photothèque</p>
                             <ul>
                                 <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>Tous les albums</a></li>

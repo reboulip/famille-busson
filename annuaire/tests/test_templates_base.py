@@ -49,6 +49,12 @@ def test_base_includes_documents_nav_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_includes_events_nav_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert reverse("event-list") in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_base_includes_group_list_nav_link_for_staff(staff_client):
     response = staff_client.get(reverse("directory"))
     assert reverse("group-list") in response.content.decode()
@@ -89,6 +95,7 @@ def test_anonymous_sidebar_hides_the_login_required_sections(client):
         "blogpost-list",
         "document-list",
         "activity-feed",
+        "event-list",
     ):
         assert f'href="{reverse(hidden)}"' not in content, hidden
 

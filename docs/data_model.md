@@ -42,6 +42,11 @@ erDiagram
     Photo ||--o{ PersonTag : "photo"
     Person ||--o{ PersonTag : "person"
     Person ||--o{ PersonTag : "tagged_by"
+    Person ||--o{ Event : "created_by"
+    Event }o--o{ Person : "organisers"
+    Event }o--o{ Group : "groups"
+    Event ||--o{ EventGroupAccess : "event"
+    Group ||--o{ EventGroupAccess : "group"
 ```
 
 ## `annuaire`
@@ -323,3 +328,37 @@ erDiagram
 | `region_height` | FloatField | Hauteur de la zone | optional |
 | `tagged_by` | ForeignKey | Identifié par | → Person (on_delete=SET_NULL), related_name='+', optional |
 | `created_at` | DateTimeField | Date d'identification | auto_now_add, optional |
+
+## `events`
+
+### `Event`
+
+*App:* `events` · *verbose name:* Événement / Événements · *table:* `events_event`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `title` | CharField | Titre | max_length=200, required |
+| `description` | TextField | Description | default='', optional |
+| `start` | DateTimeField | Début | required |
+| `end` | DateTimeField | Fin | optional |
+| `all_day` | BooleanField | Journée entière | default=False, required |
+| `location` | CharField | Lieu | max_length=255, default='', optional |
+| `latitude` | DecimalField | Latitude | optional |
+| `longitude` | DecimalField | Longitude | optional |
+| `created_by` | ForeignKey | Créé par | → Person (on_delete=SET_NULL), related_name='created_events', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `reminder_sent_at` | DateTimeField | Rappel envoyé le | optional |
+| `organisers` | ManyToManyField | Organisateurs·rices | → Person (M2M), related_name='organised_events' |
+| `groups` | ManyToManyField | Groupes autorisés | → Group (M2M), related_name='events' |
+
+### `EventGroupAccess`
+
+*App:* `events` · *verbose name:* Accès groupe à événement / Accès groupes à événements · *table:* `events_eventgroupaccess`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `event` | ForeignKey | Événement | → Event (on_delete=CASCADE), required |
+| `group` | ForeignKey | Groupe | → Group (on_delete=PROTECT), required |

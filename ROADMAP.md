@@ -57,7 +57,7 @@
 - [x] 9.2 · Automated backups — a repo-tracked script dumping Postgres and archiving
   `media/` and `documents_data/`, with a retention policy and an off-VPS copy, documented
   in `docs/deployment.md` alongside the existing scheduled-task entries.
-- [ ] 9.3 · Tested restore procedure — a runbook plus an actually-executed restore into a
+- [ ] 9.3 · [deferred] Tested restore procedure — a runbook plus an actually-executed restore into a
   scratch container, with the result recorded. A backup nobody has restored is not a
   backup. (requires: 9.2) — **infra shipped** (`scripts/restore.sh`,
   `docker-compose.restore.yml`, `docs/restore.md`); the drill itself is not yet executed
@@ -159,7 +159,7 @@
 > one place, or into the calendar app people actually use.
 
 ### Cluster: Événements
-- [ ] 12.1 · `Event` model and CRUD — title, markdown description, start and end, all-day
+- [x] 12.1 · `Event` model and CRUD — title, markdown description, start and end, all-day
   flag, location (reusing the address picker and geocoding), organisers, and
   group-restricted visibility.
 - [ ] 12.2 · RSVP — a per-`Person` participation record (oui / non / peut-être, guest

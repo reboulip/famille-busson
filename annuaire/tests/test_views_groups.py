@@ -1,8 +1,12 @@
+import datetime
+
 import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from django.utils import timezone
 
 from documents.models import Category
+from events.models import Event
 from photos.models import Album
 
 LOGIN_URL = "/annuaire/login/"
@@ -25,6 +29,14 @@ def album_with_group(db, group):
     album = Album.objects.create(title="Souvenirs SCI")
     album.groups.add(group)
     return album
+
+
+@pytest.fixture
+def event_with_group(db, group):
+    start = timezone.make_aware(datetime.datetime(2026, 6, 1, 10, 0), datetime.UTC)
+    event = Event.objects.create(title="Réunion SCI", start=start)
+    event.groups.add(group)
+    return event
 
 
 # ---------------------------------------------------------------------------
@@ -166,6 +178,26 @@ def test_group_delete_post_blocked_by_album_shows_error_message(staff_client, gr
     response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}), follow=True)
     msgs = [str(m) for m in response.context["messages"]]
     assert any(album_with_group.title in m for m in msgs)
+
+
+@pytest.mark.django_db
+def test_group_delete_context_blocked_by_events(staff_client, group, event_with_group):
+    response = staff_client.get(reverse("group-delete", kwargs={"pk": group.pk}))
+    assert response.context["blocked_by_events"] == [event_with_group.title]
+
+
+@pytest.mark.django_db
+def test_group_delete_post_blocked_by_event_does_not_delete(staff_client, group, event_with_group):
+    response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}))
+    assert response.status_code == 200
+    assert Group.objects.filter(pk=group.pk).exists()
+
+
+@pytest.mark.django_db
+def test_group_delete_post_blocked_by_event_shows_error_message(staff_client, group, event_with_group):
+    response = staff_client.post(reverse("group-delete", kwargs={"pk": group.pk}), follow=True)
+    msgs = [str(m) for m in response.context["messages"]]
+    assert any(event_with_group.title in m for m in msgs)
 
 
 # ---------------------------------------------------------------------------
