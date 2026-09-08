@@ -210,7 +210,7 @@ def test_genealogie_toolbar_labels_stay_in_the_markup_for_screen_readers(auth_cl
     # #125 hides these captions with CSS on small screens, so the accessible name
     # has to come from somewhere -- the text itself must not be removed.
     content = auth_client.get(reverse("genealogie")).content.decode()
-    assert content.count("genealogie-toolbar__label") == 3
-    for label in ("Exporter le carnet d'adresses en Excel", "Exporter en image", "Plein écran"):
+    assert content.count("genealogie-toolbar__label") == 4
+    for label in ("Exporter le carnet d'adresses en Excel", "Exporter en GEDCOM", "Exporter en image", "Plein écran"):
         assert f'aria-label="{label}"' in content
         assert f'<span class="genealogie-toolbar__label">{label}</span>' in content

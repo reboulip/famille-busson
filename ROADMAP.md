@@ -195,7 +195,7 @@
   point at, so provenance survives the person who knew it. (requires: 13.2)
 
 ### Cluster: Interopérabilité
-- [ ] 13.4 · GEDCOM export — export the tree, or a selected subtree, so members can load it
+- [x] 13.4 · GEDCOM export — export the tree, or a selected subtree, so members can load it
   into Geneanet, MyHeritage or Gramps. (requires: 13.1)
 - [x] 13.5 · Person merge — detect likely-duplicate `Person` rows and merge them safely
   across relations, photos, documents, présences and account link. A prerequisite for

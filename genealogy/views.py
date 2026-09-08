@@ -1,15 +1,19 @@
 import json
+from datetime import date
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
+from django.views import View
 from django.views.generic import CreateView, DeleteView, UpdateView
 
 from annuaire.models import Person
 from photos.access import accessible_photos
 
 from .forms import FormStory
+from .gedcom.export import build_gedcom, collect_export_set
 from .models import Story, StoryPhoto
 
 
@@ -103,3 +107,26 @@ class StoryDeleteView(StoryOwnerOrStaffRequiredMixin, DeleteView):
 
 def _photos_initial_json(story_photos) -> str:
     return json.dumps([{"id": sp.photo_id, "name": sp.photo.caption or sp.photo.filename} for sp in story_photos])
+
+
+class GedcomExportView(LoginRequiredMixin, View):
+    """GEDCOM export of the person cards currently rendered in the
+    centered-tree view -- same client-supplied `?ids=` pattern as the Excel
+    export (FamilyTreeExportView), never a server-computed selection. Any
+    logged-in member may export, same posture as the existing Excel export,
+    which already hands every member's contact details to any logged-in
+    member."""
+
+    def get(self, request, *args, **kwargs):
+        person_ids = []
+        for raw_id in request.GET.getlist("ids"):
+            try:
+                person_ids.append(int(raw_id))
+            except ValueError:
+                continue
+
+        persons, relations = collect_export_set(person_ids)
+        payload = build_gedcom(persons, relations)
+        response = HttpResponse(payload, content_type="application/x-gedcom")
+        response["Content-Disposition"] = f'attachment; filename="genealogie-{date.today():%Y-%m-%d}.ged"'
+        return response
