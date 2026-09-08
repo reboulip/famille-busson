@@ -197,7 +197,7 @@
 ### Cluster: Interopérabilité
 - [ ] 13.4 · GEDCOM export — export the tree, or a selected subtree, so members can load it
   into Geneanet, MyHeritage or Gramps. (requires: 13.1)
-- [ ] 13.5 · Person merge — detect likely-duplicate `Person` rows and merge them safely
+- [x] 13.5 · Person merge — detect likely-duplicate `Person` rows and merge them safely
   across relations, photos, documents, présences and account link. A prerequisite for
   import, which would otherwise multiply the directory.
 - [ ] 13.6 · GEDCOM import — parse into staged records behind a review-and-merge screen; no

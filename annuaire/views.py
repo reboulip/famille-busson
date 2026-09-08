@@ -54,6 +54,7 @@ from .map_data import build_chalet_map_groups, build_event_map_groups, build_per
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
+from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
 from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
@@ -1094,6 +1095,79 @@ class DeleteRelationView(LoginRequiredMixin, View):
         relation = get_object_or_404(Relation, pk=kwargs["rid"], person1=person)
         relation.delete()
         return redirect("person-relations-edit", pk=person.pk)
+
+
+class PersonDuplicateListView(StaffRequiredMixin, TemplateView):
+    template_name = "annuaire/person_duplicate_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        candidates = find_duplicate_candidates()
+        person_ids = {c.person1_id for c in candidates} | {c.person2_id for c in candidates}
+        by_pk = {p.pk: p for p in Person.objects.filter(pk__in=person_ids)}
+        context["candidates"] = [
+            {"person1": by_pk[c.person1_id], "person2": by_pk[c.person2_id], "reason": c.reason} for c in candidates
+        ]
+        return context
+
+
+class PersonMergeView(StaffRequiredMixin, View):
+    """Staff-only merge confirmation: differing scalar fields get a per-field
+    radio choice (never a blanket "winner wins"), so a non-blank loser value
+    is never silently discarded. See annuaire/person_merge.py for the merge
+    itself -- this view only collects the choices and calls it."""
+
+    template_name = "annuaire/person_merge_form.html"
+
+    def _get_people(self, kwargs):
+        winner = get_object_or_404(Person, pk=kwargs["pk"])
+        loser = get_object_or_404(Person, pk=kwargs["loser_pk"])
+        return winner, loser
+
+    def _differing_field_names(self, winner, loser):
+        differing = []
+        for field_name in MERGE_SCALAR_FIELDS:
+            winner_value = getattr(winner, field_name)
+            loser_value = getattr(loser, field_name)
+            if winner_value != loser_value and (winner_value or loser_value):
+                differing.append(field_name)
+        return differing
+
+    def _differing_fields(self, winner, loser):
+        return [
+            {
+                "name": field_name,
+                "label": Person._meta.get_field(field_name).verbose_name,
+                "winner_value": getattr(winner, field_name),
+                "loser_value": getattr(loser, field_name),
+            }
+            for field_name in self._differing_field_names(winner, loser)
+        ]
+
+    def get(self, request, *args, **kwargs):
+        winner, loser = self._get_people(kwargs)
+        context = {
+            "winner": winner,
+            "loser": loser,
+            "differing_fields": self._differing_fields(winner, loser),
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        winner, loser = self._get_people(kwargs)
+        field_choices = {}
+        for field_name in self._differing_field_names(winner, loser):
+            raw = request.POST.get(f"choice_{field_name}")
+            if raw in ("1", "2"):
+                field_choices[field_name] = int(raw)
+        try:
+            report = merge_persons(winner, loser, field_choices=field_choices)
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+            return redirect("person-merge", pk=winner.pk, loser_pk=loser.pk)
+        moved_summary = ", ".join(f"{k} ({v})" for k, v in report.moved_counts.items())
+        messages.success(request, f"Fusion effectuée : {moved_summary or 'aucune donnée liée à déplacer'}.")
+        return redirect("personne-detail", pk=winner.pk)
 
 
 class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):

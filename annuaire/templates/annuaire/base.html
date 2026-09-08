@@ -145,6 +145,7 @@
                                 <ul>
                                     <li><a href="{% url 'bulk-account-create' %}" {% if un == 'bulk-account-create' %}aria-current="page"{% endif %}>Créer des comptes</a></li>
                                     <li><a href="{% url 'group-list' %}" {% if un == 'group-list' %}aria-current="page"{% endif %}>Groupes</a></li>
+                                    <li><a href="{% url 'person-duplicate-list' %}" {% if un == 'person-duplicate-list' %}aria-current="page"{% endif %}>Doublons potentiels</a></li>
                                     <li><a href="{% url 'admin:index' %}">Console d'admin</a></li>
                                 </ul>
                             </div>
