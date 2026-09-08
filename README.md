@@ -4,8 +4,9 @@ Private family website for the Busson family: a member directory (`annuaire`) wi
 family relations, an interactive family tree, chalet listings, PSV presence scheduling,
 a map of member and chalet locations, site-wide search and an activity feed ("Quoi de
 neuf"), a small blog (`publications`) for tagged posts, comments and attachments, a
-group-restricted document library (`documents`) for categorized file uploads, and a
-group-restricted photo library (`photos`) of albums and photos. Django 6 / Python 3.13,
+group-restricted document library (`documents`) for categorized file uploads, a
+group-restricted photo library (`photos`) of albums and photos, and life-story
+timelines with source citations (`genealogy`) on each profile. Django 6 / Python 3.13,
 deployed continuously to a single VPS.
 
 ## Quickstart

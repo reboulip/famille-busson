@@ -25,8 +25,8 @@ renders a "keep typing" prompt rather than querying anything.
 `annuaire/templates/annuaire/search_results.html`, rendered by `GlobalSearchView`:
 
 - **No `?type=`** — a grouped preview: up to 5 results per registered type
-  (`Person`, `BlogPost`, `Document`, `Album`, `Photo`), each type in its own section
-  with its own card partial. A type with more results than shown gets a
+  (`Person`, `BlogPost`, `Document`, `Album`, `Photo`, `Story`), each type in its own
+  section with its own card partial. A type with more results than shown gets a
   "Voir tout (N) →" link.
 - **`?type=<key>`** (e.g. `annuaire.person`, `documents.document`) — the "Voir tout"
   target: that one type only, paginated 20 per page (`django.core.paginator.Paginator`),

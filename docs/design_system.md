@@ -155,9 +155,9 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
     mirror the same text into `aria-label` and `title` on the button — so the control
     keeps its accessible name once the text is not painted, and (in this codebase) the
     text stays in the DOM for any source-text test that asserts on the rendered label
-    string. The genealogy toolbar's three buttons (`genealogie-export`,
-    `genealogie-export-image`, `genealogie-fullscreen`) are the current example, using
-    `.genealogie-toolbar__label`.
+    string. The genealogy toolbar's four buttons (`genealogie-export`,
+    `genealogie-export-image`, `genealogie-export-gedcom`, `genealogie-fullscreen`) are
+    the current example, using `.genealogie-toolbar__label`.
 
 ## 6. The ridge
 
