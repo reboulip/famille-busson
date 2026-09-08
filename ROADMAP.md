@@ -204,7 +204,7 @@
   row is written to the directory until a human approves it. (requires: 13.4, 13.5)
 
 ### Cluster: Confidentialité
-- [ ] 13.7 · Living-person privacy — exports, and any future surface beyond logged-in
+- [x] 13.7 · Living-person privacy — exports, and any future surface beyond logged-in
   members, redact living people's details by default, with an explicit per-person setting.
   (requires: 13.4)
 

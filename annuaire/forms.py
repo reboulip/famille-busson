@@ -29,6 +29,13 @@ GENEALOGY_PLACE_HELP_TEXT = (
     "généalogie) ; laissez vide si ce lieu n'est pas connu."
 )
 
+EXPORT_PRIVACY_HELP_TEXT = (
+    "Un export GEDCOM (pour Geneanet, MyHeritage, Gramps...) est destiné à quitter le site, "
+    "potentiellement vers un service public. Par défaut, vos informations y sont masquées tant "
+    "que vous êtes en vie. « Toujours masquer » s'applique aussi au carnet d'adresses Excel et "
+    "au flux calendrier."
+)
+
 
 class AddressAutocompleteInput(forms.TextInput):
     """Progressive enhancement: plain text input, upgraded client-side by
@@ -71,6 +78,7 @@ class ProfileEditForm(forms.ModelForm):
             "death_date",
             "death_place",
             "description",
+            "export_privacy",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -84,6 +92,7 @@ class ProfileEditForm(forms.ModelForm):
             "postal_address": ADDRESS_HELP_TEXT,
             "birth_place": GENEALOGY_PLACE_HELP_TEXT,
             "death_place": GENEALOGY_PLACE_HELP_TEXT,
+            "export_privacy": EXPORT_PRIVACY_HELP_TEXT,
         }
 
     def __init__(self, *args, user=None, **kwargs):

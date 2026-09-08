@@ -1,7 +1,9 @@
+import datetime
+
 import pytest
 from django.urls import reverse
 
-from annuaire.models import Relation
+from annuaire.models import Person, Relation
 
 
 @pytest.mark.django_db
@@ -48,3 +50,31 @@ def test_gedcom_export_includes_marriage_data(auth_client, person, other_person)
     response = auth_client.get(reverse("gedcom-export"))
     content = response.content.decode()
     assert " FAM\r\n" in content
+
+
+@pytest.mark.django_db
+def test_gedcom_export_redacts_a_living_person_by_default(auth_client, person):
+    person.birth_date = datetime.date.today().replace(year=datetime.date.today().year - 30)
+    person.save()
+    response = auth_client.get(reverse("gedcom-export"), {"ids": [person.pk]})
+    content = response.content.decode()
+    assert f"1 NAME Vivant /{person.last_name}/" in content
+
+
+@pytest.mark.django_db
+def test_gedcom_export_does_not_redact_a_deceased_person(auth_client, person):
+    person.deceased = True
+    person.save()
+    response = auth_client.get(reverse("gedcom-export"), {"ids": [person.pk]})
+    content = response.content.decode()
+    assert f"1 NAME {person.first_name} /{person.last_name}/" in content
+
+
+@pytest.mark.django_db
+def test_gedcom_export_share_opt_out_prevents_redaction_of_a_living_person(auth_client, person):
+    person.birth_date = datetime.date.today().replace(year=datetime.date.today().year - 30)
+    person.export_privacy = Person.ExportPrivacy.SHARE
+    person.save()
+    response = auth_client.get(reverse("gedcom-export"), {"ids": [person.pk]})
+    content = response.content.decode()
+    assert f"1 NAME {person.first_name} /{person.last_name}/" in content

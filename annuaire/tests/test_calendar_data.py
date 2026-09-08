@@ -4,6 +4,7 @@ import pytest
 from django.utils import timezone
 
 from annuaire.calendar_data import build_calendar_entries, parse_types_param
+from annuaire.models import Person
 from events.models import Event
 
 
@@ -77,6 +78,28 @@ def test_build_calendar_entries_excludes_deceased_birthday(account, person):
     person.save()
     entries = build_calendar_entries(account, today, today)
     assert not any(e.type == "birthday" for e in entries)
+
+
+@pytest.mark.django_db
+def test_build_calendar_entries_strict_excludes_explicitly_redacted_birthday(account, person):
+    today = datetime.date.today()
+    person.birth_date = datetime.date(1990, today.month, today.day)
+    person.export_privacy = Person.ExportPrivacy.REDACT
+    person.save()
+    entries = build_calendar_entries(account, today, today, strict=True)
+    assert not any(e.type == "birthday" for e in entries)
+
+
+@pytest.mark.django_db
+def test_build_calendar_entries_non_strict_keeps_explicitly_redacted_birthday(account, person):
+    today = datetime.date.today()
+    person.birth_date = datetime.date(1990, today.month, today.day)
+    person.export_privacy = Person.ExportPrivacy.REDACT
+    person.save()
+    # Non-strict (in-app calendar browsing) is unaffected by the redact
+    # opt-out -- it already shows this data on every profile page.
+    entries = build_calendar_entries(account, today, today, strict=False)
+    assert any(e.type == "birthday" for e in entries)
 
 
 @pytest.mark.django_db

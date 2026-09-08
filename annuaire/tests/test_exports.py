@@ -34,6 +34,23 @@ def test_build_export_rows_empty_ids_returns_empty():
     assert build_export_rows([]) == []
 
 
+@pytest.mark.django_db
+def test_build_export_rows_skips_explicitly_redacted_person(person, other_person):
+    other_person.export_privacy = Person.ExportPrivacy.REDACT
+    other_person.save()
+    rows = build_export_rows([person.pk, other_person.pk])
+    assert len(rows) == 1
+    assert rows[0][0] == "Busson" and rows[0][1] == "Alice"
+
+
+@pytest.mark.django_db
+def test_build_export_rows_keeps_living_person_under_auto(person):
+    # Living-by-default redaction does NOT apply to the Excel export -- only
+    # the explicit "redact" opt-out does.
+    rows = build_export_rows([person.pk])
+    assert len(rows) == 1
+
+
 def test_build_persons_workbook_header_and_rows():
     rows = [["Busson", "Alice", "alice@example.com", "0102030405", "1 rue des Fleurs"]]
     workbook_bytes = build_persons_workbook(rows)

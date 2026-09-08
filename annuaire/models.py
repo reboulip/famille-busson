@@ -61,6 +61,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
 
 class Person(models.Model):
+    class ExportPrivacy(models.TextChoices):
+        AUTO = "auto", "Automatique (masqué·e tant que vivant·e)"
+        SHARE = "share", "Toujours partager"
+        REDACT = "redact", "Toujours masquer"
+
     last_name = models.CharField(max_length=100, verbose_name="Nom")
     account = models.OneToOneField(
         Account, related_name="profile", on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Compte"
@@ -90,6 +95,18 @@ class Person(models.Model):
     death_date = models.DateField(blank=True, null=True, verbose_name="Date de décès")
     death_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de décès")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
+    # Governs redaction in the GEDCOM export by default (auto = redacted while
+    # living); the Excel export and iCal feed are otherwise unaffected by this
+    # setting except for the explicit "redact" state, which they also honour --
+    # see annuaire/privacy.py, the single source of truth every export surface
+    # calls instead of re-deriving "is this person alive" itself.
+    export_privacy = models.CharField(
+        max_length=6,
+        choices=ExportPrivacy.choices,
+        default=ExportPrivacy.AUTO,
+        blank=True,
+        verbose_name="Confidentialité dans les exports",
+    )
     owners = models.ManyToManyField(
         "self",
         symmetrical=False,

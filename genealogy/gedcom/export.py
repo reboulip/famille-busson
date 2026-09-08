@@ -14,6 +14,7 @@ from datetime import date
 from typing import Any, cast
 
 from annuaire.models import Person, Relation
+from annuaire.privacy import redacted_display_name
 
 from .writer import format_date, pointer_line, render_gedcom, tag_lines
 
@@ -89,9 +90,12 @@ def _individual_lines(
 ) -> list[str]:
     xref = f"@I{person.pk}@"
     is_redacted = redact(person)
-    given_name = "Vivant" if is_redacted else person.first_name
+    if is_redacted:
+        given_name, surname = redacted_display_name(person)
+    else:
+        given_name, surname = cast(str, person.first_name), cast(str, person.last_name)
     lines = [f"0 {xref} INDI"]
-    lines.extend(tag_lines(1, "NAME", f"{given_name} /{person.last_name}/"))
+    lines.extend(tag_lines(1, "NAME", f"{given_name} /{surname}/"))
     if not is_redacted:
         if person.birth_date or person.birth_place:
             lines.append("1 BIRT")

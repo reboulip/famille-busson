@@ -17,6 +17,7 @@ from collections.abc import Iterable
 from openpyxl import Workbook
 
 from .models import Person
+from .privacy import always_redacted
 
 EXPORT_COLUMNS: list[tuple[str, str]] = [
     ("Nom", "last_name"),
@@ -29,9 +30,16 @@ EXPORT_COLUMNS: list[tuple[str, str]] = [
 
 def build_export_rows(person_ids: Iterable[int]) -> list[list[str]]:
     """One row per Person in `person_ids`, ordered deterministically. Unknown ids
-    are simply absent from the result (the caller may pass stale/invalid ids)."""
+    are simply absent from the result (the caller may pass stale/invalid ids).
+    A person who explicitly opted for `always_redacted` is skipped entirely --
+    living-by-default redaction does NOT apply here, only the explicit opt-out
+    (see annuaire/privacy.py)."""
     persons = Person.objects.filter(pk__in=person_ids).order_by("last_name", "first_name", "pk")
-    return [[getattr(person, attr) or "" for _, attr in EXPORT_COLUMNS] for person in persons]
+    return [
+        [getattr(person, attr) or "" for _, attr in EXPORT_COLUMNS]
+        for person in persons
+        if not always_redacted(person)
+    ]
 
 
 def build_persons_workbook(rows: list[list[str]]) -> bytes:

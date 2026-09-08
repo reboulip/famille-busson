@@ -105,6 +105,7 @@ erDiagram
 | `death_date` | DateField | Date de décès | optional |
 | `death_place` | CharField | Lieu de décès | max_length=255, default='', optional |
 | `description` | TextField | Infos utiles | optional |
+| `export_privacy` | CharField | Confidentialité dans les exports | max_length=6, choices: auto=Automatique (masqué·e tant que vivant·e), share=Toujours partager, redact=Toujours masquer, default=Person.ExportPrivacy.AUTO, optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
 | `search_text` | TextField | Texte de recherche | default='', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |

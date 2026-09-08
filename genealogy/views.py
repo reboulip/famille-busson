@@ -10,6 +10,7 @@ from django.views import View
 from django.views.generic import CreateView, DeleteView, UpdateView
 
 from annuaire.models import Person
+from annuaire.privacy import is_redacted
 from photos.access import accessible_photos
 
 from .forms import FormStory
@@ -126,7 +127,7 @@ class GedcomExportView(LoginRequiredMixin, View):
                 continue
 
         persons, relations = collect_export_set(person_ids)
-        payload = build_gedcom(persons, relations)
+        payload = build_gedcom(persons, relations, redact=is_redacted)
         response = HttpResponse(payload, content_type="application/x-gedcom")
         response["Content-Disposition"] = f'attachment; filename="genealogie-{date.today():%Y-%m-%d}.ged"'
         return response

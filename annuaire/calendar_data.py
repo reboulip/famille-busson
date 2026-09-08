@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from .models import Person, PresencePSV
+from .privacy import always_redacted
 
 VALID_TYPES = {"event", "presence", "birthday"}
 
@@ -83,17 +84,26 @@ def _presence_entries(start: datetime.date, end: datetime.date, host: str | None
     ]
 
 
-def _birthday_entries(start: datetime.date, end: datetime.date, host: str | None) -> list[CalendarEntry]:
+def _birthday_entries(
+    start: datetime.date, end: datetime.date, host: str | None, strict: bool = False
+) -> list[CalendarEntry]:
     """Occurrences of each non-deceased person's birthday inside [start, end],
     expanded in Python rather than as a per-day OR-chain query (fine for
     birthdays.py's 8-day window, pathological for this feature's multi-month
     one). A 29 February birth date is observed on 28 February in a common
     year -- same rule as annuaire.birthdays._observed_month_day, applied in
     the forward direction (birth date -> occurrence date) instead of the
-    reverse."""
+    reverse.
+
+    `strict` (see build_calendar_entries) also means "this is leaving the
+    in-app browsing context" here -- a person who explicitly opted for
+    `always_redacted` is skipped only in that case, never for the in-app
+    calendar (which already shows this data on every profile page)."""
     persons = Person.objects.exclude(deceased=True).exclude(birth_date__isnull=True)
     entries = []
     for person in persons:
+        if strict and always_redacted(person):
+            continue
         birth_date = person.birth_date
         for year in range(start.year, end.year + 1):
             try:
@@ -151,6 +161,6 @@ def build_calendar_entries(
     if "presence" in wanted:
         entries += _presence_entries(start, end, host)
     if "birthday" in wanted:
-        entries += _birthday_entries(start, end, host)
+        entries += _birthday_entries(start, end, host, strict=strict)
     entries.sort(key=lambda entry: entry.start)
     return entries
