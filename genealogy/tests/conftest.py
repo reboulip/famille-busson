@@ -14,7 +14,7 @@ from annuaire.tests.conftest import (  # noqa: F401 -- re-exported as fixtures
     staff_account,
     staff_client,
 )
-from genealogy.models import Story
+from genealogy.models import Source, Story
 from photos.models import Album, Photo
 
 
@@ -46,3 +46,8 @@ def photo(db, album):
 @pytest.fixture
 def story(db, person):
     return Story.objects.create(person=person, title="Le voyage en Bretagne", body="Un été mémorable.")
+
+
+@pytest.fixture
+def source(db):
+    return Source.objects.create(title="Acte de naissance", kind="acte_civil")

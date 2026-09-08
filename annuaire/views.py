@@ -966,7 +966,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
 
         context["story_count"] = person.stories.count()
         if tab == "histoire":
-            stories = list(person.stories.chronological().prefetch_related("story_photos__photo"))
+            stories = list(person.stories.chronological().prefetch_related("story_photos__photo", "citations__source"))
             # Re-filtered here, not trusted from story.photos.all() -- a photo
             # linked from a group-restricted album must not leak onto a profile
             # page any logged-in member can view. One query for the whole tab,

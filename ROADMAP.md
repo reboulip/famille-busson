@@ -191,7 +191,7 @@
 - [x] 13.2 · Life stories — a dated markdown story attached to a `Person`, optionally
   illustrated from the photo library, rendered as a timeline on the profile.
   (requires: 10.1)
-- [ ] 13.3 · Sources — a lightweight citation record that a story or a vital-data claim can
+- [x] 13.3 · Sources — a lightweight citation record that a story or a vital-data claim can
   point at, so provenance survives the person who knew it. (requires: 13.2)
 
 ### Cluster: Interopérabilité

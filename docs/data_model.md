@@ -54,6 +54,12 @@ erDiagram
     Story }o--o{ Photo : "photos"
     Story ||--o{ StoryPhoto : "story"
     Photo ||--o{ StoryPhoto : "photo"
+    Document ||--o{ Source : "document"
+    Person ||--o{ Source : "created_by"
+    Source ||--o{ Citation : "source"
+    Story ||--o{ Citation : "story"
+    Person ||--o{ Citation : "person"
+    Relation ||--o{ Citation : "relation"
 ```
 
 ## `annuaire`
@@ -422,3 +428,36 @@ erDiagram
 | `story` | ForeignKey | Récit | → Story (on_delete=CASCADE), related_name='story_photos', required |
 | `photo` | ForeignKey | Photo | → Photo (on_delete=CASCADE), related_name='+', required |
 | `order` | PositiveIntegerField | Ordre | default=0, required |
+
+### `Source`
+
+*App:* `genealogy` · *verbose name:* Source / Sources · *table:* `genealogy_source`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `title` | CharField | Titre | max_length=200, required |
+| `kind` | CharField | Type | max_length=20, choices: acte_civil=Acte d'état civil, presse=Article de presse, temoignage=Témoignage oral, registre=Registre ou archive, autre=Autre, default='', optional |
+| `reference` | CharField | Référence | max_length=255, default='', optional |
+| `repository` | CharField | Lieu de conservation | max_length=255, default='', optional |
+| `date` | DateField | Date | optional |
+| `url` | CharField | Lien | max_length=200, default='', optional |
+| `notes` | TextField | Notes | default='', optional |
+| `document` | ForeignKey | Document associé | → Document (on_delete=SET_NULL), related_name='genealogy_sources', optional |
+| `created_by` | ForeignKey | Créé par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+
+### `Citation`
+
+*App:* `genealogy` · *verbose name:* Citation / Citations · *table:* `genealogy_citation`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `source` | ForeignKey | Source | → Source (on_delete=CASCADE), related_name='citations', required |
+| `story` | ForeignKey | Récit | → Story (on_delete=CASCADE), related_name='citations', optional |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='citations', optional |
+| `relation` | ForeignKey | Relation | → Relation (on_delete=CASCADE), related_name='citations', optional |
+| `claim` | CharField | Donnée citée | max_length=40, choices: birth_date=Date de naissance, birth_place=Lieu de naissance, death_date=Date de décès, death_place=Lieu de décès, start_date=Date de mariage, end_date=Date de fin (relation), marriage_place=Lieu du mariage, default='', optional |
+| `note` | CharField | Note | max_length=255, default='', optional |

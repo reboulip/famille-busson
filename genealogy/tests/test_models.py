@@ -30,3 +30,10 @@ def test_story_photo_unique_constraint(story, photo):
     StoryPhoto.objects.create(story=story, photo=photo)
     with pytest.raises(IntegrityError):
         StoryPhoto.objects.create(story=story, photo=photo)
+
+
+@pytest.mark.django_db
+def test_story_photo_str(story, photo):
+    story_photo = StoryPhoto.objects.create(story=story, photo=photo)
+    assert str(photo) in str(story_photo)
+    assert str(story) in str(story_photo)

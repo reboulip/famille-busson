@@ -183,6 +183,12 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
+                                    {% if story.citations.all %}
+                                        <p class="fb-meta">
+                                            Sources :
+                                            {% for citation in story.citations.all %}{{ citation.source.title }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                                        </p>
+                                    {% endif %}
                                     <p class="fb-meta">
                                         {% if story.created_by %}Ajouté par {{ story.created_by }}{% endif %}
                                     </p>
