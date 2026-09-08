@@ -1,6 +1,6 @@
 # Outgoing emails
 
-The five messages the app sends, how they are built, and how to look at one without
+The messages the app sends, how they are built, and how to look at one without
 waiting for it to happen.
 
 The design pass behind them — palettes, the full vs. restrained treatment split, the
@@ -8,12 +8,14 @@ per-email specs — is [`design/emails/SPEC.md`](https://github.com/reboulip/fam
 That folder is a throwaway review artifact; this page is the reference for what shipped.
 The site uses the same palettes — see [`design_system.md`](design_system.md).
 
-## The five flows
+## The flows
 
 | Flow | Triggered by | Treatment | Builder |
 |---|---|---|---|
 | Birthday reminder | background queue, daily 07:00 UTC (`annuaire.tasks.send_daily_birthday_reminders`) | full ridge | `annuaire.emails.birthday_reminder` |
 | New blog post | `post_save` on `BlogPost` (`publications/signals.py`) | full ridge | `annuaire.emails.new_blog_post` |
+| Event announcement | `post_save` on `Event` (`events/signals.py`) | full ridge | `annuaire.emails.event_announcement` |
+| Event reminder | background queue, daily 08:00 UTC (`events.tasks.send_event_reminders`) | full ridge | `annuaire.emails.event_reminder` |
 | Account setup / reset | staff bulk-create + resend (`BulkAccountCreateView`) | flat horizon | `annuaire.emails.account_setup` |
 | Password reset | `AccountPasswordResetView` | flat horizon | Django, `html_email_template_name` |
 | Magic link | `MagicLinkRequestView` | flat horizon | Django, `html_email_template_name` |
@@ -21,6 +23,13 @@ The site uses the same palettes — see [`design_system.md`](design_system.md).
 **Who receives what did not change** with the HTML rework: the opt-in checkboxes,
 deceased-profile exclusion and the connection-cycling bulk sender are all as they were.
 This was a rendering swap.
+
+**Event announcement and reminder share one opt-out:** `Settings.notify_on_event`
+covers both flows (a single preference, not two) — unlike birthday/new-post, which each
+have their own `notify_on_*` flag. `events.tasks.notification_audience(event)` is the
+shared audience computation for both: opted in (`notify_on_event=True`), a non-empty
+email, not deceased, and — if the event is group-restricted — a member of one of its
+groups. The reminder additionally excludes anyone who RSVP'd "non" on that event.
 
 ## Where the code lives
 
@@ -58,8 +67,9 @@ decided in exactly one place.
 - **Subjects are frozen.** Members may filter on them. Changing one is a product
   decision, not a styling one.
 - **The "Gérer mes préférences" link is recipient-aware, when a recipient is known.**
-  `birthday_reminder()`/`new_blog_post()` take an optional keyword-only
-  `recipient: Person | None` and, when given, deep-link `settings_url` to that person's
+  `birthday_reminder()`/`new_blog_post()`/`event_announcement()`/`event_reminder()` take
+  an optional keyword-only `recipient: Person | None` and, when given, deep-link
+  `settings_url` to that person's
   own `/personne/<pk>/update#notifications` instead of the generic `edit-my-profile`
   redirect. Dropping the `recipient` argument silently falls back to the generic link —
   easy to miss at a new call site. Absolute URLs (including this one) are built from
@@ -85,6 +95,12 @@ decided in exactly one place.
   one recipient retries independently instead of the whole batch's message being lost
   or, before this queue existed, silently dropped for everyone (see
   [`background_tasks.md`](background_tasks.md)).
+- **Event announcements are enqueued from `transaction.on_commit` for the same reason,
+  with a higher stake.** `Event.groups` is a M2M populated by `form.save_m2m()` *after*
+  the row saves, so computing the announcement audience directly in `events/signals.py`'s
+  `post_save` receiver would see zero groups and mail a restricted event's date and
+  address to the whole family, not just its intended audience. `events.tasks.
+  notification_audience(event)` is only ever called from inside `transaction.on_commit`.
 
 ## The embedded birthday photo
 
@@ -111,7 +127,7 @@ It falls back to the initials disc when the person has no photo, the file cannot
 ## Looking at an email
 
 ```bash
-# render all five to /tmp/email-preview/ as .html + .txt
+# render every flow to /tmp/email-preview/ as .html + .txt
 uv run python manage.py preview_emails
 
 # just one
