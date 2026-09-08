@@ -119,11 +119,16 @@
 
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link{% if tab != "photos" %} active{% endif %}" href="{% url 'personne-detail' person.pk %}">Relations</a>
+                    <a class="nav-link{% if tab != "photos" and tab != "histoire" %} active{% endif %}" href="{% url 'personne-detail' person.pk %}">Relations</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link{% if tab == "photos" %} active{% endif %}" href="?tab=photos">
                         Photos{% if photo_count %} ({{ photo_count }}){% endif %}
+                    </a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link{% if tab == "histoire" %} active{% endif %}" href="?tab=histoire">
+                        Récits{% if story_count %} ({{ story_count }}){% endif %}
                     </a>
                 </li>
             </ul>
@@ -151,6 +156,47 @@
                         {% endif %}
                     {% else %}
                         {% include "annuaire/_empty.html" with title="Aucune photo" body="Aucune photo n'a encore été identifiée pour cette personne." %}
+                    {% endif %}
+                </section>
+            {% elif tab == "histoire" %}
+                <section class="fb-stories-tab">
+                    <div class="fb-record__actions" style="margin-bottom: var(--fb-sp-4)">
+                        <a href="{% url 'story-create' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
+                            {% icon "plus" size=16 %} Ajouter un récit
+                        </a>
+                    </div>
+                    {% if stories %}
+                        <div class="fb-timeline">
+                            {% for story in stories %}
+                                <article class="fb-card fb-timeline__item">
+                                    <p class="fb-eyebrow">
+                                        {% if story.date %}{{ story.date|date:"j F Y" }}{% if story.end_date %} – {{ story.end_date|date:"j F Y" }}{% endif %}{% else %}Date inconnue{% endif %}
+                                    </p>
+                                    <h3>{{ story.title }}</h3>
+                                    <div class="markdown-body">{{ story.body|markdown }}</div>
+                                    {% if story.visible_photos %}
+                                        <div class="fb-grid fb-grid--tiles">
+                                            {% for photo in story.visible_photos %}
+                                                <a href="{% url 'photo-detail' photo.pk %}" class="fb-card fb-place-card">
+                                                    <img src="{% url 'photo-file-thumbnail' photo.pk %}" alt="{{ photo.caption }}" class="fb-place-card__media">
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <p class="fb-meta">
+                                        {% if story.created_by %}Ajouté par {{ story.created_by }}{% endif %}
+                                    </p>
+                                    {% if story.can_edit %}
+                                        <div class="fb-record__actions">
+                                            <a href="{% url 'story-update' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                                            <a href="{% url 'story-delete' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Supprimer</a>
+                                        </div>
+                                    {% endif %}
+                                </article>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% include "annuaire/_empty.html" with title="Aucun récit" body="Aucun récit n'a encore été ajouté pour cette personne." %}
                     {% endif %}
                 </section>
             {% else %}

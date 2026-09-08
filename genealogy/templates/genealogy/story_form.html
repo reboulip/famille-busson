@@ -1,0 +1,37 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% block content %}
+    {# Archetype G — form. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Récits</p>
+            <h1>{% if object %}Modifier « {{ object.title }} »{% else %}Nouveau récit pour {{ person }}{% endif %}</h1>
+        </div>
+    </div>
+
+    <form method="POST" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Le récit</legend>
+            {{ form.media }}
+            {{ form.title|as_crispy_field }}
+            {{ form.date|as_crispy_field }}
+            {{ form.end_date|as_crispy_field }}
+            {{ form.body|as_crispy_field }}
+            <div class="fb-field">
+                <label class="fb-label" for="story-photo-search-input">Photos</label>
+                {% comment %}
+                    Deliberate reuse of the person-picker component under a photo-flavoured
+                    search URL -- it's already generic (data-search-url/data-field-name driven).
+                {% endcomment %}
+                {% url 'photo-search-ajax' as photo_search_url %}
+                {% include "annuaire/_person_picker.html" with input_id="story-photo-search-input" field_name="photos" search_url=photo_search_url initial_json=photos_initial_json aria_label="Chercher une photo" %}
+            </div>
+        </fieldset>
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}

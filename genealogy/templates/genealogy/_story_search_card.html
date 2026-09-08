@@ -1,0 +1,10 @@
+{# A plain result tile for global search. #}
+<a href="{% url 'personne-detail' story.person_id %}?tab=histoire" class="fb-card fb-card--link fb-place-card">
+    <span class="fb-place-placeholder">
+        {% include "annuaire/_ridge.html" %}
+    </span>
+    <span class="fb-place-card__body">
+        <span class="fb-place-card__name">{{ story.title }}</span>
+        <span class="fb-meta">{{ story.person }}</span>
+    </span>
+</a>

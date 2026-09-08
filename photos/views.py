@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
@@ -40,6 +40,26 @@ def album_search_ajax(request):
     qs = accessible_albums(request.user).filter(title__icontains=q).exclude(pk__in=exclude_ids)
     qs = qs.order_by("title")[:10]
     return JsonResponse({"results": [{"id": a.pk, "name": a.title} for a in qs]})
+
+
+@login_required
+def photo_search_ajax(request):
+    """Backs the photo picker on the life-story form (genealogy). Same
+    reuse-the-picker-component pattern as album_search_ajax above, scoped to
+    accessible_photos -- never Photo.objects.all(). Matches on caption OR the
+    stored file path (a proxy for filename): most photos have no caption, and
+    filename is the only other thing a member could plausibly search by."""
+    q = request.GET.get("q", "").strip()
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+    exclude_ids = [int(x) for x in request.GET.get("exclude", "").split(",") if x.isdigit()]
+    qs = (
+        accessible_photos(request.user)
+        .filter(Q(caption__icontains=q) | Q(file__icontains=q))
+        .exclude(pk__in=exclude_ids)
+    )
+    qs = qs.order_by("-uploaded_at")[:10]
+    return JsonResponse({"results": [{"id": p.pk, "name": p.caption or p.filename} for p in qs]})
 
 
 class AlbumListView(LoginRequiredMixin, ListView):

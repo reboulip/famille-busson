@@ -964,6 +964,23 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
             paginator = Paginator(photos_qs, 24)
             context["photos_page"] = paginator.get_page(self.request.GET.get("page"))
 
+        context["story_count"] = person.stories.count()
+        if tab == "histoire":
+            stories = list(person.stories.chronological().prefetch_related("story_photos__photo"))
+            # Re-filtered here, not trusted from story.photos.all() -- a photo
+            # linked from a group-restricted album must not leak onto a profile
+            # page any logged-in member can view. One query for the whole tab,
+            # not per story.
+            accessible_ids = set(accessible_photos(self.request.user).values_list("pk", flat=True))
+            viewer_profile = getattr(self.request.user, "profile", None)
+            viewer_is_staff = self.request.user.is_staff or self.request.user.is_superuser
+            for story in stories:
+                story.visible_photos = [sp.photo for sp in story.story_photos.all() if sp.photo_id in accessible_ids]
+                story.can_edit = viewer_is_staff or (
+                    viewer_profile is not None and story.created_by_id == viewer_profile.pk
+                )
+            context["stories"] = stories
+
         return context
 
 

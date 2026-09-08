@@ -188,7 +188,7 @@
   date on `Relation`, surfaced on the profile and in the tree. Follows the established
   precedent for sensitive personal fields: a concrete technical necessity, and the
   smallest display surface that serves it.
-- [ ] 13.2 · Life stories — a dated markdown story attached to a `Person`, optionally
+- [x] 13.2 · Life stories — a dated markdown story attached to a `Person`, optionally
   illustrated from the photo library, rendered as a timeline on the profile.
   (requires: 10.1)
 - [ ] 13.3 · Sources — a lightweight citation record that a story or a vital-data claim can

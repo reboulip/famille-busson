@@ -13,12 +13,14 @@ from .views import (
     PhotoUpdateView,
     PhotoUploadView,
     album_search_ajax,
+    photo_search_ajax,
 )
 
 urlpatterns = [
     path("", AlbumListView.as_view(), name="album-list"),
     path("nouveau/", AlbumCreateView.as_view(), name="album-create"),
     path("recherche/", album_search_ajax, name="album-search-ajax"),
+    path("recherche-photos/", photo_search_ajax, name="photo-search-ajax"),
     path("<int:pk>/", AlbumDetailView.as_view(), name="album-detail"),
     path("<int:pk>/televerser/", PhotoUploadView.as_view(), name="photo-upload"),
     path("<int:pk>/modifier/", AlbumUpdateView.as_view(), name="album-edit"),

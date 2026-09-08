@@ -17,7 +17,7 @@
         </div>
         <div class="fb-grid fb-grid--wide">
             {% for result in expanded.page_obj %}
-                {% include expanded.card_template with photo=result document=result album=result post=result person=result %}
+                {% include expanded.card_template with photo=result document=result album=result post=result person=result story=result %}
             {% empty %}
                 {% include "annuaire/_empty.html" with title="Aucun résultat" %}
             {% endfor %}
@@ -50,7 +50,7 @@
                 </div>
                 <div class="fb-grid fb-grid--wide">
                     {% for result in group.results %}
-                        {% include group.card_template with photo=result document=result album=result post=result person=result %}
+                        {% include group.card_template with photo=result document=result album=result post=result person=result story=result %}
                     {% endfor %}
                 </div>
             {% endif %}

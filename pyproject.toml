@@ -60,11 +60,11 @@ test = [
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "famille_busson.settings"
 pythonpath = ["."]
-testpaths = ["annuaire/tests", "publications/tests", "documents/tests", "photos/tests", "events/tests"]
-addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov=photos --cov=events --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
+testpaths = ["annuaire/tests", "publications/tests", "documents/tests", "photos/tests", "events/tests", "genealogy/tests"]
+addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov=photos --cov=events --cov=genealogy --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"
 
 [tool.coverage.run]
-source = ["annuaire", "publications", "documents", "photos", "events"]
+source = ["annuaire", "publications", "documents", "photos", "events", "genealogy"]
 omit = ["*/migrations/*", "*/tests/*", "manage.py"]
 
 [tool.coverage.report]

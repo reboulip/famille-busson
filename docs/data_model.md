@@ -49,6 +49,11 @@ erDiagram
     Group ||--o{ EventGroupAccess : "group"
     Event ||--o{ Rsvp : "event"
     Person ||--o{ Rsvp : "person"
+    Person ||--o{ Story : "person"
+    Person ||--o{ Story : "created_by"
+    Story }o--o{ Photo : "photos"
+    Story ||--o{ StoryPhoto : "story"
+    Photo ||--o{ StoryPhoto : "photo"
 ```
 
 ## `annuaire`
@@ -385,3 +390,35 @@ erDiagram
 | `note` | CharField | Note | max_length=255, default='', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+
+## `genealogy`
+
+### `Story`
+
+*App:* `genealogy` · *verbose name:* Récit / Récits · *table:* `genealogy_story`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='stories', required |
+| `title` | CharField | Titre | max_length=200, required |
+| `body` | TextField | Récit | default='', optional |
+| `date` | DateField | Date | optional |
+| `end_date` | DateField | Date de fin | optional |
+| `created_by` | ForeignKey | Créé par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
+| `photos` | ManyToManyField | Photos | → Photo (M2M), related_name='stories' |
+
+### `StoryPhoto`
+
+*App:* `genealogy` · *verbose name:* Photo d'un récit / Photos d'un récit · *table:* `genealogy_storyphoto`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `story` | ForeignKey | Récit | → Story (on_delete=CASCADE), related_name='story_photos', required |
+| `photo` | ForeignKey | Photo | → Photo (on_delete=CASCADE), related_name='+', required |
+| `order` | PositiveIntegerField | Ordre | default=0, required |
