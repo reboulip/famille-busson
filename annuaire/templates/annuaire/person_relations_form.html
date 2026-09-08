@@ -15,7 +15,7 @@
     {% if row_forms %}
         <table class="fb-table">
             <thead>
-                <tr><th>Personne</th><th>Type et date de début</th><th></th></tr>
+                <tr><th>Personne</th><th>Type, dates et lieu du mariage</th><th></th></tr>
             </thead>
             <tbody>
                 {% for relation, edit_form in row_forms %}
@@ -26,6 +26,8 @@
                                 {% csrf_token %}
                                 {{ edit_form.relationship_type }}
                                 {{ edit_form.start_date }}
+                                {{ edit_form.marriage_place }}
+                                {{ edit_form.end_date }}
                                 <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Enregistrer</button>
                             </form>
                         </td>
@@ -61,9 +63,17 @@
                 <label class="fb-label" for="{{ add_form.start_date.id_for_label }}">{{ add_form.start_date.label }}</label>
                 {{ add_form.start_date }}
             </div>
+            <div class="col-auto fb-field">
+                <label class="fb-label" for="{{ add_form.marriage_place.id_for_label }}">{{ add_form.marriage_place.label }}</label>
+                {{ add_form.marriage_place }}
+            </div>
+            <div class="col-auto fb-field">
+                <label class="fb-label" for="{{ add_form.end_date.id_for_label }}">{{ add_form.end_date.label }}</label>
+                {{ add_form.end_date }}
+            </div>
         </div>
-        {% if add_form.relationship_type.errors or add_form.start_date.errors %}
-            <div class="fb-error">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}</div>
+        {% if add_form.relationship_type.errors or add_form.start_date.errors or add_form.marriage_place.errors or add_form.end_date.errors %}
+            <div class="fb-error">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}{{ add_form.marriage_place.errors }}{{ add_form.end_date.errors }}</div>
         {% endif %}
         <div class="fb-form__actions">
             <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Ajouter</button>

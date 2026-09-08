@@ -89,8 +89,10 @@ erDiagram
 | `longitude` | DecimalField | Longitude | optional |
 | `phone_number` | CharField | Numéro de téléphone | max_length=25, optional |
 | `birth_date` | DateField | Date de naissance | optional |
+| `birth_place` | CharField | Lieu de naissance | max_length=255, default='', optional |
 | `deceased` | BooleanField | Décédé·e | default=False, required |
 | `death_date` | DateField | Date de décès | optional |
+| `death_place` | CharField | Lieu de décès | max_length=255, default='', optional |
 | `description` | TextField | Infos utiles | optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
 | `search_text` | TextField | Texte de recherche | default='', optional |
@@ -120,6 +122,8 @@ erDiagram
 | `person2` | ForeignKey | En relation avec | → Person (on_delete=CASCADE), related_name='descending_relations', required |
 | `relationship_type` | IntegerField | Type de relation | choices: 0=mariage, 1=conjoint, 2=parent, 3=enfant, required |
 | `start_date` | DateField | Date de début | optional |
+| `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
+| `end_date` | DateField | Date de fin | optional |
 
 ### `Chalet`
 

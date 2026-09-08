@@ -184,7 +184,7 @@
 > family members already use.
 
 ### Cluster: Données généalogiques
-- [ ] 13.1 · Vital data — birth and death place on `Person`; marriage place, date and end
+- [x] 13.1 · Vital data — birth and death place on `Person`; marriage place, date and end
   date on `Relation`, surfaced on the profile and in the tree. Follows the established
   precedent for sensitive personal fields: a concrete technical necessity, and the
   smallest display surface that serves it.

@@ -73,6 +73,11 @@ class Person(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
+    # Free text, not geocoded: historical place names rarely resolve in a modern
+    # geocoder, and a lat/long here would put deceased ancestors on the carte.
+    # Collected for genealogical record-keeping (tree display, future GEDCOM
+    # export) -- see ProfileEditForm's help_text.
+    birth_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de naissance")
     # Staff/superuser-only (see ProfileEditForm, which pops both fields for anyone
     # else). Unlike `gender` -- added then deliberately removed in migration 0007,
     # with two standing regression guards against its return -- this field's
@@ -83,6 +88,7 @@ class Person(models.Model):
     # precedent for surfacing more personal-status text elsewhere without asking.
     deceased = models.BooleanField(default=False, verbose_name="Décédé·e")
     death_date = models.DateField(blank=True, null=True, verbose_name="Date de décès")
+    death_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de décès")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
     owners = models.ManyToManyField(
         "self",
@@ -136,7 +142,14 @@ class Relation(models.Model):
         "Person", related_name="descending_relations", on_delete=models.CASCADE, verbose_name="En relation avec"
     )
     relationship_type = models.IntegerField(choices=RELATION_CHOICES, verbose_name="Type de relation")
+    # For a mariage/conjoint row, start_date IS the marriage date -- there is no
+    # separate marriage_date field, to avoid two sources of truth for the same
+    # fact. marriage_place/end_date are spouse-only too; both are mirrored onto
+    # the inverse row by create_inverse_relation and nulled/blanked there for
+    # parent/child rows -- see annuaire/signals.py.
     start_date = models.DateField(blank=True, null=True, verbose_name="Date de début")
+    marriage_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu du mariage")
+    end_date = models.DateField(blank=True, null=True, verbose_name="Date de fin")
 
     def __str__(self):
         return f"{self.person1} -> {self.get_relationship_type_display()} -> {self.person2}"

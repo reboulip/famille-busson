@@ -55,13 +55,25 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
     person1 = instance.person1
     person2 = instance.person2
     relationship_type = instance.relationship_type
-    inverse_type = relationship_type if relationship_type in [0, 1] else 5 - relationship_type
-    inverse_start_date = instance.start_date if relationship_type in [0, 1] else None
+    is_spouse = relationship_type in [0, 1]
+    inverse_type = relationship_type if is_spouse else 5 - relationship_type
+    # start_date/marriage_place/end_date are spouse-only facts, identical on both
+    # mirrored rows; nulled/blanked on a parent/child row.
+    inverse_start_date = instance.start_date if is_spouse else None
+    inverse_marriage_place = instance.marriage_place if is_spouse else ""
+    inverse_end_date = instance.end_date if is_spouse else None
     try:
         inverse = Relation.objects.get(person1=person2, person2=person1)
-        if inverse.relationship_type != inverse_type or inverse.start_date != inverse_start_date:
+        if (
+            inverse.relationship_type != inverse_type
+            or inverse.start_date != inverse_start_date
+            or inverse.marriage_place != inverse_marriage_place
+            or inverse.end_date != inverse_end_date
+        ):
             inverse.relationship_type = inverse_type
             inverse.start_date = inverse_start_date
+            inverse.marriage_place = inverse_marriage_place
+            inverse.end_date = inverse_end_date
             inverse.save()
     except Relation.DoesNotExist:
         inverse = Relation.objects.create(
@@ -69,6 +81,8 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
             person2=person1,
             relationship_type=inverse_type,
             start_date=inverse_start_date,
+            marriage_place=inverse_marriage_place,
+            end_date=inverse_end_date,
         )
         inverse.save()
 

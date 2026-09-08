@@ -928,6 +928,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
                 partner = partner_relation.person1
             context["partner"] = partner
             context["partner_type"] = partner_relation.get_relationship_type_display()
+            context["partner_relation"] = partner_relation
 
         parent_relations = Relation.objects.filter(person1=person, relationship_type=2)
         context["parents"] = [rel.person2 for rel in parent_relations]

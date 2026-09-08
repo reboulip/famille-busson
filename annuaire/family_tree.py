@@ -33,9 +33,16 @@ def build_family_chart_data() -> list[dict]:
                 "first name": person.first_name,
                 "last name": person.last_name,
                 "birthday": str(person.birth_date.year) if person.birth_date else "",
+                "birth_place": person.birth_place,
+                "death_place": person.death_place,
                 "avatar": person.profile_photo.url if person.profile_photo else static("default_profile_picture.png"),
                 "url": reverse("personne-detail", kwargs={"pk": person.pk}),
                 "deceased": person.deceased,
+                # Keyed by spouse id (string) -> {place, start_date, end_date},
+                # populated below from Relation rows. Kept off person.rels.spouses
+                # (a plain id list several call sites -- symmetrization,
+                # find_components -- rely on) to avoid changing that shape.
+                "marriages": {},
             },
             "rels": {"parents": [], "spouses": [], "children": []},
         }
@@ -53,6 +60,11 @@ def build_family_chart_data() -> list[dict]:
             rels["children"].append(target_id)
         elif rel.relationship_type in _SPOUSE_TYPES and target_id not in rels["spouses"]:
             rels["spouses"].append(target_id)
+            nodes[rel.person1_id]["data"]["marriages"][target_id] = {
+                "place": rel.marriage_place,
+                "start_date": rel.start_date.strftime("%d/%m/%Y") if rel.start_date else "",
+                "end_date": rel.end_date.strftime("%d/%m/%Y") if rel.end_date else "",
+            }
 
     _symmetrize(nodes)
     _sort_children(nodes, {person.pk: person.birth_date for person in people})

@@ -92,14 +92,14 @@
                         {% if person.birth_date %}
                             <p class="contact-line fb-contact__row">
                                 <span class="fb-contact__icon">{% icon "cake" size=16 %}</span>
-                                <span class="fb-contact__value">{{ person.birth_date|date:"j F Y" }}</span>
+                                <span class="fb-contact__value">{{ person.birth_date|date:"j F Y" }}{% if person.birth_place %} à {{ person.birth_place }}{% endif %}</span>
                             </p>
                         {% endif %}
                         {% if person.deceased %}
                             <p class="contact-line fb-contact__row">
                                 <span class="fb-contact__icon">{% icon "cross" size=16 %}</span>
                                 <span class="fb-contact__value">
-                                    {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% else %}Décédé·e{% endif %}
+                                    {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% if person.death_place %} à {{ person.death_place }}{% endif %}{% else %}Décédé·e{% if person.death_place %} à {{ person.death_place }}{% endif %}{% endif %}
                                 </span>
                             </p>
                         {% endif %}
@@ -159,6 +159,13 @@
                     {% if partner %}
                         <div>
                             <p class="fb-eyebrow fb-relation-group__label">{{ partner_type|title }}</p>
+                            {% if partner_relation.start_date or partner_relation.marriage_place or partner_relation.end_date %}
+                                <p class="fb-meta">
+                                    {% if partner_relation.start_date %}Marié·e le {{ partner_relation.start_date|date:"j F Y" }}{% endif %}
+                                    {% if partner_relation.marriage_place %}à {{ partner_relation.marriage_place }}{% endif %}
+                                    {% if partner_relation.end_date %}· jusqu'au {{ partner_relation.end_date|date:"j F Y" }}{% endif %}
+                                </p>
+                            {% endif %}
                             <div class="fb-relation-grid">
                                 {% include "annuaire/_relation.html" with related=partner %}
                             </div>
