@@ -15,7 +15,13 @@ if [ "$(id -u)" = '0' ]; then
     exec runuser -u appuser -- /app/docker-entrypoint.sh "$@"
 fi
 
-python manage.py migrate --noinput
-python manage.py collectstatic --noinput
+# Guards migrate/collectstatic/schedule-sync so only the web service runs them --
+# the worker service (RUN_STARTUP_TASKS=0) shares this same entrypoint but must not
+# race web to apply migrations or (re)create the same django-q2 Schedule rows.
+if [ "${RUN_STARTUP_TASKS:-1}" = "1" ]; then
+    python manage.py migrate --noinput
+    python manage.py collectstatic --noinput
+    python manage.py sync_scheduled_tasks
+fi
 
 exec "$@"

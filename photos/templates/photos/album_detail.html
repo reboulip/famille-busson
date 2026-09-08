@@ -1,0 +1,103 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% load markdown_extras %}
+{% load photos_extras %}
+{% load icons %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>{{ album.title }}</h1>
+            <p class="fb-page-head__lede">
+                {% if album.date_start or album.date_end %}
+                    {{ album.date_start|default:"?" }} – {{ album.date_end|default:"?" }} ·
+                {% endif %}
+                Visible par :
+                {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
+            </p>
+        </div>
+        {% if can_edit %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'album-edit' album.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'album-delete' album.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if not can_access %}
+        <div class="fb-alert fb-alert--warning" role="alert">
+            Cet album est réservé.
+        </div>
+    {% else %}
+        {% if album.description %}
+            <div class="fb-card markdown-body" style="margin-bottom: var(--fb-sp-5)">{{ album.description|markdown }}</div>
+        {% endif %}
+
+        <div class="fb-section-head"><h2>Photos</h2></div>
+        <div
+            class="photo-upload"
+            data-photo-upload
+            data-upload-url="{% url 'photo-upload' album.pk %}"
+            data-max-files="{% max_files_per_selection %}"
+            data-max-bytes="{% max_photo_size_bytes %}"
+            data-max-concurrent="{% max_concurrent_uploads %}"
+            style="margin-bottom: var(--fb-sp-4)"
+        >
+            {% csrf_token %}
+            <input type="file" data-photo-picker multiple accept="{% allowed_photo_extensions %}" hidden>
+            <button type="button" data-photo-upload-trigger class="fb-btn fb-btn--quiet fb-btn--sm">
+                {% icon "plus" size=16 %} Ajouter des photos
+            </button>
+            <p class="fb-meta">{% max_photo_size_mb %} Mo max par photo, {% max_files_per_selection %} à la fois.</p>
+            <ul class="photo-upload-list" data-photo-upload-list aria-live="polite"></ul>
+        </div>
+        {% if photos %}
+            {% comment %}
+                The lightbox (document_viewer.js, extended for galleries via the
+                --gallery modifier) is scoped to the CURRENT PAGE of photos only --
+                album-detail paginates at 24/page, so reaching the last tile on this
+                page does not continue swiping into the next page. Deliberate, not a
+                bug: cross-page lightbox navigation would mean loading every photo in
+                the album up front.
+            {% endcomment %}
+            <div class="document-viewer document-viewer--gallery">
+                <div class="document-viewer-toolbar">
+                    <span class="document-viewer-caption">{{ photos|length }} photo{{ photos|length|pluralize }}</span>
+                    <div class="document-viewer-actions">
+                        {% if photos|length > 1 %}
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="Photo précédente">{% icon "chevron-left" size=16 %}</button>
+                            <span class="document-viewer-carousel-counter">1 / {{ photos|length }}</span>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Photo suivante">{% icon "chevron-right" size=16 %}</button>
+                        {% endif %}
+                        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                        <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                    </div>
+                </div>
+                <div class="document-viewer-stage document-viewer-strip">
+                    {% for photo in photos %}
+                        {% include "photos/_photo_card.html" with photo=photo %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% if is_paginated %}
+                <nav class="fb-pagination pagination">
+                    {% if page_obj.has_previous %}
+                        <a href="{% querystring page=page_obj.previous_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                    {% endif %}
+                    <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                    {% if page_obj.has_next %}
+                        <a href="{% querystring page=page_obj.next_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                    {% endif %}
+                </nav>
+            {% endif %}
+        {% else %}
+            {% include "annuaire/_empty.html" with title="Aucune photo dans cet album" body="Les photos apparaîtront ici une fois déposées." %}
+        {% endif %}
+    {% endif %}
+{% endblock content %}
+{% block extra_js %}
+    {% if can_access %}
+        <script src="{% static 'js/photo_upload.js' %}"></script>
+        <script src="{% static 'js/document_viewer.js' %}"></script>
+    {% endif %}
+{% endblock extra_js %}

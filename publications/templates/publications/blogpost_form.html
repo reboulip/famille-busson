@@ -18,11 +18,44 @@
             {{ form.media }}
             {{ form.title|as_crispy_field }}
             {{ form.post_type|as_crispy_field }}
+            {{ form.tags|as_crispy_field }}
+            <datalist id="tag-suggestions">
+                {% for name in all_tag_names %}
+                    <option value="{{ name }}"></option>
+                {% endfor %}
+            </datalist>
             {{ form.body|as_crispy_field }}
             <div class="fb-field">
                 <label class="fb-label" for="author-search-input">Auteur(s)</label>
                 {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label="Chercher un auteur" %}
                 {% if form.authors.errors %}<div class="fb-error">{{ form.authors.errors }}</div>{% endif %}
+            </div>
+            <div class="fb-field">
+                <label class="fb-label" for="document-search-input">Documents liés</label>
+                {% comment %}
+                    Deliberate reuse of the person-picker component under a document-flavoured
+                    search URL -- it's already generic (data-search-url/data-field-name driven),
+                    so a second implementation would just be duplication.
+                {% endcomment %}
+                {% url 'document-search-ajax' as document_search_url %}
+                {% include "annuaire/_person_picker.html" with input_id="document-search-input" field_name="documents" search_url=document_search_url initial_json=documents_initial_json aria_label="Chercher un document" %}
+                {% if form.documents.errors %}<div class="fb-error">{{ form.documents.errors }}</div>{% endif %}
+                <a href="{% url 'document-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "plus" size=16 %} Déposer un nouveau document
+                </a>
+            </div>
+            <div class="fb-field">
+                <label class="fb-label" for="album-search-input">Albums liés</label>
+                {% comment %}
+                    Same deliberate reuse of the person-picker component as the
+                    documents field above, under an album-flavoured search URL.
+                {% endcomment %}
+                {% url 'album-search-ajax' as album_search_url %}
+                {% include "annuaire/_person_picker.html" with input_id="album-search-input" field_name="albums" search_url=album_search_url initial_json=albums_initial_json aria_label="Chercher un album" %}
+                {% if form.albums.errors %}<div class="fb-error">{{ form.albums.errors }}</div>{% endif %}
+                <a href="{% url 'album-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "plus" size=16 %} Créer un nouvel album
+                </a>
             </div>
         </fieldset>
 

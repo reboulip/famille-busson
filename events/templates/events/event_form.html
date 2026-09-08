@@ -1,0 +1,43 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% block content %}
+    {# Archetype G — form. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Événements</p>
+            <h1>{% if object %}Modifier {{ object.title }}{% else %}Créer un événement{% endif %}</h1>
+        </div>
+    </div>
+
+    <form method="POST" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>L'événement</legend>
+            {{ form.media }}
+            {{ form.title|as_crispy_field }}
+            {{ form.description|as_crispy_field }}
+            {{ form.start|as_crispy_field }}
+            {{ form.end|as_crispy_field }}
+            {{ form.all_day|as_crispy_field }}
+            {{ form.location|as_crispy_field }}
+            {{ form.latitude }}
+            {{ form.longitude }}
+            {{ form.groups|as_crispy_field }}
+            <div class="fb-field">
+                <label class="fb-label" for="organiser-search-input">Organisateur·rices</label>
+                {% include "annuaire/_person_picker.html" with input_id="organiser-search-input" field_name="organisers" initial_json=organisers_initial_json aria_label="Chercher un organisateur" %}
+                {% if form.organisers.errors %}<div class="fb-error">{{ form.organisers.errors }}</div>{% endif %}
+            </div>
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            {% if object %}
+                <a href="{% url 'event-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% else %}
+                <a href="{% url 'event-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            {% endif %}
+        </div>
+    </form>
+    <script src="{% static 'js/person_picker.js' %}"></script>
+{% endblock content %}

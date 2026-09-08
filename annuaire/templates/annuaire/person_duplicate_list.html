@@ -1,0 +1,37 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype I — tabular. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Doublons potentiels</h1>
+            <p class="fb-page-head__lede">
+                Détectés à chaque affichage de cette page (nom et prénom identiques, même nom et même
+                date de naissance, ou adresse email identique) — cette liste n'est jamais mémorisée.
+            </p>
+        </div>
+    </div>
+
+    {% if candidates %}
+        <table class="fb-table table">
+            <thead>
+                <tr><th>Personne 1</th><th>Personne 2</th><th>Raison</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for candidate in candidates %}
+                    <tr>
+                        <td><a href="{% url 'personne-detail' candidate.person1.pk %}">{{ candidate.person1 }}</a></td>
+                        <td><a href="{% url 'personne-detail' candidate.person2.pk %}">{{ candidate.person2 }}</a></td>
+                        <td><span class="fb-chip">{{ candidate.reason }}</span></td>
+                        <td class="fb-table__actions">
+                            <a href="{% url 'person-merge' candidate.person1.pk candidate.person2.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Fusionner</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% include "annuaire/_empty.html" with title="Aucun doublon détecté" %}
+    {% endif %}
+{% endblock content %}

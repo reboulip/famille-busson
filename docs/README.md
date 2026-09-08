@@ -11,6 +11,12 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
   `annuaire/management/commands/generate_data_model_docs.py`.
 - [`deployment.md`](deployment.md) — how the app ships to production (Docker image, VPS
   layout, CI/CD workflows, environment variables).
+- [`restore.md`](restore.md) — the backup restore runbook: prerequisites, the drill vs.
+  a real restore, verification checklist, and the drill log.
+- [`background_tasks.md`](background_tasks.md) — the django-q2 job queue: architecture,
+  current scheduled jobs, local dev, and monitoring.
+- [`observability.md`](observability.md) — structured logging, request correlation,
+  and Sentry error monitoring.
 - [`design_system.md`](design_system.md) — the Alpenglow/Nightfall design system:
   where the CSS lives, the colour and typography rules, and the checklist for adding
   a new view. Implements the design pass in `design/web/SPEC.md`.
@@ -21,6 +27,9 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
 - [`authentication.md`](authentication.md) — how the magic-link (passwordless) login
   flow works, in French. Complements `permissions.md`'s security-surface notes with
   the full step-by-step flow and design rationale.
+- [`search.md`](search.md) — the global search field: the two sidebar/topbar mounts,
+  the 2-character minimum, the grouped-preview/"Voir tout" results page, and how to
+  manually verify Postgres ranking (no Postgres CI leg this sprint).
 - [`ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) — history of roadmap items already shipped
   to production. Items are moved here from `ROADMAP.md` at release time (see the
   `/release` skill) so `ROADMAP.md` only ever shows pending work.

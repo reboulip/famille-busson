@@ -11,12 +11,29 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 import os
+import tomllib
 from pathlib import Path
 
 import environ
+from sentry_sdk.types import Event, Hint
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def _read_app_version() -> str:
+    """Read pyproject.toml's version for the footer -- never importlib.metadata:
+    this is a uv *virtual* project (no [build-system] table, --no-install-project
+    in the Dockerfile), so no dist-info exists to look up. Empty string on any
+    failure (missing/malformed file) -- a wrong footer is fine, a 500 is not."""
+    try:
+        with open(BASE_DIR / "pyproject.toml", "rb") as f:
+            return tomllib.load(f)["project"]["version"]
+    except (OSError, tomllib.TOMLDecodeError, KeyError):
+        return ""
+
+
+APP_VERSION = _read_app_version()
 
 env = environ.Env(
     DEBUG=(bool, True),
@@ -41,6 +58,11 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     USE_X_FORWARDED_HOST = True
+    # Otherwise the compose healthcheck's plain-HTTP request gets a 301 and never
+    # actually executes the view -- silently reporting healthy either way (curl -f
+    # treats a 3xx as success) or falsely failing. Matched against the path with no
+    # leading slash, per SECURE_REDIRECT_EXEMPT's own semantics.
+    SECURE_REDIRECT_EXEMPT = [r"^healthz$"]
 
 
 # Application definition
@@ -54,14 +76,22 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "crispy_forms",
     "crispy_bootstrap5",
+    "django_q",
+    "django.contrib.postgres",
     "annuaire",
     "publications",
     "documents",
+    "photos",
+    "events",
+    "genealogy",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    # Early, so every log line from anywhere further down the chain (including
+    # error responses) carries the same request_id.
+    "annuaire.middleware.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -85,6 +115,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "annuaire.context_processors.site_version",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",
@@ -102,6 +133,28 @@ WSGI_APPLICATION = "famille_busson.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {"default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")}
+
+
+# Cache -- shared across gunicorn workers via Valkey/Redis in production (db 0; db 1 is
+# reserved for the background task queue's broker, see docs/deployment.md). Defaults to
+# LocMemCache so dev/tests never need a real cache server.
+CACHES = {"default": env.cache("CACHE_URL", default="locmemcache://")}
+
+
+# Background task queue (django-q2) -- reuses db 1 of the same Valkey instance CACHES
+# uses db 0 of. See docs/background_tasks.md.
+Q_CLUSTER = {
+    "name": "famille_busson",
+    "workers": 2,
+    "recycle": 20,  # bounds per-worker memory growth from OCR/PyMuPDF over many runs
+    "timeout": 300,
+    "retry": 600,  # MUST stay > timeout, or django-q2 re-queues a still-running task
+    "max_attempts": 3,
+    "save_limit": 250,  # bounds the django_q success-log table in Postgres
+    "catch_up": True,
+    "redis": env("QUEUE_URL", default="redis://cache:6379/1"),
+    "sync": env.bool("Q_SYNC", default=DEBUG),
+}
 
 
 # Password validation
@@ -141,7 +194,7 @@ MAGIC_LINK_TIMEOUT = env.int("MAGIC_LINK_TIMEOUT", default=15 * 60)
 
 LANGUAGE_CODE = "fr"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/Paris"
 
 USE_I18N = True
 
@@ -182,31 +235,107 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # served through documents' own access-checked endpoint.
 DOCUMENTS_ROOT = os.path.join(BASE_DIR, "documents_data")
 
+# Protected photo storage -- same posture as DOCUMENTS_ROOT above (see
+# photos/storage.py). Deliberately nested *inside* documents_data rather than a
+# sibling volume: documents_data is the one volume scripts/backup.sh,
+# scripts/restore.sh, docker-compose.prod.yml and annuaire/health.py already
+# know about, so nesting here means the family photo archive is backed up for
+# free instead of silently missing from a forgotten new volume.
+PHOTOS_ROOT = os.path.join(DOCUMENTS_ROOT, "photos")
+
 # Django's default LOGGING only sends the 'console' handler output when DEBUG=True
 # (RequireDebugTrue filter) -- in prod (DEBUG=False) that made every 500 invisible in
 # `docker logs`, since ADMINS/mail_admins isn't configured either. Force errors to
 # console unconditionally so gunicorn's stdout (captured by Docker) always has them.
+#
+# LOG_FORMAT selects plain console output (readable in a dev terminal) or
+# one-JSON-object-per-line (grep/log-aggregator friendly), independent of DEBUG so
+# either can be forced for local debugging. A root ("") logger is what makes
+# __name__-based loggers elsewhere (e.g. annuaire/file_cleanup.py) actually reach a
+# handler -- previously only "django"/"django.request" were configured, so anything
+# else fell through to logging's unformatted lastResort handler.
+LOG_FORMAT = env("LOG_FORMAT", default="console" if DEBUG else "json")
+_ACTIVE_LOG_HANDLER = "json" if LOG_FORMAT == "json" else "console"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "filters": {
+        "request_id": {"()": "annuaire.middleware.RequestIdLogFilter"},
+    },
+    "formatters": {
+        "console": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
+        "json": {"()": "annuaire.log_formatters.JsonFormatter"},
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "console",
         },
+        "json": {
+            "class": "logging.StreamHandler",
+            "filters": ["request_id"],
+            "formatter": "json",
+        },
+    },
+    "root": {
+        "handlers": [_ACTIVE_LOG_HANDLER],
+        "level": "INFO",
     },
     "loggers": {
         "django": {
-            "handlers": ["console"],
+            "handlers": [_ACTIVE_LOG_HANDLER],
             "level": "INFO",
             "propagate": False,
         },
         "django.request": {
-            "handlers": ["console"],
+            "handlers": [_ACTIVE_LOG_HANDLER],
             "level": "ERROR",
             "propagate": False,
         },
     },
 }
+
+# Error monitoring (Sentry) -- inert (no-op) unless SENTRY_DSN is set, so dev/CI/tests
+# are entirely unaffected. send_default_pii is always False: this site holds personal
+# data on identifiable EU residents. Errors only, never performance/profiling data.
+
+
+def _sentry_before_send(event: Event, hint: Hint) -> Event:
+    """Defense in depth against exactly the kind of personal data this site holds:
+    drop cookies wholesale, and any extra/context value filed under a key literally
+    named "email" (case-insensitive), regardless of where it came from.
+
+    A module-level function (not a closure) so it's importable and unit-testable
+    without needing a real `sentry_sdk.init()` call -- same reasoning as
+    `_default_site_base_url` above.
+    """
+    request = event.get("request")
+    if request:
+        request.pop("cookies", None)
+    for section in ("extra", "contexts"):
+        data = event.get(section)
+        if isinstance(data, dict):
+            for key in list(data):
+                if key.lower() == "email":
+                    data.pop(key)
+    return event
+
+
+SENTRY_DSN = env("SENTRY_DSN", default="")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        release=APP_VERSION,
+        environment=env("SENTRY_ENVIRONMENT", default="development" if DEBUG else "production"),
+        send_default_pii=False,
+        before_send=_sentry_before_send,
+        traces_sample_rate=0.0,
+        profiles_sample_rate=0.0,
+    )
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -227,7 +356,25 @@ EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
 DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@bubu.reboulip.fr")
 
+
+def _default_site_base_url(csrf_trusted_origins: list[str], allowed_hosts: list[str]) -> str:
+    """Best-effort non-localhost fallback for SITE_BASE_URL when it's left unset.
+
+    Emails are built outside a request, so the domain can't come from
+    request.build_absolute_uri() -- silently defaulting to localhost there is worse
+    than deriving a real host from settings already known to be correct in production.
+    """
+    if csrf_trusted_origins:
+        return csrf_trusted_origins[0]
+    for host in allowed_hosts:
+        if host in ("*", "localhost", "127.0.0.1") or host.startswith("."):
+            continue
+        return f"https://{host}"
+    return "http://localhost:8000"
+
+
 # Base URL used to build absolute links in emails sent outside a request context
 # (birthday reminders, blog post notifications) -- request.build_absolute_uri() isn't
-# available there. Production sets this to the real domain.
-SITE_BASE_URL = env("SITE_BASE_URL", default="http://localhost:8000")
+# available there. Production sets this explicitly; the derived fallback above only
+# guards against it being forgotten (see annuaire.checks for the accompanying warning).
+SITE_BASE_URL = env("SITE_BASE_URL", default=_default_site_base_url(CSRF_TRUSTED_ORIGINS, ALLOWED_HOSTS))

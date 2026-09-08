@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}'></div>
+    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}' data-events='{{ events_json|escape }}'></div>
 {% endblock content %}
 {% block extra_js %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>

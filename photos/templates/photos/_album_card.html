@@ -1,0 +1,30 @@
+{% load photos_extras %}
+{% load icons %}
+{% if album|can_access:request.user %}
+    <a href="{% url 'album-detail' album.pk %}" class="fb-card fb-card--link fb-place-card">
+        {% if album.cover %}
+            <img src="{% url 'photo-file-web' album.cover.pk %}" alt="" class="fb-place-card__media">
+        {% else %}
+            <span class="fb-place-placeholder">
+                {% include "annuaire/_ridge.html" %}
+            </span>
+        {% endif %}
+        <span class="fb-place-card__body">
+            <span class="fb-place-card__name">{{ album.title }}</span>
+            <span class="fb-meta">{{ album.photo_count }} photo{{ album.photo_count|pluralize }}</span>
+        </span>
+    </a>
+{% else %}
+    <span class="fb-card fb-place-card">
+        <span class="fb-place-placeholder">
+            {% icon "lock" size=24 %}
+        </span>
+        <span class="fb-place-card__body">
+            <span class="fb-place-card__name">{% icon "lock" size=16 %} {{ album.title }}</span>
+            <span class="fb-chip fb-chip--lock">
+                Réservé au groupe{{ album|effective_groups|length|pluralize }} :
+                {% for g in album|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            </span>
+        </span>
+    </span>
+{% endif %}

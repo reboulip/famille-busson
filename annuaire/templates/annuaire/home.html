@@ -2,6 +2,11 @@
 {% load static %}
 {% load markdown_extras %}
 {% load icons %}
+{% url 'directory' as directory_url %}
+{% url 'chalet-create' as chalet_create_url %}
+{% url 'blogpost-list' as blogpost_list_url %}
+{% url 'blogpost-create' as blogpost_create_url %}
+{% url 'event-create' as event_create_url %}
 {% block content %}
     {% comment %}
         Archetype A — hub. The only view that earns the full ridge in the content
@@ -26,6 +31,21 @@
                     {% endfor %}
                 </div>
             {% endif %}
+            {% if memories %}
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    {% for memory in memories %}
+                        {% if memory.kind == "photo" %}
+                            <a class="fb-chip" href="{% url 'photo-detail' memory.item.pk %}">
+                                {% icon "image" size=14 %} Il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                            </a>
+                        {% else %}
+                            <a class="fb-chip" href="{% url 'blogpost-detail' memory.item.pk %}">
+                                {% icon "clip" size=14 %} « {{ memory.item.title }} » — il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
     </section>
 
@@ -47,7 +67,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" %}
+                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
             {% endif %}
         </section>
 
@@ -70,7 +90,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" %}
+                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" empty_hint="Les chalets permettent de noter les lieux de séjour et de partager les présences." empty_secondary_url=chalet_create_url empty_secondary_label="Créer un chalet" %}
             {% endif %}
 
             {% if upcoming_presences %}
@@ -86,6 +106,27 @@
                         </div>
                     {% endfor %}
                 </div>
+            {% endif %}
+        </section>
+
+        <section class="fb-card">
+            <div class="fb-tile__head">
+                <h2>Prochains événements</h2>
+                <a href="{% url 'event-list' %}" class="fb-tile__link">Voir tout →</a>
+            </div>
+            {% if upcoming_events %}
+                <div class="fb-feed">
+                    {% for event in upcoming_events %}
+                        <div class="fb-feed__item">
+                            <a href="{% url 'event-detail' event.pk %}">{{ event.title }}</a>
+                            <p class="fb-meta">
+                                {{ event.start|date:"j M" }}{% if event.location %} · {{ event.location }}{% endif %}
+                            </p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucun événement à venir" empty_hint="Réunions, fêtes, anniversaires : notez les prochains rendez-vous de la famille." empty_secondary_url=event_create_url empty_secondary_label="Créer un événement" %}
             {% endif %}
         </section>
 
@@ -107,7 +148,11 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucune publication" %}
+                {% if user.is_authenticated %}
+                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Racontez une nouvelle, partagez des photos, ouvrez le bal." empty_secondary_url=blogpost_create_url empty_secondary_label="Écrire la première publication" %}
+                {% else %}
+                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Les membres partagent ici les nouvelles, photos et souvenirs." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
+                {% endif %}
             {% endif %}
         </section>
 
@@ -133,7 +178,7 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun commentaire" %}
+                {% include "annuaire/_empty.html" with title="Aucun commentaire" empty_hint="Soyez le premier à réagir aux publications et messages de la famille." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
             {% endif %}
         </section>
 

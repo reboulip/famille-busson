@@ -110,6 +110,17 @@
             {% include "annuaire/_empty.html" with title="Aucun fichier" body="Ce document n'a pas encore de pièce attachée." %}
         {% endif %}
     </div>
+
+    {% if document.publications.all %}
+        <div class="fb-section-head"><h2>Publications liées</h2></div>
+        {% for post in document.publications.all %}
+            <p>
+                <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{% url 'blogpost-detail' post.pk %}">
+                    {% icon "clip" size=16 %} {{ post.title }}
+                </a>
+            </p>
+        {% endfor %}
+    {% endif %}
 {% endblock content %}
 {% block extra_js %}
     {% if image_files or pdf_files %}

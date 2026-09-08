@@ -22,7 +22,7 @@ from django.db import transaction
 
 from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
 from annuaire.models import Settings as NotificationSettings
-from publications.models import Attachment, BlogPost, Comment
+from publications.models import Attachment, BlogPost, Comment, Tag
 
 FIRST_NAMES = [
     "Alice",
@@ -121,6 +121,14 @@ POST_TITLES = [
     "Souvenirs de la Saint-Sylvestre 2024",
     "Calendrier des vacances scolaires",
     "On cherche des photos d'archive !",
+]
+
+TAG_NAMES = [
+    ("Photos", ""),
+    ("Réunion", ""),
+    ("Annonce", "accent"),
+    ("Chalet", ""),
+    ("Anniversaire", "gold"),
 ]
 
 POST_BODIES = [
@@ -406,8 +414,12 @@ class Command(BaseCommand):
             f"{len(children)} children → {len(grandchildren)} grandchildren"
         )
 
+    def _create_tags(self) -> list[Tag]:
+        return [Tag.objects.get_or_create(name=name, defaults={"accent": accent})[0] for name, accent in TAG_NAMES]
+
     def _create_posts(self, persons: list[Person]) -> list[BlogPost]:
         self.stdout.write(f"Creating {self.N_POSTS} blog posts…")
+        tags = self._create_tags()
         posts: list[BlogPost] = []
         titles = random.sample(POST_TITLES, k=min(self.N_POSTS, len(POST_TITLES)))
         # If we want more posts than unique titles, top up by suffixing.
@@ -422,6 +434,10 @@ class Command(BaseCommand):
             )
             n_authors = random.choices([1, 2, 3], weights=[6, 3, 1])[0]
             post.authors.set(random.sample(persons, k=n_authors))
+            # Roughly a third of posts get no tags, so the untagged case stays exercised.
+            n_tags = random.choices([0, 1, 2], weights=[1, 2, 1])[0]
+            if n_tags:
+                post.tags.set(random.sample(tags, k=n_tags))
             posts.append(post)
         return posts
 

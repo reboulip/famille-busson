@@ -11,7 +11,7 @@ from annuaire.tests.conftest import (  # noqa: F401 — re-exported as fixtures
     staff_account,
     staff_client,
 )
-from publications.models import Attachment, BlogPost, Comment
+from publications.models import Attachment, BlogPost, Comment, Tag
 
 
 @pytest.fixture
@@ -52,6 +52,11 @@ def image_attachment(db, blog_post):
         content_type="image/png",
     )
     return Attachment.objects.create(post=blog_post, file=uploaded, caption="Une image")
+
+
+@pytest.fixture
+def tag(db):
+    return Tag.objects.create(name="Photos")
 
 
 @pytest.fixture

@@ -105,6 +105,17 @@ def test_birthday_photo_reader_skips_an_oversized_photo(person, monkeypatch):
     assert emails.birthday_photo(person) is None
 
 
+def test_birthday_reminder_settings_link_falls_back_without_a_recipient(person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None)
+    assert "/annuaire/profile/edit" in message.html_body
+
+
+def test_birthday_reminder_settings_link_targets_the_recipient_directly(person, other_person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert f"/annuaire/personne/{other_person.pk}/update#notifications" in message.html_body
+    assert "/annuaire/profile/edit" not in message.html_body
+
+
 def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
     """A row whose upload was cleaned up, or a media volume that isn't mounted, must
     fall back to initials rather than break the whole batch."""
@@ -156,6 +167,26 @@ def test_new_post_email_survives_an_empty_body(db):
 
 def test_new_post_subject_is_unchanged(post):
     assert emails.new_blog_post(post, "d@example.com").subject == f"Nouvel article : {post.title}"
+
+
+def test_new_post_email_links_the_wordmark_and_footer_to_the_homepage(post, settings):
+    settings.SITE_BASE_URL = "https://bubu.reboulip.fr/"
+    message = emails.new_blog_post(post, "d@example.com")
+    assert 'href="https://bubu.reboulip.fr"' in message.html_body
+    assert "https://bubu.reboulip.fr" in message.text_body
+
+
+def test_birthday_reminder_links_the_wordmark_and_footer_to_the_homepage(person, settings):
+    settings.SITE_BASE_URL = "https://bubu.reboulip.fr/"
+    message = emails.birthday_reminder(person, "d@example.com", photo=None)
+    assert 'href="https://bubu.reboulip.fr"' in message.html_body
+    assert "https://bubu.reboulip.fr" in message.text_body
+
+
+def test_new_post_settings_link_targets_the_recipient_directly(post, person):
+    message = emails.new_blog_post(post, "d@example.com", recipient=person)
+    assert f"/annuaire/personne/{person.pk}/update#notifications" in message.html_body
+    assert "/annuaire/profile/edit" not in message.html_body
 
 
 # ---------------------------------------------------------------------------
@@ -216,13 +247,28 @@ def test_send_bulk_emails_still_accepts_legacy_tuples():
     assert not mail.outbox[0].alternatives
 
 
+@pytest.fixture
+def event(db):
+    import datetime
+
+    from django.utils import timezone
+
+    from events.models import Event
+
+    return Event.objects.create(
+        title="Réunion de famille", start=timezone.make_aware(datetime.datetime(2026, 7, 14, 12, 0), datetime.UTC)
+    )
+
+
 @pytest.mark.django_db
-def test_every_flow_ships_a_plain_text_part(person, post):
+def test_every_flow_ships_a_plain_text_part(person, post, event):
     """A multipart message with no text part is both unreadable in text-only clients
     and a spam signal."""
     built = [
         emails.birthday_reminder(person, "d@example.com", photo=None),
         emails.new_blog_post(post, "d@example.com"),
+        emails.event_announcement(event, "d@example.com"),
+        emails.event_reminder(event, "d@example.com"),
         emails.account_setup("d@example.com", "https://example.com/r/", is_reset=False),
     ]
     for message in built:

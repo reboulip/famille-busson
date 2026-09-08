@@ -63,11 +63,87 @@ The entrypoint runs twice per container start:
 | Service | Image | Notes |
 |---|---|---|
 | `db` | `postgres:16-alpine` | Data at `/srv/bubu/data/postgres` on the host; healthcheck gates `web`'s startup. |
-| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`. |
+| `cache` | `valkey/valkey:8-alpine` | Data at `/srv/bubu/data/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
+| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`; healthcheck via `/healthz` (see below). |
 
 On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
-from this repo's `docker-compose.prod.yml`), `.env` (see below), and the three data
-volumes above.
+from this repo's `docker-compose.prod.yml`), `.env` (see below), and the data volumes
+above.
+
+### Shared cache
+
+`CACHES` was unset until this item, so every gunicorn worker held its own independent
+`LocMemCache` — a value written by one worker was invisible to the others, which quietly
+undermines anything relying on the cache being actually shared (rate-limiting, in
+particular — see a later item). `famille_busson/settings.py` now reads `CACHES` via
+`django-environ`'s `env.cache("CACHE_URL", default="locmemcache://")`, resolving a
+`redis://`/`valkey://` URL to Django's built-in `django.core.cache.backends.redis.
+RedisCache` (no `django-redis` package needed — only plain `redis`, the client library,
+is a dependency). A warning-level system check (`annuaire.checks`, id `annuaire.W002`)
+flags a `CACHES` that's still `LocMemCache` outside `DEBUG`, same rationale as `W001`:
+checks run before `collectstatic` under `set -euo pipefail`, so it warns rather than
+blocking container boot.
+
+The `cache` container serves **two roles on separate logical DBs**: db 0 is the Django
+cache; db 1 is the background task queue's broker (see
+[`background_tasks.md`](background_tasks.md)) — one Valkey instance, not two
+containers. `--maxmemory-policy noeviction` is required, not just a sane default: with
+the queue sharing this instance, an eviction policy would silently drop unprocessed
+jobs along with cache entries under memory pressure. `--appendonly yes` persistence
+means in-flight state (queued jobs included) survives a container restart. Dev and the
+test suite never need a real Valkey — `CACHE_URL` defaults to `locmemcache://`, and
+`conftest.py` forces `LocMemCache` plus clears it before every test regardless of a
+developer's local `.env`.
+
+### `/healthz`
+
+Deepened beyond "the process is up" to actually check the database, cache, queue and
+storage backends — see `annuaire/health.py`. Response contract:
+
+```json
+{
+  "status": "ok|degraded|error",
+  "checks": {
+    "database": {"status": "ok", "duration_ms": 1.2},
+    "cache": {"status": "ok", "duration_ms": 0.4},
+    "queue": {"status": "ok", "duration_ms": 2.1},
+    "media_storage": {"status": "ok", "duration_ms": 0.3},
+    "documents_storage": {"status": "ok", "duration_ms": 0.3}
+  },
+  "version": "1.3.0"
+}
+```
+
+`Content-Type: application/json`, `Cache-Control: no-store`. The top-level `status` is
+exactly `ok` / `degraded` / `error`; each individual check's own `status` is only ever
+`ok` or `error` — `degraded` exists solely as the top-level summary for "a non-critical
+check failed." Never a raw exception message or traceback, which for the database check
+in particular could leak the DSN host/user; full detail goes to the structured log
+(`logging.getLogger("django")`, `WARNING`) only.
+
+**Criticality is not uniform.** `database`, `media_storage` and `documents_storage` are
+critical: any failure makes the *overall* `status` `"error"` and the HTTP status `503`.
+`cache` and `queue` are not: a failure there makes the overall `status` `"degraded"`
+but the HTTP status stays `200` — this is what keeps a local dev `curl -sf
+.../healthz` (no Valkey running locally) reporting healthy, and what stops a Valkey
+blip from taking the whole site down in production.
+
+**The compose healthcheck** (`docker-compose.prod.yml`'s `web` service) runs
+`scripts/healthcheck.py` rather than `curl`/`wget` — neither exists in the
+`python:3.13-slim` base image. It sends an explicit `Host` header matching
+`ALLOWED_HOSTS`'s first entry, because `SECURE_SSL_REDIRECT` (on by default outside
+`DEBUG`) would otherwise turn a plain-HTTP in-container request into a 301 that never
+reaches the view, and a request without a matching `Host` header gets a `DisallowedHost`
+400 instead — `famille_busson/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
+half, the explicit header covers the second. A 503 response makes the script exit
+non-zero (via the propagating `HTTPError`), which is what marks the container unhealthy
+in `docker ps`/`docker compose ps` — this is visibility, not recovery; nothing restarts
+`web` automatically on an unhealthy status.
+
+**External uptime monitoring** is a manual dashboard step, not code: register
+`https://bubu.reboulip.fr/healthz` with a free-tier monitor (e.g. UptimeRobot) doing a
+keyword match on `"status": "ok"` in the response body — a `"degraded"` or `"error"`
+response, or no response at all, fails the match and triggers the monitor's alert.
 
 ### Protected document storage
 
@@ -91,21 +167,45 @@ VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` contain
 directly, while `DATABASE_URL` is what Django (`famille_busson/settings.py`, via
 `django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
 to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP. `SITE_BASE_URL`
-(default `http://localhost:8000`) is used to build absolute links in emails sent outside
-a request context — birthday reminders and blog post notifications — and should be set
-to `https://bubu.reboulip.fr` in production.
+is used to build absolute links in emails sent outside a request context — birthday
+reminders and blog post notifications — and should still be set explicitly to
+`https://bubu.reboulip.fr` in production. If left unset, `famille_busson/settings.py`'s
+`_default_site_base_url()` now derives a non-localhost fallback from
+`CSRF_TRUSTED_ORIGINS` (first entry) or, failing that, the first non-wildcard,
+non-localhost `ALLOWED_HOSTS` entry — falling back to `http://localhost:8000` only if
+neither yields anything. This is a safety net, not a substitute: a warning-level system
+check (`annuaire.checks`, id `annuaire.W001`) flags a `SITE_BASE_URL` that still resolves
+to localhost outside `DEBUG`.
+
+## App version
+
+`APP_VERSION` (`famille_busson/settings.py`) is read once at import time from
+`pyproject.toml`'s `[project].version`, via `tomllib` directly — not
+`importlib.metadata`, which has no dist-info to look up on this uv *virtual* project
+(no `[build-system]` table, `--no-install-project` in the Dockerfile). It's exposed to
+every template through the new `annuaire.context_processors.site_version` context
+processor and shown as a discreet `v<version>` line in the footer, on both the
+authenticated app shell and the anonymous/login threshold pages. Falls back to an empty
+string (footer line omitted) rather than a 500 if `pyproject.toml` is missing or
+malformed. This is also the seam Phase 15.1's planned `SiteConfig` context processor is
+expected to build on.
 
 ## Scheduled tasks
 
-There is no in-app scheduler. `send_birthday_reminders` (`annuaire/management/commands/
-send_birthday_reminders.py`) emails subscribed members for each person whose birthday is
-today, but only when it's actually run — it must be scheduled on the VPS via cron or a
-systemd timer, set up by hand outside this repo's CI/CD. A daily cron entry running it
-inside the `web` container from `/srv/bubu` (where `docker-compose.yml` lives, see
-above):
+These recurring jobs now run on the background task queue (django-q2's `worker`
+container) instead of crontab — see [`background_tasks.md`](background_tasks.md) for
+the queue itself. This section covers the commands' hand-runnable form, still useful
+for an ad-hoc run or a birthday-reminder backfill.
+
+`send_birthday_reminders` (`annuaire/management/commands/send_birthday_reminders.py`)
+emails subscribed members for each person whose birthday is today. The scheduled queue
+run happens once a day; the command exits non-zero (and logs at ERROR level) if any
+reminder fails to send. Use `--date YYYY-MM-DD` to run it for a specific day (e.g. to
+verify things work without waiting for a real birthday) and `--dry-run` to see who would
+receive a reminder without sending anything:
 
 ```
-0 8 * * * cd /srv/bubu && docker compose exec -T web python manage.py send_birthday_reminders
+docker compose exec -T web python manage.py send_birthday_reminders --date 2026-06-10 --dry-run
 ```
 
 `extract_document_content` (`documents/management/commands/extract_document_content.py`)
@@ -113,12 +213,95 @@ backfills `DocumentFile.extracted_text`/`thumbnail` for pending uploads — PDF 
 PyMuPDF with Tesseract OCR fallback for image-only pages/scans, direct OCR for raster
 image uploads, and a first-page thumbnail for PDFs (office docs and plain text files are
 marked "unsupported" and never processed). Capped at 20 files and 20 OCR'd pages per file
-per run, to avoid a pathological upload OOMing gunicorn. A cron entry every 15 minutes,
-same pattern as above:
+per run, to avoid a pathological upload OOMing gunicorn. The scheduled queue run happens
+every 15 minutes; run it by hand the same way:
 
 ```
-*/15 * * * * cd /srv/bubu && docker compose exec -T web python manage.py extract_document_content
+docker compose exec -T web python manage.py extract_document_content
 ```
+
+`generate_photo_derivatives` (`photos/management/commands/generate_photo_derivatives.py`)
+backfills `Photo.thumbnail`/`web`/`taken_at` for photos left `derivative_status="pending"`
+— normally each photo's derivatives are generated as soon as it's uploaded (enqueued from
+a `post_save` signal, see `photos/signals.py`), so this is a safety net for photos
+uploaded while a worker was down. Capped at 20 photos per run. The scheduled queue run
+happens every 15 minutes; run it by hand the same way:
+
+```
+docker compose exec -T web python manage.py generate_photo_derivatives
+```
+
+`reindex_search` (`annuaire/management/commands/reindex_search.py`) rebuilds every
+registered model's search index (`Person`, `BlogPost`, `Document`, `Album`, `Photo`) from
+scratch — normally each row's index updates on save/delete via a signal (see
+`background_tasks.md`'s on-demand tasks), so this is a safety net or a one-off after
+changing what a `SearchSpec` indexes. The scheduled queue run happens nightly at 03:00
+UTC; run it by hand the same way:
+
+```
+docker compose exec -T web python manage.py reindex_search
+```
+
+**Migration step, once, when this deploy first ships**: remove the two old crontab
+entries that used to run these commands (`send_birthday_reminders` daily,
+`extract_document_content` every 15 minutes) from the VPS's crontab. Leaving them active
+alongside the new queue would run both jobs twice — the birthday reminder task has its
+own same-day lock guarding against that specific case, but the extraction job does not,
+and there's no reason to run either path twice regardless.
+
+## Sauvegardes
+
+`scripts/backup.sh` dumps Postgres, archives `media/` and `documents/`, encrypts a
+copy of `.env`, and copies the result off-VPS via `rclone`. It's a plain host-side bash
+script (not run inside a container, unlike the scheduled tasks above) — it shells out to
+`docker compose exec` itself for the parts that need the running containers. It ships
+with the repo and is copied to the VPS by `build-and-deploy.yml` alongside
+`docker-compose.prod.yml`, so a fix to it reaches production the same way any other code
+change does; it still has to be scheduled by hand, same as the jobs above:
+
+```
+0 3 * * * cd /srv/bubu && bash scripts/backup.sh >> logs/backup.log 2>&1
+```
+
+Each run writes to `$BACKUP_DIR/<UTC-timestamp>/` (e.g. `backups/20260906T030000Z/`):
+`db.dump` (`pg_dump -Fc`), `media.tar.gz`, `documents.tar.gz`, an age-encrypted `env.age`,
+and a `manifest.json` recording per-artifact size and sha256, the app and Postgres
+versions, start/end time, and exit status. `manifest.json`'s shape is a contract other
+tooling reads (the restore script, backup monitoring) — treat a change to it as a breaking
+change and bump its `manifest_version` field.
+
+**Configuration** (`.env.example`'s `BACKUP_*` block):
+
+| Var | Meaning |
+|---|---|
+| `BACKUP_DIR` | Where run directories are written on the VPS. |
+| `BACKUP_KEEP_DAILY` / `BACKUP_KEEP_WEEKLY` | Local retention: the most recent N runs, plus M older ones kept roughly weekly. |
+| `BACKUP_KEEP_MONTHLY` | Extra off-site-only retention, beyond daily+weekly — off-site storage is cheap, VPS disk is not. |
+| `BACKUP_REMOTE` | An `rclone` remote path (e.g. `b2:famille-busson-backups/`) to copy each run to. Empty disables off-site copy entirely. |
+| `BACKUP_AGE_RECIPIENT` | The [age](https://github.com/FiloSottile/age) public key/recipient `.env` is encrypted to. Empty skips encrypting `.env` (it's still excluded from the backup, which then loses `SECRET_KEY`/the DB password if the VPS is lost — set this up before relying on the backup for disaster recovery). |
+| `BACKUP_PING_URL` | A dead-man's-switch base URL (e.g. a healthchecks.io check) — pinged at start, on success (`/0`), and on failure (`/fail`). Empty disables monitoring pings. |
+| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` / `BACKUP_MIN_DOCUMENTS_BYTES` | Absolute sanity floors: a dump/archive smaller than this aborts the run rather than shipping a silently truncated backup. All disabled (`0`) except the DB floor by default. |
+| `BACKUP_MIN_DB_RATIO` / `BACKUP_MIN_MEDIA_RATIO` / `BACKUP_MIN_DOCUMENTS_RATIO` | Relative sanity floors: this run's artifact must be at least this fraction of the *previous* run's size for the same artifact, or the run aborts. Catches a slow-creeping truncation that stays individually above the absolute floor every night. `0` disables the check (the default for documents, since that archive can legitimately shrink a lot in one run). Deliberately loose defaults (`0.5`) — a family site's day-to-day size swings shouldn't page anyone. |
+
+### Backup monitoring
+
+- **A run that fails, or produces an artifact under one of the floors above**: `scripts/backup.sh`'s `fail()` pings `$BACKUP_PING_URL/fail` and exits non-zero. Both absolute and relative floors route through the same `fail()` path.
+- **A run that doesn't happen at all**: this is what the dead-man's-switch itself is for, not something this script can detect from inside its own run — a healthchecks.io-style check has its own schedule and grace period configured on its dashboard, and it alerts on its own once a `/0` ping doesn't arrive in time. Set the check's schedule to match the cron frequency (daily) and its grace period to something comfortably longer than a normal run (an hour is generous). No Django/Python code is needed for this case; don't build one.
+
+**Manual VPS setup this needs, once**, none of it automated by CI/CD:
+- Install `age` and `rclone` on the VPS.
+- Generate an age keypair (`age-keygen`); put the public key in `BACKUP_AGE_RECIPIENT`,
+  keep the private key safe and *off* the VPS's own backup (a backup that can decrypt
+  itself defeats the point) — the operator uses this same private key by hand later, per
+  [`restore.md`](restore.md), to decrypt `env.age` if a restore ever needs it.
+- Configure an `rclone` remote matching `BACKUP_REMOTE` (`rclone config`).
+- If using a dead-man's-switch monitor: create the check, set its schedule and grace
+  period as above, and set `BACKUP_PING_URL`.
+- `mkdir -p /srv/bubu/logs` if it doesn't already exist, for the cron entry's log
+  redirect.
+
+Run `bash scripts/backup.sh --dry-run` after setup to verify configuration without
+writing anything.
 
 ## One-time setup
 

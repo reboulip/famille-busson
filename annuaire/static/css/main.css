@@ -82,14 +82,18 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
 /* Below this width .fb-record collapses to one column, which is also where the
    sticky rail stops working: in a single-row grid area a sticky box has no
-   travel. Turning the record into a block container gives it some, and only the
-   identity card sticks -- the info card scrolls away as normal.
+   travel. Turning the record into a block container gives it some.
    --profile-sticky-top is measured and published by profile_sticky_identity.js;
    the literal is only the no-JS fallback. */
 @media (max-width: 767.98px) {
     .profile-record { display: block; }
 
-    .profile-record .fb-record__rail { display: block; }
+    /* display: contents drops the rail's own box -- and with it the shared
+       component's sticky rule the rail would otherwise still carry -- so its
+       children flow straight into .profile-record instead of the whole rail
+       (identity card + info card together) pinning as one unit (#124,
+       reopened: the info card kept scrolling but never left the viewport). */
+    .profile-record .fb-record__rail { display: contents; }
     .profile-record .fb-record__rail > * { margin-bottom: var(--fb-sp-4); }
 
     .profile-record .profile-identity {
@@ -321,6 +325,18 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
        it: the round overflow:hidden on .map-marker-avatar does the cropping. */
     width: 100%;
     height: 70%;
+}
+
+/* An event marker: a centered calendar glyph, not the bottom-aligned ridge
+   (a different modifier so this doesn't affect the chalet placeholder). */
+.map-marker-avatar-event {
+    align-items: center;
+    justify-content: center;
+}
+
+.map-marker-avatar-event .fb-icon {
+    width: 55%;
+    height: 55%;
 }
 
 .map-marker-cluster {
@@ -915,6 +931,14 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     min-height: 0;
 }
 
+/* Close button only makes sense once fullscreen has replaced the whole publication
+   view (#131) -- inline, the viewer already sits in the page, so there's nothing to
+   return to. The enter-fullscreen button hides in turn so the toolbar doesn't carry
+   two exit-shaped controls at once. */
+.document-viewer-close-btn { display: none; }
+.document-viewer--fullscreen .document-viewer-close-btn { display: inline-block; }
+.document-viewer--fullscreen .document-viewer-fullscreen-btn { display: none; }
+
 .document-file-preview-image {
     max-width: 100%;
     max-height: 100%;
@@ -1006,3 +1030,198 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     height: 36px;
     aspect-ratio: auto;
 }
+
+/* =========================================================================
+   9. Photothèque
+   ========================================================================= */
+
+.photo-upload-list {
+    list-style: none;
+    margin: var(--fb-sp-3) 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--fb-sp-2);
+}
+
+.photo-upload-row {
+    display: flex;
+    align-items: center;
+    gap: var(--fb-sp-3);
+}
+
+.photo-upload-row__thumbnail {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: var(--fb-radius-sm);
+    flex-shrink: 0;
+}
+
+.photo-upload-row__name {
+    flex: 1 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.photo-upload-row__progress {
+    flex: 0 0 120px;
+    width: 120px;
+}
+
+.photo-upload-row--done .photo-upload-row__status { color: var(--fb-success); }
+.photo-upload-row--error .photo-upload-row__status { color: var(--fb-danger); }
+
+/* Lightbox (#album grid doubling as the document-viewer carousel strip, extended
+   rather than duplicated -- see documents/static/js/document_viewer.js). Only the
+   *normal* (non-fullscreen) layout differs from the document/publication viewers: a
+   grid, since an album is browsed as a grid, not swiped one at a time, until the
+   lightbox (fullscreen) actually opens. Guarded with :not(.document-viewer--fullscreen)
+   rather than relying on selector specificity to beat the existing fullscreen rules
+   below -- once --fullscreen is toggled on, these stop matching entirely and every
+   pre-existing fullscreen rule applies completely unmodified. */
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-stage.document-viewer-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: var(--fb-sp-3);
+    overflow-x: visible;
+    height: auto;
+}
+
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-strip-item {
+    flex: none;
+}
+
+.document-viewer--gallery:not(.document-viewer--fullscreen) .document-viewer-strip-item img {
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: 100%;
+    max-height: none;
+    object-fit: cover;
+}
+
+/* =========================================================================
+   10. Unified calendar
+   -------------------------------------------------------------------------
+   Type colours are deliberately distinct from section 2's presence-bar
+   colours (--fb-bar-past/current/future = bark/spruce/ember) -- those encode
+   a *time-relative* state (past/current/future) within one type (presence),
+   while these three encode *type* (event/presence/birthday) within one
+   month. Every chip/dot carries a word label too (docs/design_system.md's
+   colour-plus-label rule): never colour alone.
+   ========================================================================= */
+
+.unified-calendar-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fb-sp-2);
+    margin-bottom: var(--fb-sp-2);
+}
+
+.cal-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--fb-sp-2);
+    margin-bottom: var(--fb-sp-3);
+}
+
+.cal-filter-chip {
+    border: 1px solid var(--fb-border-strong);
+    border-radius: var(--fb-radius-pill);
+    background: var(--fb-card);
+    color: var(--fb-bark);
+    padding: 2px var(--fb-sp-3);
+    font-size: var(--fb-text-sm);
+    cursor: pointer;
+}
+
+.cal-filter-chip.active { color: var(--fb-card); }
+.cal-filter-chip.cal-type-event.active { background: var(--fb-info); border-color: var(--fb-info); }
+.cal-filter-chip.cal-type-presence.active { background: var(--fb-slate-mist); border-color: var(--fb-slate-mist); }
+.cal-filter-chip.cal-type-birthday.active { background: var(--fb-gold); border-color: var(--fb-gold); }
+
+.cal-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 2px;
+}
+
+.cal-dot.cal-type-event { background: var(--fb-info); }
+.cal-dot.cal-type-presence { background: var(--fb-slate-mist); }
+.cal-dot.cal-type-birthday { background: var(--fb-gold); }
+
+.cal-chip {
+    display: inline-block;
+    border-radius: var(--fb-radius-pill);
+    padding: 1px var(--fb-sp-2);
+    font-size: var(--fb-text-xs);
+    color: var(--fb-card);
+    margin-right: var(--fb-sp-2);
+}
+
+.cal-chip.cal-type-event { background: var(--fb-info); }
+.cal-chip.cal-type-presence { background: var(--fb-slate-mist); }
+.cal-chip.cal-type-birthday { background: var(--fb-gold); }
+
+.unified-calendar-month {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--fb-border);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    overflow: hidden;
+    margin-bottom: var(--fb-sp-4);
+}
+
+.cal-month-cell {
+    background: var(--fb-card);
+    min-height: 64px;
+    padding: 4px 6px;
+}
+
+.cal-month-cell--empty { background: var(--fb-parchment); }
+
+.cal-month-cell--today {
+    background: var(--fb-warning-soft);
+}
+
+.cal-month-cell__day {
+    display: block;
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bark);
+}
+
+.cal-month-cell__dots { margin-top: 4px; }
+
+.unified-calendar-agenda {
+    display: grid;
+    gap: var(--fb-sp-2);
+}
+
+.cal-agenda-item {
+    display: flex;
+    align-items: center;
+    gap: var(--fb-sp-2);
+    padding: var(--fb-sp-2);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    background: var(--fb-card);
+    color: var(--fb-ink);
+}
+
+.cal-agenda-item__title { flex: 1; }
+
+.cal-subscribe { margin-bottom: var(--fb-sp-4); }
+
+.cal-subscribe-row {
+    display: flex;
+    gap: var(--fb-sp-2);
+    align-items: center;
+}
+
+.cal-subscribe-row input { flex: 1; }

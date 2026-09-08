@@ -97,5 +97,9 @@ plus la durée de vie plus courte `MAGIC_LINK_TIMEOUT`.
   `/annuaire/aide/connexion-par-lien/` (`MagicLinkHelpView`, gabarit
   `annuaire/templates/annuaire/help_magic_link.html`).
 - Limitation de débit (rate limiting) sur les endpoints publics d'envoi d'email
-  (réinitialisation de mot de passe et lien magique) : pas encore implémentée, faute
-  de backend de cache partagé — voir l'item `B.3` du backlog dans `ROADMAP.md`.
+  (inscription, réinitialisation de mot de passe et lien magique) : implémentée
+  (`annuaire.throttling.EmailRateLimitMixin`) — 3 tentatives par heure et 10 par jour
+  par adresse email, plus un coupe-circuit global de 60 par heure par endpoint. Une
+  tentative refusée réaffiche le formulaire avec la même erreur non liée à un champ,
+  qu'un compte existe ou non pour l'adresse soumise (aucun signal d'énumération), avec
+  un code HTTP 429.

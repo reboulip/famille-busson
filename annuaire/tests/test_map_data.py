@@ -1,9 +1,16 @@
+import datetime
 from decimal import Decimal
 
 import pytest
+from django.utils import timezone
 
-from annuaire.map_data import build_chalet_map_groups, build_person_map_groups
+from annuaire.map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
 from annuaire.models import Chalet
+from events.models import Event
+
+
+def _aware(*args):
+    return timezone.make_aware(datetime.datetime(*args), datetime.UTC)
 
 
 @pytest.mark.django_db
@@ -98,3 +105,51 @@ def test_two_chalets_at_same_address_group_together():
     groups = build_chalet_map_groups()
     assert len(groups) == 1
     assert len(groups[0]["entries"]) == 2
+
+
+# ---------------------------------------------------------------------------
+# build_event_map_groups
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_events_without_coordinates_are_excluded(account):
+    Event.objects.create(title="Barbecue", start=_aware(2026, 7, 1, 12, 0))
+    assert build_event_map_groups(account) == []
+
+
+@pytest.mark.django_db
+def test_event_with_coordinates_uses_placeholder_avatar(account):
+    Event.objects.create(
+        title="Barbecue", start=_aware(2026, 7, 1, 12, 0), latitude=Decimal("45.9"), longitude=Decimal("6.9")
+    )
+    groups = build_event_map_groups(account)
+    assert len(groups) == 1
+    assert groups[0]["entries"][0]["avatar"] == "placeholder::event"
+
+
+@pytest.mark.django_db
+def test_event_map_groups_excludes_restricted_event_for_non_member(account, group):
+    event = Event.objects.create(
+        title="Réunion privée", start=_aware(2026, 7, 1, 12, 0), latitude=Decimal("45.9"), longitude=Decimal("6.9")
+    )
+    event.groups.add(group)
+    assert build_event_map_groups(account) == []
+
+
+@pytest.mark.django_db
+def test_event_map_groups_includes_restricted_event_for_group_member(account, group):
+    account.groups.add(group)
+    event = Event.objects.create(
+        title="Réunion privée", start=_aware(2026, 7, 1, 12, 0), latitude=Decimal("45.9"), longitude=Decimal("6.9")
+    )
+    event.groups.add(group)
+    groups = build_event_map_groups(account)
+    assert groups[0]["entries"][0]["name"] == event.title
+
+
+@pytest.fixture
+def group(db):
+    from django.contrib.auth.models import Group
+
+    return Group.objects.create(name="SCI grand chalet")

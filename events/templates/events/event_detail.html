@@ -1,0 +1,42 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% load markdown_extras %}
+{% block content %}
+    {# Archetype D — record detail. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Événements</p>
+            <h1>{{ event.title }}</h1>
+        </div>
+        {% if can_edit %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'event-edit' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
+                <a href="{% url 'event-delete' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "trash" size=16 %} Supprimer</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="fb-card">
+        <p class="fb-meta">
+            {% if event.all_day %}Journée entière{% endif %}
+            {{ event.start }}{% if event.end and event.end != event.start %} → {{ event.end }}{% endif %}
+        </p>
+        {% if event.location %}
+            <p class="fb-contact__row">
+                <span class="fb-contact__icon">{% icon "home" size=16 %}</span>
+                <span class="fb-contact__value">
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ event.location|urlencode }}">{{ event.location }}</a>
+                </span>
+            </p>
+        {% endif %}
+        {% if event.description %}
+            <div class="markdown-body">{{ event.description|markdown }}</div>
+        {% endif %}
+        {% if event.organisers.all %}
+            <p class="fb-meta">Organisé par {% for p in event.organisers.all %}{{ p }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+        {% endif %}
+    </div>
+
+    {% include "events/_rsvp_form.html" %}
+    {% include "events/_attendee_list.html" %}
+{% endblock content %}

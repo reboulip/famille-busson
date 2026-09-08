@@ -16,6 +16,7 @@ import unicodedata
 from django.urls import reverse
 
 from annuaire.email_utils import InlineImage, OutgoingEmail, absolute_url, email_context, render_email
+from annuaire.models import Person
 
 logger = logging.getLogger("django")
 
@@ -56,13 +57,24 @@ def birthday_photo(person) -> InlineImage | None:
     return InlineImage(cid="profile-photo", data=data, filename=photo.name.rsplit("/", 1)[-1])
 
 
-def birthday_reminder(person, recipient_email: str, photo: InlineImage | None) -> OutgoingEmail:
+def _settings_url(recipient: Person | None) -> str:
+    """The recipient's own profile-edit page, deep-linked to the notifications
+    fieldset -- falls back to the generic redirect when the caller has no Person
+    (e.g. a flow with no single recipient to link to)."""
+    if recipient is not None:
+        return absolute_url(reverse("person-edit", kwargs={"pk": recipient.pk})) + "#notifications"
+    return absolute_url(reverse("edit-my-profile"))
+
+
+def birthday_reminder(
+    person, recipient_email: str, photo: InlineImage | None, *, recipient: Person | None = None
+) -> OutgoingEmail:
     context = email_context(
         person=person,
         initials=initials(person),
         photo_cid=photo.cid if photo else None,
         profile_url=absolute_url(reverse("personne-detail", kwargs={"pk": person.pk})),
-        settings_url=absolute_url(reverse("edit-my-profile")),
+        settings_url=_settings_url(recipient),
         cta_label=f"Voir le profil de {person.first_name}",
     )
     html, text = render_email(
@@ -80,7 +92,7 @@ def birthday_reminder(person, recipient_email: str, photo: InlineImage | None) -
     )
 
 
-def new_blog_post(post, recipient_email: str) -> OutgoingEmail:
+def new_blog_post(post, recipient_email: str, *, recipient: Person | None = None) -> OutgoingEmail:
     from annuaire.markdown_utils import markdown_to_text
 
     excerpt = " ".join((markdown_to_text(post.body) or "").split())
@@ -93,7 +105,7 @@ def new_blog_post(post, recipient_email: str) -> OutgoingEmail:
         authors=authors,
         excerpt=excerpt,
         post_url=absolute_url(reverse("blogpost-detail", kwargs={"pk": post.pk})),
-        settings_url=absolute_url(reverse("edit-my-profile")),
+        settings_url=_settings_url(recipient),
     )
     html, text = render_email(
         "publications/emails/new_blog_post.html",
@@ -103,6 +115,44 @@ def new_blog_post(post, recipient_email: str) -> OutgoingEmail:
     return OutgoingEmail(
         to=recipient_email,
         subject=f"Nouvel article : {post.title}",
+        text_body=text,
+        html_body=html,
+    )
+
+
+def event_announcement(event, recipient_email: str, *, recipient: Person | None = None) -> OutgoingEmail:
+    context = email_context(
+        event=event,
+        event_url=absolute_url(reverse("event-detail", kwargs={"pk": event.pk})),
+        settings_url=_settings_url(recipient),
+    )
+    html, text = render_email(
+        "events/emails/event_announcement.html",
+        "events/emails/event_announcement.txt",
+        context,
+    )
+    return OutgoingEmail(
+        to=recipient_email,
+        subject=f"Nouvel événement : {event.title}",
+        text_body=text,
+        html_body=html,
+    )
+
+
+def event_reminder(event, recipient_email: str, *, recipient: Person | None = None) -> OutgoingEmail:
+    context = email_context(
+        event=event,
+        event_url=absolute_url(reverse("event-detail", kwargs={"pk": event.pk})),
+        settings_url=_settings_url(recipient),
+    )
+    html, text = render_email(
+        "events/emails/event_reminder.html",
+        "events/emails/event_reminder.txt",
+        context,
+    )
+    return OutgoingEmail(
+        to=recipient_email,
+        subject=f"Rappel : {event.title}",
         text_body=text,
         html_body=html,
     )

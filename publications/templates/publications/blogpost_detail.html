@@ -2,6 +2,7 @@
 {% load crispy_forms_filters %}
 {% load markdown_extras %}
 {% load icons %}
+{% load static %}
 {% block content %}
     {# Archetype E — long-form. Narrow measure, generous leading. #}
     <article class="fb-longform">
@@ -19,6 +20,9 @@
                 (modifié le {{ post.updated_at|date:"j F Y" }})
             {% endif %}
             <span class="fb-chip{% if post.post_type == 'BC' %} fb-chip--gold{% endif %}">{{ post.get_post_type_display }}</span>
+            {% for tag in post.tags.all %}
+                <a class="fb-chip{% if tag.accent %} fb-chip--{{ tag.accent }}{% endif %}" href="{% url 'blogpost-list' %}?tag={{ tag.pk }}">{{ tag.name }}</a>
+            {% endfor %}
         </p>
         <div class="fb-rule"></div>
 
@@ -35,27 +39,99 @@
     {% if post.attachments.all %}
         <section class="fb-longform">
             <div class="fb-section-head"><h2>Pièces jointes</h2></div>
-            <div class="fb-gallery">
-                {% for attachment in post.attachments.all %}
-                    {% if attachment.is_image %}
-                        <figure>
-                            <a href="{{ attachment.file.url }}">
-                                <img src="{{ attachment.file.url }}" alt="{{ attachment.caption|default:attachment.filename }}">
-                            </a>
-                            {% if attachment.caption %}<figcaption>{{ attachment.caption }}</figcaption>{% endif %}
-                        </figure>
+            {% if image_attachments %}
+                <div class="document-viewer" data-file-id="{{ image_attachments.0.pk }}">
+                    <div class="document-viewer-toolbar">
+                        <span class="document-viewer-caption">
+                            {% if image_attachments|length > 1 %}{{ image_attachments|length }} images{% else %}{{ image_attachments.0.caption|default:image_attachments.0.filename }}{% endif %}
+                        </span>
+                        <div class="document-viewer-actions">
+                            {% if image_attachments|length > 1 %}
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="Image précédente">{% icon "chevron-left" size=16 %}</button>
+                                <span class="document-viewer-carousel-counter">1 / {{ image_attachments|length }}</span>
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Image suivante">{% icon "chevron-right" size=16 %}</button>
+                            {% endif %}
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                        </div>
+                    </div>
+                    {% if image_attachments|length > 1 %}
+                        <div class="document-viewer-stage document-viewer-strip">
+                            {% for attachment in image_attachments %}
+                                <div class="document-viewer-strip-item">
+                                    <img src="{{ attachment.file.url }}" alt="{{ attachment.caption|default:attachment.filename }}"
+                                         class="document-file-preview-image document-viewer-zoomable"
+                                         {% if not forloop.first %}loading="lazy"{% endif %}>
+                                    {% if attachment.caption %}
+                                        <p class="document-viewer-strip-caption">{{ attachment.caption }}</p>
+                                    {% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="document-viewer-stage">
+                            <img src="{{ image_attachments.0.file.url }}" alt="{{ image_attachments.0.caption|default:image_attachments.0.filename }}"
+                                 class="document-file-preview-image document-viewer-zoomable">
+                        </div>
                     {% endif %}
+                </div>
+            {% endif %}
+            {% for attachment in pdf_attachments %}
+                <div class="document-viewer" data-file-id="{{ attachment.pk }}">
+                    <div class="document-viewer-toolbar">
+                        <span class="document-viewer-caption">{{ attachment.caption|default:attachment.filename }}</span>
+                        <div class="document-viewer-actions">
+                            <div class="document-viewer-zoom" role="group" aria-label="Zoom">
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-out" aria-label="Réduire">−</button>
+                                <span class="document-viewer-zoom-level" aria-live="polite">100 %</span>
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-in" aria-label="Agrandir">+</button>
+                            </div>
+                            <a href="{{ attachment.file.url }}" class="fb-btn fb-btn--quiet fb-btn--sm" download>{% icon "download" size=16 %} Télécharger</a>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                        </div>
+                    </div>
+                    <div class="document-viewer-stage">
+                        <div class="document-viewer-pdf-pages"
+                             data-pdf-url="{{ attachment.file.url }}"
+                             data-pdfjs-src="{% static 'vendor/pdfjs/pdf.min.mjs' %}"
+                             data-pdfjs-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.mjs' %}">
+                            <p class="document-viewer-pdf-loading">Chargement du PDF…</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% for attachment in other_attachments %}
+                <p>
+                    <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{{ attachment.file.url }}" download>
+                        {% icon "clip" size=16 %} {{ attachment.caption|default:attachment.filename }}
+                    </a>
+                </p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if linked_documents %}
+        <section class="fb-longform">
+            <div class="fb-section-head"><h2>Documents liés</h2></div>
+            {% for document in linked_documents %}
+                <p>
+                    <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{% url 'document-detail' document.pk %}">
+                        {% icon "clip" size=16 %} {{ document.title }}
+                    </a>
+                </p>
+            {% endfor %}
+        </section>
+    {% endif %}
+
+    {% if linked_albums %}
+        <section class="fb-longform">
+            <div class="fb-section-head"><h2>Albums liés</h2></div>
+            <div class="fb-grid fb-grid--wide">
+                {% for album in linked_albums %}
+                    {% include "photos/_album_card.html" with album=album %}
                 {% endfor %}
             </div>
-            {% for attachment in post.attachments.all %}
-                {% if not attachment.is_image %}
-                    <p>
-                        <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{{ attachment.file.url }}" download>
-                            {% icon "clip" size=16 %} {{ attachment.caption|default:attachment.filename }}
-                        </a>
-                    </p>
-                {% endif %}
-            {% endfor %}
         </section>
     {% endif %}
 
@@ -91,3 +167,8 @@
         </form>
     </section>
 {% endblock content %}
+{% block extra_js %}
+    {% if image_attachments or pdf_attachments %}
+        <script src="{% static 'js/document_viewer.js' %}"></script>
+    {% endif %}
+{% endblock extra_js %}

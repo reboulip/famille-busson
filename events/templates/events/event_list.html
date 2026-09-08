@@ -1,0 +1,38 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype B — collection list. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Événements</h1>
+            <p class="fb-page-head__lede">Les réunions, fêtes et rendez-vous de la famille.</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'event-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Créer un événement</a>
+        </div>
+    </div>
+
+    <div class="fb-section-head">
+        <h2>{% if showing_past %}Événements passés{% else %}À venir{% endif %}</h2>
+        {% if showing_past %}
+            <a href="{% url 'event-list' %}" class="fb-btn fb-btn--quiet fb-btn--sm">Voir les événements à venir</a>
+        {% else %}
+            <a href="{% url 'event-list' %}?passes=1" class="fb-btn fb-btn--quiet fb-btn--sm">Voir les événements passés</a>
+        {% endif %}
+    </div>
+    <div class="fb-grid fb-grid--wide">
+        {% for event in events %}
+            <a href="{% url 'event-detail' event.pk %}" class="fb-card fb-card--link">
+                <span class="fb-place-card__name">{{ event.title }}</span>
+                <span class="fb-meta">{{ event.start }}{% if event.location %} · {{ event.location }}{% endif %}</span>
+            </a>
+        {% empty %}
+            {% url 'event-create' as create_url %}
+            {% if showing_past %}
+                {% include "annuaire/_empty.html" with title="Aucun événement passé" %}
+            {% else %}
+                {% include "annuaire/_empty.html" with title="Aucun événement à venir" body="Réunions, fêtes, anniversaires : notez les prochains rendez-vous de la famille." action_url=create_url action_label="Créer un événement" %}
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endblock content %}

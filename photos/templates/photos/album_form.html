@@ -1,0 +1,30 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>{% if object %}Modifier « {{ object.title }} »{% else %}Nouvel album{% endif %}</h1>
+        </div>
+    </div>
+
+    <form method="post" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>L'album</legend>
+            {{ form.media }}
+            {{ form.title|as_crispy_field }}
+            {{ form.description|as_crispy_field }}
+            {{ form.date_start|as_crispy_field }}
+            {{ form.date_end|as_crispy_field }}
+            {% if not form.fields.cover.widget.is_hidden %}
+                {{ form.cover|as_crispy_field }}
+            {% endif %}
+            {{ form.groups|as_crispy_field }}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <a href="{% url 'album-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        </div>
+    </form>
+{% endblock content %}

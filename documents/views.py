@@ -3,11 +3,13 @@ import mimetypes
 import os
 
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Exists, OuterRef, ProtectedError, Q
-from django.http import FileResponse, Http404
+from django.db.models import Exists, F, OuterRef, ProtectedError, Q
+from django.db.models.functions import Lower
+from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils.cache import patch_vary_headers
@@ -38,6 +40,32 @@ def _redactor_initial_json(view):
 
 
 INLINE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf"}
+
+DOCUMENT_SORTS = {
+    "recent": ("-created_at", "-pk"),
+    "deposit_asc": ("created_at", "pk"),
+    "title_asc": (Lower("title"), "pk"),
+    "title_desc": (Lower("title").desc(), "-pk"),
+    "redactor_asc": (Lower("redactor__last_name").asc(nulls_last=True), Lower("redactor__first_name"), "pk"),
+    "redactor_desc": (Lower("redactor__last_name").desc(nulls_last=True), "-pk"),
+    "date_asc": (F("document_date").asc(nulls_last=True), "-pk"),
+    "date_desc": (F("document_date").desc(nulls_last=True), "-pk"),
+}
+DEFAULT_DOCUMENT_SORT = "recent"
+
+
+@login_required
+def document_search_ajax(request):
+    """Backs the document picker on the publication form (annuaire's _person_picker.html
+    reused as-is, driven entirely by data-search-url). Queryset is the same access
+    boundary as the document list itself -- never Document.objects.all()."""
+    q = request.GET.get("q", "").strip()
+    if len(q) < 2:
+        return JsonResponse({"results": []})
+    exclude_ids = [int(x) for x in request.GET.get("exclude", "").split(",") if x.isdigit()]
+    qs = accessible_documents(request.user).filter(title__icontains=q).exclude(pk__in=exclude_ids)
+    qs = qs.order_by("title")[:10]
+    return JsonResponse({"results": [{"id": d.pk, "name": d.title} for d in qs]})
 
 
 class CategoryListView(LoginRequiredMixin, ListView):
@@ -83,8 +111,17 @@ class DocumentListView(LoginRequiredMixin, ListView):
     context_object_name = "documents"
     paginate_by = 20
 
+    def _accessible_documents(self):
+        # Walks every category in Python (documents/access.py) -- memoize per request
+        # so get_queryset() and get_context_data()'s filter lists don't each pay for it.
+        if not hasattr(self, "_accessible_documents_cache"):
+            self._accessible_documents_cache = accessible_documents(self.request.user)
+        return self._accessible_documents_cache
+
     def get_queryset(self):
-        qs = accessible_documents(self.request.user).select_related("category").order_by("-created_at")
+        sort = self.request.GET.get("sort", DEFAULT_DOCUMENT_SORT)
+        ordering = DOCUMENT_SORTS.get(sort, DOCUMENT_SORTS[DEFAULT_DOCUMENT_SORT])
+        qs = self._accessible_documents().select_related("category", "redactor").order_by(*ordering)
         query = self.request.GET.get("q", "")
         if query:
             content_match = Exists(
@@ -96,13 +133,30 @@ class DocumentListView(LoginRequiredMixin, ListView):
         category_id = self.request.GET.get("category", "")
         if category_id.isdigit():
             qs = qs.filter(category_id=category_id)
+        redactor_id = self.request.GET.get("redactor", "")
+        if redactor_id.isdigit():
+            qs = qs.filter(redactor_id=redactor_id)
+        year = self.request.GET.get("year", "")
+        if year.isdigit():
+            qs = qs.filter(document_date__year=year)
         return qs
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["query"] = self.request.GET.get("q", "")
         context["selected_category"] = self.request.GET.get("category", "")
+        context["selected_redactor"] = self.request.GET.get("redactor", "")
+        context["selected_year"] = self.request.GET.get("year", "")
+        sort = self.request.GET.get("sort", DEFAULT_DOCUMENT_SORT)
+        context["sort"] = sort if sort in DOCUMENT_SORTS else DEFAULT_DOCUMENT_SORT
         context["filter_categories"] = accessible_categories(self.request.user).order_by("name")
+        accessible = self._accessible_documents()
+        context["filter_redactors"] = (
+            Person.objects.filter(redacted_documents__in=accessible).distinct().order_by("last_name", "first_name")
+        )
+        context["filter_years"] = accessible.exclude(document_date__isnull=True).dates(
+            "document_date", "year", order="DESC"
+        )
         return context
 
     def get_template_names(self):

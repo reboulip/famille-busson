@@ -49,6 +49,18 @@ def test_base_includes_documents_nav_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_includes_events_nav_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert reverse("event-list") in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_base_includes_calendrier_nav_link(auth_client):
+    response = auth_client.get(reverse("directory"))
+    assert reverse("calendrier") in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_base_includes_group_list_nav_link_for_staff(staff_client):
     response = staff_client.get(reverse("directory"))
     assert reverse("group-list") in response.content.decode()
@@ -81,7 +93,17 @@ def test_anonymous_sidebar_hides_the_login_required_sections(client):
     content = client.get(reverse("magic-link-help")).content.decode()
     assert reverse("magic-link-help") in content
     assert "Se connecter" in content
-    for hidden in ("directory", "genealogie", "carte", "chalet-list", "blogpost-list", "document-list"):
+    for hidden in (
+        "directory",
+        "genealogie",
+        "carte",
+        "chalet-list",
+        "blogpost-list",
+        "document-list",
+        "activity-feed",
+        "event-list",
+        "calendrier",
+    ):
         assert f'href="{reverse(hidden)}"' not in content, hidden
 
 

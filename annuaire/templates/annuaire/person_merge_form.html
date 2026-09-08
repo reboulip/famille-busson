@@ -1,0 +1,47 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Fusionner « {{ loser }} » dans « {{ winner }} »</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">Cette action est irréversible. « {{ loser }} » sera supprimé·e ; toutes
+                ses relations, photos, documents, présences, récits et sources citées seront rattachés à
+                « {{ winner }} ».</p>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if differing_fields %}
+                <div class="fb-fieldset">
+                    <legend>Champs différents — choisissez la valeur à conserver</legend>
+                    {% for diff in differing_fields %}
+                        <div class="fb-field">
+                            <p class="fb-label">{{ diff.label }}</p>
+                            <label class="fb-radio">
+                                <input type="radio" name="choice_{{ diff.name }}" value="1" checked>
+                                {{ winner }} : {{ diff.winner_value|default:"(vide)" }}
+                            </label>
+                            <label class="fb-radio">
+                                <input type="radio" name="choice_{{ diff.name }}" value="2">
+                                {{ loser }} : {{ diff.loser_value|default:"(vide)" }}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Fusionner définitivement</button>
+                <a href="{% url 'person-duplicate-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

@@ -2,10 +2,31 @@ from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .file_cleanup import register_file_cleanup
+from .markdown_utils import markdown_to_text
 from .models import Account, Chalet, Person, Relation, Settings
+from .search.indexing import register_search_index
+from .search.registry import SearchSpec
 
 register_file_cleanup(Person, "profile_photo")
 register_file_cleanup(Chalet, "photo")
+
+register_search_index(
+    Person,
+    SearchSpec(
+        weights={
+            "A": lambda p: f"{p.first_name} {p.last_name}",
+            "B": lambda p: markdown_to_text(p.description),
+        },
+        # email/phone_number/postal_address are deliberately excluded: they're
+        # already visible on the profile, but making them *searchable* enables
+        # reverse lookup by phone/address, a materially different exposure.
+        source_fields=frozenset({"first_name", "last_name", "description"}),
+        accessible=lambda user: Person.objects.all(),
+        label="Personnes",
+        card_template="annuaire/_person_card.html",
+        order=["last_name", "first_name"],
+    ),
+)
 
 
 @receiver(post_save, sender=Account)
@@ -34,13 +55,25 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
     person1 = instance.person1
     person2 = instance.person2
     relationship_type = instance.relationship_type
-    inverse_type = relationship_type if relationship_type in [0, 1] else 5 - relationship_type
-    inverse_start_date = instance.start_date if relationship_type in [0, 1] else None
+    is_spouse = relationship_type in [0, 1]
+    inverse_type = relationship_type if is_spouse else 5 - relationship_type
+    # start_date/marriage_place/end_date are spouse-only facts, identical on both
+    # mirrored rows; nulled/blanked on a parent/child row.
+    inverse_start_date = instance.start_date if is_spouse else None
+    inverse_marriage_place = instance.marriage_place if is_spouse else ""
+    inverse_end_date = instance.end_date if is_spouse else None
     try:
         inverse = Relation.objects.get(person1=person2, person2=person1)
-        if inverse.relationship_type != inverse_type or inverse.start_date != inverse_start_date:
+        if (
+            inverse.relationship_type != inverse_type
+            or inverse.start_date != inverse_start_date
+            or inverse.marriage_place != inverse_marriage_place
+            or inverse.end_date != inverse_end_date
+        ):
             inverse.relationship_type = inverse_type
             inverse.start_date = inverse_start_date
+            inverse.marriage_place = inverse_marriage_place
+            inverse.end_date = inverse_end_date
             inverse.save()
     except Relation.DoesNotExist:
         inverse = Relation.objects.create(
@@ -48,6 +81,8 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
             person2=person1,
             relationship_type=inverse_type,
             start_date=inverse_start_date,
+            marriage_place=inverse_marriage_place,
+            end_date=inverse_end_date,
         )
         inverse.save()
 

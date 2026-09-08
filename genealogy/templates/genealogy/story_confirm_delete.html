@@ -1,0 +1,30 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Récits</p>
+            <h1>Supprimer ce récit ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <h1>Supprimer « {{ object.title }} » ?</h1>
+        <p class="fb-meta">Récit de {{ object.person }}.</p>
+        <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <ul>
+                <li>le récit et son texte ;</li>
+                <li>ses liens vers les photos illustratives (les photos elles-mêmes ne sont pas supprimées).</li>
+            </ul>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <a href="{% url 'personne-detail' object.person_id %}?tab=histoire" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

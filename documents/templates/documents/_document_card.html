@@ -12,6 +12,7 @@
     <p class="fb-meta fb-post-card__meta">
         <a href="{% url 'category-detail' document.category.pk %}">{{ document.category.name }}</a>
         {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
+        {% if document.redactor %} — {{ document.redactor }}{% endif %}
         {% if query and document.content_match and query|lower not in document.title|lower %}
             <span class="fb-chip fb-chip--accent">Trouvé dans le contenu</span>
         {% endif %}

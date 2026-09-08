@@ -1,0 +1,80 @@
+# Background task queue
+
+famille-busson runs both recurring (scheduled) and on-demand background work through
+[django-q2](https://django-q2.readthedocs.io/), backed by the same Valkey instance the
+shared cache uses (see [`deployment.md`'s "Shared cache"
+section](deployment.md#shared-cache)) — cache on db 0, this queue's broker on db 1.
+On-demand work enqueues a task directly (e.g. `publications/signals.py`, on every new
+blog post) rather than waiting for a `Schedule` row's next tick — see "On-demand tasks"
+below.
+
+## Why
+
+Before this, `send_birthday_reminders` and `extract_document_content` ran on the VPS's
+crontab, set up by hand outside CI/CD, with cron's own output going nowhere on failure.
+A job runner gives them: schedules and recent run history visible in the Django admin,
+retries on transient failure, and one place (`docker logs` on the `worker` container)
+to check instead of a crontab nobody remembers configuring.
+
+## Architecture
+
+- **`cache` container** (Valkey) — broker for both the Django cache and this queue.
+- **`worker` container** — runs `python manage.py qcluster`, the same image as `web`,
+  same `media`/`documents_data` volume mounts (a job that touches either of those must
+  see the same files `web` does). `RUN_STARTUP_TASKS=0` so it never runs
+  migrate/collectstatic/schedule-sync itself — only `web` does, once per deploy.
+- **`sync_scheduled_tasks`** management command — idempotently registers this
+  project's `Schedule` rows (`annuaire.management.commands.sync_scheduled_tasks`), run
+  automatically by `web` on every startup via `docker-entrypoint.sh`. Safe to run
+  repeatedly: existing schedules are matched by name and updated in place, never
+  duplicated, and a schedule's `next_run` is only set the first time it's created —
+  a routine deploy never pushes an already-ticking schedule's next occurrence back out.
+- **Task modules** — `annuaire/tasks.py` and `documents/tasks.py`, one per app. Each
+  function is plain and importable (django-q2 calls it by dotted path from a
+  `Schedule` row). Neither a task function nor its management command owns the actual
+  logic itself — both call the same extracted callable
+  (`annuaire.birthdays.send_birthday_reminders`,
+  `documents.tasks.process_pending_document_files`); the management commands are thin
+  wrappers around it too, kept hand-runnable for ad-hoc use (see `deployment.md`'s
+  "Scheduled tasks" section).
+
+## Current scheduled jobs
+
+| Job | Schedule | Task | Notes |
+|---|---|---|---|
+| Birthday reminders | Daily, 07:00 UTC | `annuaire.tasks.send_daily_birthday_reminders` | Guarded by a same-day cache lock, so a `catch_up` run or an overlap with the old crontab entry during a deploy can never send the same day's reminders twice. |
+| Document extraction | Every 15 minutes | `documents.tasks.process_pending_document_files` | Naturally idempotent — only ever processes rows still `extraction_status="pending"`. |
+| Photo derivative generation | Every 15 minutes | `photos.tasks.process_pending_photos` | Safety net for a lost enqueue (worker down at upload time) — the normal path is the on-demand enqueue below. Naturally idempotent, same shape as document extraction: only ever processes rows still `derivative_status="pending"`. |
+| Search index safety net | Daily, 03:00 UTC | `annuaire.tasks.reindex_all_search_indexes` | Safety net for a lost reindex enqueue (e.g. worker down at save time), not the primary freshness mechanism — that's the signal-driven on-demand reindex below. Rebuilds every registered model's index from scratch via `annuaire.search.indexing.backfill_search_indexes()`, the same function `manage.py reindex_search` and each app's migration data-backfill call, so all three can never drift apart. |
+| Event reminders | Daily, 08:00 UTC | `events.tasks.send_event_reminders` | Distinct hour from the birthday (07:00 UTC) and reindex (03:00 UTC) jobs so none of the three overlap. Selects events starting within `EVENT_REMINDER_LEAD_DAYS` (2 days) that haven't been reminded yet (`Event.reminder_sent_at__isnull=True`), stamps `reminder_sent_at` **before** fanning out per-recipient tasks — so a `catch_up` run after a missed tick can never double-send — then enqueues `events.tasks.send_event_reminder` for `events.tasks.notification_audience(event)` minus anyone who RSVP'd "non" on that event. |
+
+## On-demand tasks
+
+Enqueued directly from a signal or view, rather than a `Schedule`, whenever the work
+should happen as soon as possible after an event rather than on a fixed tick.
+
+| Trigger | Task | Notes |
+|---|---|---|
+| A new `BlogPost` is saved | `publications.tasks.send_blog_post_notification(post_pk, recipient_email)` | Enqueued once per subscriber from `publications/signals.py`'s `post_save` receiver, inside `transaction.on_commit` so the enqueue waits for the post (and its M2M authors) to actually be committed. The task re-queries the post fresh and calls `annuaire.email_utils.send_one_email`, which raises on failure so django-q2 retries that one recipient — a provider hiccup no longer silently drops the whole batch, and one recipient's failure never affects another's. A deleted post is logged and skipped, not retried (retrying can't make it exist again). |
+| A new `Event` is saved | `events.tasks.send_event_announcement(event_pk, recipient_email)` | Enqueued once per subscriber from `events/signals.py`'s `post_save` receiver, inside `transaction.on_commit` — same reasoning as the blog-post row above, but the M2M in question is `Event.groups`, and the stakes are higher: computing the audience before the M2M commits would see zero groups and mail a restricted event's date/address to the whole family. Subscribers come from `events.tasks.notification_audience(event)` (opted into `Settings.notify_on_event`, has an email, not deceased, and a member of the event's groups if it's group-restricted). Same re-query-fresh/raises-on-failure/deleted-event-skipped shape as the blog-post task. |
+| A new `Photo` is saved | `photos.tasks.generate_photo_derivatives(photo_pk)` | Enqueued from `photos/signals.py`'s `post_save` receiver, inside `transaction.on_commit`, never from the upload view directly (`PhotoUploadView` stays fully decoupled from derivative generation). Builds a thumbnail and a web-size WebP rendition, and extracts EXIF capture date/orientation. A deleted photo is logged and skipped, not retried. |
+| A `Person`, `BlogPost`, `Document`, `Album` or `Photo` row is saved or deleted (also: `BlogPost.tags` M2M changes, or a child `DocumentFile` is saved/deleted) | `annuaire.tasks.reindex_search_object(app_label, model_name, pk)` | Enqueued via `annuaire.search.indexing.enqueue_reindex()` from each app's `register_search_index()` call (`annuaire/signals.py`, `publications/signals.py`, `documents/signals.py`, `photos/signals.py`), inside `transaction.on_commit`. A disjointness check skips re-enqueueing when the saved `update_fields` don't overlap the model's `SearchSpec.source_fields` (e.g. a `Photo`'s derivative-generation status changing doesn't reindex it). The task re-derives `search_text`/`search_vector` from the row's current state, same re-query-fresh shape as the other on-demand tasks above. |
+
+Enqueue by plain values (a PK, an email string), never a built message or model
+instance — the task re-queries current state itself, so nothing enqueued can go stale or
+fail to serialize between enqueue and execution.
+
+## Local development
+
+`Q_CLUSTER["sync"]` defaults to `DEBUG`'s value, and `conftest.py` forces it to `True`
+for the whole test suite — a task enqueued via `django_q.tasks.async_task()` then runs
+inline, in the same process, instead of needing a real worker or broker. To run a real
+worker locally (e.g. to test `qcluster` itself): `uv run python manage.py qcluster`,
+with a Valkey instance reachable at `QUEUE_URL` (or `Q_SYNC=False` unset, which is the
+default outside `DEBUG`).
+
+## Monitoring
+
+There's no dedicated dashboard yet beyond the Django admin's `django_q` models
+(`Schedule`, `Task`, `Failure`) and `docker logs` on the `worker` container — structured
+error monitoring is a later item.

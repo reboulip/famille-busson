@@ -6,18 +6,33 @@ one component: the ridge as a faint watermark, a title, an optional
 explanation, and — where there is one — the relevant action in reach.
 
 Params:
-  title        required, the headline ("Aucun chalet enregistré")
-  body         optional, one line of explanation
-  action_url   optional, href for the primary action
-  action_label optional, label for that action
+  title                required, the headline ("Aucun chalet enregistré")
+  body                 optional, one line of explanation
+  action_url           optional, href for the primary action
+  action_label         optional, label for that action
+  empty_hint           optional, a "commencez par…" onboarding line for a
+                        brand-new member's first visit
+  empty_secondary_url  optional, href for a secondary, quieter action
+  empty_secondary_label optional, label for that secondary action
+
+Note: every {% include %} of this partial omits `only`, so the parent
+context leaks in. The onboarding params are prefixed with `empty_` (unlike
+the older title/body/action_* params) precisely so a parent template's own
+context variable can never collide with one of these by accident.
 {% endcomment %}
 <div class="fb-empty">
     {% include "annuaire/_ridge.html" with variant="mark" css_class="fb-empty__ridge" %}
     <p class="fb-empty__title">{{ title }}</p>
     {% if body %}<p>{{ body }}</p>{% endif %}
+    {% if empty_hint %}<p class="fb-empty__hint">{{ empty_hint }}</p>{% endif %}
     {% if action_url and action_label %}
         <p class="fb-empty__action">
             <a class="fb-btn fb-btn--primary" href="{{ action_url }}">{{ action_label }}</a>
+        </p>
+    {% endif %}
+    {% if empty_secondary_url and empty_secondary_label %}
+        <p class="fb-empty__secondary">
+            <a class="fb-btn fb-btn--quiet" href="{{ empty_secondary_url }}">{{ empty_secondary_label }}</a>
         </p>
     {% endif %}
 </div>

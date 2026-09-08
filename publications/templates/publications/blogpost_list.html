@@ -14,11 +14,25 @@
         {% endif %}
     </div>
 
+    <form method="get" action="{% url 'blogpost-list' %}" class="fb-toolbar">
+        <select name="tag" class="fb-select" style="width:auto" aria-label="Filtrer par étiquette" onchange="this.form.submit()">
+            <option value="">Toutes les étiquettes</option>
+            {% for tag in filter_tags %}
+                <option value="{{ tag.pk }}" {% if selected_tag == tag.pk|stringformat:"s" %}selected{% endif %}>{{ tag.name }}</option>
+            {% endfor %}
+        </select>
+        {% if selected_tag %}
+            <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm">Effacer</a>
+        {% endif %}
+    </form>
+
     <div class="blogpost-list">
         {% for post in posts %}
             {% include "publications/_blogpost_card.html" %}
         {% empty %}
-            {% if user.is_authenticated %}
+            {% if selected_tag %}
+                {% include "annuaire/_empty.html" with title="Aucune publication avec cette étiquette" %}
+            {% elif user.is_authenticated %}
                 {% url 'blogpost-create' as create_url %}
                 {% include "annuaire/_empty.html" with title="Aucune publication pour l'instant" body="Racontez une nouvelle, partagez des photos, ouvrez le bal." action_url=create_url action_label="Écrire la première publication" %}
             {% else %}

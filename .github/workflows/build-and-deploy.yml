@@ -74,6 +74,12 @@ jobs:
             docker-compose.prod.yml \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/bubu/docker-compose.yml"
 
+      - name: Copy scripts/ to the VPS
+        run: |
+          scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" -r \
+            scripts \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/bubu/"
+
       - name: Pull and restart containers on the VPS
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \

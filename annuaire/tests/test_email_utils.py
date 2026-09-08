@@ -1,7 +1,27 @@
 import pytest
 from django.core import mail
 
-from annuaire.email_utils import send_bulk_emails
+from annuaire.email_utils import OutgoingEmail, send_bulk_emails, send_one_email
+
+
+@pytest.mark.django_db
+def test_send_one_email_sends_it():
+    send_one_email(OutgoingEmail(to="alice@example.com", subject="Sujet", text_body="Contenu"))
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == ["alice@example.com"]
+
+
+@pytest.mark.django_db
+def test_send_one_email_raises_on_failure(monkeypatch):
+    import annuaire.email_utils as email_utils
+
+    def _raise(*args, **kwargs):
+        raise RuntimeError("SMTP down")
+
+    monkeypatch.setattr(email_utils, "build_message", _raise)
+
+    with pytest.raises(RuntimeError):
+        send_one_email(OutgoingEmail(to="alice@example.com", subject="Sujet", text_body="Contenu"))
 
 
 @pytest.mark.django_db

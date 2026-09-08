@@ -1,5 +1,44 @@
+import contextvars
+import logging
+import uuid
+
 from django.shortcuts import redirect
 from django.urls import reverse
+
+_request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_id", default=None)
+
+
+class RequestIdLogFilter(logging.Filter):
+    """Attaches the current request's id (if any) to every log record, so
+    JsonFormatter (annuaire/log_formatters.py) can include it without every call
+    site having to pass `extra={"request_id": ...}` by hand."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = _request_id_var.get()
+        return True
+
+
+class RequestIdMiddleware:
+    """Tags every request/response with an id, for correlating the several log
+    lines one request can produce. Accepts an inbound X-Request-ID (e.g. from a
+    reverse proxy that already generates one) so a request can be traced across
+    both hops; generates one otherwise."""
+
+    HEADER = "X-Request-ID"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        request_id = request.headers.get(self.HEADER) or uuid.uuid4().hex
+        request.request_id = request_id
+        token = _request_id_var.set(request_id)
+        try:
+            response = self.get_response(request)
+        finally:
+            _request_id_var.reset(token)
+        response[self.HEADER] = request_id
+        return response
 
 
 class ForcePasswordChangeMiddleware:

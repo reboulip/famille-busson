@@ -1,0 +1,14 @@
+{% load static %}
+<a href="{% url 'personne-detail' person.pk %}" class="fb-card fb-card--link fb-person-card">
+    <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
+         alt="{{ person.first_name }} {{ person.last_name }}{% if person.deceased %} (décédé·e){% endif %}"
+         class="fb-avatar{% if person.deceased %} fb-avatar--deceased person-photo--deceased{% endif %}">
+    <span class="fb-person-card__name">{{ person.first_name }} {{ person.last_name }}</span>
+    {# Not colour alone: the greyscale treatment is backed up in words. #}
+    {% if person.deceased %}
+        <span class="fb-chip">
+            {% if person.birth_date %}{{ person.birth_date|date:"Y" }}{% endif %} –
+            {% if person.death_date %}{{ person.death_date|date:"Y" }}{% else %}décédé·e{% endif %}
+        </span>
+    {% endif %}
+</a>

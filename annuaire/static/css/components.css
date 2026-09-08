@@ -422,6 +422,22 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     padding: var(--fb-sp-6) var(--fb-sp-6) var(--fb-sp-8);
 }
 .fb-content__inner { max-width: var(--fb-content-max); margin: 0 auto; }
+.fb-footer {
+    margin-top: var(--fb-sp-8);
+    text-align: center;
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bark);
+}
+
+/* --- Search form ---------------------------------------------------------
+   Mounted twice (annuaire/_search_form.html): in .fb-topbar (mobile) and at
+   the top of .fb-sidebar's <nav> (desktop) -- .fb-topbar is mobile-only,
+   see below. */
+.fb-search-form { margin: 0; }
+.fb-topbar .fb-search-form { flex: 1 1 auto; min-width: 0; }
+.fb-topbar .fb-search-form .fb-input { width: 100%; }
+.fb-nav .fb-search-form { margin-bottom: var(--fb-sp-5); }
+.fb-nav .fb-search-form .fb-input { width: 100%; }
 
 /* --- Mobile ------------------------------------------------------------- */
 .fb-topbar {
@@ -704,7 +720,9 @@ a.fb-card:hover,
 .fb-empty__ridge .fb-ridge__snow { fill: var(--fb-bark); }
 .fb-empty__title { font-family: var(--fb-font-display); font-weight: 600; color: var(--fb-ink); margin-bottom: var(--fb-sp-1); }
 .fb-empty p { font-size: var(--fb-text-sm); }
+.fb-empty__hint { color: var(--fb-bark); margin-top: var(--fb-sp-2); }
 .fb-empty__action { margin-top: var(--fb-sp-4); }
+.fb-empty__secondary { margin-top: var(--fb-sp-2); }
 
 /* --- Alerts ------------------------------------------------------------- */
 /* Ground is tinted, text is always --fb-ink: AA by construction, whatever the

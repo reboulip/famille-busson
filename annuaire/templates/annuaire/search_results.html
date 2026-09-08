@@ -1,0 +1,59 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    {# Archetype C — collection feed, grouped by type. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Recherche</h1>
+            {% if query %}
+                <p class="fb-page-head__lede">Résultats pour « {{ query }} »</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if expanded %}
+        <div class="fb-section-head">
+            <h2>{{ expanded.label }}</h2>
+            <a href="{% url 'search' %}?q={{ query|urlencode }}" class="fb-tile__link">&larr; Retour aux résultats</a>
+        </div>
+        <div class="fb-grid fb-grid--wide">
+            {% for result in expanded.page_obj %}
+                {% include expanded.card_template with photo=result document=result album=result post=result person=result story=result %}
+            {% empty %}
+                {% include "annuaire/_empty.html" with title="Aucun résultat" %}
+            {% endfor %}
+        </div>
+        {% if expanded.page_obj.has_other_pages %}
+            <nav class="fb-pagination pagination">
+                {% if expanded.page_obj.has_previous %}
+                    <a href="?q={{ query|urlencode }}&type={{ expanded.key }}&page={{ expanded.page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                {% endif %}
+                <span>Page {{ expanded.page_obj.number }} / {{ expanded.page_obj.paginator.num_pages }}</span>
+                {% if expanded.page_obj.has_next %}
+                    <a href="?q={{ query|urlencode }}&type={{ expanded.key }}&page={{ expanded.page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% elif not query %}
+        <p class="fb-meta">Entrez un terme pour lancer la recherche.</p>
+    {% elif query|length < 2 %}
+        <p class="fb-meta">Continuez à taper — au moins 2 caractères.</p>
+    {% elif not has_results %}
+        {% include "annuaire/_empty.html" with title="Aucun résultat" body="Essayez avec une autre orthographe, ou un terme différent." %}
+    {% else %}
+        {% for group in groups %}
+            {% if group.results %}
+                <div class="fb-section-head">
+                    <h2>{{ group.label }}</h2>
+                    {% if group.total_count > group.results|length %}
+                        <a href="?q={{ query|urlencode }}&type={{ group.key }}" class="fb-tile__link">Voir tout ({{ group.total_count }}) →</a>
+                    {% endif %}
+                </div>
+                <div class="fb-grid fb-grid--wide">
+                    {% for result in group.results %}
+                        {% include group.card_template with photo=result document=result album=result post=result person=result story=result %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endblock content %}

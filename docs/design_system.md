@@ -101,6 +101,17 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
    {% url 'thing-create' as create_url %}
    {% include "annuaire/_empty.html" with title="Aucune chose" body="…" action_url=create_url action_label="Créer" %}
    ```
+   For a first-visit page where a brand-new member needs onboarding guidance, add
+   `empty_hint` (a "commencez par…" line) and/or a quieter `empty_secondary_url`/
+   `empty_secondary_label` action alongside or instead of the primary one:
+   ```html
+   {% url 'directory' as directory_url %}
+   {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
+   ```
+   These four params are prefixed `empty_*` (unlike `title`/`body`/`action_*`)
+   because every `{% include %}` of this partial omits `only`, so an unprefixed name
+   could silently pick up whatever the parent template's own context happens to
+   call it.
 3. **Use `{% icon %}`, not emoji.** Emoji render as tofu boxes wherever the system has
    no emoji font and cannot follow the theme. `{% load icons %}` then
    `{% icon "mail" size=16 %}`. An unknown name raises rather than rendering nothing.
@@ -144,9 +155,9 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
     mirror the same text into `aria-label` and `title` on the button — so the control
     keeps its accessible name once the text is not painted, and (in this codebase) the
     text stays in the DOM for any source-text test that asserts on the rendered label
-    string. The genealogy toolbar's three buttons (`genealogie-export`,
-    `genealogie-export-image`, `genealogie-fullscreen`) are the current example, using
-    `.genealogie-toolbar__label`.
+    string. The genealogy toolbar's four buttons (`genealogie-export`,
+    `genealogie-export-image`, `genealogie-export-gedcom`, `genealogie-fullscreen`) are
+    the current example, using `.genealogie-toolbar__label`.
 
 ## 6. The ridge
 
@@ -194,8 +205,13 @@ sync if either changes.
   spans one row** — the row auto-sizes to the sticky element's own height, so it
   never scrolls past it. `.fb-record`'s mobile layout collapses to a single-column
   grid, so the sticky rule on `.profile-identity` was inert there until the mobile
-  media query first set `.profile-record`/its rail to `display: block`, giving the
-  identity card a normal block ancestor it can travel — and stick — within.
+  media query gave `.profile-record` a normal block layout. The rail itself
+  (`.fb-record__rail`) is set to `display: contents` at that breakpoint, not
+  `display: block` — a block box would still carry the shared component's own
+  sticky rule and pin the whole rail (identity card + info card together, #124),
+  where `display: contents` removes the rail's box entirely and lets its children
+  flow straight into `.profile-record`, leaving only `.profile-identity`'s own
+  sticky rule in effect.
 - **The source-text tests' `_rule_body()` helper cannot see inside an `@media`
   block** — its regex finds the first top-level occurrence of a selector, so a rule
   that only exists inside a media query (the mobile sticky/condensing rules in

@@ -1,0 +1,25 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Événements</p>
+            <h1>Supprimer un événement ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <h1>Supprimer « {{ object.title }} » ?</h1>
+        <p class="fb-confirm__lead">Cette action est définitive.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">
+                    {% icon "trash" size=16 %} Supprimer définitivement
+                </button>
+                <a href="{% url 'event-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}

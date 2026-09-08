@@ -1,0 +1,28 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {% comment %}
+        Archetype B — collection grid, place variant: rectangular media
+        (chalet_list.html's pattern), not round medallions.
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Albums</h1>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'album-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvel album</a>
+        </div>
+    </div>
+
+    {% if albums %}
+        <div class="fb-grid fb-grid--wide">
+            {% for album in albums %}
+                {% include "photos/_album_card.html" with album=album %}
+            {% endfor %}
+        </div>
+    {% else %}
+        {% url 'album-create' as create_url %}
+        {% include "annuaire/_empty.html" with title="Aucun album" body="Les albums rassemblent les photos de la famille par événement ou par période." action_url=create_url action_label="Créer un album" %}
+    {% endif %}
+{% endblock content %}

@@ -1,13 +1,36 @@
 import os
 
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 from annuaire.models import Person
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
+PDF_EXTENSIONS = {".pdf"}
+
+
+class Tag(models.Model):
+    ACCENT_CHOICES = [
+        ("", "Aucun"),
+        ("gold", "Doré"),
+        ("accent", "Alpenglow"),
+    ]
+
+    name = models.CharField(max_length=50, unique=True, verbose_name="Étiquette")
+    accent = models.CharField(max_length=10, choices=ACCENT_CHOICES, blank=True, verbose_name="Accent")
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Étiquette"
+        verbose_name_plural = "Étiquettes"
+
+    def __str__(self):
+        return self.name
 
 
 class BlogPost(models.Model):
+    # post_type ("Busson connection") and tags coexist deliberately: Phase 16.2
+    # migrates post_type onto a tag and removes this field then, not now.
     POST_TYPE_CHOICES = [
         ("BC", "Busson connection"),
         ("NORMAL", "Publication normale"),
@@ -21,13 +44,33 @@ class BlogPost(models.Model):
         default="NORMAL",
         verbose_name="Type de publication",
     )
+    tags = models.ManyToManyField(
+        Tag,
+        blank=True,
+        related_name="posts",
+        verbose_name="Étiquettes",
+    )
     authors = models.ManyToManyField(
         Person,
         related_name="blog_posts",
         verbose_name="Auteur(s)",
     )
+    documents = models.ManyToManyField(
+        "documents.Document",
+        blank=True,
+        related_name="publications",
+        verbose_name="Documents liés",
+    )
+    albums = models.ManyToManyField(
+        "photos.Album",
+        blank=True,
+        related_name="publications",
+        verbose_name="Albums liés",
+    )
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
 
     class Meta:
         ordering = ["-created_at"]
@@ -66,6 +109,10 @@ class Attachment(models.Model):
     @property
     def filename(self):
         return os.path.basename(self.file.name)
+
+    @property
+    def is_pdf(self) -> bool:
+        return os.path.splitext(self.file.name)[1].lower() in PDF_EXTENSIONS
 
 
 class Comment(models.Model):

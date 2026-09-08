@@ -118,15 +118,35 @@ document.addEventListener('DOMContentLoaded', function () {
             .join(' ');
     }
 
+    function spouseChipsHtml(person) {
+        const known = person.rels.spouses.map((id) => byId.get(id)).filter(Boolean);
+        if (known.length === 0) {
+            return `<p class="genealogie-detail-empty">Aucun·e conjoint·e renseigné·e.</p>`;
+        }
+        return known
+            .map((rel) => {
+                const marriage = (person.data.marriages || {})[rel.id];
+                const parts = [];
+                if (marriage && marriage.start_date) parts.push(`marié·e le ${marriage.start_date}`);
+                if (marriage && marriage.place) parts.push(`à ${marriage.place}`);
+                if (marriage && marriage.end_date) parts.push(`jusqu'au ${marriage.end_date}`);
+                const meta = parts.length ? `<div class="genealogie-detail-empty">${parts.join(' ')}</div>` : '';
+                return `<div><button type="button" class="btn btn-sm btn-outline-secondary genealogie-chip" data-person-id="${rel.id}">${personLabel(rel)}</button>${meta}</div>`;
+            })
+            .join(' ');
+    }
+
     function showDetail(chart, person) {
         if (!detailPanel) return;
-        const birthYear = person.data.birthday ? `<p>🎂 ${person.data.birthday}</p>` : '';
+        const birthYear = person.data.birthday ? `<p>🎂 ${person.data.birthday}${person.data.birth_place ? ` à ${person.data.birth_place}` : ''}</p>` : '';
+        const deathPlace = person.data.death_place ? `<p>📍 Décès à ${person.data.death_place}</p>` : '';
         detailPanel.innerHTML = `
             <div class="genealogie-detail-header">
                 <img src="${person.data.avatar}" alt="" class="genealogie-detail-avatar">
                 <h2>${personLabel(person)}</h2>
             </div>
             ${birthYear}
+            ${deathPlace}
             <p>
                 <a href="${person.data.url}" class="btn btn-sm btn-primary">Voir le profil complet</a>
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-center-id="${person.id}">Centrer l'arbre ici</button>
@@ -134,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <h3>Parents</h3>
             ${relationChipsHtml(person.rels.parents, 'Aucun parent renseigné.')}
             <h3>Conjoint·e(s)</h3>
-            ${relationChipsHtml(person.rels.spouses, 'Aucun·e conjoint·e renseigné·e.')}
+            ${spouseChipsHtml(person)}
             <h3>Enfants</h3>
             ${relationChipsHtml(person.rels.children, 'Aucun enfant renseigné.')}
         `;
@@ -204,28 +224,35 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.updateMainId(initialMainId);
     chart.updateTree({ initial: true, tree_position: 'fit' });
 
-    const exportButton = document.getElementById('genealogie-export');
-    if (exportButton) {
-        exportButton.addEventListener('click', () => {
-            // "Currently rendered" = every real (non-placeholder) .card element
-            // family-chart has drawn into the mount right now -- card-to-add/
-            // card-unknown/card-new-rel mark synthetic cards with no real person
-            // behind them (see the same check in setOnCardClick above).
-            const ids = Array.from(mount.querySelectorAll('.card'))
-                .filter(
-                    (card) =>
-                        !card.classList.contains('card-to-add') &&
-                        !card.classList.contains('card-unknown') &&
-                        !card.classList.contains('card-new-rel')
-                )
-                .map((card) => card.dataset.id)
-                .filter(Boolean);
+    function currentlyRenderedIds() {
+        // "Currently rendered" = every real (non-placeholder) .card element
+        // family-chart has drawn into the mount right now -- card-to-add/
+        // card-unknown/card-new-rel mark synthetic cards with no real person
+        // behind them (see the same check in setOnCardClick above).
+        return Array.from(mount.querySelectorAll('.card'))
+            .filter(
+                (card) =>
+                    !card.classList.contains('card-to-add') &&
+                    !card.classList.contains('card-unknown') &&
+                    !card.classList.contains('card-new-rel')
+            )
+            .map((card) => card.dataset.id)
+            .filter(Boolean);
+    }
+
+    function wireIdBasedExportButton(button) {
+        if (!button) return;
+        button.addEventListener('click', () => {
+            const ids = currentlyRenderedIds();
             if (ids.length === 0) return;
             const params = new URLSearchParams();
             ids.forEach((id) => params.append('ids', id));
-            window.location.href = `${exportButton.dataset.exportUrl}?${params.toString()}`;
+            window.location.href = `${button.dataset.exportUrl}?${params.toString()}`;
         });
     }
+
+    wireIdBasedExportButton(document.getElementById('genealogie-export'));
+    wireIdBasedExportButton(document.getElementById('genealogie-export-gedcom'));
 
     function exportTreeImage(exportChart, exportMount, button) {
         // Always fit-then-capture -- never the as-displayed viewport, which may be

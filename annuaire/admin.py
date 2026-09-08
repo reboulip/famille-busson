@@ -38,7 +38,8 @@ class AccountAdmin(UserAdmin):
 
 @admin.register(Person)
 class PersonAdmin(admin.ModelAdmin):
-    list_display = ("first_name", "last_name", "email", "account", "deceased")
+    list_display = ("first_name", "last_name", "email", "account", "deceased", "export_privacy")
+    list_filter = ("export_privacy",)
     filter_horizontal = ("owners",)
 
 

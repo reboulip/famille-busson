@@ -3,6 +3,7 @@ birthday is today.
 
 Usage (from the repo root):
     uv run python manage.py send_birthday_reminders
+    uv run python manage.py send_birthday_reminders --date 2026-06-10 --dry-run
 
 Meant to be run once a day via cron/systemd timer, e.g.:
     0 8 * * * cd /app && uv run python manage.py send_birthday_reminders
@@ -10,53 +11,60 @@ Meant to be run once a day via cron/systemd timer, e.g.:
 
 from __future__ import annotations
 
-import calendar
 import datetime
+import logging
 
-from django.core.management.base import BaseCommand
-from django.db.models import Q
+from django.core.management.base import BaseCommand, CommandError, CommandParser
 
-from annuaire import emails
-from annuaire.email_utils import send_bulk_emails
-from annuaire.models import Person
-from annuaire.models import Settings as NotificationSettings
+from annuaire import birthdays
 
 HELP_TEXT = __doc__ or ""
+
+logger = logging.getLogger("django")
 
 
 class Command(BaseCommand):
     help = HELP_TEXT
 
-    def handle(self, *args, **options):
-        today = datetime.date.today()
-        birthday_filter = Q(birth_date__month=today.month, birth_date__day=today.day)
-        # Feb 29 people have no real birthday on a non-leap year -- observe it on
-        # Feb 28 instead, same as most real-world "next birthday" logic.
-        if today.month == 2 and today.day == 28 and not calendar.isleap(today.year):
-            birthday_filter |= Q(birth_date__month=2, birth_date__day=29)
-        birthday_people = list(Person.objects.filter(birthday_filter).exclude(deceased=True))
-        if not birthday_people:
-            self.stdout.write("Aucun anniversaire aujourd'hui.")
-            return
-
-        subscribers = (
-            NotificationSettings.objects.filter(notify_on_birthday=True)
-            .exclude(person__email__isnull=True)
-            .exclude(person__email="")
-            .exclude(person__deceased=True)
-            .select_related("person")
+    def add_arguments(self, parser: CommandParser) -> None:
+        parser.add_argument(
+            "--date",
+            type=datetime.date.fromisoformat,
+            default=None,
+            help="Run as if today were this date (ISO 8601, YYYY-MM-DD). Defaults to today.",
         )
-        if not subscribers:
-            self.stdout.write("Aucun abonné aux rappels d'anniversaire.")
+        parser.add_argument(
+            "--dry-run",
+            action="store_true",
+            help="Report who would receive a reminder without sending any email.",
+        )
+
+    def handle(self, *args, **options):
+        today = options["date"] or datetime.date.today()
+        dry_run = options["dry_run"]
+        logger.info("send_birthday_reminders starting for %s (dry_run=%s)", today, dry_run)
+
+        if dry_run:
+            messages = birthdays.birthday_reminder_messages(today)
+            if not messages:
+                self.stdout.write("Aucun anniversaire aujourd'hui.")
+                logger.info("send_birthday_reminders: nothing to send for %s", today)
+                return
+            recipients = sorted({message.to for message in messages})
+            self.stdout.write(f"{len(recipients)} destinataire(s) recevraient un rappel (dry-run).")
+            for recipient in recipients:
+                self.stdout.write(f"  - {recipient}")
+            logger.info("send_birthday_reminders dry-run: %d recipient(s) for %s", len(recipients), today)
             return
 
-        messages = []
-        for birthday_person in birthday_people:
-            # Read the photo once per birthday person, not once per subscriber: the
-            # same bytes are attached to every copy of that person's message.
-            photo = emails.birthday_photo(birthday_person)
-            for subscriber in subscribers:
-                messages.append(emails.birthday_reminder(birthday_person, subscriber.person.email, photo))
+        sent, failed = birthdays.send_birthday_reminders(today)
+        if not sent and not failed:
+            self.stdout.write("Aucun anniversaire aujourd'hui.")
+            logger.info("send_birthday_reminders: nothing to send for %s", today)
+            return
 
-        sent, failed = send_bulk_emails(messages)
         self.stdout.write(f"{len(sent)} email(s) envoyé(s), {len(failed)} échec(s).")
+        if failed:
+            logger.error("send_birthday_reminders: %d failure(s) for %s: %s", len(failed), today, failed)
+            raise CommandError(f"{len(failed)} birthday reminder(s) failed to send: {failed}")
+        logger.info("send_birthday_reminders: %d email(s) sent for %s", len(sent), today)

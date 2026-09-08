@@ -1,4 +1,7 @@
+import secrets
+
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Group, Permission, PermissionsMixin
+from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 
@@ -26,6 +29,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     must_change_password = models.BooleanField(default=False, verbose_name="Doit changer le mot de passe")
     groups = models.ManyToManyField(Group, related_name="account_set", blank=True)
     user_permissions = models.ManyToManyField(Permission, related_name="account_set", blank=True)
+    # Not last_login: Django's own update_last_login receiver overwrites that on
+    # every login, which would make a "since last visit" feed empty for anyone
+    # who just logged in. Stamped at the END of each activity feed GET instead.
+    last_feed_seen_at = models.DateTimeField(null=True, blank=True, verbose_name="Dernière consultation du fil")
+    # Per-account tokenised .ics feed (12.5) -- unique so a lookup by token
+    # resolves exactly one account. Lazily generated, never on a form.
+    calendar_token = models.CharField(
+        max_length=64, unique=True, null=True, blank=True, editable=False, verbose_name="Jeton calendrier"
+    )
     objects = AccountManager()
 
     USERNAME_FIELD = "email"
@@ -34,8 +46,26 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.email
 
+    def get_or_create_calendar_token(self) -> str:
+        token = self.calendar_token
+        if not token:
+            token = secrets.token_urlsafe(32)
+            self.calendar_token = token
+            self.save(update_fields=["calendar_token"])
+        return str(token)
+
+    def regenerate_calendar_token(self) -> str:
+        self.calendar_token = secrets.token_urlsafe(32)
+        self.save(update_fields=["calendar_token"])
+        return self.calendar_token
+
 
 class Person(models.Model):
+    class ExportPrivacy(models.TextChoices):
+        AUTO = "auto", "Automatique (masqué·e tant que vivant·e)"
+        SHARE = "share", "Toujours partager"
+        REDACT = "redact", "Toujours masquer"
+
     last_name = models.CharField(max_length=100, verbose_name="Nom")
     account = models.OneToOneField(
         Account, related_name="profile", on_delete=models.SET_NULL, blank=True, null=True, verbose_name="Compte"
@@ -48,6 +78,11 @@ class Person(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name="Longitude")
     phone_number = models.CharField(max_length=25, blank=True, null=True, verbose_name="Numéro de téléphone")
     birth_date = models.DateField(blank=True, null=True, verbose_name="Date de naissance")
+    # Free text, not geocoded: historical place names rarely resolve in a modern
+    # geocoder, and a lat/long here would put deceased ancestors on the carte.
+    # Collected for genealogical record-keeping (tree display, future GEDCOM
+    # export) -- see ProfileEditForm's help_text.
+    birth_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de naissance")
     # Staff/superuser-only (see ProfileEditForm, which pops both fields for anyone
     # else). Unlike `gender` -- added then deliberately removed in migration 0007,
     # with two standing regression guards against its return -- this field's
@@ -58,7 +93,20 @@ class Person(models.Model):
     # precedent for surfacing more personal-status text elsewhere without asking.
     deceased = models.BooleanField(default=False, verbose_name="Décédé·e")
     death_date = models.DateField(blank=True, null=True, verbose_name="Date de décès")
+    death_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de décès")
     description = models.TextField(blank=True, null=True, verbose_name="Infos utiles")
+    # Governs redaction in the GEDCOM export by default (auto = redacted while
+    # living); the Excel export and iCal feed are otherwise unaffected by this
+    # setting except for the explicit "redact" state, which they also honour --
+    # see annuaire/privacy.py, the single source of truth every export surface
+    # calls instead of re-deriving "is this person alive" itself.
+    export_privacy = models.CharField(
+        max_length=6,
+        choices=ExportPrivacy.choices,
+        default=ExportPrivacy.AUTO,
+        blank=True,
+        verbose_name="Confidentialité dans les exports",
+    )
     owners = models.ManyToManyField(
         "self",
         symmetrical=False,
@@ -66,6 +114,9 @@ class Person(models.Model):
         blank=True,
         verbose_name="Propriétaires",
     )
+    search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
+    search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
@@ -78,6 +129,11 @@ class Settings(models.Model):
     )
     notify_on_new_blog_post = models.BooleanField(
         default=True, blank=True, verbose_name="Recevoir une notification pour les nouveaux articles"
+    )
+    # Covers both the creation announcement and the pre-event reminder -- one
+    # preference, not two (see events.signals/events.tasks).
+    notify_on_event = models.BooleanField(
+        default=True, blank=True, verbose_name="Recevoir les annonces et rappels d'événements"
     )
 
     class Meta:
@@ -103,7 +159,14 @@ class Relation(models.Model):
         "Person", related_name="descending_relations", on_delete=models.CASCADE, verbose_name="En relation avec"
     )
     relationship_type = models.IntegerField(choices=RELATION_CHOICES, verbose_name="Type de relation")
+    # For a mariage/conjoint row, start_date IS the marriage date -- there is no
+    # separate marriage_date field, to avoid two sources of truth for the same
+    # fact. marriage_place/end_date are spouse-only too; both are mirrored onto
+    # the inverse row by create_inverse_relation and nulled/blanked there for
+    # parent/child rows -- see annuaire/signals.py.
     start_date = models.DateField(blank=True, null=True, verbose_name="Date de début")
+    marriage_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu du mariage")
+    end_date = models.DateField(blank=True, null=True, verbose_name="Date de fin")
 
     def __str__(self):
         return f"{self.person1} -> {self.get_relationship_type_display()} -> {self.person2}"

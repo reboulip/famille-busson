@@ -3,6 +3,96 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.4.0 — Phases 8–13: retours du terrain, socle, photothèque, recherche, calendrier et généalogie approfondie
+
+> Six phases: a batch of field-reported fixes, the infrastructure foundation (backups,
+> cache, task queue, error monitoring), a whole new photothèque, unified full-text search,
+> a shared events calendar, and a deep pass on genealogical data including GEDCOM
+> import/export. The tested-restore drill (9.3) stays open pending an actually-executed
+> restore and is carried forward in `ROADMAP.md`.
+
+### Phase 8 — Retours du terrain
+- **Notification e-mail links** no longer resolve to `localhost` in production, and the
+  "Gérer mes préférences" link points at the current URL name. [#132] [#134]
+- **Publication notification e-mails enriched** — author's name after "Nouvelle
+  publication", homepage links from the banner and footer text. [#135] [#136]
+- **Document list sorting and filtering** — by date de dépôt, alphabétique, rédacteur,
+  date de rédaction, plus filtering by author and year, sorted most-recent-first by
+  default. [#137]
+- **Link a publication to a document** — attach an existing `documents.Document` or
+  create a new one from the publication form, alongside attachment upload. [#133]
+- **Close button on the publication attachment viewer.** [#131]
+- **Version number in the site footer.** [#138]
+
+### Phase 9 — Socle : sauvegardes, cache et tâches de fond
+- **Fixed mobile sticky profile rail** — only name and photo stay pinned on scroll. [#124]
+- **Fixed birthday reminder e-mails** not being sent. [#130]
+- **Automated backups** — repo-tracked script dumping Postgres and archiving `media/`
+  and `documents_data/`, with retention and an off-VPS copy.
+- **Backup monitoring** — alerts on a failed, missing, or suspiciously small backup run.
+- **Shared cache** — Valkey/Redis container, `CACHES` configured (previously unset).
+- **Background task queue** — `django-q2` runner; `send_birthday_reminders` and
+  `extract_document_content` moved off the VPS crontab.
+- **Outbound e-mail through the queue**, with per-recipient retries.
+- **Rate-limited unauthenticated e-mail-sending endpoints** (password reset, magic link).
+- **Error monitoring** — Sentry (or equivalent) plus structured JSON logging.
+- **Deepened `/healthz`** — checks database, cache, queue and storage; wired to the
+  compose healthcheck and an external uptime monitor.
+
+### Phase 10 — Photothèque
+- **`Album` and `Photo` models** — group-restricted albums mirroring `documents.Category`,
+  protected storage, never `MEDIA_URL`.
+- **Bulk upload** with per-file progress, reusing the `documents` accept-list and
+  validators.
+- **Async derivatives** — thumbnails, web-size renditions, EXIF capture date and
+  orientation, generated on the queue.
+- **Album list and detail pages**, and a **lightbox viewer** extending the existing
+  document image viewer/carousel.
+- **Photo detail** — caption, date, uploader, tagged people, original-file download.
+- **Tag people in a photo** via the existing person-picker, surfaced as a **photos tab on
+  the profile**.
+- **Link an album to a publication**, instead of re-uploading images.
+- **"Il y a X ans" widget** on the home page, resurfacing a photo or publication from
+  earlier years.
+
+### Phase 11 — Recherche et découverte
+- **Search backend abstraction** — Postgres full-text search (unaccented, ranked) with a
+  SQLite fallback for development and the test suite.
+- **Search indexes** — `SearchVectorField`/GIN index on `Person`, `BlogPost`, `Document`
+  (folding in `extracted_text`), `Album` and `Photo`, refreshed on the queue.
+- **Global search UI** — topbar search field and a grouped results page, honouring every
+  existing access rule.
+- **Tags on publications** — many-to-many with chips and filtering.
+- **Activity feed** — "Quoi de neuf" view merging new publications, comments, documents,
+  photos and members.
+- **Onboarding empty states** across the shared `_empty.html`.
+
+### Phase 12 — Événements et calendrier partagé
+- **`Event` model and CRUD** — markdown description, start/end, all-day flag, address
+  picker with geocoding, organisers, group-restricted visibility.
+- **RSVP** — per-person oui/non/peut-être, guest count, note, shown on the event page.
+- **Event notifications** — creation announcement and pre-event reminder, honouring
+  notification preferences and deceased-profile suppression.
+- **Unified calendar** — events, chalet présences and anniversaires in one month/agenda
+  view, generalizing `presence_calendar.js`.
+- **iCal subscription** — per-account tokenised `.ics` feed.
+- **Events on the home page and the map.**
+
+### Phase 13 — Généalogie approfondie
+- **Vital data** — birth/death place on `Person`; marriage place, date and end date on
+  `Relation`.
+- **Life stories** — dated markdown stories on a `Person`, optionally illustrated,
+  rendered as a profile timeline.
+- **Sources and citations** — provenance records a story or vital-data claim can point at.
+- **GEDCOM export** — full tree or a selected subtree, compatible with Geneanet,
+  MyHeritage and Gramps.
+- **Person merge** — detects and safely merges likely-duplicate `Person` rows across
+  relations, photos, documents, présences and account link.
+- **GEDCOM import** — staged records behind a review-and-approve screen; nothing is
+  written to the directory without explicit human approval.
+- **Living-person privacy** — exports redact living people's details by default, with a
+  per-person opt-out.
+
 ## v1.3.0 — Phase 7: polish pass across publications, profil, généalogie, chalets, carte, accueil
 
 > Small, targeted UX fixes across six areas plus a new automated dependency-upgrade

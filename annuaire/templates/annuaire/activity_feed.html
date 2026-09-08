@@ -1,0 +1,33 @@
+{% extends "annuaire/base.html" %}
+{% load markdown_extras %}
+{% block content %}
+    {# Archetype C — collection feed, split into a "since last visit" head and a bounded "earlier" tail. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>Quoi de neuf</h1>
+        </div>
+    </div>
+
+    {% if recent_entries %}
+        <div class="fb-section-head"><h2>Depuis votre dernière visite</h2></div>
+        <div class="fb-feed">
+            {% for entry in recent_entries %}
+                {% include "annuaire/_activity_entry.html" %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if older_entries %}
+        <div class="fb-section-head"><h2>Plus tôt</h2></div>
+        <div class="fb-feed">
+            {% for entry in older_entries %}
+                {% include "annuaire/_activity_entry.html" %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not recent_entries and not older_entries %}
+        {% url 'blogpost-create' as create_url %}
+        {% include "annuaire/_empty.html" with title="Rien à signaler pour l'instant" empty_hint="Racontez une nouvelle, partagez des photos, ouvrez le bal." empty_secondary_url=create_url empty_secondary_label="Écrire une publication" %}
+    {% endif %}
+{% endblock content %}

@@ -8,8 +8,9 @@ the rollover and 29 February cases, which are unreachable otherwise.
 import datetime
 
 import pytest
+from django.core import mail
 
-from annuaire.birthdays import upcoming_birthdays
+from annuaire.birthdays import birthday_reminder_messages, send_birthday_reminders, upcoming_birthdays
 from annuaire.models import Person
 
 # A leap year, so 29 February is constructible. Never build a fixture date as
@@ -114,3 +115,55 @@ def test_the_window_length_is_configurable():
     _person("Alice", datetime.date(1980, 6, 14))
     assert upcoming_birthdays(today, days=3) == []
     assert len(upcoming_birthdays(today, days=5)) == 1
+
+
+@pytest.mark.django_db
+def test_birthday_reminder_messages_are_built_for_todays_birthday(person, other_person):
+    today = datetime.date(2026, 6, 10)
+    other_person.birth_date = today.replace(year=1990)
+    other_person.save()
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
+
+    messages = birthday_reminder_messages(today)
+
+    assert [message.to for message in messages] == [person.email]
+
+
+@pytest.mark.django_db
+def test_birthday_reminder_messages_are_empty_when_nobody_has_a_birthday(person):
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+
+    assert birthday_reminder_messages(datetime.date(2026, 6, 10)) == []
+
+
+@pytest.mark.django_db
+def test_send_birthday_reminders_sends_and_returns_recipients(person, other_person):
+    today = datetime.date(2026, 6, 10)
+    other_person.birth_date = today.replace(year=1990)
+    other_person.save()
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+    other_person.settings.notify_on_birthday = False
+    other_person.settings.save()
+
+    sent, failed = send_birthday_reminders(today)
+
+    assert sent == [person.email]
+    assert failed == []
+    assert len(mail.outbox) == 1
+
+
+@pytest.mark.django_db
+def test_send_birthday_reminders_is_a_noop_when_nothing_is_due(person):
+    person.settings.notify_on_birthday = True
+    person.settings.save()
+
+    sent, failed = send_birthday_reminders(datetime.date(2026, 6, 10))
+
+    assert sent == []
+    assert failed == []
+    assert len(mail.outbox) == 0

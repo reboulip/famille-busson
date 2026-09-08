@@ -1,0 +1,17 @@
+{# The album grid IS the document-viewer carousel strip (see
+   documents/static/js/document_viewer.js) -- clicking a tile opens the lightbox
+   instead of duplicating a second viewer implementation. The <img> loads the
+   cheap thumbnail; data-full-src carries the web-size rendition the JS swaps to
+   only once the lightbox actually opens. #}
+<div class="document-viewer-strip-item">
+    <img src="{% url 'photo-file-thumbnail' photo.pk %}"
+         data-full-src="{% url 'photo-file-web' photo.pk %}"
+         alt="{{ photo.caption }}"
+         class="document-file-preview-image document-viewer-zoomable"
+         loading="lazy">
+    <p class="document-viewer-strip-caption">
+        {% if photo.caption %}{{ photo.caption }}<br>{% endif %}
+        <a href="{% url 'photo-detail' photo.pk %}">Détails</a>
+        · <a href="{% url 'photo-tag' photo.pk %}">Identifier des personnes</a>
+    </p>
+</div>

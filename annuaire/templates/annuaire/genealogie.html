@@ -38,6 +38,10 @@
                     aria-label="Exporter le carnet d'adresses en Excel"
                     title="Exporter le carnet d'adresses en Excel"
                     data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">Exporter le carnet d'adresses en Excel</span></button>
+            <button type="button" id="genealogie-export-gedcom" class="fb-btn fb-btn--quiet fb-btn--sm"
+                    aria-label="Exporter en GEDCOM"
+                    title="Exporter en GEDCOM"
+                    data-export-url="{% url 'gedcom-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">Exporter en GEDCOM</span></button>
             <button type="button" id="genealogie-export-image" class="fb-btn fb-btn--quiet fb-btn--sm"
                     aria-label="Exporter en image" title="Exporter en image">{% icon "image" size=16 %} <span class="genealogie-toolbar__label">Exporter en image</span></button>
             <button type="button" id="genealogie-fullscreen" class="fb-btn fb-btn--quiet fb-btn--sm"

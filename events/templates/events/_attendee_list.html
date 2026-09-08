@@ -1,0 +1,20 @@
+{% comment %}
+Attendee list -- params: attendees (Rsvp queryset with response="yes"),
+attendee_headcount (int, count(yes) + sum(guest_count where yes)).
+{% endcomment %}
+<div class="fb-card">
+    <h2>Participants ({{ attendee_headcount }})</h2>
+    {% if attendees %}
+        <ul>
+            {% for rsvp in attendees %}
+                <li>
+                    {{ rsvp.person }}
+                    {% if rsvp.guest_count %}(+{{ rsvp.guest_count }}){% endif %}
+                    {% if rsvp.note %}<span class="fb-meta">— {{ rsvp.note }}</span>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="fb-meta">Personne n'a encore confirmé sa présence.</p>
+    {% endif %}
+</div>

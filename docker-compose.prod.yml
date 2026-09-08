@@ -14,16 +14,72 @@ services:
       timeout: 5s
       retries: 5
 
+  # Serves two roles on separate logical DBs: db 0 is the Django cache, db 1 is the
+  # background task queue's broker (the `worker` service below). noeviction is
+  # required, not just a sane default -- an eviction policy would silently drop
+  # unprocessed jobs, not just cache entries. Persistence (appendonly) means
+  # in-flight state (queued jobs included) survives a container restart.
+  cache:
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    command: ["valkey-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    volumes:
+      - /srv/bubu/data/valkey:/data
+    healthcheck:
+      test: ["CMD-SHELL", "valkey-cli ping || redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   web:
     image: ghcr.io/reboulip/famille-busson:latest
     restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
+      cache:
+        condition: service_healthy
     env_file:
       - .env
+    environment:
+      CACHE_URL: ${CACHE_URL:-redis://cache:6379/0}
+      QUEUE_URL: ${QUEUE_URL:-redis://cache:6379/1}
     volumes:
       - /srv/bubu/data/media:/app/media
       - /srv/bubu/data/documents:/app/documents_data
     ports:
       - "8001:8000"
+    healthcheck:
+      # python, not curl/wget -- the python:3.13-slim base image ships neither. See
+      # scripts/healthcheck.py for why this can't be a bare curl one-liner anyway
+      # (SECURE_SSL_REDIRECT/ALLOWED_HOSTS need a matching Host header).
+      test: ["CMD", "python", "scripts/healthcheck.py"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Runs the same code as `web`, on the same schedule/task definitions -- just the
+  # queue's consumer instead of the HTTP server. Shares web's volumes: forgetting
+  # either one here would silently lose every thumbnail/extraction output the
+  # extraction job produces, since the worker would then write into its own
+  # ephemeral container filesystem instead. RUN_STARTUP_TASKS=0 stops it from racing
+  # `web` to run migrate/collectstatic/sync_scheduled_tasks on every deploy.
+  worker:
+    image: ghcr.io/reboulip/famille-busson:latest
+    restart: unless-stopped
+    command: ["python", "manage.py", "qcluster"]
+    depends_on:
+      db:
+        condition: service_healthy
+      cache:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      CACHE_URL: ${CACHE_URL:-redis://cache:6379/0}
+      QUEUE_URL: ${QUEUE_URL:-redis://cache:6379/1}
+      RUN_STARTUP_TASKS: 0
+    volumes:
+      - /srv/bubu/data/media:/app/media
+      - /srv/bubu/data/documents:/app/documents_data

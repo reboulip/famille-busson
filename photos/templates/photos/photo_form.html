@@ -1,0 +1,22 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Photothèque</p>
+            <h1>Modifier la légende</h1>
+        </div>
+    </div>
+
+    <form method="post" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>La photo</legend>
+            {{ form.caption|as_crispy_field }}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <a href="{% url 'photo-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        </div>
+    </form>
+{% endblock content %}

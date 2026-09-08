@@ -1,0 +1,15 @@
+{% comment %}
+Shared global search field, mounted twice in base.html: once in .fb-topbar
+(mobile) and once at the top of .fb-sidebar's <nav> (desktop) -- .fb-topbar is
+display:none above 991.98px, so a single mount would leave one viewport
+without search. `input_id` must differ between the two mounts (no duplicate
+DOM ids).
+
+Params:
+  input_id  required, a unique id for this mount's <input>
+{% endcomment %}
+<form method="get" action="{% url 'search' %}" class="fb-search-form" role="search">
+    <label class="visually-hidden" for="{{ input_id }}">Rechercher</label>
+    <input type="search" name="q" id="{{ input_id }}" class="fb-input fb-search"
+           placeholder="Rechercher…" minlength="2" aria-label="Rechercher">
+</form>

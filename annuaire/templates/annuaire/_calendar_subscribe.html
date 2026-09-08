@@ -1,0 +1,31 @@
+{% load static %}
+{% comment %}
+"S'abonner au calendrier" control -- an https:// URL and a webcal:// variant
+to copy, plus a way to regenerate (invalidating the old link). Params:
+ical_feed_url, ical_webcal_url.
+{% endcomment %}
+<div class="fb-card cal-subscribe">
+    <h2>S'abonner au calendrier</h2>
+    <p class="fb-meta">Ajoutez ce lien dans Google Calendar, Apple Calendar ou tout autre client compatible iCal.</p>
+    <div class="fb-field">
+        <label class="fb-label" for="cal-subscribe-https">Lien</label>
+        <div class="cal-subscribe-row">
+            <input type="text" id="cal-subscribe-https" class="form-control" readonly value="{{ ical_feed_url }}">
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-copy-target="cal-subscribe-https">Copier</button>
+        </div>
+    </div>
+    <div class="fb-field">
+        <label class="fb-label" for="cal-subscribe-webcal">Lien webcal</label>
+        <div class="cal-subscribe-row">
+            <input type="text" id="cal-subscribe-webcal" class="form-control" readonly value="{{ ical_webcal_url }}">
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-copy-target="cal-subscribe-webcal">Copier</button>
+        </div>
+    </div>
+    <form method="POST" action="{% url 'regenerate-calendar-token' %}">
+        {% csrf_token %}
+        <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm" onclick="return confirm('Régénérer le lien ? L\'ancien lien cessera de fonctionner.')">
+            Régénérer le lien
+        </button>
+    </form>
+</div>
+<script src="{% static 'js/copy_to_clipboard.js' %}"></script>

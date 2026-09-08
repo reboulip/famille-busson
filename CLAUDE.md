@@ -40,6 +40,15 @@
     - `documents`: protected family-document storage and browsing — `Category` (nested,
       group-restricted), `Document` + `DocumentFile` (upload, PDF/image preview, OCR text
       extraction, full-text search). Access rules live in `documents/access.py`
+    - `photos`: the photothèque — `Album` (nested-group-restricted like `documents.Category`,
+      via `AlbumGroupAccess`), `Photo` (bulk upload, async derivatives/EXIF), `PersonTag`
+      (who's in a photo, linking to `annuaire.Person`)
+    - `events`: shared calendar events — `Event` (group-restricted via `EventGroupAccess`,
+      feeds the unified calendar and iCal export) and `Rsvp` (per-person participation)
+    - `genealogy`: life stories (`Story`), provenance (`Source`, `Citation`), and GEDCOM
+      interchange via a hand-rolled writer/parser under `genealogy/gedcom/` (no PyPI
+      dependency) — export from the family-tree view, and a staff-only staged
+      review-and-approve import flow (`GedcomImport`, `StagedIndividual`, `StagedFamily`)
 
 ## 4. Coding Standards & Preferences
 - **Views:** Class-Based Views preferred. Ownership checks go in `get_object()`, raising `PermissionDenied`.

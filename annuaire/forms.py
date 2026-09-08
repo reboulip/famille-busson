@@ -21,6 +21,21 @@ ADDRESS_HELP_TEXT = (
     "Suggestions : Base Adresse Nationale (data.gouv.fr) et, pour l'étranger, Photon (OpenStreetMap/ODbL)"
 )
 
+# Technical-necessity framing, per the project's standing precedent for
+# sensitive personal fields: explain why a place is collected, not just label
+# the input. Free text on purpose -- see the model field's comment.
+GENEALOGY_PLACE_HELP_TEXT = (
+    "Utilisé pour les documents généalogiques (arbre, futur export vers d'autres logiciels de "
+    "généalogie) ; laissez vide si ce lieu n'est pas connu."
+)
+
+EXPORT_PRIVACY_HELP_TEXT = (
+    "Un export GEDCOM (pour Geneanet, MyHeritage, Gramps...) est destiné à quitter le site, "
+    "potentiellement vers un service public. Par défaut, vos informations y sont masquées tant "
+    "que vous êtes en vie. « Toujours masquer » s'applique aussi au carnet d'adresses Excel et "
+    "au flux calendrier."
+)
+
 
 class AddressAutocompleteInput(forms.TextInput):
     """Progressive enhancement: plain text input, upgraded client-side by
@@ -58,9 +73,12 @@ class ProfileEditForm(forms.ModelForm):
             "latitude",
             "longitude",
             "birth_date",
+            "birth_place",
             "deceased",
             "death_date",
+            "death_place",
             "description",
+            "export_privacy",
         ]
         widgets = {
             "birth_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -72,6 +90,9 @@ class ProfileEditForm(forms.ModelForm):
         }
         help_texts = {
             "postal_address": ADDRESS_HELP_TEXT,
+            "birth_place": GENEALOGY_PLACE_HELP_TEXT,
+            "death_place": GENEALOGY_PLACE_HELP_TEXT,
+            "export_privacy": EXPORT_PRIVACY_HELP_TEXT,
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -81,6 +102,7 @@ class ProfileEditForm(forms.ModelForm):
         if user is not None and not (user.is_staff or user.is_superuser):
             del self.fields["deceased"]
             del self.fields["death_date"]
+            del self.fields["death_place"]
 
     def clean(self):
         cleaned_data = super().clean()
@@ -104,7 +126,7 @@ class ProfileEditForm(forms.ModelForm):
 class FormSettings(forms.ModelForm):
     class Meta:
         model = Settings
-        fields = ["notify_on_birthday", "notify_on_new_blog_post"]
+        fields = ["notify_on_birthday", "notify_on_new_blog_post", "notify_on_event"]
 
 
 RelationEditFormSet = forms.inlineformset_factory(
@@ -122,18 +144,20 @@ class AddRelationForm(forms.ModelForm):
 
     class Meta:
         model = Relation
-        fields = ["person2", "relationship_type", "start_date"]
+        fields = ["person2", "relationship_type", "start_date", "marriage_place", "end_date"]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
 
 class UpdateRelationForm(forms.ModelForm):
     class Meta:
         model = Relation
-        fields = ["relationship_type", "start_date"]
+        fields = ["relationship_type", "start_date", "marriage_place", "end_date"]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
+            "end_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
 
 

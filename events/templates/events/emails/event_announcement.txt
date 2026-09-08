@@ -1,0 +1,11 @@
+Un nouvel événement a été créé sur le site de la famille Busson :
+
+{{ event.title }}
+{{ event.start }}{% if event.location %} · {{ event.location }}{% endif %}
+
+{{ event_url }}
+
+--
+Vous recevez cette notification car vous êtes abonné·e aux annonces d'événements sur
+le site de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
+profil : {{ settings_url }}

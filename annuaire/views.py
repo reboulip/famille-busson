@@ -11,8 +11,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView, PasswordResetConfirmView, PasswordResetDoneView, PasswordResetView
+from django.core.cache import cache
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.mail import get_connection
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
@@ -48,10 +50,12 @@ from .forms import (
     UpdateRelationForm,
 )
 from .geocoding import search_addresses
-from .map_data import build_chalet_map_groups, build_person_map_groups
+from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
+from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
+from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
 
@@ -64,7 +68,11 @@ def media_serve(request, path):
 def home(request):
     import datetime
 
+    from django.utils import timezone
+
     from annuaire.birthdays import upcoming_birthdays
+    from annuaire.memories import memories
+    from events.access import accessible_events
     from publications.models import BlogPost, Comment
 
     recent_persons = Person.objects.all().order_by("-pk")[:6]
@@ -75,6 +83,7 @@ def home(request):
     upcoming_presences = (
         PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
     )
+    upcoming_events = accessible_events(request.user).upcoming(timezone.now()).order_by("start")[:5]
     return render(
         request,
         "annuaire/home.html",
@@ -84,7 +93,9 @@ def home(request):
             "recent_comments": recent_comments,
             "chalets": chalets,
             "upcoming_presences": upcoming_presences,
+            "upcoming_events": upcoming_events,
             "upcoming_birthdays": upcoming_birthdays(today),
+            "memories": memories(today, request.user),
         },
     )
 
@@ -136,13 +147,21 @@ class CustomLoginView(LoginView):
 
 
 @method_decorator(login_not_required, name="dispatch")
-class SignupView(FormView):
+class SignupView(EmailRateLimitMixin, FormView):
     template_name = "annuaire/signup.html"
     form_class = SignupForm
     success_url = reverse_lazy("edit-my-profile")
+    throttle_scope = "signup"
 
     def form_valid(self, form):
         email = form.cleaned_data.get("email")
+        # Checked first, explicitly, rather than relying on the mixin's own
+        # form_valid()/super() chain: this method already does its own work before
+        # ever reaching FormView's redirect, so a throttled request must be refused
+        # before the account-existence check below, not just before the redirect.
+        if self.is_throttled(email):
+            return self.throttled_response(form)
+
         password = form.cleaned_data.get("password")
 
         if not Person.objects.filter(email=email).exists():
@@ -360,6 +379,8 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         context["member_count"] = self.object.account_set.count()
         context["blocked_by"] = list(self.object.document_categories.values_list("name", flat=True))
+        context["blocked_by_albums"] = list(self.object.photo_albums.values_list("title", flat=True))
+        context["blocked_by_events"] = list(self.object.events.values_list("title", flat=True))
         return context
 
     def post(self, request, *args, **kwargs):
@@ -368,10 +389,21 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
             return super().post(request, *args, **kwargs)
         except ProtectedError:
             blocked_by = list(self.object.document_categories.values_list("name", flat=True))
-            category_names = ", ".join(f"« {name} »" for name in blocked_by)
+            blocked_by_albums = list(self.object.photo_albums.values_list("title", flat=True))
+            blocked_by_events = list(self.object.events.values_list("title", flat=True))
+            parts = []
+            if blocked_by:
+                category_names = ", ".join(f"« {name} »" for name in blocked_by)
+                parts.append(f"les catégories {category_names}")
+            if blocked_by_albums:
+                album_names = ", ".join(f"« {name} »" for name in blocked_by_albums)
+                parts.append(f"les albums {album_names}")
+            if blocked_by_events:
+                event_names = ", ".join(f"« {name} »" for name in blocked_by_events)
+                parts.append(f"les événements {event_names}")
             messages.error(
                 request,
-                f"Impossible de supprimer ce groupe : il est utilisé par les catégories {category_names}.",
+                f"Impossible de supprimer ce groupe : il est utilisé par {' et '.join(parts)}.",
             )
             return self.get(request, *args, **kwargs)
 
@@ -521,7 +553,7 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
         return response
 
 
-class AccountPasswordResetView(PasswordResetView):
+class AccountPasswordResetView(EmailRateLimitMixin, PasswordResetView):
     template_name = "annuaire/password_reset.html"
     email_template_name = "annuaire/password_reset_email.txt"
     # Django sends email_template_name as the text body and this as an HTML
@@ -530,13 +562,15 @@ class AccountPasswordResetView(PasswordResetView):
     html_email_template_name = "annuaire/emails/password_reset.html"
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
+    extra_email_context = {"site_base_url": settings.SITE_BASE_URL.rstrip("/")}
+    throttle_scope = "password-reset"
 
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
     template_name = "annuaire/password_reset_done.html"
 
 
-class MagicLinkRequestView(PasswordResetView):
+class MagicLinkRequestView(EmailRateLimitMixin, PasswordResetView):
     """Passwordless login entry point: reuses Django's stock PasswordResetForm
     unmodified, so its get_users() (existing, active, usable-password Account
     rows only) is what keeps this closed to signup -- a Person with no linked
@@ -548,9 +582,13 @@ class MagicLinkRequestView(PasswordResetView):
     subject_template_name = "annuaire/magic_link_subject.txt"
     token_generator = magic_link_token_generator
     success_url = reverse_lazy("magic-link-sent")
+    throttle_scope = "magic-link-request"
     # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
     # lazy settings object is already configured by the time views.py imports).
-    extra_email_context = {"validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60}
+    extra_email_context = {
+        "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
+        "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+    }
 
 
 class MagicLinkSentView(PasswordResetDoneView):
@@ -668,6 +706,7 @@ class ProfileCreateView(LoginRequiredMixin, CreateView):
         # annuaire/signals.py); layer the submitted opt-ins on top of it.
         person.settings.notify_on_birthday = settings_form.cleaned_data["notify_on_birthday"]
         person.settings.notify_on_new_blog_post = settings_form.cleaned_data["notify_on_new_blog_post"]
+        person.settings.notify_on_event = settings_form.cleaned_data["notify_on_event"]
         person.settings.save()
         return redirect("personne-detail", pk=person.pk)
 
@@ -808,6 +847,7 @@ class MapListView(LoginRequiredMixin, ListView):
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
         context["chalets_json"] = json.dumps(build_chalet_map_groups())
+        context["events_json"] = json.dumps(build_event_map_groups(self.request.user))
         return context
 
 
@@ -889,6 +929,7 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
                 partner = partner_relation.person1
             context["partner"] = partner
             context["partner_type"] = partner_relation.get_relationship_type_display()
+            context["partner_relation"] = partner_relation
 
         parent_relations = Relation.objects.filter(person1=person, relationship_type=2)
         context["parents"] = [rel.person2 for rel in parent_relations]
@@ -897,6 +938,49 @@ class ProfileDetailView(LoginRequiredMixin, DetailView):
         context["children"] = [rel.person2 for rel in child_relations]
 
         context["can_edit"] = can_edit_person(self.request.user, person)
+
+        # Query-param tab (?tab=photos) on this same view/URL, not a separate
+        # one -- a second URL would need the sticky identity rail extracted
+        # into a shared partial, which several source-text tests pin the
+        # exact structure/ordering of (see test_profile_mobile_rail.py).
+        from django.db.models import F
+
+        from photos.access import accessible_photos
+
+        tab = self.request.GET.get("tab", "")
+        context["tab"] = tab
+        # Same ordering Photo.objects.chronological() applies -- can't call that
+        # helper here since it's a manager method, not chainable after .filter().
+        photos_qs = (
+            accessible_photos(self.request.user)
+            .filter(person_tags__person=person)
+            .select_related("album")
+            .order_by(F("taken_at").desc(nulls_last=True), "pk")
+        )
+        # From the same access-scoped queryset as the grid itself -- a raw
+        # person.tagged_photos.count() would leak how many photos exist in
+        # albums the viewer can't see.
+        context["photo_count"] = photos_qs.count()
+        if tab == "photos":
+            paginator = Paginator(photos_qs, 24)
+            context["photos_page"] = paginator.get_page(self.request.GET.get("page"))
+
+        context["story_count"] = person.stories.count()
+        if tab == "histoire":
+            stories = list(person.stories.chronological().prefetch_related("story_photos__photo", "citations__source"))
+            # Re-filtered here, not trusted from story.photos.all() -- a photo
+            # linked from a group-restricted album must not leak onto a profile
+            # page any logged-in member can view. One query for the whole tab,
+            # not per story.
+            accessible_ids = set(accessible_photos(self.request.user).values_list("pk", flat=True))
+            viewer_profile = getattr(self.request.user, "profile", None)
+            viewer_is_staff = self.request.user.is_staff or self.request.user.is_superuser
+            for story in stories:
+                story.visible_photos = [sp.photo for sp in story.story_photos.all() if sp.photo_id in accessible_ids]
+                story.can_edit = viewer_is_staff or (
+                    viewer_profile is not None and story.created_by_id == viewer_profile.pk
+                )
+            context["stories"] = stories
 
         return context
 
@@ -1011,6 +1095,79 @@ class DeleteRelationView(LoginRequiredMixin, View):
         relation = get_object_or_404(Relation, pk=kwargs["rid"], person1=person)
         relation.delete()
         return redirect("person-relations-edit", pk=person.pk)
+
+
+class PersonDuplicateListView(StaffRequiredMixin, TemplateView):
+    template_name = "annuaire/person_duplicate_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        candidates = find_duplicate_candidates()
+        person_ids = {c.person1_id for c in candidates} | {c.person2_id for c in candidates}
+        by_pk = {p.pk: p for p in Person.objects.filter(pk__in=person_ids)}
+        context["candidates"] = [
+            {"person1": by_pk[c.person1_id], "person2": by_pk[c.person2_id], "reason": c.reason} for c in candidates
+        ]
+        return context
+
+
+class PersonMergeView(StaffRequiredMixin, View):
+    """Staff-only merge confirmation: differing scalar fields get a per-field
+    radio choice (never a blanket "winner wins"), so a non-blank loser value
+    is never silently discarded. See annuaire/person_merge.py for the merge
+    itself -- this view only collects the choices and calls it."""
+
+    template_name = "annuaire/person_merge_form.html"
+
+    def _get_people(self, kwargs):
+        winner = get_object_or_404(Person, pk=kwargs["pk"])
+        loser = get_object_or_404(Person, pk=kwargs["loser_pk"])
+        return winner, loser
+
+    def _differing_field_names(self, winner, loser):
+        differing = []
+        for field_name in MERGE_SCALAR_FIELDS:
+            winner_value = getattr(winner, field_name)
+            loser_value = getattr(loser, field_name)
+            if winner_value != loser_value and (winner_value or loser_value):
+                differing.append(field_name)
+        return differing
+
+    def _differing_fields(self, winner, loser):
+        return [
+            {
+                "name": field_name,
+                "label": Person._meta.get_field(field_name).verbose_name,
+                "winner_value": getattr(winner, field_name),
+                "loser_value": getattr(loser, field_name),
+            }
+            for field_name in self._differing_field_names(winner, loser)
+        ]
+
+    def get(self, request, *args, **kwargs):
+        winner, loser = self._get_people(kwargs)
+        context = {
+            "winner": winner,
+            "loser": loser,
+            "differing_fields": self._differing_fields(winner, loser),
+        }
+        return render(request, self.template_name, context)
+
+    def post(self, request, *args, **kwargs):
+        winner, loser = self._get_people(kwargs)
+        field_choices = {}
+        for field_name in self._differing_field_names(winner, loser):
+            raw = request.POST.get(f"choice_{field_name}")
+            if raw in ("1", "2"):
+                field_choices[field_name] = int(raw)
+        try:
+            report = merge_persons(winner, loser, field_choices=field_choices)
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+            return redirect("person-merge", pk=winner.pk, loser_pk=loser.pk)
+        moved_summary = ", ".join(f"{k} ({v})" for k, v in report.moved_counts.items())
+        messages.success(request, f"Fusion effectuée : {moved_summary or 'aucune donnée liée à déplacer'}.")
+        return redirect("personne-detail", pk=winner.pk)
 
 
 class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
@@ -1226,3 +1383,194 @@ class DeletePresenceView(LoginRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+
+
+MIN_SEARCH_QUERY_LENGTH = 2
+
+
+class GlobalSearchView(LoginRequiredMixin, TemplateView):
+    template_name = "annuaire/search_results.html"
+
+    def get_context_data(self, **kwargs):
+        from .search.service import search_all, search_one
+
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "").strip()
+        context["query"] = query
+        context["groups"] = []
+        context["expanded"] = None
+        if len(query) < MIN_SEARCH_QUERY_LENGTH:
+            return context
+
+        type_key = self.request.GET.get("type", "")
+        if type_key:
+            result = search_one(self.request.user, query, type_key)
+            if result is not None:
+                spec, ranked = result
+                paginator = Paginator(ranked, 20)
+                context["expanded"] = {
+                    "key": type_key,
+                    "label": spec.label,
+                    "card_template": spec.card_template,
+                    "page_obj": paginator.get_page(self.request.GET.get("page")),
+                }
+        else:
+            context["groups"] = search_all(self.request.user, query, per_type_limit=5)
+            context["has_results"] = any(group.results for group in context["groups"])
+        return context
+
+
+class ActivityFeedView(LoginRequiredMixin, TemplateView):
+    template_name = "annuaire/activity_feed.html"
+    # First visit (last_feed_seen_at is null): show this many days back rather
+    # than the site's entire history.
+    FIRST_VISIT_WINDOW_DAYS = 30
+    OLDER_TAIL_LIMIT = 20
+
+    def get_context_data(self, **kwargs):
+        import datetime
+
+        from django.utils import timezone
+
+        from .activity import activity_since
+
+        context = super().get_context_data(**kwargs)
+        account = self.request.user
+        if account.last_feed_seen_at is None:
+            cutoff = timezone.now() - datetime.timedelta(days=self.FIRST_VISIT_WINDOW_DAYS)
+        else:
+            cutoff = account.last_feed_seen_at
+
+        recent = activity_since(account, cutoff, limit=50)
+        older = activity_since(account, None, limit=self.OLDER_TAIL_LIMIT)
+        recent_keys = {(entry.kind, entry.item.pk) for entry in recent}
+        older = [entry for entry in older if (entry.kind, entry.item.pk) not in recent_keys][: self.OLDER_TAIL_LIMIT]
+
+        context["recent_entries"] = recent
+        context["older_entries"] = older
+
+        # Stamped last, after recent/older are already computed, so this same
+        # render still shows everything that was actually new for this visit.
+        Account.objects.filter(pk=account.pk).update(last_feed_seen_at=timezone.now())
+        return context
+
+
+# Bounded window shipped with the initial page render -- never the whole
+# corpus. Navigation past either edge refetches via calendar_feed_ajax.
+CALENDAR_PAGE_WINDOW_MONTHS_BEFORE = 1
+CALENDAR_PAGE_WINDOW_MONTHS_AFTER = 3
+
+
+def _first_of_month(day, months_offset):
+    month_index = day.month - 1 + months_offset
+    year = day.year + month_index // 12
+    month = month_index % 12 + 1
+    return day.replace(year=year, month=month, day=1)
+
+
+class CalendarView(LoginRequiredMixin, TemplateView):
+    """One calendar -- events, chalet présences and anniversaires in a single
+    month/agenda view with per-type filters. Ships a bounded window; the JS
+    (unified_calendar.js) refetches via calendar_feed_ajax on navigation past
+    either edge, never the whole corpus."""
+
+    template_name = "annuaire/calendar.html"
+
+    def get_context_data(self, **kwargs):
+        import datetime
+        from datetime import date
+
+        from .calendar_data import VALID_TYPES, build_calendar_entries, parse_types_param
+
+        context = super().get_context_data(**kwargs)
+        today = date.today()
+        start = _first_of_month(today, -CALENDAR_PAGE_WINDOW_MONTHS_BEFORE)
+        end = _first_of_month(today, CALENDAR_PAGE_WINDOW_MONTHS_AFTER + 1) - datetime.timedelta(days=1)
+        active_types = parse_types_param(self.request.GET.get("types")) or VALID_TYPES
+
+        entries = build_calendar_entries(
+            self.request.user, start, end, types=active_types, host=self.request.get_host()
+        )
+        context["entries_json"] = json.dumps([entry._asdict() for entry in entries])
+        context["has_entries"] = bool(entries)
+        context["window_start"] = start.isoformat()
+        context["window_end"] = end.isoformat()
+        context["active_types"] = sorted(active_types)
+        context["all_types"] = sorted(VALID_TYPES)
+
+        token = self.request.user.get_or_create_calendar_token()
+        feed_path = reverse("ical-feed", kwargs={"token": token})
+        feed_url = self.request.build_absolute_uri(feed_path)
+        context["ical_feed_url"] = feed_url
+        context["ical_webcal_url"] = "webcal://" + feed_url.split("://", 1)[1]
+        return context
+
+
+@login_required
+def calendar_feed_ajax(request):
+    """Windowed refresh backing the unified calendar's navigation -- same
+    access scoping and entry shape as CalendarView's initial render."""
+    from datetime import date
+
+    from .calendar_data import build_calendar_entries, parse_types_param
+
+    try:
+        start = date.fromisoformat(request.GET.get("start", ""))
+        end = date.fromisoformat(request.GET.get("end", ""))
+    except ValueError:
+        return JsonResponse({"error": "invalid start/end"}, status=400)
+
+    types = parse_types_param(request.GET.get("types"))
+    entries = build_calendar_entries(request.user, start, end, types=types, host=request.get_host())
+    return JsonResponse({"entries": [entry._asdict() for entry in entries]})
+
+
+# A calendar client (Google/Apple) polls aggressively -- cache the rendered
+# body per (token, types) for a few minutes rather than rebuilding on every
+# fetch.
+ICAL_FEED_CACHE_SECONDS = 300
+# Wide enough to cover a client that syncs a year back and two ahead;
+# birthdays in particular are meaningless without a multi-year window.
+ICAL_FEED_WINDOW_DAYS_BEFORE = 365
+ICAL_FEED_WINDOW_DAYS_AFTER = 730
+
+
+@method_decorator(login_not_required, name="dispatch")
+class ICalFeedView(View):
+    """Unauthenticated per-account .ics feed. Resolves the Account from the
+    URL token (404 on missing/invalid, never a 500/stack trace) and scopes
+    every entry through that SPECIFIC account's own effective access --
+    accessible_events() etc. inside build_calendar_entries() -- never a
+    "show everything" path. Staff status does not expand this feed: it
+    represents exactly what this account would see, not everything."""
+
+    def get(self, request, token):
+        import datetime
+
+        from .calendar_data import VALID_TYPES, build_calendar_entries, parse_types_param
+        from .ical import render_ics
+
+        account = get_object_or_404(Account, calendar_token=token)
+        types = parse_types_param(request.GET.get("types")) or VALID_TYPES
+        cache_key = f"ical_feed:{token}:{','.join(sorted(types))}"
+
+        body = cache.get(cache_key)
+        if body is None:
+            today = date.today()
+            start = today - datetime.timedelta(days=ICAL_FEED_WINDOW_DAYS_BEFORE)
+            end = today + datetime.timedelta(days=ICAL_FEED_WINDOW_DAYS_AFTER)
+            entries = build_calendar_entries(account, start, end, types=types, host=request.get_host(), strict=True)
+            body = render_ics(entries)
+            cache.set(cache_key, body, ICAL_FEED_CACHE_SECONDS)
+
+        response = HttpResponse(body, content_type="text/calendar; charset=utf-8")
+        response["Content-Disposition"] = "inline; filename=calendrier.ics"
+        return response
+
+
+@login_required
+@require_POST
+def regenerate_calendar_token(request):
+    request.user.regenerate_calendar_token()
+    messages.success(request, "Le lien de votre calendrier a été régénéré.")
+    return redirect("calendrier")
