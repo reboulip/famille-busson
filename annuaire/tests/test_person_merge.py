@@ -374,6 +374,30 @@ def test_merge_repoints_citation_person(person, accountless_person):
     assert citation.person_id == person.pk
 
 
+@pytest.mark.django_db
+def test_merge_repoints_gedcom_import_uploaded_by(person, accountless_person):
+    from genealogy.models import GedcomImport
+
+    gedcom_import = GedcomImport.objects.create(uploaded_by=accountless_person, raw_content="0 HEAD\n0 TRLR\n")
+    merge_persons(person, accountless_person)
+    gedcom_import.refresh_from_db()
+    assert gedcom_import.uploaded_by_id == person.pk
+
+
+@pytest.mark.django_db
+def test_merge_repoints_staged_individual_match_and_created_person(person, accountless_person):
+    from genealogy.models import GedcomImport, StagedIndividual
+
+    gedcom_import = GedcomImport.objects.create(raw_content="0 HEAD\n0 TRLR\n")
+    staged = StagedIndividual.objects.create(
+        gedcom_import=gedcom_import, match_person=accountless_person, created_person=accountless_person
+    )
+    merge_persons(person, accountless_person)
+    staged.refresh_from_db()
+    assert staged.match_person_id == person.pk
+    assert staged.created_person_id == person.pk
+
+
 # --- Self-referential owners M2M -------------------------------------------
 
 

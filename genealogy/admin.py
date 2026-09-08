@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Citation, Source, Story, StoryPhoto
+from .models import Citation, GedcomImport, Source, StagedFamily, StagedIndividual, Story, StoryPhoto
 
 
 class StoryPhotoInline(admin.TabularInline):
@@ -31,3 +31,20 @@ class SourceAdmin(admin.ModelAdmin):
 class CitationAdmin(admin.ModelAdmin):
     list_display = ["source", "story", "person", "relation", "claim"]
     search_fields = ["source__title", "note"]
+
+
+class StagedIndividualInline(admin.TabularInline):
+    model = StagedIndividual
+    extra = 0
+
+
+class StagedFamilyInline(admin.TabularInline):
+    model = StagedFamily
+    extra = 0
+
+
+@admin.register(GedcomImport)
+class GedcomImportAdmin(admin.ModelAdmin):
+    list_display = ["original_filename", "status", "uploaded_by", "uploaded_at"]
+    list_filter = ["status"]
+    inlines = [StagedIndividualInline, StagedFamilyInline]

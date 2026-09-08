@@ -60,6 +60,11 @@ erDiagram
     Story ||--o{ Citation : "story"
     Person ||--o{ Citation : "person"
     Relation ||--o{ Citation : "relation"
+    Person ||--o{ GedcomImport : "uploaded_by"
+    GedcomImport ||--o{ StagedIndividual : "gedcom_import"
+    Person ||--o{ StagedIndividual : "match_person"
+    Person ||--o{ StagedIndividual : "created_person"
+    GedcomImport ||--o{ StagedFamily : "gedcom_import"
 ```
 
 ## `annuaire`
@@ -462,3 +467,51 @@ erDiagram
 | `relation` | ForeignKey | Relation | → Relation (on_delete=CASCADE), related_name='citations', optional |
 | `claim` | CharField | Donnée citée | max_length=40, choices: birth_date=Date de naissance, birth_place=Lieu de naissance, death_date=Date de décès, death_place=Lieu de décès, start_date=Date de mariage, end_date=Date de fin (relation), marriage_place=Lieu du mariage, default='', optional |
 | `note` | CharField | Note | max_length=255, default='', optional |
+
+### `GedcomImport`
+
+*App:* `genealogy` · *verbose name:* Import GEDCOM / Imports GEDCOM · *table:* `genealogy_gedcomimport`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `uploaded_by` | ForeignKey | Déposé par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `uploaded_at` | DateTimeField | Date de dépôt | auto_now_add, optional |
+| `original_filename` | CharField | Nom du fichier | max_length=255, default='', optional |
+| `status` | CharField | Statut | max_length=20, choices: pending_review=En attente de révision, applied=Appliqué, discarded=Abandonné, default='pending_review', required |
+| `raw_content` | TextField | Contenu brut | required |
+
+### `StagedIndividual`
+
+*App:* `genealogy` · *verbose name:* Individu importé / Individus importés · *table:* `genealogy_stagedindividual`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `gedcom_import` | ForeignKey | Import | → GedcomImport (on_delete=CASCADE), related_name='staged_individuals', required |
+| `source_xref` | CharField | Référence GEDCOM | max_length=20, default='', optional |
+| `first_name` | CharField | Prénom | max_length=100, default='', optional |
+| `last_name` | CharField | Nom | max_length=100, default='', optional |
+| `birth_date` | DateField | Date de naissance | optional |
+| `birth_place` | CharField | Lieu de naissance | max_length=255, default='', optional |
+| `death_date` | DateField | Date de décès | optional |
+| `death_place` | CharField | Lieu de décès | max_length=255, default='', optional |
+| `match_person` | ForeignKey | Profil correspondant | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `decision` | CharField | Décision | max_length=10, choices: create=Créer un nouveau profil, merge=Fusionner avec un profil existant, skip=Ignorer, default='create', required |
+| `created_person` | ForeignKey | Profil résultant | → Person (on_delete=SET_NULL), related_name='+', optional |
+
+### `StagedFamily`
+
+*App:* `genealogy` · *verbose name:* Famille importée / Familles importées · *table:* `genealogy_stagedfamily`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `gedcom_import` | ForeignKey | Import | → GedcomImport (on_delete=CASCADE), related_name='staged_families', required |
+| `source_xref` | CharField | Référence GEDCOM | max_length=20, default='', optional |
+| `husband_xref` | CharField | Référence de l'époux | max_length=20, default='', optional |
+| `wife_xref` | CharField | Référence de l'épouse | max_length=20, default='', optional |
+| `children_xrefs` | JSONField | Références des enfants | default=list, optional |
+| `marriage_date` | DateField | Date de mariage | optional |
+| `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
+| `divorce_date` | DateField | Date de divorce | optional |

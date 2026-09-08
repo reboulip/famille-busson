@@ -1,21 +1,28 @@
 import json
 from datetime import date
 
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.core.paginator import Paginator
+from django.db import transaction
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views import View
-from django.views.generic import CreateView, DeleteView, UpdateView
+from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
 
 from annuaire.models import Person
 from annuaire.privacy import is_redacted
+from annuaire.search.text import normalize
+from annuaire.views import StaffRequiredMixin
 from photos.access import accessible_photos
 
-from .forms import FormStory
+from .forms import FormGedcomUpload, FormStory
 from .gedcom.export import build_gedcom, collect_export_set
-from .models import Story, StoryPhoto
+from .gedcom.importer import apply_gedcom_import, stage_gedcom_import
+from .gedcom.parser import GedcomParseError, decode_gedcom
+from .models import GedcomImport, Story, StoryPhoto
 
 
 def _save_story_photos(request, story: Story) -> None:
@@ -131,3 +138,117 @@ class GedcomExportView(LoginRequiredMixin, View):
         response = HttpResponse(payload, content_type="application/x-gedcom")
         response["Content-Disposition"] = f'attachment; filename="genealogie-{date.today():%Y-%m-%d}.ged"'
         return response
+
+
+def _suggest_match_candidates(staged) -> list[Person]:
+    """Existing Person rows sharing the staged individual's normalized
+    surname -- a broad net; staff picks the right one visually. Mirrors
+    annuaire.person_merge's own use of normalize() for name matching."""
+    target = normalize(staged.last_name)
+    if not target:
+        return []
+    return [p for p in Person.objects.all() if normalize(p.last_name) == target]
+
+
+class GedcomImportUploadView(StaffRequiredMixin, View):
+    """Staff-only. Parses the uploaded file and stages it -- nothing is
+    written to Person/Relation here, only to the staged review tables (see
+    genealogy/gedcom/importer.py)."""
+
+    template_name = "genealogy/gedcom_import_upload.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {"form": FormGedcomUpload()})
+
+    def post(self, request, *args, **kwargs):
+        form = FormGedcomUpload(request.POST, request.FILES)
+        if not form.is_valid():
+            return render(request, self.template_name, {"form": form})
+
+        uploaded = form.cleaned_data["file"]
+        try:
+            content = decode_gedcom(uploaded.read())
+        except GedcomParseError as exc:
+            form.add_error("file", str(exc))
+            return render(request, self.template_name, {"form": form})
+
+        with transaction.atomic():
+            gedcom_import = GedcomImport.objects.create(
+                uploaded_by=getattr(request.user, "profile", None),
+                original_filename=uploaded.name,
+                raw_content=content,
+            )
+            try:
+                stage_gedcom_import(gedcom_import)
+            except GedcomParseError as exc:
+                transaction.set_rollback(True)
+                form.add_error("file", str(exc))
+                return render(request, self.template_name, {"form": form})
+
+        return redirect("gedcom-import-review", pk=gedcom_import.pk)
+
+
+class GedcomImportReviewView(StaffRequiredMixin, TemplateView):
+    """Staff-only, paginated review of one staged import. Decisions are
+    persisted per page on POST -- the staged rows already live in the
+    database, so partial review progress across visits is natural."""
+
+    template_name = "genealogy/gedcom_import_review.html"
+    page_size = 50
+
+    def _page(self, request, gedcom_import):
+        individuals_qs = gedcom_import.staged_individuals.order_by("pk")
+        paginator = Paginator(individuals_qs, self.page_size)
+        return paginator.get_page(request.GET.get("page"))
+
+    def get(self, request, *args, **kwargs):
+        gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
+        page = self._page(request, gedcom_import)
+        rows = [{"individual": staged, "candidates": _suggest_match_candidates(staged)} for staged in page]
+        return render(
+            request,
+            self.template_name,
+            {"gedcom_import": gedcom_import, "page": page, "rows": rows},
+        )
+
+    def post(self, request, *args, **kwargs):
+        gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
+        page = self._page(request, gedcom_import)
+        for staged in page:
+            raw = request.POST.get(f"decision_{staged.pk}", "create")
+            if raw.startswith("merge:"):
+                staged.decision = "merge"
+                staged.match_person_id = int(raw.split(":", 1)[1])
+            elif raw == "skip":
+                staged.decision = "skip"
+                staged.match_person = None
+            else:
+                staged.decision = "create"
+                staged.match_person = None
+            staged.save(update_fields=["decision", "match_person"])
+        messages.success(request, "Décisions enregistrées pour cette page.")
+        page_number = request.GET.get("page") or 1
+        return redirect(f"{reverse('gedcom-import-review', kwargs={'pk': gedcom_import.pk})}?page={page_number}")
+
+
+class GedcomImportApplyView(StaffRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
+        if gedcom_import.status != "pending_review":
+            messages.error(request, "Cet import a déjà été traité.")
+            return redirect("gedcom-import-review", pk=gedcom_import.pk)
+        summary = apply_gedcom_import(gedcom_import)
+        messages.success(
+            request,
+            f"Import appliqué : {summary['created']} créé(s), {summary['merged']} fusionné(s), "
+            f"{summary['skipped']} ignoré(s).",
+        )
+        return redirect("gedcom-import-upload")
+
+
+class GedcomImportDiscardView(StaffRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
+        gedcom_import.delete()
+        messages.success(request, "Import abandonné.")
+        return redirect("gedcom-import-upload")

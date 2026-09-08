@@ -167,3 +167,95 @@ class Citation(models.Model):
             )
         if self.story_id and self.claim:
             raise ValidationError({"claim": "Un récit ne cible pas une donnée précise ; laissez ce champ vide."})
+
+
+GEDCOM_IMPORT_STATUS_CHOICES = [
+    ("pending_review", "En attente de révision"),
+    ("applied", "Appliqué"),
+    ("discarded", "Abandonné"),
+]
+
+STAGED_INDIVIDUAL_DECISION_CHOICES = [
+    ("create", "Créer un nouveau profil"),
+    ("merge", "Fusionner avec un profil existant"),
+    ("skip", "Ignorer"),
+]
+
+
+class GedcomImport(models.Model):
+    """One uploaded GEDCOM file, staged for review. Nothing here is written
+    to Person/Relation until a staff member explicitly applies it -- see
+    genealogy/gedcom/importer.py."""
+
+    uploaded_by = models.ForeignKey(
+        Person, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Déposé par"
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de dépôt")
+    original_filename = models.CharField(max_length=255, blank=True, default="", verbose_name="Nom du fichier")
+    status = models.CharField(
+        max_length=20, choices=GEDCOM_IMPORT_STATUS_CHOICES, default="pending_review", verbose_name="Statut"
+    )
+    # Kept in the database, not on disk -- media/documents_data are what the
+    # backup script archives; a file here would need scripts/backup.sh to
+    # learn a third storage root for what's realistically a small text file.
+    raw_content = models.TextField(verbose_name="Contenu brut")
+
+    class Meta:
+        verbose_name = "Import GEDCOM"
+        verbose_name_plural = "Imports GEDCOM"
+
+    def __str__(self):
+        return self.original_filename or f"Import #{self.pk}"
+
+
+class StagedIndividual(models.Model):
+    gedcom_import = models.ForeignKey(
+        GedcomImport, on_delete=models.CASCADE, related_name="staged_individuals", verbose_name="Import"
+    )
+    source_xref = models.CharField(max_length=20, blank=True, default="", verbose_name="Référence GEDCOM")
+    first_name = models.CharField(max_length=100, blank=True, default="", verbose_name="Prénom")
+    last_name = models.CharField(max_length=100, blank=True, default="", verbose_name="Nom")
+    birth_date = models.DateField(null=True, blank=True, verbose_name="Date de naissance")
+    birth_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de naissance")
+    death_date = models.DateField(null=True, blank=True, verbose_name="Date de décès")
+    death_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu de décès")
+    # Staff's chosen existing-person match, when decision == "merge".
+    match_person = models.ForeignKey(
+        Person, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Profil correspondant"
+    )
+    decision = models.CharField(
+        max_length=10, choices=STAGED_INDIVIDUAL_DECISION_CHOICES, default="create", verbose_name="Décision"
+    )
+    # Filled in at apply time: the real Person this staged row resolved to
+    # (a newly created one, or the merge target) -- lets StagedFamily
+    # resolve its husband/wife/children xrefs to real Person pks.
+    created_person = models.ForeignKey(
+        Person, on_delete=models.SET_NULL, null=True, blank=True, related_name="+", verbose_name="Profil résultant"
+    )
+
+    class Meta:
+        verbose_name = "Individu importé"
+        verbose_name_plural = "Individus importés"
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.source_xref})"
+
+
+class StagedFamily(models.Model):
+    gedcom_import = models.ForeignKey(
+        GedcomImport, on_delete=models.CASCADE, related_name="staged_families", verbose_name="Import"
+    )
+    source_xref = models.CharField(max_length=20, blank=True, default="", verbose_name="Référence GEDCOM")
+    husband_xref = models.CharField(max_length=20, blank=True, default="", verbose_name="Référence de l'époux")
+    wife_xref = models.CharField(max_length=20, blank=True, default="", verbose_name="Référence de l'épouse")
+    children_xrefs = models.JSONField(default=list, blank=True, verbose_name="Références des enfants")
+    marriage_date = models.DateField(null=True, blank=True, verbose_name="Date de mariage")
+    marriage_place = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu du mariage")
+    divorce_date = models.DateField(null=True, blank=True, verbose_name="Date de divorce")
+
+    class Meta:
+        verbose_name = "Famille importée"
+        verbose_name_plural = "Familles importées"
+
+    def __str__(self):
+        return f"Famille {self.source_xref}"

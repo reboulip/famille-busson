@@ -1,0 +1,78 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype I — tabular, with a destructive-confirm-flavoured action row. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Révision de l'import « {{ gedcom_import.original_filename }} »</h1>
+            <p class="fb-page-head__lede">
+                Aucune personne n'est ajoutée à l'annuaire tant que vous n'avez pas cliqué
+                sur « Appliquer l'import » ci-dessous.
+            </p>
+        </div>
+    </div>
+
+    {% if rows %}
+        <form method="post">
+            {% csrf_token %}
+            <table class="fb-table">
+                <thead>
+                    <tr><th>Individu importé</th><th>Naissance</th><th>Décès</th><th>Décision</th></tr>
+                </thead>
+                <tbody>
+                    {% for row in rows %}
+                        <tr>
+                            <td class="fb-table__strong">{{ row.individual.first_name }} {{ row.individual.last_name }}</td>
+                            <td>{{ row.individual.birth_date|default:"—" }}{% if row.individual.birth_place %} · {{ row.individual.birth_place }}{% endif %}</td>
+                            <td>{{ row.individual.death_date|default:"—" }}{% if row.individual.death_place %} · {{ row.individual.death_place }}{% endif %}</td>
+                            <td>
+                                <select name="decision_{{ row.individual.pk }}" class="fb-select">
+                                    <option value="create" {% if row.individual.decision == "create" %}selected{% endif %}>Créer un nouveau profil</option>
+                                    {% for candidate in row.candidates %}
+                                        <option value="merge:{{ candidate.pk }}" {% if row.individual.match_person_id == candidate.pk %}selected{% endif %}>Fusionner avec {{ candidate }}</option>
+                                    {% endfor %}
+                                    <option value="skip" {% if row.individual.decision == "skip" %}selected{% endif %}>Ignorer</option>
+                                </select>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="fb-form__actions">
+                <button type="submit" class="fb-btn fb-btn--quiet">Enregistrer les décisions de cette page</button>
+            </div>
+        </form>
+
+        {% if page.has_other_pages %}
+            <nav class="fb-pagination pagination">
+                {% if page.has_previous %}
+                    <a href="?page={{ page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                {% endif %}
+                <span>Page {{ page.number }} / {{ page.paginator.num_pages }}</span>
+                {% if page.has_next %}
+                    <a href="?page={{ page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+    {% else %}
+        {% include "annuaire/_empty.html" with title="Aucun individu trouvé dans ce fichier" %}
+    {% endif %}
+
+    <div class="fb-record__actions" style="margin-top: var(--fb-sp-5)">
+        <form method="post" action="{% url 'gedcom-import-apply' gedcom_import.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="fb-btn fb-btn--primary"
+                    onclick="return confirm('Appliquer cet import à l\'annuaire ? Cette action est irréversible.')">
+                {% icon "check" size=16 %} Appliquer l'import
+            </button>
+        </form>
+        <form method="post" action="{% url 'gedcom-import-discard' gedcom_import.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--danger-text"
+                    onclick="return confirm('Abandonner cet import ?')">
+                Abandonner l'import
+            </button>
+        </form>
+    </div>
+{% endblock content %}

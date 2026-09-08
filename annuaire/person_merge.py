@@ -56,6 +56,9 @@ HANDLED_HIDDEN_RELATIONS: set[tuple[str, str, str]] = {
     ("photos", "persontag", "tagged_by"),
     ("genealogy", "story", "created_by"),
     ("genealogy", "source", "created_by"),
+    ("genealogy", "gedcomimport", "uploaded_by"),
+    ("genealogy", "stagedindividual", "match_person"),
+    ("genealogy", "stagedindividual", "created_person"),
 }
 
 # Reverse-M2M accessor -> the field name on the related model that actually
@@ -81,6 +84,9 @@ _SIMPLE_REPOINTS: list[tuple[str, str]] = [
     ("genealogy", "story", "created_by"),
     ("genealogy", "source", "created_by"),
     ("genealogy", "citation", "person"),
+    ("genealogy", "gedcomimport", "uploaded_by"),
+    ("genealogy", "stagedindividual", "match_person"),
+    ("genealogy", "stagedindividual", "created_person"),
 ]
 
 # Scalar Person fields a merge may need to reconcile when they differ between
