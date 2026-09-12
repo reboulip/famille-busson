@@ -1,9 +1,11 @@
 import contextvars
 import logging
 import uuid
+from zoneinfo import ZoneInfo
 
 from django.shortcuts import redirect
 from django.urls import reverse
+from django.utils import timezone
 
 _request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_id", default=None)
 # Set by AuditActorMiddleware below; read by annuaire.audit.record_audit_event so
@@ -67,6 +69,30 @@ class AuditActorMiddleware:
             response = self.get_response(request)
         finally:
             _actor_var.reset(token)
+        return response
+
+
+class SiteTimezoneMiddleware:
+    """Activates the configured SiteConfig timezone for the duration of a
+    request. Placed after SessionMiddleware. Only affects the request/response
+    cycle -- management commands and background tasks keep using
+    settings.TIME_ZONE, which is also this field's default."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Imported lazily: this module is loaded by LOGGING's request_id filter
+        # during django.setup(), before the app registry (and therefore models)
+        # is ready -- a top-level import here would break every management
+        # command and the dev server at startup.
+        from .site_config import get_site_config
+
+        timezone.activate(ZoneInfo(str(get_site_config().timezone)))
+        try:
+            response = self.get_response(request)
+        finally:
+            timezone.deactivate()
         return response
 
 

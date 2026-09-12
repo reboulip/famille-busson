@@ -51,6 +51,7 @@ from .views import (
     ProfileDetailView,
     ProfileUpdateView,
     SignupView,
+    SiteConfigUpdateView,
     UpdatePresenceView,
     UpdateRelationView,
     accept_privacy_notice,
@@ -126,6 +127,7 @@ urlpatterns = [
     path("groupes/<int:pk>/modifier/", GroupUpdateView.as_view(), name="group-edit"),
     path("groupes/<int:pk>/supprimer/", GroupDeleteView.as_view(), name="group-delete"),
     path("groupes/<int:pk>/membres/", GroupMembersUpdateView.as_view(), name="group-members-edit"),
+    path("configuration/", SiteConfigUpdateView.as_view(), name="site-config"),
     path("audit/", AuditLogListView.as_view(), name="audit-log-list"),
     path("corbeille/", CorbeilleListView.as_view(), name="corbeille-list"),
     path(

@@ -1,10 +1,16 @@
 from django.conf import settings
 
+from .models import SiteConfig
 from .privacy_notice import has_accepted
+from .site_config import get_site_config
 
 
 def site_version(request) -> dict[str, str]:
     return {"site_version": settings.APP_VERSION}
+
+
+def site_config(request) -> dict[str, SiteConfig]:
+    return {"site_config": get_site_config()}
 
 
 def privacy_notice_banner(request) -> dict[str, bool]:

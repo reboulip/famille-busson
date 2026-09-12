@@ -251,3 +251,56 @@ class AuditEvent(models.Model):
 
     def __str__(self):
         return f"{self.get_action_display()} — {self.object_repr}"
+
+
+def _language_choices():
+    # A named module-level function, not a lambda: migration serialization
+    # can't pickle a lambda, but can reference an importable function -- and
+    # calling it at field-access time (not at class-definition time) means the
+    # choice list stays live even after Phase 15.4 replaces settings.LANGUAGES.
+    return settings.LANGUAGES
+
+
+class SiteConfig(models.Model):
+    """Singleton holding the site's identity and configuration (Phase 15) --
+    pinned to pk=1 so there is always at most one row. Never construct this
+    directly in a read path; use annuaire.site_config.get_site_config(),
+    which never creates a row (only SiteConfigUpdateView/bootstrap_site do)."""
+
+    site_name = models.CharField(max_length=100, blank=True, default="", verbose_name="Nom du site")
+    # Separate from site_name, not derived from it -- the wordmark can carry
+    # its own typographic treatment (e.g. a non-breaking space between words).
+    wordmark = models.CharField(max_length=100, blank=True, default="", verbose_name="Wordmark")
+    tagline = models.CharField(max_length=255, blank=True, default="", verbose_name="Accroche")
+    sender_address = models.EmailField(blank=True, default="", verbose_name="Adresse d'expédition des emails")
+    feedback_url = models.URLField(
+        blank=True,
+        default="",
+        verbose_name="Lien de retour/signalement",
+        help_text="Laisser vide pour masquer le lien « Signaler un bug » du menu.",
+    )
+    timezone = models.CharField(max_length=64, default=settings.TIME_ZONE, verbose_name="Fuseau horaire")
+    # Stored but inert until Phase 15.4's i18n scaffolding reads it -- no
+    # language switching happens from this field alone yet.
+    default_language = models.CharField(
+        max_length=10,
+        blank=True,
+        default="",
+        choices=_language_choices,
+        verbose_name="Langue par défaut",
+        help_text="Sans effet tant que l'internationalisation (phase 15.4) n'est pas en place.",
+    )
+
+    class Meta:
+        verbose_name = "Configuration du site"
+        verbose_name_plural = "Configuration du site"
+
+    def __str__(self):
+        return self.site_name or "Configuration du site"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValueError("SiteConfig est un singleton : suppression interdite.")

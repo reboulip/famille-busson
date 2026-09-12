@@ -93,6 +93,7 @@ MIDDLEWARE = [
     # error responses) carries the same request_id.
     "annuaire.middleware.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "annuaire.middleware.SiteTimezoneMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -121,6 +122,7 @@ TEMPLATES = [
                 "annuaire.context_processors.site_version",
                 "annuaire.context_processors.privacy_notice_banner",
                 "annuaire.context_processors.trash_retention",
+                "annuaire.context_processors.site_config",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",

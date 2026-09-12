@@ -1,0 +1,34 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Configuration du site</h1>
+        </div>
+    </div>
+
+    <form method="post" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>Identité</legend>
+            {{ form.site_name|as_crispy_field }}
+            {{ form.wordmark|as_crispy_field }}
+            {{ form.tagline|as_crispy_field }}
+        </fieldset>
+        <fieldset class="fb-fieldset">
+            <legend>Emails et retours</legend>
+            {{ form.sender_address|as_crispy_field }}
+            {{ form.feedback_url|as_crispy_field }}
+        </fieldset>
+        <fieldset class="fb-fieldset">
+            <legend>Localisation</legend>
+            {{ form.timezone|as_crispy_field }}
+            {{ form.default_language|as_crispy_field }}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <a href="{% url 'home' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        </div>
+    </form>
+{% endblock content %}

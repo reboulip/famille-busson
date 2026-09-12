@@ -7,7 +7,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.urls import reverse_lazy
 
-from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
+from .models import Account, Chalet, Person, PresencePSV, Relation, Settings, SiteConfig
 from .widgets import MarkdownEditorWidget
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
@@ -127,6 +127,20 @@ class FormSettings(forms.ModelForm):
     class Meta:
         model = Settings
         fields = ["notify_on_birthday", "notify_on_new_blog_post", "notify_on_event"]
+
+
+class FormSiteConfig(forms.ModelForm):
+    class Meta:
+        model = SiteConfig
+        fields = [
+            "site_name",
+            "wordmark",
+            "tagline",
+            "sender_address",
+            "feedback_url",
+            "timezone",
+            "default_language",
+        ]
 
 
 RelationEditFormSet = forms.inlineformset_factory(

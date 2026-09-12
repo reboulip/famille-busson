@@ -44,6 +44,7 @@ from .forms import (
     CustomAuthenticationForm,
     ForcedPasswordChangeForm,
     FormSettings,
+    FormSiteConfig,
     GroupForm,
     PresenceForm,
     ProfileEditForm,
@@ -53,11 +54,12 @@ from .forms import (
 from .geocoding import search_addresses
 from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
-from .models import Account, AuditEvent, Chalet, Person, PresencePSV, Relation
+from .models import Account, AuditEvent, Chalet, Person, PresencePSV, Relation, SiteConfig
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
 from .personal_data import PERSONAL_DATA_CATEGORIES, build_personal_data_archive
 from .privacy_notice import record_acceptance
+from .site_config import get_site_config
 from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
@@ -372,6 +374,16 @@ class GroupUpdateView(StaffRequiredMixin, UpdateView):
     form_class = GroupForm
     template_name = "annuaire/group_form.html"
     success_url = reverse_lazy("group-list")
+
+
+class SiteConfigUpdateView(StaffRequiredMixin, UpdateView):
+    model = SiteConfig
+    form_class = FormSiteConfig
+    template_name = "annuaire/site_config_form.html"
+    success_url = reverse_lazy("site-config")
+
+    def get_object(self, queryset=None):
+        return get_site_config()
 
 
 class GroupDeleteView(StaffRequiredMixin, DeleteView):

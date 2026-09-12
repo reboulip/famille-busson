@@ -1,13 +1,15 @@
 from django.contrib.auth.models import Group
+from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
 from .audit import register_audit, register_m2m_membership_audit
 from .file_cleanup import register_file_cleanup
 from .markdown_utils import markdown_to_text
-from .models import Account, Chalet, Person, Relation, Settings
+from .models import Account, Chalet, Person, Relation, Settings, SiteConfig
 from .search.indexing import register_search_index
 from .search.registry import SearchSpec
+from .site_config import CACHE_KEY as SITE_CONFIG_CACHE_KEY
 
 register_file_cleanup(Person, "profile_photo")
 register_file_cleanup(Chalet, "photo")
@@ -50,6 +52,11 @@ def link_account_to_person(sender, instance, created, **kwargs):
 def create_settings_for_person(sender, instance, created, **kwargs):
     if created:
         Settings.objects.get_or_create(person=instance)
+
+
+@receiver(post_save, sender=SiteConfig)
+def invalidate_site_config_cache(sender, instance, **kwargs):
+    cache.delete(SITE_CONFIG_CACHE_KEY)
 
 
 @receiver(post_save, sender=Relation)
@@ -119,6 +126,18 @@ register_audit(
 )
 register_audit(
     Relation, fields=["person1_id", "person2_id", "relationship_type", "start_date", "marriage_place", "end_date"]
+)
+register_audit(
+    SiteConfig,
+    fields=[
+        "site_name",
+        "wordmark",
+        "tagline",
+        "sender_address",
+        "feedback_url",
+        "timezone",
+        "default_language",
+    ],
 )
 
 
