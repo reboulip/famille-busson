@@ -100,6 +100,31 @@
   clean checkout, following only the recipe, and fix everything it surfaces. The phase
   isn't done until this passes. (requires: 16.4, 16.5, 16.6)
 
+## Phase 17 — Corrections diverses et confort d'usage
+
+> A batch of small, unrelated fixes and polish surfaced by users in production — a
+> broken PDF hyperlink, a layout bug, a flaky search, and cluttered navigation. None
+> belong to Phase 9's backup focus or to Phases 14–16's privacy/configurability arc, so
+> they get their own light phase rather than blocking on one of those.
+
+### Cluster: Documents
+- [ ] 17.1 · PDF viewer link annotations — enable pdf.js's link/annotation layer so
+  hyperlinks embedded in a PDF are clickable in the in-app viewer. [#146]
+- [ ] 17.2 · Document detail description full-width — fix the layout so the description
+  block spans the page's full width. [#144]
+- [ ] 17.3 · Document-link search fixes substring matching — fix the document picker
+  (used when linking a document to a publication) to match substrings, not just
+  prefixes. [#142]
+
+### Cluster: Interface
+- [ ] 17.4 · Sidebar/menu overhaul — compact the main navigation (padding/margin/
+  font-size so it fits without scrolling) and prune/reorder sections (drop redundant
+  "nouveau document" entry, move Publications after "Les Busson", group Documents +
+  Photothèque). [#145] [#141]
+- [ ] 17.5 · Album view: fix leaked template comment — a Django `{# ... #}` comment
+  renders as visible text in the album grid; fix the malformed/misplaced comment tag.
+  [#140]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
