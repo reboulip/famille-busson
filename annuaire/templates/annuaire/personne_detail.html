@@ -25,6 +25,9 @@
                 <a href="{% url 'person-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
                     {% icon "edit" size=16 %} Modifier le profil
                 </a>
+                <a href="{% url 'person-data-export' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "download" size=16 %} Télécharger mes données
+                </a>
             {% endif %}
         </div>
     </div>

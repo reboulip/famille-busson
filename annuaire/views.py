@@ -55,6 +55,7 @@ from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
+from .personal_data import build_personal_data_archive
 from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
@@ -908,6 +909,21 @@ def can_edit_person(user, person: Person) -> bool:
     if profile == person:
         return True
     return person.account_id is None and person.owners.filter(pk=profile.pk).exists()
+
+
+class PersonalDataExportView(LoginRequiredMixin, View):
+    """Personal data export (14.1) -- metadata + in-app links, plus the
+    profile photo, as a single .zip. Gated by the same rule as editing the
+    profile: exporting someone's data is at least as sensitive as editing it."""
+
+    def get(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        if not can_edit_person(request.user, person):
+            raise PermissionDenied
+        archive = build_personal_data_archive(person, request.user)
+        response = HttpResponse(archive, content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="mes-donnees-{person.pk}-{date.today():%Y-%m-%d}.zip"'
+        return response
 
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):

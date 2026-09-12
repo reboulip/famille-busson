@@ -26,7 +26,7 @@
 > offers no way to export it, no way to erase it, and no record of who changed what.
 
 ### Cluster: Données personnelles
-- [ ] 14.1 · Personal data export — a member downloads everything the site holds on them
+- [x] 14.1 · Personal data export — a member downloads everything the site holds on them
   (profile, publications, comments, documents, photos, présences) as a single archive.
 - [ ] 14.2 · Erasure and anonymisation — a staff flow anonymising a person while preserving
   referential integrity (their publications survive under an anonymised author), with a
