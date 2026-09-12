@@ -6,6 +6,15 @@ from django.shortcuts import redirect
 from django.urls import reverse
 
 _request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_id", default=None)
+# Set by AuditActorMiddleware below; read by annuaire.audit.record_audit_event so
+# a signal handler deep in the save path can attribute the change without every
+# call site threading `request.user` through. None outside a request (management
+# commands, background tasks) -- those changes are recorded with actor=None.
+_actor_var: contextvars.ContextVar = contextvars.ContextVar("audit_actor", default=None)
+
+
+def get_current_actor():
+    return _actor_var.get()
 
 
 class RequestIdLogFilter(logging.Filter):
@@ -38,6 +47,26 @@ class RequestIdMiddleware:
         finally:
             _request_id_var.reset(token)
         response[self.HEADER] = request_id
+        return response
+
+
+class AuditActorMiddleware:
+    """Captures the logged-in account for the duration of a request, so
+    annuaire.audit's signal receivers (which run deep inside .save()/.delete(),
+    with no access to the request) can attribute an AuditEvent to whoever made
+    the change. Placed after AuthenticationMiddleware in MIDDLEWARE so
+    request.user is already resolved."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        actor = request.user if getattr(request, "user", None) and request.user.is_authenticated else None
+        token = _actor_var.set(actor)
+        try:
+            response = self.get_response(request)
+        finally:
+            _actor_var.reset(token)
         return response
 
 

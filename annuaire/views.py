@@ -52,7 +52,7 @@ from .forms import (
 from .geocoding import search_addresses
 from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
-from .models import Account, Chalet, Person, PresencePSV, Relation
+from .models import Account, AuditEvent, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
 from .personal_data import build_personal_data_archive
@@ -909,6 +909,16 @@ def can_edit_person(user, person: Person) -> bool:
     if profile == person:
         return True
     return person.account_id is None and person.owners.filter(pk=profile.pk).exists()
+
+
+class AuditLogListView(StaffRequiredMixin, ListView):
+    model = AuditEvent
+    template_name = "annuaire/audit_event_list.html"
+    context_object_name = "events"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return AuditEvent.objects.select_related("content_type", "actor").order_by("-timestamp")
 
 
 class PersonalDataExportView(LoginRequiredMixin, View):

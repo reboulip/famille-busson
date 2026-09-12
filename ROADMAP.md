@@ -35,7 +35,7 @@
   from signup and the sidebar, with acceptance recorded.
 
 ### Cluster: Traçabilité
-- [ ] 14.4 · Audit log — who changed or deleted what, and when, across `Person`,
+- [x] 14.4 · Audit log — who changed or deleted what, and when, across `Person`,
   `Relation`, `Document`, photos and group membership. Staff-visible. Matters here because
   members can already edit each other's profiles through `Person.owners`.
 - [ ] 14.5 · Corbeille — deletions on the destructive paths (publications, documents,

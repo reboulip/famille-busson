@@ -96,6 +96,9 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # After AuthenticationMiddleware so request.user is resolved -- captures
+    # the actor for annuaire.audit's signal-based logging (14.4).
+    "annuaire.middleware.AuditActorMiddleware",
     "django.contrib.auth.middleware.LoginRequiredMiddleware",
     "annuaire.middleware.ForcePasswordChangeMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",

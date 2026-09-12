@@ -1,6 +1,8 @@
 import secrets
 
+from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Group, Permission, PermissionsMixin
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
@@ -192,3 +194,47 @@ class PresencePSV(models.Model):
 
     def __str__(self):
         return f"{self.person} - {self.chalet} du {self.start_date} au {self.end_date}"
+
+
+class AuditEvent(models.Model):
+    """One row per tracked change -- see annuaire/audit.py for how these get
+    created. content_type/object_id/object_repr (not a GenericForeignKey) so a
+    row about a since-deleted/purged object still renders. actor points at
+    Account (never Person -- would trip test_person_meta_guard_covers_every_relation
+    in annuaire/person_merge.py), with a denormalized label so the row survives
+    account deletion/anonymisation."""
+
+    class Action(models.TextChoices):
+        CREATE = "create", "Création"
+        UPDATE = "update", "Modification"
+        DELETE = "delete", "Suppression"
+        RESTORE = "restore", "Restauration"
+        PURGE = "purge", "Purge définitive"
+        MEMBERSHIP_ADD = "membership_add", "Ajout à un groupe"
+        MEMBERSHIP_REMOVE = "membership_remove", "Retrait d'un groupe"
+
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name="Type d'objet")
+    object_id = models.CharField(max_length=64, verbose_name="Identifiant de l'objet")
+    object_repr = models.CharField(max_length=200, verbose_name="Objet")
+    action = models.CharField(max_length=20, choices=Action.choices, verbose_name="Action")
+    # {"field": {"from": "...", "to": "..."}}, values always coerced to strings --
+    # never password/calendar_token/search_vector/search_text, see audit.py.
+    changes = models.JSONField(default=dict, blank=True, verbose_name="Modifications")
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name="Auteur",
+    )
+    actor_label = models.CharField(max_length=255, blank=True, default="", verbose_name="Auteur (archivé)")
+    timestamp = models.DateTimeField(auto_now_add=True, verbose_name="Date")
+
+    class Meta:
+        ordering = ["-timestamp"]
+        verbose_name = "Événement d'audit"
+        verbose_name_plural = "Événements d'audit"
+
+    def __str__(self):
+        return f"{self.get_action_display()} — {self.object_repr}"

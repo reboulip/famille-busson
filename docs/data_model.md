@@ -17,6 +17,8 @@ erDiagram
     Chalet }o--o{ Person : "owners"
     Person ||--o{ PresencePSV : "person"
     Chalet ||--o{ PresencePSV : "chalet"
+    ContentType ||--o{ AuditEvent : "content_type"
+    Account ||--o{ AuditEvent : "actor"
     BlogPost }o--o{ Tag : "tags"
     BlogPost }o--o{ Person : "authors"
     BlogPost }o--o{ Document : "documents"
@@ -167,6 +169,22 @@ erDiagram
 | `chalet` | ForeignKey | Chalet | → Chalet (on_delete=CASCADE), required |
 | `start_date` | DateField | Date d'arrivée | required |
 | `end_date` | DateField | Date de départ | required |
+
+### `AuditEvent`
+
+*App:* `annuaire` · *verbose name:* Événement d'audit / Événements d'audit · *table:* `annuaire_auditevent`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `content_type` | ForeignKey | Type d'objet | → ContentType (on_delete=CASCADE), required |
+| `object_id` | CharField | Identifiant de l'objet | max_length=64, required |
+| `object_repr` | CharField | Objet | max_length=200, required |
+| `action` | CharField | Action | max_length=20, choices: create=Création, update=Modification, delete=Suppression, restore=Restauration, purge=Purge définitive, membership_add=Ajout à un groupe, membership_remove=Retrait d'un groupe, required |
+| `changes` | JSONField | Modifications | default=dict, optional |
+| `actor` | ForeignKey | Auteur | → Account (on_delete=SET_NULL), related_name='+', optional |
+| `actor_label` | CharField | Auteur (archivé) | max_length=255, default='', optional |
+| `timestamp` | DateTimeField | Date | auto_now_add, optional |
 
 ## `publications`
 
