@@ -20,7 +20,7 @@ from django.shortcuts import redirect
 from django.urls import include, path
 
 from annuaire.health import healthz
-from annuaire.views import media_serve
+from annuaire.views import branding_asset, media_serve
 
 
 @login_not_required
@@ -42,4 +42,9 @@ urlpatterns = [
     # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)
     # must not be readable by anyone who guesses/obtains the URL.
     path("media/<path:path>", media_serve),
+    # Public counterpart to the above: the login page itself needs to render the
+    # configured logo/favicon for an anonymous visitor. Enumerated to exactly
+    # "logo"/"favicon" by branding_asset -- no other MEDIA_ROOT file is reachable
+    # through this route.
+    path("branding/<str:kind>", branding_asset, name="branding-asset"),
 ]

@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
@@ -7,11 +9,16 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.urls import reverse_lazy
 
+from .contrast import AA_NON_TEXT, AA_TEXT, contrast_ratio
 from .models import Account, Chalet, Person, PresencePSV, Relation, Settings, SiteConfig
+from .theming import DEFAULT_THEME, THEMES
 from .widgets import MarkdownEditorWidget
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
+BRANDING_IMAGE_MAX_SIZE_MB = 2
+
+HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 # Base Adresse Nationale is authoritative for France; Photon (OpenStreetMap) is
 # queried server-side as a fallback for addresses BAN can't resolve -- see
@@ -140,7 +147,83 @@ class FormSiteConfig(forms.ModelForm):
             "feedback_url",
             "timezone",
             "default_language",
+            "theme",
+            "brand_primary_light",
+            "brand_primary_dark",
+            "brand_accent_light",
+            "brand_accent_dark",
+            "logo",
+            "favicon",
         ]
+
+    def _clean_hex(self, field_name: str) -> str:
+        value = self.cleaned_data.get(field_name, "")
+        if not value:
+            return value
+        if not HEX_COLOR_RE.match(value):
+            raise ValidationError("Couleur invalide -- attendu un code hexadécimal, par exemple #9C4A22.")
+        return value.upper()
+
+    def _validate_contrast(self, field_name: str, *, role: str, surface: str, minimum: float):
+        """Reject a submitted colour that fails to clear `minimum` against the
+        named surface, unless it's blank (use the theme default) or matches the
+        theme's own default for this role -- the shipped palette is already
+        accepted design, not something a staff edit should be able to trip on."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return value
+        theme = THEMES.get(self.cleaned_data.get("theme") or DEFAULT_THEME, THEMES[DEFAULT_THEME])
+        default = getattr(theme, f"{role}_{'dark' if field_name.endswith('_dark') else 'light'}")
+        if value == default:
+            return value
+        surface_hex = getattr(theme, f"{surface}_{'dark' if field_name.endswith('_dark') else 'light'}")
+        ratio = contrast_ratio(value, surface_hex)
+        if ratio < minimum:
+            measured = f"{ratio:.1f}".replace(".", ",")
+            required = f"{minimum:g}".replace(".", ",")
+            usage = "pour du texte" if minimum == AA_TEXT else "pour un élément non textuel"
+            raise ValidationError(f"Contraste {measured}:1 sur le fond {surface} -- il en faut {required}:1 {usage}.")
+        return value
+
+    def clean_brand_primary_light(self):
+        value = self._clean_hex("brand_primary_light")
+        self.cleaned_data["brand_primary_light"] = value
+        self._validate_contrast("brand_primary_light", role="primary", surface="card", minimum=AA_TEXT)
+        return self._validate_contrast("brand_primary_light", role="primary", surface="parchment", minimum=AA_TEXT)
+
+    def clean_brand_primary_dark(self):
+        value = self._clean_hex("brand_primary_dark")
+        self.cleaned_data["brand_primary_dark"] = value
+        self._validate_contrast("brand_primary_dark", role="primary", surface="card", minimum=AA_TEXT)
+        return self._validate_contrast("brand_primary_dark", role="primary", surface="parchment", minimum=AA_TEXT)
+
+    def clean_brand_accent_light(self):
+        value = self._clean_hex("brand_accent_light")
+        self.cleaned_data["brand_accent_light"] = value
+        self._validate_contrast("brand_accent_light", role="accent", surface="card", minimum=AA_NON_TEXT)
+        return self._validate_contrast("brand_accent_light", role="accent", surface="parchment", minimum=AA_NON_TEXT)
+
+    def clean_brand_accent_dark(self):
+        value = self._clean_hex("brand_accent_dark")
+        self.cleaned_data["brand_accent_dark"] = value
+        self._validate_contrast("brand_accent_dark", role="accent", surface="card", minimum=AA_NON_TEXT)
+        return self._validate_contrast("brand_accent_dark", role="accent", surface="parchment", minimum=AA_NON_TEXT)
+
+    def _clean_branding_image(self, field_name: str):
+        image = self.cleaned_data.get(field_name)
+        max_bytes = BRANDING_IMAGE_MAX_SIZE_MB * 1024 * 1024
+        if isinstance(image, UploadedFile) and image.size > max_bytes:
+            raise ValidationError(
+                f"Le fichier est trop volumineux ({image.size / (1024 * 1024):.1f} Mo). "
+                f"Taille maximale : {BRANDING_IMAGE_MAX_SIZE_MB} Mo."
+            )
+        return image
+
+    def clean_logo(self):
+        return self._clean_branding_image("logo")
+
+    def clean_favicon(self):
+        return self._clean_branding_image("favicon")
 
 
 RelationEditFormSet = forms.inlineformset_factory(

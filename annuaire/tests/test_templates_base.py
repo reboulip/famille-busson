@@ -221,6 +221,26 @@ def test_stylesheets_load_tokens_and_components_after_bootstrap_and_main_last(au
 
 
 @pytest.mark.django_db
+def test_unconfigured_brand_emits_no_inline_style_override(auth_client):
+    """An unconfigured SiteConfig must render byte-identically to the shipped
+    palette -- no brand override <style> block at all."""
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert "--fb-ember" not in content
+    assert "--fb-alpenglow" not in content
+
+
+@pytest.mark.django_db
+def test_configured_brand_emits_inline_style_override_between_components_and_main(auth_client):
+    SiteConfig.objects.create(brand_primary_light="#101010")
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert "--fb-ember:#101010;" in content
+    components_index = content.index("css/components.css")
+    main_index = content.index("css/main.css")
+    style_index = content.index("--fb-ember:#101010;")
+    assert components_index < style_index < main_index
+
+
+@pytest.mark.django_db
 def test_sidebar_chalet_entry_names_presences_too(auth_client):
     # #127: the section covers the presence calendar as well as the chalets.
     content = auth_client.get(reverse("directory")).content.decode()

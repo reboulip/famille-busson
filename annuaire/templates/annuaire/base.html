@@ -20,7 +20,7 @@
             }
         } catch (e) { /* private mode / storage blocked — fall back to the OS preference */ }
     </script>
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="icon" href="{% if site_config.favicon %}{{ site_config.favicon.url }}?v={{ site_config.updated_at|date:'U' }}{% else %}{% static 'favicon.svg' %}{% endif %}">
     {% comment %}
         Load order matters: bootstrap first so tokens.css can re-point its
         --bs-* variables, then our components, then any per-page vendor CSS,
@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% if brand_css_overrides %}<style>{{ brand_css_overrides|safe }}</style>{% endif %}
     {% block vendor_css %}{% endblock vendor_css %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock extra_css %}

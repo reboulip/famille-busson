@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.cache import patch_vary_headers
@@ -67,6 +67,20 @@ from .tokens import magic_link_token_generator
 @login_required
 def media_serve(request, path):
     return static_serve(request, path, document_root=settings.MEDIA_ROOT)
+
+
+@login_not_required
+def branding_asset(request, kind):
+    """Public counterpart to media_serve: an anonymous visitor on the login
+    page must be able to see the configured logo/favicon, which /media/ (behind
+    LoginRequiredMiddleware) can't serve. Enumerates the public surface to
+    exactly these two SiteConfig fields -- no path-traversal window into the
+    rest of MEDIA_ROOT."""
+    config = get_site_config()
+    field_file = {"logo": config.logo, "favicon": config.favicon}.get(kind)
+    if not field_file:
+        raise Http404
+    return FileResponse(field_file.open("rb"))
 
 
 @login_required

@@ -290,6 +290,34 @@ class SiteConfig(models.Model):
         verbose_name="Langue par défaut",
         help_text="Sans effet tant que l'internationalisation (phase 15.4) n'est pas en place.",
     )
+    # Names the entry in annuaire.theming.THEMES -- a real (if single-entry today)
+    # registry/seam, not a hardcoded palette. Adding a second theme later means
+    # adding a THEMES entry and a choice here, nothing else.
+    theme = models.CharField(
+        max_length=20, choices=[("alpenglow", "Alpenglow")], default="alpenglow", verbose_name="Thème"
+    )
+    # Blank means "use the theme's own default for this role" -- never stored as
+    # a specific hex just because it happens to match the default. Validated in
+    # FormSiteConfig.clean() against annuaire.contrast's AA thresholds, not here:
+    # the model has no request-independent way to know which theme it's being
+    # validated against once more than one theme exists.
+    brand_primary_light = models.CharField(
+        max_length=7, blank=True, default="", verbose_name="Couleur principale (clair)"
+    )
+    brand_primary_dark = models.CharField(
+        max_length=7, blank=True, default="", verbose_name="Couleur principale (sombre)"
+    )
+    brand_accent_light = models.CharField(
+        max_length=7, blank=True, default="", verbose_name="Couleur d'accent (clair)"
+    )
+    brand_accent_dark = models.CharField(
+        max_length=7, blank=True, default="", verbose_name="Couleur d'accent (sombre)"
+    )
+    logo = models.ImageField(upload_to="branding/", blank=True, null=True, verbose_name="Logo")
+    favicon = models.ImageField(upload_to="branding/", blank=True, null=True, verbose_name="Favicon")
+    # Cache-busting query string for the public branding-asset URLs -- a browser
+    # or CDN must not keep serving last month's logo after staff replace it.
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
 
     class Meta:
         verbose_name = "Configuration du site"

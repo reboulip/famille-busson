@@ -41,10 +41,11 @@ Blocks:
             }
         } catch (e) { /* private mode / storage blocked */ }
     </script>
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="icon" href="{% if site_config.favicon %}{{ site_config.favicon.url }}?v={{ site_config.updated_at|date:'U' }}{% else %}{% static 'favicon.svg' %}{% endif %}">
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% if brand_css_overrides %}<style>{{ brand_css_overrides|safe }}</style>{% endif %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock extra_css %}
 </head>

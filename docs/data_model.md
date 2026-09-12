@@ -207,6 +207,14 @@ erDiagram
 | `feedback_url` | CharField | Lien de retour/signalement | max_length=200, default='', optional |
 | `timezone` | CharField | Fuseau horaire | max_length=64, default='Europe/Paris', required |
 | `default_language` | CharField | Langue par défaut | max_length=10, choices: af=Afrikaans, ar=Arabic, ar-dz=Algerian Arabic, ast=Asturian, az=Azerbaijani, bg=Bulgarian, be=Belarusian, bn=Bengali, br=Breton, bs=Bosnian, ca=Catalan, ckb=Central Kurdish (Sorani), cs=Czech, cy=Welsh, da=Danish, de=German, dsb=Lower Sorbian, el=Greek, en=English, en-au=Australian English, en-gb=British English, eo=Esperanto, es=Spanish, es-ar=Argentinian Spanish, es-co=Colombian Spanish, es-mx=Mexican Spanish, es-ni=Nicaraguan Spanish, es-ve=Venezuelan Spanish, et=Estonian, eu=Basque, fa=Persian, fi=Finnish, fr=French, fy=Frisian, ga=Irish, gd=Scottish Gaelic, gl=Galician, he=Hebrew, hi=Hindi, hr=Croatian, hsb=Upper Sorbian, ht=Haitian Creole, hu=Hungarian, hy=Armenian, ia=Interlingua, id=Indonesian, ig=Igbo, io=Ido, is=Icelandic, it=Italian, ja=Japanese, ka=Georgian, kab=Kabyle, kk=Kazakh, km=Khmer, kn=Kannada, ko=Korean, ky=Kyrgyz, lb=Luxembourgish, lt=Lithuanian, lv=Latvian, mk=Macedonian, ml=Malayalam, mn=Mongolian, mr=Marathi, ms=Malay, my=Burmese, nb=Norwegian Bokmål, ne=Nepali, nl=Dutch, nn=Norwegian Nynorsk, os=Ossetic, pa=Punjabi, pl=Polish, pt=Portuguese, pt-br=Brazilian Portuguese, ro=Romanian, ru=Russian, sk=Slovak, sl=Slovenian, sq=Albanian, sr=Serbian, sr-latn=Serbian Latin, sv=Swedish, sw=Swahili, ta=Tamil, te=Telugu, tg=Tajik, th=Thai, tk=Turkmen, tr=Turkish, tt=Tatar, udm=Udmurt, ug=Uyghur, uk=Ukrainian, ur=Urdu, uz=Uzbek, vi=Vietnamese, zh-hans=Simplified Chinese, zh-hant=Traditional Chinese, default='', optional |
+| `theme` | CharField | Thème | max_length=20, choices: alpenglow=Alpenglow, default='alpenglow', required |
+| `brand_primary_light` | CharField | Couleur principale (clair) | max_length=7, default='', optional |
+| `brand_primary_dark` | CharField | Couleur principale (sombre) | max_length=7, default='', optional |
+| `brand_accent_light` | CharField | Couleur d'accent (clair) | max_length=7, default='', optional |
+| `brand_accent_dark` | CharField | Couleur d'accent (sombre) | max_length=7, default='', optional |
+| `logo` | FileField | Logo | max_length=100, optional |
+| `favicon` | FileField | Favicon | max_length=100, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 
 ## `publications`
 

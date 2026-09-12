@@ -56,7 +56,7 @@
 - [x] 15.2 · Strings out of the templates — every "Famille Busson" and "les Busson" in the
   templates and in all five email templates reads from `SiteConfig` instead.
   (requires: 15.1)
-- [ ] 15.3 · Configurable brand — the Alpenglow/Nightfall token layer becomes one named
+- [x] 15.3 · Configurable brand — the Alpenglow/Nightfall token layer becomes one named
   theme with a small overridable set of brand colours, plus logo and favicon upload. Both
   palettes must still clear their documented contrast ratios after an override, so the
   accessibility sweep is part of the item, not a follow-up. (requires: 15.1)

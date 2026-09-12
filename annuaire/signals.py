@@ -13,6 +13,7 @@ from .site_config import CACHE_KEY as SITE_CONFIG_CACHE_KEY
 
 register_file_cleanup(Person, "profile_photo")
 register_file_cleanup(Chalet, "photo")
+register_file_cleanup(SiteConfig, "logo", "favicon")
 
 register_search_index(
     Person,
@@ -137,6 +138,11 @@ register_audit(
         "feedback_url",
         "timezone",
         "default_language",
+        "theme",
+        "brand_primary_light",
+        "brand_primary_dark",
+        "brand_accent_light",
+        "brand_accent_dark",
     ],
 )
 

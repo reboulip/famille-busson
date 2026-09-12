@@ -44,6 +44,11 @@ def test_site_config_post_creates_the_row(staff_client):
             "feedback_url": "",
             "timezone": "Europe/Paris",
             "default_language": "",
+            "theme": "alpenglow",
+            "brand_primary_light": "",
+            "brand_primary_dark": "",
+            "brand_accent_light": "",
+            "brand_accent_dark": "",
         },
     )
     assert response.status_code == 302
@@ -63,6 +68,11 @@ def test_site_config_post_updates_the_existing_row(staff_client):
             "feedback_url": "",
             "timezone": "Europe/Paris",
             "default_language": "",
+            "theme": "alpenglow",
+            "brand_primary_light": "",
+            "brand_primary_dark": "",
+            "brand_accent_light": "",
+            "brand_accent_dark": "",
         },
     )
     assert response.status_code == 302

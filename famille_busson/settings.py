@@ -123,6 +123,7 @@ TEMPLATES = [
                 "annuaire.context_processors.privacy_notice_banner",
                 "annuaire.context_processors.trash_retention",
                 "annuaire.context_processors.site_config",
+                "annuaire.context_processors.brand_css",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",
