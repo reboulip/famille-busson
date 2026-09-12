@@ -7,6 +7,9 @@ search_vector/search_text structurally out of the log)."""
 
 from __future__ import annotations
 
+import contextvars
+from contextlib import contextmanager
+
 from django.db import models
 from django.db.models.signals import m2m_changed, post_delete, post_save, pre_save
 
@@ -21,6 +24,25 @@ def _stringify(value) -> str:
 
 
 _UNSET = object()
+
+# Set around annuaire.anonymisation.anonymise_person()'s Person.save() so
+# register_audit()'s generic per-field UPDATE never fires there -- without
+# this, that UPDATE's `changes` payload would permanently store the
+# pre-anonymisation PII (old name, email, ...) as the "from" value, defeating
+# the erasure this same operation is trying to guarantee. The explicit
+# ANONYMISE event (with no old-value payload) is the record that survives.
+_suppress_generic_audit_var: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "suppress_generic_audit", default=False
+)
+
+
+@contextmanager
+def suppress_generic_audit():
+    token = _suppress_generic_audit_var.set(True)
+    try:
+        yield
+    finally:
+        _suppress_generic_audit_var.reset(token)
 
 
 def record_audit_event(
@@ -56,6 +78,8 @@ def register_audit(model: type[models.Model], *, fields: list[str]) -> None:
     concrete field names to diff on update -- never derived by reflection."""
 
     def _on_pre_save(sender, instance, **kwargs):
+        if _suppress_generic_audit_var.get():
+            return
         if instance.pk is None:
             instance._audit_old_values = None
             return
@@ -67,6 +91,8 @@ def register_audit(model: type[models.Model], *, fields: list[str]) -> None:
         instance._audit_old_values = {field_name: getattr(old, field_name) for field_name in fields}
 
     def _on_post_save(sender, instance, created, **kwargs):
+        if _suppress_generic_audit_var.get():
+            return
         if created:
             record_audit_event(instance, action=AuditEvent.Action.CREATE)
             return
@@ -83,6 +109,8 @@ def register_audit(model: type[models.Model], *, fields: list[str]) -> None:
             record_audit_event(instance, action=AuditEvent.Action.UPDATE, changes=changes)
 
     def _on_post_delete(sender, instance, **kwargs):
+        if _suppress_generic_audit_var.get():
+            return
         record_audit_event(instance, action=AuditEvent.Action.DELETE)
 
     pre_save.connect(_on_pre_save, sender=model, weak=False)

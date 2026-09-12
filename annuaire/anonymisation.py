@@ -32,7 +32,7 @@ from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from .audit import record_audit_event
+from .audit import record_audit_event, suppress_generic_audit
 from .models import Account, AuditEvent, Person
 from .search.indexing import enqueue_reindex
 
@@ -74,7 +74,12 @@ def anonymise_person(person: Person, *, actor) -> AnonymisationReport:
         person.profile_photo = None
         person.export_privacy = Person.ExportPrivacy.REDACT
         person.anonymised_at = timezone.now()
-        person.save()
+        # Suppressed: register_audit(Person, ...)'s generic per-field UPDATE
+        # would otherwise permanently store the pre-anonymisation values (old
+        # name, email, ...) in its `changes` payload -- the ANONYMISE event
+        # below is the record that's meant to survive, with no such payload.
+        with suppress_generic_audit():
+            person.save()
 
         person.owners.clear()
 

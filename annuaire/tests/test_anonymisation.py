@@ -110,13 +110,20 @@ def test_anonymise_purges_trashed_rows(person, account):
 def test_anonymise_logs_audit_event(person, account):
     AuditEvent.objects.all().delete()
     anonymise_person(person, actor=account)
-    # The field-level UPDATE from register_audit(Person, ...) also fires
-    # (many tracked fields change) -- the ANONYMISE event is the one this
-    # operation adds explicitly.
-    event = AuditEvent.objects.get(
-        content_type__model="person", object_id=str(person.pk), action=AuditEvent.Action.ANONYMISE
-    )
+    event = AuditEvent.objects.get(content_type__model="person", object_id=str(person.pk))
+    assert event.action == AuditEvent.Action.ANONYMISE
     assert event.actor_id == account.pk
+
+
+@pytest.mark.django_db
+def test_anonymise_does_not_leak_pii_via_the_generic_update_event(person, account):
+    # register_audit(Person, ...)'s generic per-field UPDATE must be
+    # suppressed during anonymisation -- otherwise its `changes` payload
+    # would permanently store the pre-anonymisation email/name as "from"
+    # values, defeating the erasure.
+    AuditEvent.objects.all().delete()
+    anonymise_person(person, actor=account)
+    assert not AuditEvent.objects.filter(content_type__model="person", action=AuditEvent.Action.UPDATE).exists()
 
 
 @pytest.mark.django_db
