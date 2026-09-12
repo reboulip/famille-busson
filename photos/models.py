@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 
 from annuaire.models import Person
+from annuaire.soft_delete import SoftDeleteManager, SoftDeleteModelMixin
 
 from .storage import get_photo_storage
 from .validators import validate_photo_extension, validate_photo_size
@@ -17,7 +18,7 @@ DERIVATIVE_STATUS_CHOICES = [
 ]
 
 
-class PhotoManager(models.Manager):
+class PhotoManager(SoftDeleteManager):
     def chronological(self):
         """Canonical ordering for every photo listing/grid/lightbox/prev-next in
         the photothèque -- taken_at is null until 10.3's derivative generation
@@ -26,7 +27,7 @@ class PhotoManager(models.Manager):
         return self.get_queryset().order_by(models.F("taken_at").desc(nulls_last=True), "pk")
 
 
-class Album(models.Model):
+class Album(SoftDeleteModelMixin, models.Model):
     title = models.CharField(max_length=200, verbose_name="Titre")
     description = models.TextField(blank=True, default="", verbose_name="Description")
     date_start = models.DateField(null=True, blank=True, verbose_name="Date de début")
@@ -63,6 +64,9 @@ class Album(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Album"
         verbose_name_plural = "Albums"
+        # Explicit, not left to manager-declaration-order inference across the
+        # SoftDeleteModelMixin/concrete-model boundary -- see annuaire/soft_delete.py.
+        default_manager_name = "objects"
 
     def __str__(self):
         return self.title
@@ -90,7 +94,7 @@ class AlbumGroupAccess(models.Model):
         return f"{self.album} — {self.group}"
 
 
-class Photo(models.Model):
+class Photo(SoftDeleteModelMixin, models.Model):
     album = models.ForeignKey(Album, on_delete=models.CASCADE, related_name="photos", verbose_name="Album")
     file = models.ImageField(
         upload_to="originals/",
@@ -139,6 +143,7 @@ class Photo(models.Model):
         ordering = ["uploaded_at", "pk"]
         verbose_name = "Photo"
         verbose_name_plural = "Photos"
+        default_manager_name = "objects"
 
     def __str__(self):
         return self.caption or self.filename

@@ -8,6 +8,7 @@ from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from annuaire.models import Person
+from annuaire.soft_delete import SoftDeleteModelMixin
 
 from .storage import get_document_storage
 from .validators import validate_document_extension, validate_document_size
@@ -124,7 +125,7 @@ def validate_category_group_restriction(sender, instance, action, **kwargs):
         )
 
 
-class Document(models.Model):
+class Document(SoftDeleteModelMixin, models.Model):
     title = models.CharField(max_length=200, verbose_name="Titre")
     category = models.ForeignKey(
         Category, on_delete=models.PROTECT, related_name="documents", verbose_name="Catégorie"
@@ -156,6 +157,7 @@ class Document(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Document"
         verbose_name_plural = "Documents"
+        default_manager_name = "objects"
 
     def __str__(self):
         return self.title

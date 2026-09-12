@@ -1,0 +1,44 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    {# Archetype I — tabular. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Corbeille</h1>
+            <p class="fb-page-head__lede">
+                Publications, documents, albums et photos supprimés, récupérables pendant
+                {{ trash_retention_days }} jours avant leur suppression définitive.
+            </p>
+        </div>
+    </div>
+
+    {% if rows %}
+        <table class="fb-table table">
+            <thead>
+                <tr><th>Type</th><th>Élément</th><th>Supprimé par</th><th>Supprimé le</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.label }}</td>
+                        <td class="fb-table__strong">{{ row.object }}</td>
+                        <td>{{ row.object.deleted_by|default:"—" }}</td>
+                        <td>{{ row.object.deleted_at }}</td>
+                        <td class="fb-table__actions">
+                            <form method="post" action="{% url 'corbeille-restore' row.app_label row.model_name row.object.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Restaurer</button>
+                            </form>
+                            <form method="post" action="{% url 'corbeille-purge' row.app_label row.model_name row.object.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">Supprimer définitivement</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% include "annuaire/_empty.html" with title="Corbeille vide" body="Rien n'a été supprimé récemment." %}
+    {% endif %}
+{% endblock content %}

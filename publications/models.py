@@ -4,6 +4,7 @@ from django.contrib.postgres.search import SearchVectorField
 from django.db import models
 
 from annuaire.models import Person
+from annuaire.soft_delete import SoftDeleteModelMixin
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp"}
 PDF_EXTENSIONS = {".pdf"}
@@ -28,7 +29,7 @@ class Tag(models.Model):
         return self.name
 
 
-class BlogPost(models.Model):
+class BlogPost(SoftDeleteModelMixin, models.Model):
     # post_type ("Busson connection") and tags coexist deliberately: Phase 16.2
     # migrates post_type onto a tag and removes this field then, not now.
     POST_TYPE_CHOICES = [
@@ -76,6 +77,7 @@ class BlogPost(models.Model):
         ordering = ["-created_at"]
         verbose_name = "Publication"
         verbose_name_plural = "Publications"
+        default_manager_name = "objects"
 
     def __str__(self):
         return self.title

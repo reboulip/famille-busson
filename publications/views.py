@@ -256,6 +256,11 @@ class BlogPostDeleteView(AuthorOrStaffRequiredMixin, DeleteView):
     template_name = "publications/blogpost_confirm_delete.html"
     success_url = reverse_lazy("blogpost-list")
 
+    def form_valid(self, form):
+        # Soft delete (corbeille, 14.5) -- never .delete() directly here.
+        self.object.soft_delete(self.request.user)
+        return redirect(self.get_success_url())
+
 
 class CommentDeleteView(StaffRequiredMixin, DeleteView):
     model = Comment

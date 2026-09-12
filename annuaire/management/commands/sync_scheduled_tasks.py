@@ -32,6 +32,8 @@ BIRTHDAY_REMINDER_HOUR_UTC = 7
 SEARCH_REINDEX_HOUR_UTC = 3
 # Distinct hour from both of the above so none of the three daily jobs overlap.
 EVENT_REMINDER_HOUR_UTC = 8
+# Corbeille (14.5) -- distinct hour from the three above.
+TRASH_PURGE_HOUR_UTC = 5
 
 
 def _next_occurrence_at(hour: int) -> datetime.datetime:
@@ -78,6 +80,12 @@ class Command(BaseCommand):
                 "func": "events.tasks.send_event_reminders",
                 "schedule_type": Schedule.DAILY,
                 "initial_next_run": _next_occurrence_at(EVENT_REMINDER_HOUR_UTC),
+            },
+            {
+                "name": "purge_expired_trash",
+                "func": "annuaire.tasks.purge_expired_trash",
+                "schedule_type": Schedule.DAILY,
+                "initial_next_run": _next_occurrence_at(TRASH_PURGE_HOUR_UTC),
             },
         ]
 

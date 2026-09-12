@@ -13,16 +13,19 @@
         <h1>Supprimer « {{ object.title }} » ?</h1>
         <p class="fb-meta">Dans {{ object.category.name }}.</p>
         <div class="fb-confirm__consequences">
-            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <p class="fb-confirm__lead">
+                Le document sera envoyé à la corbeille, récupérable pendant {{ trash_retention_days }} jours.
+                Passé ce délai, il sera supprimé définitivement, avec :
+            </p>
             <ul>
-                <li>le document et sa description ;</li>
+                <li>sa description ;</li>
                 <li>tous ses fichiers, y compris les originaux déposés.</li>
             </ul>
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Envoyer à la corbeille</button>
                 <a href="{% url 'document-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
             </div>
         </form>

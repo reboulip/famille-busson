@@ -20,14 +20,26 @@ def _stringify(value) -> str:
     return str(value)
 
 
-def record_audit_event(instance: models.Model, *, action: str, changes: dict | None = None) -> None:
+_UNSET = object()
+
+
+def record_audit_event(
+    instance: models.Model, *, action: str, changes: dict | None = None, actor: object = _UNSET
+) -> None:
     """Public so a change a generic post_save/post_delete pairing can't
     express (an M2M change, an erasure, a corbeille restore/purge) can still
     go through the same log -- see annuaire.person_merge/personal_data for the
-    equivalent pattern on registration helpers."""
+    equivalent pattern on registration helpers.
+
+    `actor` defaults to the request-scoped contextvar (annuaire.middleware's
+    AuditActorMiddleware) -- pass it explicitly when logging from outside a
+    request (a management command, a background task) or when the caller
+    already has the acting Account in hand and shouldn't depend on ambient
+    request state (see SoftDeleteModelMixin.soft_delete())."""
     from django.contrib.contenttypes.models import ContentType
 
-    actor = get_current_actor()
+    if actor is _UNSET:
+        actor = get_current_actor()
     AuditEvent.objects.create(
         content_type=ContentType.objects.get_for_model(type(instance)),
         object_id=str(instance.pk),

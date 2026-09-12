@@ -13,9 +13,12 @@
         <h1>Supprimer « {{ object.title }} » ?</h1>
         <p class="fb-meta">Publiée le {{ object.created_at|date:"j F Y" }}.</p>
         <div class="fb-confirm__consequences">
-            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <p class="fb-confirm__lead">
+                La publication sera envoyée à la corbeille, récupérable pendant {{ trash_retention_days }} jours.
+                Passé ce délai, elle sera supprimée définitivement, avec :
+            </p>
             <ul>
-                <li>la publication et son contenu ;</li>
+                <li>son contenu ;</li>
                 <li>{% with n=object.comments.count %}{% if n == 1 %}son commentaire{% else %}ses {{ n }} commentaires{% endif %}{% endwith %} ;</li>
                 <li>{% with n=object.attachments.count %}{% if n == 1 %}sa pièce jointe{% else %}ses {{ n }} pièces jointes{% endif %}{% endwith %}, fichiers compris.</li>
             </ul>
@@ -23,7 +26,7 @@
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Envoyer à la corbeille</button>
                 <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
             </div>
         </form>

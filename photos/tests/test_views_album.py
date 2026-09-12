@@ -110,9 +110,11 @@ def test_album_delete_shows_photo_count(staff_client, album):
 
 
 @pytest.mark.django_db
-def test_album_delete_cascades_photos(staff_client, album):
+def test_album_soft_delete_does_not_cascade_to_photos(staff_client, album):
+    # 14.5: trashing an album is a soft delete -- no cascade marking. The photo
+    # is untouched; it only becomes unreachable through the (now-trashed) album.
     photo = Photo.objects.create(album=album, file=make_uploaded_image())
     response = staff_client.post(reverse("album-delete", kwargs={"pk": album.pk}))
     assert response.status_code == 302
     assert not Album.objects.filter(pk=album.pk).exists()
-    assert not Photo.objects.filter(pk=photo.pk).exists()
+    assert Photo.objects.filter(pk=photo.pk).exists()

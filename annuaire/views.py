@@ -18,7 +18,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
-from django.http import HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.cache import patch_vary_headers
@@ -948,6 +948,66 @@ class AuditLogListView(StaffRequiredMixin, ListView):
 
     def get_queryset(self):
         return AuditEvent.objects.select_related("content_type", "actor").order_by("-timestamp")
+
+
+# The corbeille's scope (14.5): publications, documents and photos only --
+# "personnes" is deliberately excluded, see sprint-brief.md. Restore/purge
+# dispatch is validated against this exact allowlist, never an arbitrary
+# app_label/model_name from the URL.
+CORBEILLE_MODELS: list[tuple[str, str]] = [
+    ("publications", "blogpost"),
+    ("documents", "document"),
+    ("photos", "album"),
+    ("photos", "photo"),
+]
+
+
+def _get_corbeille_model(app_label: str, model_name: str):
+    from django.apps import apps
+
+    if (app_label, model_name) not in CORBEILLE_MODELS:
+        raise Http404
+    return apps.get_model(app_label, model_name)
+
+
+class CorbeilleListView(StaffRequiredMixin, TemplateView):
+    template_name = "annuaire/corbeille_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        rows = []
+        for app_label, model_name in CORBEILLE_MODELS:
+            model = _get_corbeille_model(app_label, model_name)
+            for obj in model.all_objects.filter(deleted_at__isnull=False):
+                rows.append(
+                    {
+                        "app_label": app_label,
+                        "model_name": model_name,
+                        "object": obj,
+                        "label": model._meta.verbose_name,
+                    }
+                )
+        rows.sort(key=lambda row: row["object"].deleted_at, reverse=True)
+        context["rows"] = rows
+        return context
+
+
+class CorbeilleRestoreView(StaffRequiredMixin, View):
+    def post(self, request, app_label, model_name, pk):
+        model = _get_corbeille_model(app_label, model_name)
+        instance = get_object_or_404(model.all_objects, pk=pk)
+        instance.restore()
+        messages.success(request, "Élément restauré.")
+        return redirect("corbeille-list")
+
+
+class CorbeillePurgeView(StaffRequiredMixin, View):
+    def post(self, request, app_label, model_name, pk):
+        model = _get_corbeille_model(app_label, model_name)
+        instance = get_object_or_404(model.all_objects, pk=pk)
+        instance.purge()
+        messages.success(request, "Élément supprimé définitivement.")
+        return redirect("corbeille-list")
 
 
 class PersonalDataExportView(LoginRequiredMixin, View):

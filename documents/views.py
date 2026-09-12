@@ -363,3 +363,8 @@ class DocumentDeleteView(UploaderOrStaffRequiredMixin, DeleteView):
     model = Document
     template_name = "documents/document_confirm_delete.html"
     success_url = reverse_lazy("document-list")
+
+    def form_valid(self, form):
+        # Soft delete (corbeille, 14.5) -- never .delete() directly here.
+        self.object.soft_delete(self.request.user)
+        return redirect(self.get_success_url())

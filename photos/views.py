@@ -243,6 +243,11 @@ class PhotoDeleteView(PhotoOwnerOrStaffRequiredMixin, DeleteView):
     def get_success_url(self):
         return reverse("album-detail", kwargs={"pk": self.object.album_id})
 
+    def form_valid(self, form):
+        # Soft delete (corbeille, 14.5) -- never .delete() directly here.
+        self.object.soft_delete(self.request.user)
+        return redirect(self.get_success_url())
+
 
 class AlbumCreateView(LoginRequiredMixin, CreateView):
     model = Album
@@ -293,6 +298,15 @@ class AlbumDeleteView(AlbumOwnerOrStaffRequiredMixin, DeleteView):
         context = super().get_context_data(**kwargs)
         context["photo_count"] = self.object.photos.count()
         return context
+
+    def form_valid(self, form):
+        # Soft delete (corbeille, 14.5) -- never .delete() directly here. Does
+        # NOT cascade to the album's photos, by design (see annuaire/soft_delete.py).
+        # NB: DeleteView's own post()/form_valid() -- not delete() -- is what
+        # actually runs on POST in this Django version; overriding delete()
+        # here would never be called.
+        self.object.soft_delete(self.request.user)
+        return redirect(self.get_success_url())
 
 
 @method_decorator(xframe_options_sameorigin, name="dispatch")

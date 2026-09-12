@@ -19,6 +19,7 @@ erDiagram
     Chalet ||--o{ PresencePSV : "chalet"
     ContentType ||--o{ AuditEvent : "content_type"
     Account ||--o{ AuditEvent : "actor"
+    Account ||--o{ BlogPost : "deleted_by"
     BlogPost }o--o{ Tag : "tags"
     BlogPost }o--o{ Person : "authors"
     BlogPost }o--o{ Document : "documents"
@@ -30,15 +31,18 @@ erDiagram
     Category }o--o{ Group : "groups"
     Category ||--o{ CategoryGroupAccess : "category"
     Group ||--o{ CategoryGroupAccess : "group"
+    Account ||--o{ Document : "deleted_by"
     Category ||--o{ Document : "category"
     Person ||--o{ Document : "uploaded_by"
     Person ||--o{ Document : "redactor"
     Document ||--o{ DocumentFile : "document"
+    Account ||--o{ Album : "deleted_by"
     Photo ||--o{ Album : "cover"
     Person ||--o{ Album : "created_by"
     Album }o--o{ Group : "groups"
     Album ||--o{ AlbumGroupAccess : "album"
     Group ||--o{ AlbumGroupAccess : "group"
+    Account ||--o{ Photo : "deleted_by"
     Album ||--o{ Photo : "album"
     Person ||--o{ Photo : "uploaded_by"
     Photo ||--o{ PersonTag : "photo"
@@ -207,6 +211,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `body` | TextField | Contenu | required |
 | `post_type` | CharField | Type de publication | max_length=10, choices: BC=Busson connection, NORMAL=Publication normale, default='NORMAL', required |
@@ -275,6 +281,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `category` | ForeignKey | Catégorie | → Category (on_delete=PROTECT), related_name='documents', required |
 | `document_date` | DateField | Date du document | optional |
@@ -313,6 +321,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `description` | TextField | Description | default='', optional |
 | `date_start` | DateField | Date de début | optional |
@@ -342,6 +352,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `album` | ForeignKey | Album | → Album (on_delete=CASCADE), related_name='photos', required |
 | `file` | FileField | Fichier | max_length=100, required |
 | `caption` | CharField | Légende | max_length=255, default='', optional |

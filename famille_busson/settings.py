@@ -120,6 +120,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "annuaire.context_processors.site_version",
                 "annuaire.context_processors.privacy_notice_banner",
+                "annuaire.context_processors.trash_retention",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",
@@ -192,6 +193,9 @@ PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60 * 24 
 # since it grants an immediate session rather than just a chance to set a
 # password.
 MAGIC_LINK_TIMEOUT = env.int("MAGIC_LINK_TIMEOUT", default=15 * 60)
+# Corbeille (14.5) -- how long a soft-deleted row stays recoverable before the
+# daily purge job (annuaire.tasks.purge_expired_trash) permanently deletes it.
+TRASH_RETENTION_DAYS = env.int("TRASH_RETENTION_DAYS", default=30)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/

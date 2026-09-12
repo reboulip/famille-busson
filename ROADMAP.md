@@ -38,9 +38,10 @@
 - [x] 14.4 · Audit log — who changed or deleted what, and when, across `Person`,
   `Relation`, `Document`, photos and group membership. Staff-visible. Matters here because
   members can already edit each other's profiles through `Person.owners`.
-- [ ] 14.5 · Corbeille — deletions on the destructive paths (publications, documents,
-  photos, personnes) become recoverable for a retention window instead of immediate.
-  (requires: 14.4)
+- [x] 14.5 · Corbeille — deletions on the destructive paths (publications, documents,
+  photos) become recoverable for a retention window instead of immediate.
+  (requires: 14.4) — **scope note:** "personnes" dropped from this item; person
+  removal stays exclusively 14.2's anonymisation flow (see sprint decisions).
 
 ## Phase 15 — Le site devient configurable
 

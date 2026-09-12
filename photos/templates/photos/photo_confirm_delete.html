@@ -13,16 +13,19 @@
         <h1>Supprimer « {{ object.caption|default:"cette photo" }} » ?</h1>
         <p class="fb-meta">Dans l'album « {{ object.album.title }} ».</p>
         <div class="fb-confirm__consequences">
-            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <p class="fb-confirm__lead">
+                La photo sera envoyée à la corbeille, récupérable pendant {{ trash_retention_days }} jours.
+                Passé ce délai, elle sera supprimée définitivement, avec :
+            </p>
             <ul>
-                <li>la photo et sa légende ;</li>
+                <li>sa légende ;</li>
                 <li>le fichier original et ses vignettes.</li>
             </ul>
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Envoyer à la corbeille</button>
                 <a href="{% url 'photo-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
             </div>
         </form>
