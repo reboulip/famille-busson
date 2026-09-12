@@ -35,4 +35,7 @@ nav:
   - Permissions: permissions.md
   - Authentication: authentication.md
   - Search: search.md
+  - Privacy: privacy.md
+  - Audit log: audit.md
+  - Corbeille: corbeille.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

@@ -177,6 +177,13 @@ neither yields anything. This is a safety net, not a substitute: a warning-level
 check (`annuaire.checks`, id `annuaire.W001`) flags a `SITE_BASE_URL` that still resolves
 to localhost outside `DEBUG`.
 
+The five `PRIVACY_*` variables (`PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CONTACT`,
+`PRIVACY_HOSTING_PROVIDER`, `PRIVACY_HOSTING_COUNTRY`, `PRIVACY_RETENTION_SUMMARY`) feed
+the public privacy notice page's legal facts (who the data controller is, hosting
+provider/country, rights-request contact, retention summary) and all default to `""`.
+Development and tests are fine leaving them unset; **production must set all five**
+before launch — see [`privacy.md`](privacy.md#legal-facts-environment-variables-not-hardcoded).
+
 ## App version
 
 `APP_VERSION` (`famille_busson/settings.py`) is read once at import time from

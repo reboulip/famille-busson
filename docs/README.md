@@ -30,6 +30,14 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
 - [`search.md`](search.md) — the global search field: the two sidebar/topbar mounts,
   the 2-character minimum, the grouped-preview/"Voir tout" results page, and how to
   manually verify Postgres ranking (no Postgres CI leg this sprint).
+- [`privacy.md`](privacy.md) — Phase 14's privacy features: personal data export
+  (categories, scope, and access model), the erasure/anonymisation policy, and the
+  privacy notice/consent record.
+- [`audit.md`](audit.md) — the staff-only audit log: what's tracked and excluded, how
+  the acting account is captured per-request, and the row-survival design.
+- [`corbeille.md`](corbeille.md) — the soft-delete/restore/purge trash for publications,
+  documents, albums and photos: scope, the `soft_delete()`/never-override-`delete()`
+  design, the no-cascade rule, and the daily automatic purge job.
 - [`ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) — history of roadmap items already shipped
   to production. Items are moved here from `ROADMAP.md` at release time (see the
   `/release` skill) so `ROADMAP.md` only ever shows pending work.
