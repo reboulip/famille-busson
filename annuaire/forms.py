@@ -195,6 +195,9 @@ class SignupForm(forms.Form):
         widget=forms.PasswordInput(attrs={"placeholder": "Confirme ton mot de passe"}),
         strip=False,
     )
+    accept_privacy_notice = forms.BooleanField(
+        required=True, label="J'ai lu et j'accepte la politique de confidentialité"
+    )
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

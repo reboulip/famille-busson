@@ -91,7 +91,12 @@ def test_global_circuit_breaker_trips_across_many_distinct_emails(client, db):
 
 @pytest.mark.django_db
 def test_signup_is_throttled_before_the_account_existence_check(client, db):
-    payload = {"email": "unknown@example.com", "password": "StrongP@ss1!", "password_confirm": "StrongP@ss1!"}
+    payload = {
+        "email": "unknown@example.com",
+        "password": "StrongP@ss1!",
+        "password_confirm": "StrongP@ss1!",
+        "accept_privacy_notice": "on",
+    }
     for _ in range(PER_EMAIL_HOURLY_LIMIT):
         client.post(reverse("signup"), payload)
 

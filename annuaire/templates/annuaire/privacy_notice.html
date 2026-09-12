@@ -1,0 +1,54 @@
+{% extends "annuaire/base.html" %}
+{% block content %}
+    {# Archetype E — long-form. Public page, so it keeps the app shell. #}
+    <div class="fb-longform">
+        <p class="fb-eyebrow">Aide</p>
+        <h1 class="fb-longform__title">Politique de confidentialité</h1>
+        <div class="fb-rule"></div>
+
+        <div class="fb-longform__body">
+            <h2>Qui est responsable de ce site</h2>
+            <p>
+                {% if controller_name %}{{ controller_name }}{% else %}<em>À compléter par l'administrateur du site.</em>{% endif %}
+                {% if controller_contact %}— contact : {{ controller_contact }}{% endif %}
+            </p>
+
+            <h2>Hébergement</h2>
+            <p>
+                {% if hosting_provider %}
+                    Les données sont hébergées par {{ hosting_provider }}{% if hosting_country %}, en {{ hosting_country }}{% endif %}.
+                {% else %}
+                    <em>À compléter par l'administrateur du site.</em>
+                {% endif %}
+            </p>
+
+            <h2>Ce que le site collecte, et pourquoi</h2>
+            <p>Le tableau ci-dessous liste chaque catégorie de données personnelles conservées.</p>
+            <table class="fb-table table">
+                <thead>
+                    <tr><th>Catégorie</th><th>Description</th></tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                        <tr>
+                            <td class="fb-table__strong">{{ category.label_fr }}</td>
+                            <td>{{ category.note_fr }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <h2>Durée de conservation</h2>
+            <p>
+                {% if retention_summary %}{{ retention_summary }}{% else %}<em>À compléter par l'administrateur du site.</em>{% endif %}
+            </p>
+
+            <h2>Vos droits</h2>
+            <p>
+                Vous pouvez demander une copie de vos données personnelles depuis votre
+                profil (« Télécharger mes données »), ou contacter le responsable du site
+                ci-dessus pour toute autre demande (rectification, effacement).
+            </p>
+        </div>
+    </div>
+{% endblock content %}

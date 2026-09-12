@@ -40,6 +40,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     calendar_token = models.CharField(
         max_length=64, unique=True, null=True, blank=True, editable=False, verbose_name="Jeton calendrier"
     )
+    # Consent tracking for the privacy notice (14.3) -- see annuaire/privacy_notice.py.
+    # Not on Person: acceptance is an act of the logged-in human, and an
+    # accountless Person (a child, a deceased ancestor) can't consent.
+    privacy_notice_accepted_at = models.DateTimeField(
+        null=True, blank=True, verbose_name="Date d'acceptation de la politique de confidentialité"
+    )
+    privacy_notice_version = models.CharField(
+        max_length=20, blank=True, default="", verbose_name="Version acceptée de la politique de confidentialité"
+    )
     objects = AccountManager()
 
     USERNAME_FIELD = "email"

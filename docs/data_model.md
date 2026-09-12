@@ -87,6 +87,8 @@ erDiagram
 | `must_change_password` | BooleanField | Doit changer le mot de passe | default=False, required |
 | `last_feed_seen_at` | DateTimeField | Dernière consultation du fil | optional |
 | `calendar_token` | CharField | Jeton calendrier | max_length=64, unique, optional |
+| `privacy_notice_accepted_at` | DateTimeField | Date d'acceptation de la politique de confidentialité | optional |
+| `privacy_notice_version` | CharField | Version acceptée de la politique de confidentialité | max_length=20, default='', optional |
 | `groups` | ManyToManyField | groups | → Group (M2M), related_name='account_set' |
 | `user_permissions` | ManyToManyField | user permissions | → Permission (M2M), related_name='account_set' |
 

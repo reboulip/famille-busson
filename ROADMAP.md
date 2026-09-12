@@ -31,7 +31,7 @@
 - [ ] 14.2 · Erasure and anonymisation — a staff flow anonymising a person while preserving
   referential integrity (their publications survive under an anonymised author), with a
   written policy on what is retained and why. (requires: 14.1)
-- [ ] 14.3 · Privacy notice — a French page describing what is collected and why, linked
+- [x] 14.3 · Privacy notice — a French page describing what is collected and why, linked
   from signup and the sidebar, with acceptance recorded.
 
 ### Cluster: Traçabilité

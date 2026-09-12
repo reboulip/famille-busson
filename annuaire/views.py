@@ -55,7 +55,8 @@ from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
 from .models import Account, AuditEvent, Chalet, Person, PresencePSV, Relation
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
-from .personal_data import build_personal_data_archive
+from .personal_data import PERSONAL_DATA_CATEGORIES, build_personal_data_archive
+from .privacy_notice import record_acceptance
 from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
@@ -175,6 +176,7 @@ class SignupView(EmailRateLimitMixin, FormView):
             user = Account.objects.create_user(email=email)
             user.set_password(password)
             user.save()
+            record_acceptance(user)
             login(self.request, user)
             return super().form_valid(form)
 
@@ -664,6 +666,33 @@ class MagicLinkHelpView(TemplateView):
     visitor confused mid-flow, not just by an already-authenticated member."""
 
     template_name = "annuaire/help_magic_link.html"
+
+
+@method_decorator(login_not_required, name="dispatch")
+class PrivacyNoticeView(TemplateView):
+    """Public privacy notice (14.3) -- must be readable before signing up, so
+    it's linked from the sidebar's Aide section (unconditionally, like
+    MagicLinkHelpView above) rather than gated behind login."""
+
+    template_name = "annuaire/privacy_notice.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = PERSONAL_DATA_CATEGORIES
+        context["controller_name"] = settings.PRIVACY_CONTROLLER_NAME
+        context["controller_contact"] = settings.PRIVACY_CONTROLLER_CONTACT
+        context["hosting_provider"] = settings.PRIVACY_HOSTING_PROVIDER
+        context["hosting_country"] = settings.PRIVACY_HOSTING_COUNTRY
+        context["retention_summary"] = settings.PRIVACY_RETENTION_SUMMARY
+        return context
+
+
+@login_required
+@require_POST
+def accept_privacy_notice(request):
+    record_acceptance(request.user)
+    messages.success(request, "Merci, votre acceptation a été enregistrée.")
+    return redirect("home")
 
 
 class ProfileCreateView(LoginRequiredMixin, CreateView):

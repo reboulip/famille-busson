@@ -119,6 +119,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "annuaire.context_processors.site_version",
+                "annuaire.context_processors.privacy_notice_banner",
             ],
             "libraries": {
                 "crispy_forms_filters": "crispy_forms.templatetags.crispy_forms_filters",
@@ -381,3 +382,15 @@ def _default_site_base_url(csrf_trusted_origins: list[str], allowed_hosts: list[
 # available there. Production sets this explicitly; the derived fallback above only
 # guards against it being forgotten (see annuaire.checks for the accompanying warning).
 SITE_BASE_URL = env("SITE_BASE_URL", default=_default_site_base_url(CSRF_TRUSTED_ORIGINS, ALLOWED_HOSTS))
+
+# Real-world facts for the privacy notice (14.3) that no code can derive --
+# who the data controller is, where data is hosted, how to exercise one's
+# rights, and the retention summary sentence(s). Deliberately not database
+# fields: this is legal content the site operator sets once per deployment,
+# not something editable in-app. Empty by default so dev/test environments
+# that predate this item never crash; production must set all five.
+PRIVACY_CONTROLLER_NAME = env("PRIVACY_CONTROLLER_NAME", default="")
+PRIVACY_CONTROLLER_CONTACT = env("PRIVACY_CONTROLLER_CONTACT", default="")
+PRIVACY_HOSTING_PROVIDER = env("PRIVACY_HOSTING_PROVIDER", default="")
+PRIVACY_HOSTING_COUNTRY = env("PRIVACY_HOSTING_COUNTRY", default="")
+PRIVACY_RETENTION_SUMMARY = env("PRIVACY_RETENTION_SUMMARY", default="")

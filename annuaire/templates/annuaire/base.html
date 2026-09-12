@@ -159,6 +159,7 @@
                             <p class="fb-eyebrow fb-nav__label">Aide</p>
                             <ul>
                                 <li><a href="{% url 'magic-link-help' %}" {% if un == 'magic-link-help' %}aria-current="page"{% endif %}>Comment fonctionne la connexion par lien ?</a></li>
+                                <li><a href="{% url 'privacy-notice' %}" {% if un == 'privacy-notice' %}aria-current="page"{% endif %}>Politique de confidentialité</a></li>
                                 <li><a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a></li>
                             </ul>
                         </div>
@@ -193,6 +194,18 @@
                         {% for message in messages %}
                             <div class="fb-alert fb-alert--{{ message.tags }}">{{ message }}</div>
                         {% endfor %}
+                    </div>
+                {% endif %}
+                {% if show_privacy_notice_banner %}
+                    <div class="fb-alert fb-alert--info">
+                        <span>
+                            La politique de confidentialité a été mise à jour.
+                            <a href="{% url 'privacy-notice' %}">Consultez-la</a>.
+                        </span>
+                        <form method="post" action="{% url 'privacy-notice-accept' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">J'ai lu et j'accepte</button>
+                        </form>
                     </div>
                 {% endif %}
                 {% block content %}{% endblock content %}

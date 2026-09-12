@@ -326,8 +326,21 @@ def _collect_genealogie(person: Person, viewer: Account) -> list[dict]:
     return rows
 
 
-# 14.3 registers one additional entry here ("consentements": acceptance of
-# the privacy notice) once that item lands -- see sprint-brief.md.
+def _collect_consentements(person: Person, viewer: Account) -> list[dict]:
+    # Consent lives on the linked Account (see annuaire/privacy_notice.py),
+    # not the viewer -- an owner exporting an accountless profile's data has
+    # nothing to report here, since that profile can't consent to anything.
+    account = person.account
+    if account is None or not account.privacy_notice_accepted_at:
+        return []
+    return [
+        {
+            "version": account.privacy_notice_version,
+            "accepte_le": account.privacy_notice_accepted_at.isoformat(),
+        }
+    ]
+
+
 PERSONAL_DATA_CATEGORIES: list[DataCategory] = [
     DataCategory("profil", "Profil", "Vos informations de profil.", _collect_profil),
     DataCategory(
@@ -367,6 +380,12 @@ PERSONAL_DATA_CATEGORIES: list[DataCategory] = [
         "Généalogie",
         "Les récits et citations généalogiques vous concernant ou rédigés par vous.",
         _collect_genealogie,
+    ),
+    DataCategory(
+        "consentements",
+        "Consentements",
+        "L'acceptation de la politique de confidentialité liée à votre compte.",
+        _collect_consentements,
     ),
 ]
 
