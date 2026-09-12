@@ -119,6 +119,7 @@ erDiagram
 | `death_place` | CharField | Lieu de décès | max_length=255, default='', optional |
 | `description` | TextField | Infos utiles | optional |
 | `export_privacy` | CharField | Confidentialité dans les exports | max_length=6, choices: auto=Automatique (masqué·e tant que vivant·e), share=Toujours partager, redact=Toujours masquer, default=Person.ExportPrivacy.AUTO, optional |
+| `anonymised_at` | DateTimeField | Anonymisé·e le | optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
 | `search_text` | TextField | Texte de recherche | default='', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
@@ -186,7 +187,7 @@ erDiagram
 | `content_type` | ForeignKey | Type d'objet | → ContentType (on_delete=CASCADE), required |
 | `object_id` | CharField | Identifiant de l'objet | max_length=64, required |
 | `object_repr` | CharField | Objet | max_length=200, required |
-| `action` | CharField | Action | max_length=20, choices: create=Création, update=Modification, delete=Suppression, restore=Restauration, purge=Purge définitive, membership_add=Ajout à un groupe, membership_remove=Retrait d'un groupe, required |
+| `action` | CharField | Action | max_length=20, choices: create=Création, update=Modification, delete=Suppression, restore=Restauration, purge=Purge définitive, membership_add=Ajout à un groupe, membership_remove=Retrait d'un groupe, anonymise=Anonymisation, required |
 | `changes` | JSONField | Modifications | default=dict, optional |
 | `actor` | ForeignKey | Auteur | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `actor_label` | CharField | Auteur (archivé) | max_length=255, default='', optional |

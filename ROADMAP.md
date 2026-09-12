@@ -28,7 +28,7 @@
 ### Cluster: Données personnelles
 - [x] 14.1 · Personal data export — a member downloads everything the site holds on them
   (profile, publications, comments, documents, photos, présences) as a single archive.
-- [ ] 14.2 · Erasure and anonymisation — a staff flow anonymising a person while preserving
+- [x] 14.2 · Erasure and anonymisation — a staff flow anonymising a person while preserving
   referential integrity (their publications survive under an anonymised author), with a
   written policy on what is retained and why. (requires: 14.1)
 - [x] 14.3 · Privacy notice — a French page describing what is collected and why, linked

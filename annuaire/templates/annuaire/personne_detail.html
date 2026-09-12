@@ -29,6 +29,11 @@
                     {% icon "download" size=16 %} Télécharger mes données
                 </a>
             {% endif %}
+            {% if user.is_staff and not person.anonymised_at %}
+                <a href="{% url 'person-anonymise' person.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">
+                    {% icon "trash" size=16 %} Anonymiser
+                </a>
+            {% endif %}
         </div>
     </div>
 

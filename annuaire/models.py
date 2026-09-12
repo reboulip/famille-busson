@@ -125,6 +125,9 @@ class Person(models.Model):
         blank=True,
         verbose_name="Propriétaires",
     )
+    # Erasure (14.2, annuaire/anonymisation.py) -- set once, never cleared: an
+    # anonymisation is a one-way door, unlike a soft delete.
+    anonymised_at = models.DateTimeField(null=True, blank=True, verbose_name="Anonymisé·e le")
     search_vector = SearchVectorField(null=True, editable=False, verbose_name="Vecteur de recherche")
     search_text = models.TextField(blank=True, default="", editable=False, verbose_name="Texte de recherche")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
@@ -221,6 +224,7 @@ class AuditEvent(models.Model):
         PURGE = "purge", "Purge définitive"
         MEMBERSHIP_ADD = "membership_add", "Ajout à un groupe"
         MEMBERSHIP_REMOVE = "membership_remove", "Retrait d'un groupe"
+        ANONYMISE = "anonymise", "Anonymisation"
 
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, verbose_name="Type d'objet")
     object_id = models.CharField(max_length=64, verbose_name="Identifiant de l'objet")

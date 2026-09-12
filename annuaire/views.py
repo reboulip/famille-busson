@@ -31,6 +31,7 @@ from django.views.generic import CreateView, DeleteView, DetailView, FormView, L
 from django.views.static import serve as static_serve
 
 from . import emails
+from .anonymisation import anonymise_person
 from .email_utils import build_message, send_bulk_emails
 from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
@@ -1008,6 +1009,28 @@ class CorbeillePurgeView(StaffRequiredMixin, View):
         instance.purge()
         messages.success(request, "Élément supprimé définitivement.")
         return redirect("corbeille-list")
+
+
+class PersonAnonymiseView(StaffRequiredMixin, View):
+    """Staff-only erasure confirmation. See annuaire/anonymisation.py for the
+    operation itself -- this view only confirms and calls it, mirroring
+    PersonMergeView's confirm+POST+messages shape."""
+
+    template_name = "annuaire/person_anonymise_confirm.html"
+
+    def get(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        return render(request, self.template_name, {"person": person})
+
+    def post(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        try:
+            anonymise_person(person, actor=request.user)
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+            return redirect("person-anonymise", pk=person.pk)
+        messages.success(request, "Cette personne a été anonymisée.")
+        return redirect("personne-detail", pk=person.pk)
 
 
 class PersonalDataExportView(LoginRequiredMixin, View):

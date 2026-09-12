@@ -1,0 +1,37 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% block content %}
+    {# Archetype J — destructive confirm. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">Administration</p>
+            <h1>Anonymiser « {{ person }} » ?</h1>
+        </div>
+    </div>
+
+    <div class="fb-card fb-confirm">
+        <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">Cette action est irréversible.</p>
+            <p>Seront effacés :</p>
+            <ul>
+                <li>nom, prénom, coordonnées (email, téléphone, adresse), dates et lieux de naissance/décès, description, photo de profil ;</li>
+                <li>le compte lié sera désactivé, son mot de passe invalidé, son email remplacé ;</li>
+                <li>les identifications de cette personne sur des photos (et celles qu'elle a faites) ;</li>
+                <li>tout élément déjà dans la corbeille lié à cette personne, purgé immédiatement.</li>
+            </ul>
+            <p>Seront conservés (sous un nom anonymisé) :</p>
+            <ul>
+                <li>ses publications, documents, albums et photos déposés ;</li>
+                <li>ses participations aux événements (le commentaire libre est effacé) ;</li>
+                <li>ses récits et citations généalogiques, et ses liens familiaux.</li>
+            </ul>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="fb-form__actions">
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Anonymiser définitivement</button>
+                <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            </div>
+        </form>
+    </div>
+{% endblock content %}
