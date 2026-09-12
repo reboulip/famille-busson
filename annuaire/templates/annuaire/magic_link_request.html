@@ -1,6 +1,6 @@
 {% extends "annuaire/base_threshold.html" %}
 {% load crispy_forms_filters %}
-{% block title %}Lien de connexion — Famille Busson{% endblock title %}
+{% block title %}Lien de connexion — {{ site_config.site_name }}{% endblock title %}
 {# Restrained treatment, matching the transactional emails: no peaks, no gold. #}
 {% block ridge %}<div class="fb-horizon"></div>{% endblock ridge %}
 {% block heading %}Votre lien de connexion{% endblock heading %}

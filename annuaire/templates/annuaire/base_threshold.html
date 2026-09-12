@@ -31,7 +31,7 @@ Blocks:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Famille Busson{% endblock title %}</title>
+    <title>{% block title %}{{ site_config.site_name }}{% endblock title %}</title>
     <meta name="color-scheme" content="light dark">
     <script>
         try {
@@ -53,7 +53,7 @@ Blocks:
         <div class="fb-threshold__wrap">
             <div class="fb-threshold__card">
                 <div class="fb-threshold__head">
-                    <span class="fb-wordmark">Famille Busson</span>
+                    <span class="fb-wordmark">{{ site_config.wordmark|default:site_config.site_name }}</span>
                     {% block ridge %}
                         {% include "annuaire/_ridge.html" %}
                     {% endblock ridge %}
@@ -76,8 +76,10 @@ Blocks:
                 </div>
             </div>
             <p class="fb-threshold__foot">
-                Famille Busson · site privé de la famille ·
-                <a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a>
+                {{ site_config.site_name }} · site privé de la famille
+                {% if site_config.feedback_url %}
+                    · <a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a>
+                {% endif %}
                 {% if site_version %} · v{{ site_version }}{% endif %}
             </p>
         </div>

@@ -13,6 +13,7 @@ import datetime
 from django.utils import timezone
 
 from .calendar_data import CalendarEntry
+from .site_config import get_site_config
 
 _FOLD_LIMIT = 75  # octets, per RFC 5545 section 3.1
 
@@ -77,10 +78,11 @@ def render_ics(entries: list[CalendarEntry]) -> bytes:
     """Render a list of CalendarEntry into a full .ics payload -- bytes,
     UTF-8, CRLF line endings, folded."""
     now = timezone.now()
+    site_name = _escape_text(str(get_site_config().site_name) or "Site")
     lines = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//Famille Busson//Calendar//FR",
+        f"PRODID:-//{site_name}//Calendar//FR",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
     ]

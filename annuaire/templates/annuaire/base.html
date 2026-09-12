@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Famille Busson{% endblock title %}</title>
+    <title>{% block title %}{{ site_config.site_name }}{% endblock title %}</title>
     <meta name="color-scheme" content="light dark">
     {% comment %}
         Applied before the stylesheets paint, or the page flashes Alpenglow on
@@ -40,7 +40,7 @@
                 aria-controls="sidebarNav" aria-label="Ouvrir le menu">
             {% icon "menu" size=22 %}
         </button>
-        <span class="fb-wordmark">Famille Busson</span>
+        <span class="fb-wordmark">{{ site_config.wordmark|default:site_config.site_name }}</span>
         {% if user.is_authenticated %}
             {% include "annuaire/_search_form.html" with input_id="global-search-input-topbar" %}
         {% endif %}
@@ -58,8 +58,8 @@
                 <aside class="fb-sidebar">
 
                     {# Brand block — the email header, transplanted. #}
-                    <a class="fb-brand" href="{% url 'home' %}" aria-label="Accueil — Famille Busson">
-                        <span class="fb-brand__name"><span class="fb-wordmark">Famille Busson</span></span>
+                    <a class="fb-brand" href="{% url 'home' %}" aria-label="Accueil — {{ site_config.site_name }}">
+                        <span class="fb-brand__name"><span class="fb-wordmark">{{ site_config.wordmark|default:site_config.site_name }}</span></span>
                         <span class="fb-brand__spacer"></span>
                         {% include "annuaire/_ridge.html" %}
                     </a>
@@ -95,7 +95,7 @@
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Les Busson</p>
+                            <p class="fb-eyebrow fb-nav__label">{{ site_config.site_name }}</p>
                             <ul>
                                 <li><a href="{% url 'directory' %}" {% if un == 'directory' or un == 'personne-detail' or un == 'person-create' %}aria-current="page"{% endif %}>Annuaire</a></li>
                                 <li><a href="{% url 'genealogie' %}" {% if un == 'genealogie' or un == 'genealogie-person' %}aria-current="page"{% endif %}>Généalogie</a></li>
@@ -162,7 +162,9 @@
                             <ul>
                                 <li><a href="{% url 'magic-link-help' %}" {% if un == 'magic-link-help' %}aria-current="page"{% endif %}>Comment fonctionne la connexion par lien ?</a></li>
                                 <li><a href="{% url 'privacy-notice' %}" {% if un == 'privacy-notice' %}aria-current="page"{% endif %}>Politique de confidentialité</a></li>
-                                <li><a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a></li>
+                                {% if site_config.feedback_url %}
+                                    <li><a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a></li>
+                                {% endif %}
                             </ul>
                         </div>
 

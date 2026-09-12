@@ -1,6 +1,8 @@
 import pytest
 from django.urls import reverse
 
+from annuaire.models import SiteConfig
+
 
 @pytest.mark.django_db
 def test_base_renders_offcanvas_toggle_for_authenticated_user(auth_client):
@@ -116,6 +118,7 @@ def test_authenticated_sidebar_shows_the_app_sections(auth_client):
 
 @pytest.mark.django_db
 def test_base_includes_feedback_link(auth_client):
+    SiteConfig.objects.create(feedback_url="https://github.com/reboulip/famille-busson/issues/new")
     response = auth_client.get(reverse("directory"))
     content = response.content.decode()
     assert "https://github.com/reboulip/famille-busson/issues/new" in content
@@ -125,7 +128,15 @@ def test_base_includes_feedback_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_hides_feedback_link_when_unset(auth_client):
+    response = auth_client.get(reverse("directory"))
+    content = response.content.decode()
+    assert "Signaler un bug ou proposer une évolution" not in content
+
+
+@pytest.mark.django_db
 def test_base_includes_feedback_link_for_anonymous_user(client):
+    SiteConfig.objects.create(feedback_url="https://github.com/reboulip/famille-busson/issues/new")
     response = client.get(reverse("login"))
     content = response.content.decode()
     assert "https://github.com/reboulip/famille-busson/issues/new" in content
@@ -153,9 +164,10 @@ def test_threshold_pages_have_no_sidebar(client, url_name):
 
 @pytest.mark.django_db
 def test_threshold_pages_still_carry_the_brand_and_favicon(client):
+    SiteConfig.objects.create(site_name="Ma Famille")
     content = client.get(reverse("login")).content.decode()
     assert 'rel="icon"' in content
-    assert "Famille Busson" in content
+    assert "Ma Famille" in content
     assert "fb-wordmark" in content
 
 

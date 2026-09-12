@@ -159,8 +159,9 @@ def event_reminder(event, recipient_email: str, *, recipient: Person | None = No
 
 
 def account_setup(account_email: str, reset_url: str, is_reset: bool) -> OutgoingEmail:
-    subject = "Votre mot de passe a été réinitialisé" if is_reset else "Votre compte Famille Busson"
-    context = email_context(account_email=account_email, reset_url=reset_url, is_reset=is_reset, subject=subject)
+    context = email_context(account_email=account_email, reset_url=reset_url, is_reset=is_reset)
+    subject = "Votre mot de passe a été réinitialisé" if is_reset else f"Votre compte {context['site_name']}"
+    context["subject"] = subject
     html, text = render_email(
         "annuaire/emails/account_setup.html",
         "annuaire/emails/account_setup.txt",

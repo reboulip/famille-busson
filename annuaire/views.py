@@ -578,8 +578,16 @@ class AccountPasswordResetView(EmailRateLimitMixin, PasswordResetView):
     html_email_template_name = "annuaire/emails/password_reset.html"
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
-    extra_email_context = {"site_base_url": settings.SITE_BASE_URL.rstrip("/")}
     throttle_scope = "password-reset"
+
+    @property
+    def extra_email_context(self):
+        config = get_site_config()
+        return {
+            "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+            "site_name": config.site_name,
+            "wordmark": config.wordmark or config.site_name,
+        }
 
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
@@ -599,12 +607,16 @@ class MagicLinkRequestView(EmailRateLimitMixin, PasswordResetView):
     token_generator = magic_link_token_generator
     success_url = reverse_lazy("magic-link-sent")
     throttle_scope = "magic-link-request"
-    # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
-    # lazy settings object is already configured by the time views.py imports).
-    extra_email_context = {
-        "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
-        "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
-    }
+
+    @property
+    def extra_email_context(self):
+        config = get_site_config()
+        return {
+            "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
+            "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+            "site_name": config.site_name,
+            "wordmark": config.wordmark or config.site_name,
+        }
 
 
 class MagicLinkSentView(PasswordResetDoneView):

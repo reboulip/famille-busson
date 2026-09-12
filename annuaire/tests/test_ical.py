@@ -1,5 +1,10 @@
+import pytest
+
 from annuaire.calendar_data import CalendarEntry
 from annuaire.ical import render_ics
+
+# render_ics() now reads SiteConfig (via get_site_config()) for the PRODID line.
+pytestmark = pytest.mark.django_db
 
 
 def _entry(

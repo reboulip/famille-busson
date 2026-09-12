@@ -1,5 +1,5 @@
 {% comment %}
-The "Famille Busson" wordmark, optionally linked to the homepage.
+The site's wordmark ({{ wordmark }}), optionally linked to the homepage.
 
 Text only, never a block-level wrapper around the surrounding layout table --
 Outlook's Word engine renders a block-level <a> around table markup unreliably,
@@ -10,4 +10,4 @@ fallback keeps those degrading gracefully instead of an empty href.
 
 Same inline style on both branches -- this is what the previous bare <span>/<td> text
 carried, kept identical so the wordmark's look does not change, only its clickability.
-{% endcomment %}{% if url %}<a href="{{ url }}" class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase; text-decoration:none;">Famille&nbsp;Busson</a>{% else %}<span class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">Famille&nbsp;Busson</span>{% endif %}
+{% endcomment %}{% if url %}<a href="{{ url }}" class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase; text-decoration:none;">{{ wordmark }}</a>{% else %}<span class="em-ink" style="font-family: Georgia, 'Noto Serif', 'Droid Serif', serif; font-size:13px; letter-spacing:3px; color:#3A2C1E; text-transform:uppercase;">{{ wordmark }}</span>{% endif %}

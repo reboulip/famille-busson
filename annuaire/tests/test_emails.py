@@ -13,7 +13,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from annuaire import emails
 from annuaire.email_utils import InlineImage, OutgoingEmail, build_message, send_bulk_emails
-from annuaire.models import Person
+from annuaire.models import Person, SiteConfig
 
 
 def _png_bytes(size: int = 64) -> bytes:
@@ -196,9 +196,10 @@ def test_new_post_settings_link_targets_the_recipient_directly(post, person):
 
 @pytest.mark.parametrize(
     ("is_reset", "expected_subject"),
-    [(False, "Votre compte Famille Busson"), (True, "Votre mot de passe a été réinitialisé")],
+    [(False, "Votre compte Ma Famille"), (True, "Votre mot de passe a été réinitialisé")],
 )
 def test_account_setup_subject_and_copy(db, is_reset, expected_subject):
+    SiteConfig.objects.create(site_name="Ma Famille")
     message = emails.account_setup("nouveau@example.com", "https://example.com/reset/", is_reset=is_reset)
     assert message.subject == expected_subject
     assert "https://example.com/reset/" in message.text_body

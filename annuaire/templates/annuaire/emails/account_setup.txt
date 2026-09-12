@@ -1,6 +1,6 @@
 Bonjour,
 
-{% if is_reset %}Le mot de passe de votre compte sur le site de la famille Busson a été réinitialisé.{% else %}Un compte a été créé pour vous sur le site de la famille Busson.{% endif %}
+{% if is_reset %}Le mot de passe de votre compte sur {{ site_name }} a été réinitialisé.{% else %}Un compte a été créé pour vous sur {{ site_name }}.{% endif %}
 
 Adresse : {{ account_email }}
 

@@ -53,7 +53,7 @@
 - [x] 15.1 · `SiteConfig` — a singleton holding site name, wordmark, tagline, sender
   address, feedback URL, timezone and default language; editable by staff and exposed to
   every template through a context processor.
-- [ ] 15.2 · Strings out of the templates — every "Famille Busson" and "les Busson" in the
+- [x] 15.2 · Strings out of the templates — every "Famille Busson" and "les Busson" in the
   templates and in all five email templates reads from `SiteConfig` instead.
   (requires: 15.1)
 - [ ] 15.3 · Configurable brand — the Alpenglow/Nightfall token layer becomes one named

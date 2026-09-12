@@ -18,7 +18,7 @@
             {% include "annuaire/_ridge.html" %}
         </div>
         <div class="fb-hub-banner__body">
-            <h1 class="fb-display">Famille Busson</h1>
+            <h1 class="fb-display">{{ site_config.site_name }}</h1>
             <p class="fb-meta">{% now "l j F Y" %}</p>
             {% if upcoming_birthdays %}
                 <div class="d-flex flex-wrap gap-2 mt-2">
