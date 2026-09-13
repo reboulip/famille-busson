@@ -5,7 +5,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 
-from annuaire.models import Chalet, Person
+from annuaire.models import Person, Place
 
 
 @pytest.fixture(autouse=True)
@@ -58,13 +58,13 @@ def test_person_clear_profile_photo_removes_file(django_capture_on_commit_callba
 
 
 @pytest.mark.django_db
-def test_chalet_delete_removes_photo_file(django_capture_on_commit_callbacks):
-    chalet = Chalet.objects.create(name="Le Grand Chalet", address="1 rue de la Montagne", photo=_tiny_png())
-    file_path = chalet.photo.path
+def test_place_delete_removes_photo_file(django_capture_on_commit_callbacks):
+    place = Place.objects.create(name="Le Grand Place", address="1 rue de la Montagne", photo=_tiny_png())
+    file_path = place.photo.path
     assert os.path.exists(file_path)
 
     with django_capture_on_commit_callbacks(execute=True):
-        chalet.delete()
+        place.delete()
 
     assert not os.path.exists(file_path)
 

@@ -29,10 +29,10 @@ def test_home_context_has_recent_persons(auth_client, person):
 
 
 @pytest.mark.django_db
-def test_home_context_has_chalets(auth_client, chalet):
+def test_home_context_has_places(auth_client, place):
     response = auth_client.get(reverse("home"))
-    assert "chalets" in response.context
-    assert chalet in response.context["chalets"]
+    assert "places" in response.context
+    assert place in response.context["places"]
 
 
 @pytest.mark.django_db

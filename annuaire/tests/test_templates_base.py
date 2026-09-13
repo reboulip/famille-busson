@@ -99,7 +99,7 @@ def test_anonymous_sidebar_hides_the_login_required_sections(client):
         "directory",
         "genealogie",
         "carte",
-        "chalet-list",
+        "place-list",
         "blogpost-list",
         "document-list",
         "activity-feed",
@@ -156,7 +156,7 @@ def test_base_includes_feedback_link_for_anonymous_user(client):
 def test_threshold_pages_have_no_sidebar(client, url_name):
     """Pages a visitor sees *before* they are in render base_threshold.html, which has
     no nav at all. Extending base.html here meant a logged-out visitor stared at a menu
-    -- Annuaire, Généalogie, Carte, Chalets -- whose every link bounced back to login."""
+    -- Annuaire, Généalogie, Carte, Résidences -- whose every link bounced back to login."""
     content = client.get(reverse(url_name)).content.decode()
     assert 'data-bs-toggle="offcanvas"' not in content
     assert 'class="fb-sidebar"' not in content
@@ -241,7 +241,7 @@ def test_configured_brand_emits_inline_style_override_between_components_and_mai
 
 
 @pytest.mark.django_db
-def test_sidebar_chalet_entry_names_presences_too(auth_client):
-    # #127: the section covers the presence calendar as well as the chalets.
+def test_sidebar_place_entry_names_presences_too(auth_client):
+    # #127: the section covers the presence calendar as well as the places.
     content = auth_client.get(reverse("directory")).content.decode()
-    assert "Chalets et Présences" in content
+    assert "Résidences et Présences" in content

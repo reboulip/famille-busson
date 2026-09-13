@@ -6,13 +6,13 @@ from django.dispatch import receiver
 from .audit import register_audit, register_m2m_membership_audit
 from .file_cleanup import register_file_cleanup
 from .markdown_utils import markdown_to_text
-from .models import Account, Chalet, Person, Relation, Settings, SiteConfig
+from .models import Account, Person, Place, Relation, Settings, SiteConfig
 from .search.indexing import register_search_index
 from .search.registry import SearchSpec
 from .site_config import CACHE_KEY as SITE_CONFIG_CACHE_KEY
 
 register_file_cleanup(Person, "profile_photo")
-register_file_cleanup(Chalet, "photo")
+register_file_cleanup(Place, "photo")
 register_file_cleanup(SiteConfig, "logo", "favicon")
 
 register_search_index(
@@ -136,6 +136,8 @@ register_audit(
         "tagline",
         "sender_address",
         "feedback_url",
+        "place_label_singular",
+        "place_label_plural",
         "timezone",
         "default_language",
         "theme",

@@ -4,7 +4,7 @@
 {% load icons %}
 {% load i18n %}
 {% url 'directory' as directory_url %}
-{% url 'chalet-create' as chalet_create_url %}
+{% url 'place-create' as place_create_url %}
 {% url 'blogpost-list' as blogpost_list_url %}
 {% url 'blogpost-create' as blogpost_create_url %}
 {% url 'event-create' as event_create_url %}
@@ -79,27 +79,27 @@
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>{% translate "Chalets PSV" %}</h2>
-                <a href="{% url 'chalet-list' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
+                <h2>{{ site_config.place_label_plural_display }}</h2>
+                <a href="{% url 'place-list' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
             </div>
-            {% if chalets %}
+            {% if places %}
                 <div class="fb-mini-grid fb-mini-grid--places">
-                    {% for chalet in chalets %}
-                        <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-mini" title="{{ chalet.name }}">
-                            {% if chalet.photo %}
-                                <img src="{{ chalet.photo.url }}" alt="" class="fb-mini__photo fb-mini__photo--place">
+                    {% for place in places %}
+                        <a href="{% url 'place-detail' place.pk %}" class="fb-mini" title="{{ place.name }}">
+                            {% if place.photo %}
+                                <img src="{{ place.photo.url }}" alt="" class="fb-mini__photo fb-mini__photo--place">
                             {% else %}
-                                <span class="chalet-photo-placeholder mini">{% include "annuaire/_ridge.html" with variant="plain" %}</span>
+                                <span class="place-photo-placeholder mini">{% include "annuaire/_ridge.html" with variant="plain" %}</span>
                             {% endif %}
-                            <span class="fb-mini__name">{{ chalet.name }}</span>
+                            <span class="fb-mini__name">{{ place.name }}</span>
                         </a>
                     {% endfor %}
                 </div>
             {% else %}
-                {% translate "Aucun chalet pour l'instant" as empty_title %}
-                {% translate "Les chalets permettent de noter les lieux de séjour et de partager les présences." as empty_hint_text %}
-                {% translate "Créer un chalet" as empty_secondary_label_text %}
-                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=chalet_create_url empty_secondary_label=empty_secondary_label_text %}
+                {% translate "Rien à afficher pour l'instant" as empty_title %}
+                {% blocktranslate with label=site_config.place_label_plural_display asvar empty_hint_text %}{{ label }} permettent de noter les lieux de séjour et de partager les présences.{% endblocktranslate %}
+                {% translate "Créer" as empty_secondary_label_text %}
+                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=place_create_url empty_secondary_label=empty_secondary_label_text %}
             {% endif %}
 
             {% if upcoming_presences %}
@@ -108,8 +108,8 @@
                     {% for presence in upcoming_presences %}
                         <div class="fb-feed__item fb-stay">
                             <span class="fb-stay__who">
-                                <a href="{% url 'chalet-detail' presence.chalet.pk %}">{{ presence.person }}</a>
-                                <span class="fb-meta">{{ presence.chalet.name }}</span>
+                                <a href="{% url 'place-detail' presence.place.pk %}">{{ presence.person }}</a>
+                                <span class="fb-meta">{{ presence.place.name }}</span>
                             </span>
                             <span class="fb-meta fb-stay__dates">{{ presence.start_date|date:"j M" }} → {{ presence.end_date|date:"j M" }}</span>
                         </div>

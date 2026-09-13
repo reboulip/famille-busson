@@ -146,12 +146,13 @@ def test_search_index_is_built_from_one_marker_per_person():
     assert "_groupIdx" not in content
 
 
-def test_both_persons_and_chalets_cluster_with_their_own_label():
-    # #114 (user decision): chalets cluster too, not persons-only -- one shared
-    # buildClusterGroup() for both collections.
+def test_both_persons_and_places_cluster_with_their_own_label():
+    # #114 (user decision): places cluster too, not persons-only -- one shared
+    # buildClusterGroup() for both collections. The place label is configurable
+    # (Phase 16), so places pass a variable rather than a literal string.
     content = _content()
     assert "buildClusterGroup(persons, 'membres')" in content
-    assert "buildClusterGroup(chalets, 'chalets')" in content
+    assert "buildClusterGroup(places, placeLabelPlural.toLowerCase())" in content
 
 
 def test_marker_avatar_carries_alt_text():

@@ -62,8 +62,8 @@ PERSONAL_DATA_RELATIONS: set[str] = {
     "settings",  # O2O -> parametres
     "ascending_relations",  # Relation.person1 -> relations_familiales
     "descending_relations",  # Relation.person2 -> relations_familiales
-    "owned_chalets",  # Chalet.owners M2M -> chalets
-    "presencepsv_set",  # PresencePSV.person -> presences
+    "owned_places",  # Place.owners M2M -> places
+    "stays",  # Stay.person -> presences
     "blog_posts",  # BlogPost.authors M2M -> publications
     "comments",  # Comment.author -> commentaires
     "documents",  # Document.uploaded_by -> documents
@@ -163,10 +163,10 @@ def _collect_parametres(person: Person, viewer: Account) -> list[dict]:
     ]
 
 
-def _collect_chalets(person: Person, viewer: Account) -> list[dict]:
+def _collect_places(person: Person, viewer: Account) -> list[dict]:
     return [
-        {"nom": chalet.name, "adresse": chalet.address, "lien": reverse("chalet-detail", args=[chalet.pk])}
-        for chalet in person.owned_chalets.all()
+        {"nom": place.name, "adresse": place.address, "lien": reverse("place-detail", args=[place.pk])}
+        for place in person.owned_places.all()
     ]
 
 
@@ -175,11 +175,11 @@ def _collect_presences(person: Person, viewer: Account) -> list[dict]:
     # (any member can already see the présences calendar).
     return [
         {
-            "chalet": presence.chalet.name,
-            "arrivee": presence.start_date.isoformat(),
-            "depart": presence.end_date.isoformat(),
+            "lieu": stay.place.name,
+            "arrivee": stay.start_date.isoformat(),
+            "depart": stay.end_date.isoformat(),
         }
-        for presence in person.presencepsv_set.select_related("chalet").order_by("start_date")
+        for stay in person.stays.select_related("place").order_by("start_date")
     ]
 
 
@@ -362,8 +362,8 @@ PERSONAL_DATA_CATEGORIES: list[DataCategory] = [
         _("Vos préférences de notification."),
         _collect_parametres,
     ),
-    DataCategory("chalets", _("Chalets"), _("Les chalets dont vous êtes propriétaire."), _collect_chalets),
-    DataCategory("presences", _("Présences"), _("Vos séjours enregistrés dans les chalets."), _collect_presences),
+    DataCategory("places", _("Résidences"), _("Les résidences dont vous êtes propriétaire."), _collect_places),
+    DataCategory("presences", _("Présences"), _("Vos séjours enregistrés."), _collect_presences),
     DataCategory("publications", _("Publications"), _("Les articles dont vous êtes auteur·e."), _collect_publications),
     DataCategory(
         "commentaires", _("Commentaires"), _("Les commentaires que vous avez publiés."), _collect_commentaires

@@ -18,6 +18,11 @@
             {{ form.tagline|as_crispy_field }}
         </fieldset>
         <fieldset class="fb-fieldset">
+            <legend>{% translate "Vocabulaire" %}</legend>
+            {{ form.place_label_singular|as_crispy_field }}
+            {{ form.place_label_plural|as_crispy_field }}
+        </fieldset>
+        <fieldset class="fb-fieldset">
             <legend>{% translate "Emails et retours" %}</legend>
             {{ form.sender_address|as_crispy_field }}
             {{ form.feedback_url|as_crispy_field }}

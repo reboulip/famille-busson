@@ -4,8 +4,8 @@
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">{% translate "Chalets PSV" %}</p>
-            <h1>{% blocktranslate trimmed with name=chalet.name %}Propriétaires de {{ name }}{% endblocktranslate %}</h1>
+            <p class="fb-eyebrow">{{ site_config.place_label_plural_display }}</p>
+            <h1>{% blocktranslate trimmed with name=place.name %}Propriétaires de {{ name }}{% endblocktranslate %}</h1>
         </div>
     </div>
 
@@ -18,7 +18,7 @@
         </div>
         <div class="fb-form__actions">
             <button type="submit" class="fb-btn fb-btn--primary">{% translate "Enregistrer" %}</button>
-            <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
+            <a href="{% url 'place-detail' place.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
         </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>

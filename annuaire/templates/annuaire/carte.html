@@ -14,7 +14,7 @@
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
             <h1>{% translate "Carte" %}</h1>
-            <p class="fb-page-head__lede">{% translate "Où habite la famille, et où sont les chalets." %}</p>
+            <p class="fb-page-head__lede">{% blocktranslate with label=site_config.place_label_plural_display|lower %}Où habite la famille, et où sont les {{ label }}.{% endblocktranslate %}</p>
         </div>
     </div>
 
@@ -34,9 +34,9 @@
             </ul>
         </details>
     {% endif %}
-    {% if unresolved_chalet_count %}
+    {% if unresolved_place_count %}
         <p class="fb-alert fb-alert--warning search-result-count">
-            {% blocktranslate trimmed count counter=unresolved_chalet_count %}{{ counter }} chalet sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} chalets sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
+            {% blocktranslate trimmed count counter=unresolved_place_count with label=site_config.place_label_singular_display|lower label_plural=site_config.place_label_plural_display|lower %}{{ counter }} {{ label }} sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} {{ label_plural }} sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
         </p>
     {% endif %}
 
@@ -48,7 +48,7 @@
         </div>
     </div>
 
-    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-chalets='{{ chalets_json|escape }}' data-events='{{ events_json|escape }}'></div>
+    <div id="carte-map" class="map-container" data-persons='{{ persons_json|escape }}' data-places='{{ places_json|escape }}' data-events='{{ events_json|escape }}' data-place-label-plural="{{ site_config.place_label_plural_display }}"></div>
 {% endblock content %}
 {% block extra_js %}
     <script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>

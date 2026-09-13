@@ -49,8 +49,8 @@ class Event(models.Model):
     # on save() (see below), so every consumer can rely on it never being NULL.
     end = models.DateTimeField(null=True, blank=True, verbose_name=_("Fin"))
     all_day = models.BooleanField(default=False, verbose_name=_("Journée entière"))
-    # Free-text only -- reuses the address picker/geocoding, same as Chalet.
-    # No optional Chalet FK (resolved decision, see sprint-brief.md).
+    # Free-text only -- reuses the address picker/geocoding, same as Place.
+    # No optional Place FK (resolved decision, see sprint-brief.md).
     location = models.CharField(max_length=255, blank=True, default="", verbose_name=_("Lieu"))
     # Field names are load-bearing: AddressAutocompleteInput hardcodes
     # data-lat-target="id_latitude" / data-lon-target="id_longitude".

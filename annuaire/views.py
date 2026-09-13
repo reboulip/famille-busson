@@ -38,25 +38,25 @@ from .email_utils import build_message, send_bulk_emails
 from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
 from .forms import (
-    AddPresenceForm,
     AddRelationForm,
+    AddStayForm,
     BulkAccountCreateForm,
-    ChaletForm,
-    ChaletUpdateForm,
     CustomAuthenticationForm,
     ForcedPasswordChangeForm,
     FormSettings,
     FormSiteConfig,
     GroupForm,
-    PresenceForm,
+    PlaceForm,
+    PlaceUpdateForm,
     ProfileEditForm,
     SignupForm,
+    StayForm,
     UpdateRelationForm,
 )
 from .geocoding import search_addresses
-from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
+from .map_data import build_event_map_groups, build_person_map_groups, build_place_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
-from .models import Account, AuditEvent, Chalet, Person, PresencePSV, Relation, SiteConfig
+from .models import Account, AuditEvent, Person, Place, Relation, SiteConfig, Stay
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
 from .personal_data import PERSONAL_DATA_CATEGORIES, build_personal_data_archive
@@ -99,10 +99,10 @@ def home(request):
     recent_persons = Person.objects.all().order_by("-pk")[:6]
     recent_posts = BlogPost.objects.prefetch_related("authors").order_by("-created_at")[:5]
     recent_comments = Comment.objects.select_related("post", "author").order_by("-created_at")[:5]
-    chalets = Chalet.objects.all().order_by("name")[:6]
+    places = Place.objects.all().order_by("name")[:6]
     today = datetime.date.today()
     upcoming_presences = (
-        PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
+        Stay.objects.filter(end_date__gte=today).select_related("person", "place").order_by("start_date")[:5]
     )
     upcoming_events = accessible_events(request.user).upcoming(timezone.now()).order_by("start")[:5]
     return render(
@@ -112,7 +112,7 @@ def home(request):
             "recent_persons": recent_persons,
             "recent_posts": recent_posts,
             "recent_comments": recent_comments,
-            "chalets": chalets,
+            "places": places,
             "upcoming_presences": upcoming_presences,
             "upcoming_events": upcoming_events,
             "upcoming_birthdays": upcoming_birthdays(today),
@@ -919,10 +919,10 @@ class MapListView(LoginRequiredMixin, ListView):
         context["unresolved_persons"] = unresolved_persons
         context["unresolved_count"] = unresolved_persons.count()
         context["persons_json"] = json.dumps(build_person_map_groups())
-        context["unresolved_chalet_count"] = Chalet.objects.filter(
+        context["unresolved_place_count"] = Place.objects.filter(
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
-        context["chalets_json"] = json.dumps(build_chalet_map_groups())
+        context["places_json"] = json.dumps(build_place_map_groups())
         context["events_json"] = json.dumps(build_event_map_groups(self.request.user))
         return context
 
@@ -1389,19 +1389,19 @@ class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
         return redirect("personne-detail", pk=self.object.pk)
 
 
-class ChaletListView(LoginRequiredMixin, ListView):
-    model = Chalet
-    template_name = "annuaire/chalet_list.html"
-    context_object_name = "chalets"
+class PlaceListView(LoginRequiredMixin, ListView):
+    model = Place
+    template_name = "annuaire/place_list.html"
+    context_object_name = "places"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        presences = PresencePSV.objects.select_related("person", "chalet").order_by("start_date")
+        presences = Stay.objects.select_related("person", "place").order_by("start_date")
         context["presences_json"] = json.dumps(
             [
                 {
                     "person": str(p.person),
-                    "chalet": p.chalet.name,
+                    "place": p.place.name,
                     "start": p.start_date.isoformat(),
                     "end": p.end_date.isoformat(),
                 }
@@ -1423,14 +1423,14 @@ def _owners_initial_json(view):
     return json.dumps([{"id": p.pk, "name": str(p)} for p in persons])
 
 
-class ChaletCreateView(LoginRequiredMixin, CreateView):
-    model = Chalet
-    form_class = ChaletForm
-    template_name = "annuaire/chalet_form.html"
+class PlaceCreateView(LoginRequiredMixin, CreateView):
+    model = Place
+    form_class = PlaceForm
+    template_name = "annuaire/place_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, _("Vous devez compléter votre profil avant de créer un chalet."))
+            messages.error(request, _("Vous devez compléter votre profil avant de créer une résidence."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -1451,10 +1451,10 @@ class ChaletCreateView(LoginRequiredMixin, CreateView):
             profile = getattr(self.request.user, "profile", None)
             if profile is not None and not self.object.owners.filter(pk=profile.pk).exists():
                 self.object.owners.add(profile)
-        return redirect("chalet-detail", pk=self.object.pk)
+        return redirect("place-detail", pk=self.object.pk)
 
 
-class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
+class PlaceOwnerOrStaffMixin(LoginRequiredMixin):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         user = self.request.user
@@ -1462,31 +1462,31 @@ class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or not obj.owners.filter(pk=profile.pk).exists():
-            raise PermissionDenied(_("Vous n'êtes pas propriétaire de ce chalet."))
+            raise PermissionDenied(_("Vous n'êtes pas propriétaire de cette résidence."))
         return obj
 
 
-class ChaletDetailView(LoginRequiredMixin, DetailView):
-    model = Chalet
-    template_name = "annuaire/chalet_detail.html"
-    context_object_name = "chalet"
+class PlaceDetailView(LoginRequiredMixin, DetailView):
+    model = Place
+    template_name = "annuaire/place_detail.html"
+    context_object_name = "place"
 
     def get_context_data(self, **kwargs):
         import datetime
 
         context = super().get_context_data(**kwargs)
         today = datetime.date.today()
-        all_presences = PresencePSV.objects.filter(chalet=self.object).select_related("person").order_by("start_date")
+        all_presences = Stay.objects.filter(place=self.object).select_related("person").order_by("start_date")
         all_presences = list(all_presences)
         context["past_presences"] = [p for p in all_presences if p.end_date < today]
         context["current_presences"] = [p for p in all_presences if p.start_date <= today <= p.end_date]
         context["future_presences"] = [p for p in all_presences if p.start_date > today]
-        context["presence_form"] = AddPresenceForm()
+        context["presence_form"] = AddStayForm()
         context["presences_json"] = json.dumps(
             [
                 {
                     "person": str(p.person),
-                    "chalet": self.object.name,
+                    "place": self.object.name,
                     "start": p.start_date.isoformat(),
                     "end": p.end_date.isoformat(),
                 }
@@ -1495,7 +1495,7 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
         )
         user = self.request.user
         profile = getattr(user, "profile", None)
-        context["can_edit_chalet"] = (
+        context["can_edit_place"] = (
             user.is_staff
             or user.is_superuser
             or (profile is not None and self.object.owners.filter(pk=profile.pk).exists())
@@ -1503,19 +1503,19 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ChaletUpdateView(ChaletOwnerOrStaffMixin, UpdateView):
-    model = Chalet
-    form_class = ChaletUpdateForm
-    template_name = "annuaire/chalet_form.html"
+class PlaceUpdateView(PlaceOwnerOrStaffMixin, UpdateView):
+    model = Place
+    form_class = PlaceUpdateForm
+    template_name = "annuaire/place_form.html"
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("place-detail", kwargs={"pk": self.object.pk})
 
 
-class ChaletOwnersUpdateView(ChaletOwnerOrStaffMixin, DetailView):
-    model = Chalet
-    template_name = "annuaire/chalet_owners_form.html"
-    context_object_name = "chalet"
+class PlaceOwnersUpdateView(PlaceOwnerOrStaffMixin, DetailView):
+    model = Place
+    template_name = "annuaire/place_owners_form.html"
+    context_object_name = "place"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1528,47 +1528,47 @@ class ChaletOwnersUpdateView(ChaletOwnerOrStaffMixin, DetailView):
         self.object = self.get_object()
         owner_ids = [int(pk) for pk in request.POST.getlist("owners") if pk.isdigit()]
         self.object.owners.set(Person.objects.filter(pk__in=owner_ids))
-        return redirect("chalet-detail", pk=self.object.pk)
+        return redirect("place-detail", pk=self.object.pk)
 
 
-class AddPresenceView(LoginRequiredMixin, FormView):
-    form_class = AddPresenceForm
+class AddStayView(LoginRequiredMixin, FormView):
+    form_class = AddStayForm
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
     def form_valid(self, form):
-        chalet_id = self.kwargs["pk"]
+        place_id = self.kwargs["pk"]
         start_date = form.cleaned_data["start_date"]
         end_date = form.cleaned_data["end_date"]
         for person in form.cleaned_data["persons"]:
-            PresencePSV.objects.create(chalet_id=chalet_id, person=person, start_date=start_date, end_date=end_date)
+            Stay.objects.create(place_id=place_id, person=person, start_date=start_date, end_date=end_date)
         return super().form_valid(form)
 
     def form_invalid(self, form):
         messages.error(self.request, _("Erreur dans le formulaire de présence."))
-        return redirect("chalet-detail", pk=self.kwargs["pk"])
+        return redirect("place-detail", pk=self.kwargs["pk"])
 
 
-class UpdatePresenceView(LoginRequiredMixin, UpdateView):
-    model = PresencePSV
-    form_class = PresenceForm
-    template_name = "annuaire/presence_form.html"
-    pk_url_kwarg = "presence_pk"
+class UpdateStayView(LoginRequiredMixin, UpdateView):
+    model = Stay
+    form_class = StayForm
+    template_name = "annuaire/stay_form.html"
+    pk_url_kwarg = "stay_pk"
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
-class DeletePresenceView(LoginRequiredMixin, DeleteView):
-    model = PresencePSV
-    pk_url_kwarg = "presence_pk"
+class DeleteStayView(LoginRequiredMixin, DeleteView):
+    model = Stay
+    pk_url_kwarg = "stay_pk"
 
     def get(self, request, *args, **kwargs):
-        return redirect("chalet-detail", pk=self.kwargs["pk"])
+        return redirect("place-detail", pk=self.kwargs["pk"])
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
 MIN_SEARCH_QUERY_LENGTH = 2
@@ -1655,7 +1655,7 @@ def _first_of_month(day, months_offset):
 
 
 class CalendarView(LoginRequiredMixin, TemplateView):
-    """One calendar -- events, chalet présences and anniversaires in a single
+    """One calendar -- events, résidence présences and anniversaires in a single
     month/agenda view with per-type filters. Ships a bounded window; the JS
     (unified_calendar.js) refetches via calendar_feed_ajax on navigation past
     either edge, never the whole corpus."""

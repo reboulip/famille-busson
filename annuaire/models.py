@@ -97,7 +97,7 @@ class Person(models.Model):
         REDACT = "redact", _("Toujours masquer")
 
     # pgettext_lazy: "Nom" here means a person's surname, a different sense than
-    # Chalet.name ("Nom" as in the chalet's own name/label).
+    # Place.name ("Nom" as in the place's own name/label).
     last_name = models.CharField(max_length=100, verbose_name=pgettext_lazy("person", "Nom"))
     account = models.OneToOneField(
         Account, related_name="profile", on_delete=models.SET_NULL, blank=True, null=True, verbose_name=_("Compte")
@@ -207,30 +207,28 @@ class Relation(models.Model):
         return f"{self.person1} -> {self.get_relationship_type_display()} -> {self.person2}"
 
 
-class Chalet(models.Model):
-    # pgettext_lazy: "Nom" here means the chalet's own name/label, a different
+class Place(models.Model):
+    # pgettext_lazy: "Nom" here means the place's own name/label, a different
     # sense than Person.last_name ("Nom" as in surname).
-    name = models.CharField(max_length=100, verbose_name=pgettext_lazy("chalet", "Nom"))
+    name = models.CharField(max_length=100, verbose_name=pgettext_lazy("place", "Nom"))
     address = models.CharField(max_length=255, verbose_name=_("Adresse"))
     latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name=_("Latitude"))
     longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True, verbose_name=_("Longitude"))
     photo = models.ImageField(upload_to="photos/", blank=True, null=True, verbose_name=_("Photo"))
-    owners = models.ManyToManyField(
-        "Person", related_name="owned_chalets", blank=True, verbose_name=_("Propriétaires")
-    )
+    owners = models.ManyToManyField("Person", related_name="owned_places", blank=True, verbose_name=_("Propriétaires"))
 
     def __str__(self):
         return self.name
 
 
-class PresencePSV(models.Model):
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, verbose_name=_("Personne"))
-    chalet = models.ForeignKey(Chalet, on_delete=models.CASCADE, verbose_name=_("Chalet"))
+class Stay(models.Model):
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="stays", verbose_name=_("Personne"))
+    place = models.ForeignKey(Place, on_delete=models.CASCADE, verbose_name=_("Lieu"))
     start_date = models.DateField(verbose_name=_("Date d'arrivée"))
     end_date = models.DateField(verbose_name=_("Date de départ"))
 
     def __str__(self):
-        return f"{self.person} - {self.chalet} du {self.start_date} au {self.end_date}"
+        return f"{self.person} - {self.place} du {self.start_date} au {self.end_date}"
 
 
 class AuditEvent(models.Model):
@@ -297,6 +295,16 @@ class SiteConfig(models.Model):
         help_text=_("Laisser vide pour masquer le lien « Signaler un bug » du menu."),
     )
     timezone = models.CharField(max_length=64, default=settings.TIME_ZONE, verbose_name=_("Fuseau horaire"))
+    # Blank means "use the code-level generic default" (see place_label_*_display
+    # below) -- lets a deployment rename the Place entity ("Résidence", "Maison",
+    # "Chalet"...) without touching code. Only Place gets a configurable label;
+    # Stay's wording ("Séjour") stays fixed, per the phase-16 sprint decision.
+    place_label_singular = models.CharField(
+        max_length=50, blank=True, default="", verbose_name=_("Libellé (singulier) des lieux")
+    )
+    place_label_plural = models.CharField(
+        max_length=50, blank=True, default="", verbose_name=_("Libellé (pluriel) des lieux")
+    )
     # Stored but inert until Phase 15.4's i18n scaffolding reads it -- no
     # language switching happens from this field alone yet.
     default_language = models.CharField(
@@ -349,3 +357,11 @@ class SiteConfig(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValueError(_("SiteConfig est un singleton : suppression interdite."))
+
+    @property
+    def place_label_singular_display(self) -> str:
+        return str(self.place_label_singular) or str(_("Résidence"))
+
+    @property
+    def place_label_plural_display(self) -> str:
+        return str(self.place_label_plural) or str(_("Résidences"))

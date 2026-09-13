@@ -20,7 +20,7 @@ from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
+from annuaire.models import Account, Person, Place, Relation, Stay
 from annuaire.models import Settings as NotificationSettings
 from publications.models import Attachment, BlogPost, Comment, Tag
 
@@ -70,7 +70,7 @@ LAST_NAMES = [
     "Simon",
 ]
 
-CHALET_NAMES = [
+PLACE_NAMES = [
     "Chalet des Cimes",
     "Chalet du Lac",
     "Chalet des Mélèzes",
@@ -80,7 +80,7 @@ CHALET_NAMES = [
     "Chalet des Aiguilles",
 ]
 
-CHALET_ADDRESSES = [
+PLACE_ADDRESSES = [
     "Route des Alpes, Verbier",
     "Chemin du Lac 7, Annecy",
     "Rue des Mélèzes 3, Megève",
@@ -163,7 +163,7 @@ class Command(BaseCommand):
 
     # Per-model counts requested by the project owner.
     N_PERSONS = 20
-    N_CHALETS = 5
+    N_PLACES = 5
     N_PRESENCES = 50
     N_RELATIONS = 15  # directional relations wiring the family below; the signal mirrors each
     N_POSTS = 30
@@ -197,8 +197,8 @@ class Command(BaseCommand):
         # call below would email every one of these dev persons for every post created,
         # flooding the console backend and slowing down the test suite.
         NotificationSettings.objects.update(notify_on_new_blog_post=False)
-        chalets = self._create_chalets()
-        self._create_presences(persons, chalets)
+        places = self._create_places()
+        self._create_presences(persons, places)
         self._create_relations(persons)
         posts = self._create_posts(persons)
         self._create_attachments(posts)
@@ -222,10 +222,10 @@ class Command(BaseCommand):
         Comment.objects.all().delete()
         Attachment.objects.all().delete()
         BlogPost.objects.all().delete()
-        PresencePSV.objects.all().delete()
+        Stay.objects.all().delete()
         Relation.objects.all().delete()
         Person.objects.all().delete()
-        Chalet.objects.all().delete()
+        Place.objects.all().delete()
         Account.objects.all().delete()
 
     def _create_admin(self) -> Account:
@@ -332,23 +332,23 @@ class Command(BaseCommand):
 
         return persons
 
-    def _create_chalets(self) -> list[Chalet]:
-        self.stdout.write(f"Creating {self.N_CHALETS} chalets…")
-        names = random.sample(CHALET_NAMES, k=self.N_CHALETS)
-        addresses = random.sample(CHALET_ADDRESSES, k=self.N_CHALETS)
+    def _create_places(self) -> list[Place]:
+        self.stdout.write(f"Creating {self.N_PLACES} places…")
+        names = random.sample(PLACE_NAMES, k=self.N_PLACES)
+        addresses = random.sample(PLACE_ADDRESSES, k=self.N_PLACES)
         return [
-            Chalet.objects.create(name=name, address=address) for name, address in zip(names, addresses, strict=True)
+            Place.objects.create(name=name, address=address) for name, address in zip(names, addresses, strict=True)
         ]
 
-    def _create_presences(self, persons: list[Person], chalets: list[Chalet]):
+    def _create_presences(self, persons: list[Person], places: list[Place]):
         self.stdout.write(f"Creating {self.N_PRESENCES} presences…")
         for _ in range(self.N_PRESENCES):
             start = datetime.date(2026, random.randint(1, 11), random.randint(1, 25))
             length = random.randint(2, 14)
             end = start + datetime.timedelta(days=length)
-            PresencePSV.objects.create(
+            Stay.objects.create(
                 person=random.choice(persons),
-                chalet=random.choice(chalets),
+                place=random.choice(places),
                 start_date=start,
                 end_date=end,
             )

@@ -35,8 +35,8 @@ HANDLED_RELATIONS: set[str] = {
     "settings",  # O2O CASCADE -- left to cascade-delete with the loser
     "ascending_relations",  # Relation.person1
     "descending_relations",  # Relation.person2
-    "owned_chalets",  # Chalet.owners M2M
-    "presencepsv_set",  # PresencePSV.person
+    "owned_places",  # Place.owners M2M
+    "stays",  # Stay.person
     "blog_posts",  # BlogPost.authors M2M
     "comments",  # Comment.author
     "documents",  # Document.uploaded_by
@@ -66,14 +66,14 @@ HANDLED_HIDDEN_RELATIONS: set[tuple[str, str, str]] = {
 # holds the M2M (used to .add(winner) on each of the loser's related rows).
 _M2M_REVERSE_FIELD = {
     "blog_posts": "authors",
-    "owned_chalets": "owners",
+    "owned_places": "owners",
     "organised_events": "organisers",
 }
 
 # Simple (model, field_name) FK repoints: no unique-together constraint on the
 # far side, so a blind bulk .update() is safe.
 _SIMPLE_REPOINTS: list[tuple[str, str]] = [
-    ("annuaire", "presencepsv", "person"),
+    ("annuaire", "stay", "person"),
     ("publications", "comment", "author"),
     ("documents", "document", "uploaded_by"),
     ("documents", "document", "redactor"),

@@ -147,7 +147,7 @@ def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
 def post(db):
     from publications.models import BlogPost
 
-    return BlogPost.objects.create(title="Rénovation du chalet", body="# Titre\n\nLes travaux **commencent** lundi.")
+    return BlogPost.objects.create(title="Rénovation du place", body="# Titre\n\nLes travaux **commencent** lundi.")
 
 
 def test_new_post_email_includes_a_stripped_excerpt(post):

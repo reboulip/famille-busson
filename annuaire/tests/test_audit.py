@@ -18,7 +18,7 @@ def _empty_formset_data(prefix="ascending_relations"):
 
 @pytest.fixture
 def group(db):
-    return Group.objects.create(name="SCI grand chalet")
+    return Group.objects.create(name="SCI grand place")
 
 
 # --- register_audit: create / update / delete ---------------------------

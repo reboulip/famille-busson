@@ -14,7 +14,7 @@ def _aware(*args):
 
 @pytest.fixture
 def group(db):
-    return Group.objects.create(name="SCI grand chalet")
+    return Group.objects.create(name="SCI grand place")
 
 
 # ---------------------------------------------------------------------------
@@ -110,7 +110,7 @@ def test_ical_feed_filter_types_event_only(client, account, presence):
     response = client.get(reverse("ical-feed", kwargs={"token": token}), {"types": "event"})
     body = response.content.decode("utf-8")
     assert event.title in body
-    assert presence.chalet.name not in body
+    assert presence.place.name not in body
 
 
 # ---------------------------------------------------------------------------

@@ -77,7 +77,7 @@
 > the source.
 
 ### Cluster: Modèle de domaine générique
-- [ ] 16.1 · `Chalet`/`PresencePSV` become generic — a `Place`/`Stay` pair with a
+- [x] 16.1 · `Chalet`/`PresencePSV` become generic — a `Place`/`Stay` pair with a
   configurable label ("Chalet", "Maison", "Résidence"), which is where the "PSV" family
   jargon finally disappears. Model rename plus migration, templates, JS and tests.
   (requires: 15.1)

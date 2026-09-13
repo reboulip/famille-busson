@@ -7,7 +7,7 @@ from django.core.management import call_command
 
 def run_command():
     out = StringIO()
-    call_command("geocode_chalet_addresses", stdout=out)
+    call_command("geocode_place_addresses", stdout=out)
     return out.getvalue()
 
 
@@ -23,9 +23,9 @@ class _FakeResponse:
 
 
 @pytest.mark.django_db
-def test_geocodes_addresses_missing_coordinates(chalet, monkeypatch):
-    chalet.address = "8 Boulevard du Port, 80000 Amiens"
-    chalet.save()
+def test_geocodes_addresses_missing_coordinates(place, monkeypatch):
+    place.address = "8 Boulevard du Port, 80000 Amiens"
+    place.save()
 
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": [{"geometry": {"coordinates": [2.062821, 49.031624]}}]})
@@ -34,17 +34,17 @@ def test_geocodes_addresses_missing_coordinates(chalet, monkeypatch):
 
     run_command()
 
-    chalet.refresh_from_db()
-    assert chalet.longitude == Decimal("2.062821")
-    assert chalet.latitude == Decimal("49.031624")
+    place.refresh_from_db()
+    assert place.longitude == Decimal("2.062821")
+    assert place.latitude == Decimal("49.031624")
 
 
 @pytest.mark.django_db
-def test_skips_chalets_already_geocoded(chalet, monkeypatch):
-    chalet.address = "8 Boulevard du Port, 80000 Amiens"
-    chalet.latitude = Decimal("1.0")
-    chalet.longitude = Decimal("1.0")
-    chalet.save()
+def test_skips_places_already_geocoded(place, monkeypatch):
+    place.address = "8 Boulevard du Port, 80000 Amiens"
+    place.latitude = Decimal("1.0")
+    place.longitude = Decimal("1.0")
+    place.save()
 
     calls = []
 
@@ -60,10 +60,10 @@ def test_skips_chalets_already_geocoded(chalet, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_skips_chalets_without_an_address(db, monkeypatch):
-    from annuaire.models import Chalet
+def test_skips_places_without_an_address(db, monkeypatch):
+    from annuaire.models import Place
 
-    Chalet.objects.create(name="Chalet sans adresse", address="")
+    Place.objects.create(name="Résidence sans adresse", address="")
 
     calls = []
 
@@ -79,9 +79,9 @@ def test_skips_chalets_without_an_address(db, monkeypatch):
 
 
 @pytest.mark.django_db
-def test_handles_unresolved_address(chalet, monkeypatch):
-    chalet.address = "adresse imaginaire"
-    chalet.save()
+def test_handles_unresolved_address(place, monkeypatch):
+    place.address = "adresse imaginaire"
+    place.save()
 
     def fake_get(url, params=None, timeout=None):
         return _FakeResponse({"features": []})
@@ -90,18 +90,18 @@ def test_handles_unresolved_address(chalet, monkeypatch):
 
     output = run_command()
 
-    chalet.refresh_from_db()
-    assert chalet.latitude is None
-    assert chalet.longitude is None
+    place.refresh_from_db()
+    assert place.latitude is None
+    assert place.longitude is None
     assert "Non résolu" in output
 
 
 @pytest.mark.django_db
-def test_handles_request_failure_gracefully(chalet, monkeypatch):
+def test_handles_request_failure_gracefully(place, monkeypatch):
     import requests
 
-    chalet.address = "8 Boulevard du Port, 80000 Amiens"
-    chalet.save()
+    place.address = "8 Boulevard du Port, 80000 Amiens"
+    place.save()
 
     def fake_get(url, params=None, timeout=None):
         raise requests.RequestException("network down")
@@ -110,6 +110,6 @@ def test_handles_request_failure_gracefully(chalet, monkeypatch):
 
     output = run_command()
 
-    chalet.refresh_from_db()
-    assert chalet.latitude is None
+    place.refresh_from_db()
+    assert place.latitude is None
     assert "Non résolu" in output

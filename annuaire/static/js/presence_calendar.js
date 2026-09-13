@@ -18,7 +18,7 @@
         }
         presences = presences.map((p) => ({
             person: p.person,
-            chalet: p.chalet || '',
+            place: p.place || '',
             start: parseISODate(p.start),
             end: parseISODate(p.end),
         })).filter((p) => p.start && p.end);
@@ -117,8 +117,8 @@
                     else bar.classList.add('bar-current');
                     bar.style.gridRow = String(row);
                     bar.style.gridColumn = startCol + ' / ' + endCol;
-                    bar.title = `${p.person}${p.chalet ? ' · ' + p.chalet : ''} (${formatDate(p.start)} → ${formatDate(p.end)})`;
-                    bar.textContent = p.chalet;
+                    bar.title = `${p.person}${p.place ? ' · ' + p.place : ''} (${formatDate(p.start)} → ${formatDate(p.end)})`;
+                    bar.textContent = p.place;
                     grid.appendChild(bar);
                 });
             });

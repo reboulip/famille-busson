@@ -14,9 +14,9 @@ erDiagram
     Person ||--o| Settings : "person"
     Person ||--o{ Relation : "person1"
     Person ||--o{ Relation : "person2"
-    Chalet }o--o{ Person : "owners"
-    Person ||--o{ PresencePSV : "person"
-    Chalet ||--o{ PresencePSV : "chalet"
+    Place }o--o{ Person : "owners"
+    Person ||--o{ Stay : "person"
+    Place ||--o{ Stay : "place"
     ContentType ||--o{ AuditEvent : "content_type"
     Account ||--o{ AuditEvent : "actor"
     Account ||--o{ BlogPost : "deleted_by"
@@ -152,9 +152,9 @@ erDiagram
 | `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
 | `end_date` | DateField | Date de fin | optional |
 
-### `Chalet`
+### `Place`
 
-*App:* `annuaire` · *verbose name:* chalet / chalets · *table:* `annuaire_chalet`
+*App:* `annuaire` · *verbose name:* place / places · *table:* `annuaire_place`
 
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
@@ -164,17 +164,17 @@ erDiagram
 | `latitude` | DecimalField | Latitude | optional |
 | `longitude` | DecimalField | Longitude | optional |
 | `photo` | FileField | Photo | max_length=100, optional |
-| `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_chalets' |
+| `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_places' |
 
-### `PresencePSV`
+### `Stay`
 
-*App:* `annuaire` · *verbose name:* presence psv / presence psvs · *table:* `annuaire_presencepsv`
+*App:* `annuaire` · *verbose name:* stay / stays · *table:* `annuaire_stay`
 
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
-| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), required |
-| `chalet` | ForeignKey | Chalet | → Chalet (on_delete=CASCADE), required |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='stays', required |
+| `place` | ForeignKey | Lieu | → Place (on_delete=CASCADE), required |
 | `start_date` | DateField | Date d'arrivée | required |
 | `end_date` | DateField | Date de départ | required |
 
@@ -207,6 +207,8 @@ erDiagram
 | `sender_address` | CharField | Adresse d'expédition des emails | max_length=254, default='', optional |
 | `feedback_url` | CharField | Lien de retour/signalement | max_length=200, default='', optional |
 | `timezone` | CharField | Fuseau horaire | max_length=64, default='Europe/Paris', required |
+| `place_label_singular` | CharField | Libellé (singulier) des lieux | max_length=50, default='', optional |
+| `place_label_plural` | CharField | Libellé (pluriel) des lieux | max_length=50, default='', optional |
 | `default_language` | CharField | Langue par défaut | max_length=10, choices: fr=Français, en=English, default='', optional |
 | `theme` | CharField | Thème | max_length=20, choices: alpenglow=Alpenglow, default='alpenglow', required |
 | `brand_primary_light` | CharField | Couleur principale (clair) | max_length=7, default='', optional |

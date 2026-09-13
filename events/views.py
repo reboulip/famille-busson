@@ -35,7 +35,7 @@ def _organisers_initial_json(view):
 
 class EventListView(LoginRequiredMixin, ListView):
     """Upcoming-only by default, with a "passés" toggle (?passes=1) -- mirrors
-    ChaletDetailView's past/current/future split rather than a paginated
+    PlaceDetailView's past/current/future split rather than a paginated
     all-events list. Locked events are invisible, never visible-but-locked."""
 
     model = Event
@@ -122,7 +122,7 @@ class EventCreateView(LoginRequiredMixin, CreateView):
             profile = getattr(self.request.user, "profile", None)
             # An event can never end up with zero organisers, even if the
             # picker's hidden inputs were tampered with or omitted -- mirrors
-            # ChaletCreateView.form_valid()'s owners guarantee.
+            # PlaceCreateView.form_valid()'s owners guarantee.
             if profile is not None and not self.object.organisers.filter(pk=profile.pk).exists():
                 self.object.organisers.add(profile)
         return redirect("event-detail", pk=self.object.pk)

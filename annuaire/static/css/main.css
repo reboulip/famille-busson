@@ -22,7 +22,7 @@
      5  Person / address pickers
      6  Markdown body and editor
      7  Document viewer (pdf.js and images)
-     8  Chalet placeholder
+     8  Place placeholder
    ========================================================================= */
 
 /* =========================================================================
@@ -67,7 +67,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 }
 
 /* --- Profile record (#124) ---------------------------------------------- */
-/* Page-scoped on purpose: the .fb-record component is shared with the chalet
+/* Page-scoped on purpose: the .fb-record component is shared with the place
    detail page, so these rules hang off .profile-record instead. */
 
 /* The actions moved out of the rail to below the relations, where they read as
@@ -311,7 +311,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     display: block;
 }
 
-/* A chalet with no photo: the ridge mark, drawn by map_init.js's RIDGE_SVG.
+/* A place with no photo: the ridge mark, drawn by map_init.js's RIDGE_SVG.
    Was a 🏔️ emoji until the Alpenglow design pass -- it rendered as a tofu box
    wherever the system has no emoji font, and could not follow the theme. */
 .map-marker-avatar-placeholder {
@@ -328,7 +328,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 }
 
 /* An event marker: a centered calendar glyph, not the bottom-aligned ridge
-   (a different modifier so this doesn't affect the chalet placeholder). */
+   (a different modifier so this doesn't affect the place placeholder). */
 .map-marker-avatar-event {
     align-items: center;
     justify-content: center;
@@ -1003,14 +1003,14 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 .document-file { margin-bottom: var(--fb-sp-3); }
 
 /* =========================================================================
-   8. Chalet placeholder
+   8. Place placeholder
    -------------------------------------------------------------------------
    Was a 🏔️ emoji, which renders as a tofu box wherever the system has no
    emoji font -- already visible in the project's own .shots/01-landing.png.
    It is now the ridge, on the sky band. See annuaire/templates/annuaire/_ridge.html.
    ========================================================================= */
 
-.chalet-photo-placeholder {
+.place-photo-placeholder {
     background: var(--fb-sky);
     border-radius: var(--fb-radius-sm);
     display: flex;
@@ -1020,12 +1020,12 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     aspect-ratio: 3 / 2;
 }
 
-.chalet-photo-placeholder.large {
+.place-photo-placeholder.large {
     width: 100%;
     aspect-ratio: 3 / 2;
 }
 
-.chalet-photo-placeholder.mini {
+.place-photo-placeholder.mini {
     width: 54px;
     height: 36px;
     aspect-ratio: auto;

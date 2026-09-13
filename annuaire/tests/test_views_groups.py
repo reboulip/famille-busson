@@ -14,7 +14,7 @@ LOGIN_URL = "/annuaire/login/"
 
 @pytest.fixture
 def group(db):
-    return Group.objects.create(name="SCI grand chalet")
+    return Group.objects.create(name="SCI grand place")
 
 
 @pytest.fixture

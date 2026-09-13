@@ -6,13 +6,13 @@
     {# Archetype D — record detail, place variant. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">{% translate "Chalets PSV" %}</p>
-            <h1>{{ chalet.name }}</h1>
+            <p class="fb-eyebrow">{{ site_config.place_label_plural_display }}</p>
+            <h1>{{ place.name }}</h1>
         </div>
-        {% if can_edit_chalet %}
+        {% if can_edit_place %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'chalet-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
-                <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier les propriétaires" %}</a>
+                <a href="{% url 'place-edit' place.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                <a href="{% url 'place-owners-edit' place.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier les propriétaires" %}</a>
             </div>
         {% endif %}
     </div>
@@ -20,8 +20,8 @@
     <div class="fb-record">
         <div class="fb-record__rail">
             <div class="fb-card fb-place-card">
-                {% if chalet.photo %}
-                    <img src="{{ chalet.photo.url }}" alt="{{ chalet.name }}" class="fb-place-card__media">
+                {% if place.photo %}
+                    <img src="{{ place.photo.url }}" alt="{{ place.name }}" class="fb-place-card__media">
                 {% else %}
                     <span class="fb-place-placeholder">
                         {% include "annuaire/_ridge.html" %}
@@ -32,7 +32,7 @@
                         <p class="fb-contact__row">
                             <span class="fb-contact__icon">{% icon "home" size=16 %}</span>
                             <span class="fb-contact__value">
-                                <a href="https://www.google.com/maps/search/?api=1&query={{ chalet.address|urlencode }}">{{ chalet.address }}</a>
+                                <a href="https://www.google.com/maps/search/?api=1&query={{ place.address|urlencode }}">{{ place.address }}</a>
                             </span>
                         </p>
                     </div>
@@ -60,8 +60,8 @@
                                     <td>{{ presence.start_date|date:"j F Y" }}</td>
                                     <td>{{ presence.end_date|date:"j F Y" }}</td>
                                     <td class="fb-table__actions presence-actions">
-                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
-                                        <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                        <a href="{% url 'stay-edit' place.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
+                                        <form method="post" action="{% url 'stay-delete' place.pk presence.pk %}" class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
                                                     onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
@@ -86,8 +86,8 @@
                                     <td>{{ presence.start_date|date:"j F Y" }}</td>
                                     <td>{{ presence.end_date|date:"j F Y" }}</td>
                                     <td class="fb-table__actions presence-actions">
-                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
-                                        <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                        <a href="{% url 'stay-edit' place.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
+                                        <form method="post" action="{% url 'stay-delete' place.pk presence.pk %}" class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
                                                     onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
@@ -101,7 +101,7 @@
 
                 {% if not current_presences and not future_presences %}
                     {% translate "Aucune présence en cours ou à venir" as empty_title %}
-                    {% translate "Personne n'est annoncé dans ce chalet pour le moment." as empty_body %}
+                    {% translate "Personne n'est annoncé ici pour le moment." as empty_body %}
                     {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
                 {% endif %}
 
@@ -119,8 +119,8 @@
                                         <td>{{ presence.start_date|date:"j F Y" }}</td>
                                         <td>{{ presence.end_date|date:"j F Y" }}</td>
                                         <td class="fb-table__actions presence-actions">
-                                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
-                                            <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
+                                            <a href="{% url 'stay-edit' place.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
+                                            <form method="post" action="{% url 'stay-delete' place.pk presence.pk %}" class="d-inline">
                                                 {% csrf_token %}
                                                 <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
                                                         onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
@@ -158,7 +158,7 @@
             </script>
 
             <div class="fb-section-head"><h2>{% translate "Ajouter une présence" %}</h2></div>
-            <form method="post" action="{% url 'presence-add' chalet.pk %}" class="fb-card presence-form">
+            <form method="post" action="{% url 'stay-add' place.pk %}" class="fb-card presence-form">
                 {% csrf_token %}
                 <div class="fb-field">
                     <label class="fb-label" for="presence-person-search-input">{% translate "Personnes" %}</label>

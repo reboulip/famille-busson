@@ -46,7 +46,7 @@ urlpatterns = [
     path("genealogie/", include("genealogy.urls")),
     path("", root_redirect),
     # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
-    # Auth-gated: uploaded files (profile photos, chalet photos, blog attachments)
+    # Auth-gated: uploaded files (profile photos, place photos, blog attachments)
     # must not be readable by anyone who guesses/obtains the URL.
     path("media/<path:path>", media_serve),
     # Public counterpart to the above: the login page itself needs to render the

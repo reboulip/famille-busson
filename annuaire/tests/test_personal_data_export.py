@@ -126,7 +126,7 @@ def test_archive_includes_presences(auth_client, person, presence):
     archive = zipfile.ZipFile(io.BytesIO(response.content))
     payload = json.loads(archive.read("donnees.json"))
     (row,) = payload["categories"]["presences"]
-    assert row["chalet"] == presence.chalet.name
+    assert row["lieu"] == presence.place.name
     assert row["arrivee"] == presence.start_date.isoformat()
 
 

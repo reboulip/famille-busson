@@ -3,9 +3,9 @@
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">{% translate "Chalets PSV" %}</p>
+            <p class="fb-eyebrow">{{ site_config.place_label_plural_display }}</p>
             <h1>{% translate "Modifier la présence" %}</h1>
-            <p class="fb-page-head__lede">{{ object.person }} — {{ object.chalet }}</p>
+            <p class="fb-page-head__lede">{{ object.person }} — {{ object.place }}</p>
         </div>
     </div>
 
@@ -14,7 +14,7 @@
         {{ form.as_p }}
         <div class="fb-form__actions">
             <button type="submit" class="fb-btn fb-btn--primary">{% translate "Enregistrer" %}</button>
-            <a href="{% url 'chalet-detail' view.kwargs.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
+            <a href="{% url 'place-detail' view.kwargs.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
         </div>
     </form>
 {% endblock content %}

@@ -3,7 +3,7 @@ import datetime
 import pytest
 from django.test import Client
 
-from annuaire.models import Account, Chalet, Person, PresencePSV
+from annuaire.models import Account, Person, Place, Stay
 
 
 @pytest.fixture
@@ -69,18 +69,18 @@ def staff_client(client, staff_account):
 
 
 @pytest.fixture
-def chalet(db):
-    return Chalet.objects.create(name="Chalet des Alpes", address="Route des Alpes 1, Verbier")
+def place(db):
+    return Place.objects.create(name="Chalet des Alpes", address="Route des Alpes 1, Verbier")
 
 
 @pytest.fixture
-def presence(db, person, chalet):
+def presence(db, person, place):
     # Relative to today, not a hardcoded date -- a fixed future date eventually
-    # becomes past and starts failing test_chalet_detail_context_has_future_presences.
+    # becomes past and starts failing test_place_detail_context_has_future_presences.
     today = datetime.date.today()
-    return PresencePSV.objects.create(
+    return Stay.objects.create(
         person=person,
-        chalet=chalet,
+        place=place,
         start_date=today + datetime.timedelta(days=30),
         end_date=today + datetime.timedelta(days=43),
     )

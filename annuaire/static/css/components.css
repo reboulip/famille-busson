@@ -544,7 +544,7 @@ a.fb-card:hover,
 .fb-place-card__name { display: block; font-family: var(--fb-font-display); font-weight: 600; margin-bottom: 2px; }
 .fb-place-card__body .fb-meta { display: block; }
 
-/* Placeholder for a chalet with no photo. Replaces the 🏔️ emoji currently
+/* Placeholder for a place with no photo. Replaces the 🏔️ emoji currently
    used, which renders as a tofu box wherever the system has no emoji font —
    already visible in the project's own screenshots. */
 .fb-place-placeholder {
@@ -802,7 +802,7 @@ a.fb-card:hover,
 }
 
 /* =========================================================================
-   7. Archetype D — record detail (personne, chalet)
+   7. Archetype D — record detail (personne, résidence)
    -------------------------------------------------------------------------
    Today a person page is one full-width column: an image that grows on hover,
    an <h1> with four buttons crammed inline after it, emoji-bulleted contact

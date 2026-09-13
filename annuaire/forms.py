@@ -11,7 +11,7 @@ from django.urls import reverse_lazy
 from django.utils.translation import gettext_lazy as _
 
 from .contrast import AA_NON_TEXT, AA_TEXT, contrast_ratio
-from .models import Account, Chalet, Person, PresencePSV, Relation, Settings, SiteConfig
+from .models import Account, Person, Place, Relation, Settings, SiteConfig, Stay
 from .theming import DEFAULT_THEME, THEMES
 from .widgets import MarkdownEditorWidget
 
@@ -146,6 +146,8 @@ class FormSiteConfig(forms.ModelForm):
             "tagline",
             "sender_address",
             "feedback_url",
+            "place_label_singular",
+            "place_label_plural",
             "timezone",
             "default_language",
             "theme",
@@ -323,7 +325,7 @@ class SignupForm(forms.Form):
         return cleaned_data
 
 
-class AddPresenceForm(forms.Form):
+class AddStayForm(forms.Form):
     persons = forms.ModelMultipleChoiceField(
         queryset=Person.objects.all().order_by("last_name", "first_name"),
         label=_("Personnes"),
@@ -339,9 +341,9 @@ class AddPresenceForm(forms.Form):
     )
 
 
-class PresenceForm(forms.ModelForm):
+class StayForm(forms.ModelForm):
     class Meta:
-        model = PresencePSV
+        model = Stay
         fields = ["person", "start_date", "end_date"]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -349,9 +351,9 @@ class PresenceForm(forms.ModelForm):
         }
 
 
-class ChaletForm(forms.ModelForm):
+class PlaceForm(forms.ModelForm):
     class Meta:
-        model = Chalet
+        model = Place
         fields = ["name", "address", "latitude", "longitude", "photo", "owners"]
         widgets = {
             "address": AddressAutocompleteInput,
@@ -370,9 +372,9 @@ class ChaletForm(forms.ModelForm):
             self.fields["owners"].initial = [current_person.pk]
 
 
-class ChaletUpdateForm(forms.ModelForm):
+class PlaceUpdateForm(forms.ModelForm):
     class Meta:
-        model = Chalet
+        model = Place
         fields = ["name", "address", "latitude", "longitude", "photo"]
         widgets = {
             "address": AddressAutocompleteInput,

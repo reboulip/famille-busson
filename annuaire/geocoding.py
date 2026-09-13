@@ -1,6 +1,6 @@
 """Address search and geocoding, shared by the address-picker autocomplete
 endpoint (`address_search_ajax`) and the `geocode_person_addresses` /
-`geocode_chalet_addresses` backfill commands.
+`geocode_place_addresses` backfill commands.
 
 BAN (Base Adresse Nationale, France-only) is the primary/authoritative
 provider -- queried first, and used whenever it returns a confident match, so

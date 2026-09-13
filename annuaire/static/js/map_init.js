@@ -3,8 +3,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!container) return;
 
     const persons = JSON.parse(container.dataset.persons || '[]');
-    const chalets = JSON.parse(container.dataset.chalets || '[]');
+    const places = JSON.parse(container.dataset.places || '[]');
     const events = JSON.parse(container.dataset.events || '[]');
+    const placeLabelPlural = container.dataset.placeLabelPlural || 'places';
 
     // Metropolitan France, zoomed out -- sensible default when there's nothing to fit to.
     const map = L.map(container).setView([46.6, 2.4], 6);
@@ -14,12 +15,12 @@ document.addEventListener('DOMContentLoaded', function () {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    if (persons.length === 0 && chalets.length === 0 && events.length === 0) {
+    if (persons.length === 0 && places.length === 0 && events.length === 0) {
         return;
     }
 
-    // Chalets without a photo carry a "placeholder::<kind>" sentinel instead of an image
-    // URL (there's no default chalet photo asset the way there is a default person
+    // Places without a photo carry a "placeholder::<kind>" sentinel instead of an image
+    // URL (there's no default place photo asset the way there is a default person
     // avatar). See annuaire/map_data.py's PLACEHOLDER_PREFIX -- keep the two in sync.
     const PLACEHOLDER_PREFIX = 'placeholder::';
 
@@ -129,8 +130,9 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // Cluster popup: heading + full list. `label` is the plural noun for the heading
-    // ("membres" for persons, "chalets" for chalets) -- both collections share this
-    // code. A cluster is now a *screen-space* grouping (Leaflet.markercluster), so it
+    // ("membres" for persons, the configurable place label for places) -- both
+    // collections share this code. A cluster is now a *screen-space* grouping
+    // (Leaflet.markercluster), so it
     // can span neighbouring addresses, not just one: hence "à proximité", not
     // "à cette adresse".
     function buildClusterPopup(entries, label) {
@@ -221,25 +223,25 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const personsLayer = buildClusterGroup(persons, 'membres');
-    const chaletsLayer = buildClusterGroup(chalets, 'chalets');
+    const placesLayer = buildClusterGroup(places, placeLabelPlural.toLowerCase());
     const eventsLayer = buildClusterGroup(events, 'événements');
     map.addLayer(personsLayer.clusterGroup);
-    map.addLayer(chaletsLayer.clusterGroup);
+    map.addLayer(placesLayer.clusterGroup);
     map.addLayer(eventsLayer.clusterGroup);
     L.control
         .layers(null, {
             Membres: personsLayer.clusterGroup,
-            Chalets: chaletsLayer.clusterGroup,
+            [placeLabelPlural]: placesLayer.clusterGroup,
             Événements: eventsLayer.clusterGroup,
         })
         .addTo(map);
 
-    const allMarkers = personsLayer.markers.concat(chaletsLayer.markers).concat(eventsLayer.markers);
+    const allMarkers = personsLayer.markers.concat(placesLayer.markers).concat(eventsLayer.markers);
     // Count distinct group points, not markers/collections -- a person, a
-    // chalet and an event can share the exact same coordinates (separate
+    // place and an event can share the exact same coordinates (separate
     // arrays, separate markers), which would wrongly skip the single-point
     // branch below and hit fitBounds on a zero-area box, which zooms to max.
-    const uniquePointCount = new Set(persons.concat(chalets).concat(events).map((g) => `${g.lat},${g.lon}`)).size;
+    const uniquePointCount = new Set(persons.concat(places).concat(events).map((g) => `${g.lat},${g.lon}`)).size;
     if (uniquePointCount === 1) {
         map.setView(allMarkers[0].getLatLng(), 13);
     } else {

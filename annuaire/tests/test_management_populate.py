@@ -3,7 +3,7 @@ from io import StringIO
 import pytest
 from django.core.management import call_command
 
-from annuaire.models import Account, Chalet, Person, PresencePSV, Relation
+from annuaire.models import Account, Person, Place, Relation, Stay
 from publications.models import Attachment, BlogPost, Comment
 
 # ------------------------------------------------------------------ helpers
@@ -32,8 +32,8 @@ class TestPopulateDevDataCounts:
         assert Person.objects.count() == 21
         # 20 regular accounts + admin + staff
         assert Account.objects.count() == 22
-        assert Chalet.objects.count() == 5
-        assert PresencePSV.objects.count() == 50
+        assert Place.objects.count() == 5
+        assert Stay.objects.count() == 50
         # 15 directional relations created + 15 inverse relations via signal
         assert Relation.objects.count() == 30
         assert BlogPost.objects.count() == 30

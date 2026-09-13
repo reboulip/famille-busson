@@ -6,7 +6,7 @@
 {% block heading %}{% translate "Content de vous revoir" %}{% endblock heading %}
 {% block lede %}
     <p class="fb-meta fb-threshold__lede">
-        {% translate "Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications." %}
+        {% blocktranslate with label=site_config.place_label_plural_display|lower %}Connectez-vous pour accéder à l'annuaire, aux {{ label }} et aux publications.{% endblocktranslate %}
     </p>
 {% endblock lede %}
 {% block content %}

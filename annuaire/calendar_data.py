@@ -1,5 +1,5 @@
 """Shared aggregator behind the unified calendar (page, AJAX refresh, and
-12.5's iCal feed): one query per source type (events, chalet présences,
+12.5's iCal feed): one query per source type (events, résidence présences,
 birthdays), merged into one list of a shared entry shape.
 
 `annuaire` must not gain a hard top-level dependency on `events` -- the same
@@ -16,7 +16,7 @@ from typing import NamedTuple
 from django.urls import reverse
 from django.utils import timezone
 
-from .models import Person, PresencePSV
+from .models import Person, Stay
 from .privacy import always_redacted
 
 VALID_TYPES = {"event", "presence", "birthday"}
@@ -67,17 +67,22 @@ def _event_entries(
     ]
 
 
-def _presence_entries(start: datetime.date, end: datetime.date, host: str | None) -> list[CalendarEntry]:
-    presences = PresencePSV.objects.filter(start_date__lte=end, end_date__gte=start).select_related("person", "chalet")
+def _stay_entries(start: datetime.date, end: datetime.date, host: str | None) -> list[CalendarEntry]:
+    # Wire format frozen regardless of the Place/Stay rename: the "presence" type
+    # token and "presence-" UID prefix are already in subscribers' calendar feeds
+    # -- renaming either duplicates every subscribed entry or silently widens an
+    # existing ?types= filter (parse_types_param treats an empty/unknown set as
+    # "no filter", i.e. everything).
+    presences = Stay.objects.filter(start_date__lte=end, end_date__gte=start).select_related("person", "place")
     return [
         CalendarEntry(
             type="presence",
             title=str(presence.person),
-            subtitle=presence.chalet.name,
+            subtitle=presence.place.name,
             start=presence.start_date.isoformat(),
             end=presence.end_date.isoformat(),
             all_day=True,
-            url=reverse("chalet-detail", kwargs={"pk": presence.chalet_id}),
+            url=reverse("place-detail", kwargs={"pk": presence.place_id}),
             uid=_uid(f"presence-{presence.pk}", host),
         )
         for presence in presences
@@ -159,7 +164,7 @@ def build_calendar_entries(
     if "event" in wanted:
         entries += _event_entries(user, start, end, host, strict=strict)
     if "presence" in wanted:
-        entries += _presence_entries(start, end, host)
+        entries += _stay_entries(start, end, host)
     if "birthday" in wanted:
         entries += _birthday_entries(start, end, host, strict=strict)
     entries.sort(key=lambda entry: entry.start)

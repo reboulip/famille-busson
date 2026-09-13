@@ -4,8 +4,8 @@ from decimal import Decimal
 import pytest
 from django.utils import timezone
 
-from annuaire.map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
-from annuaire.models import Chalet
+from annuaire.map_data import build_event_map_groups, build_person_map_groups, build_place_map_groups
+from annuaire.models import Place
 from events.models import Event
 
 
@@ -16,7 +16,7 @@ def _aware(*args):
 @pytest.mark.django_db
 def test_empty_db_returns_no_groups():
     assert build_person_map_groups() == []
-    assert build_chalet_map_groups() == []
+    assert build_place_map_groups() == []
 
 
 @pytest.mark.django_db
@@ -80,29 +80,29 @@ def test_person_groups_sorted_by_last_name_first_name(person, other_person):
 
 
 @pytest.mark.django_db
-def test_chalet_without_photo_uses_emoji_sentinel(chalet):
-    chalet.latitude = Decimal("46.096")
-    chalet.longitude = Decimal("7.228")
-    chalet.save()
-    groups = build_chalet_map_groups()
-    assert groups[0]["entries"][0]["avatar"] == "placeholder::chalet"
+def test_place_without_photo_uses_emoji_sentinel(place):
+    place.latitude = Decimal("46.096")
+    place.longitude = Decimal("7.228")
+    place.save()
+    groups = build_place_map_groups()
+    assert groups[0]["entries"][0]["avatar"] == "placeholder::place"
 
 
 @pytest.mark.django_db
-def test_chalets_without_coordinates_are_excluded():
-    Chalet.objects.create(name="Sans coordonnées", address="Quelque part")
-    assert build_chalet_map_groups() == []
+def test_places_without_coordinates_are_excluded():
+    Place.objects.create(name="Sans coordonnées", address="Quelque part")
+    assert build_place_map_groups() == []
 
 
 @pytest.mark.django_db
-def test_two_chalets_at_same_address_group_together():
-    Chalet.objects.create(
-        name="Chalet A", address="1 rue de la Montagne", latitude=Decimal("45.9"), longitude=Decimal("6.9")
+def test_two_places_at_same_address_group_together():
+    Place.objects.create(
+        name="Place A", address="1 rue de la Montagne", latitude=Decimal("45.9"), longitude=Decimal("6.9")
     )
-    Chalet.objects.create(
-        name="Chalet B", address="1 rue de la Montagne", latitude=Decimal("45.9"), longitude=Decimal("6.9")
+    Place.objects.create(
+        name="Place B", address="1 rue de la Montagne", latitude=Decimal("45.9"), longitude=Decimal("6.9")
     )
-    groups = build_chalet_map_groups()
+    groups = build_place_map_groups()
     assert len(groups) == 1
     assert len(groups[0]["entries"]) == 2
 
@@ -152,4 +152,4 @@ def test_event_map_groups_includes_restricted_event_for_group_member(account, gr
 def group(db):
     from django.contrib.auth.models import Group
 
-    return Group.objects.create(name="SCI grand chalet")
+    return Group.objects.create(name="SCI grand place")
