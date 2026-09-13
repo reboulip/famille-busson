@@ -64,6 +64,7 @@ a `get_object()` — but it raises the same `PermissionDenied` and gates the sam
 | `AuditLogListView` | `audit-log-list` | `StaffRequiredMixin` | Staff only. Lists every `AuditEvent` (create/update/delete on `Person`/`Relation`/`Document`/`Album`/`Photo`, plus group and `Person.owners` membership changes), most recent first, paginated 20 per page. See [`audit.md`](audit.md). |
 | `CorbeilleListView` | `corbeille-list` | `StaffRequiredMixin` | Staff only. Lists every trashed `BlogPost`/`Document`/`Album`/`Photo` row (`deleted_at` not null), most recently deleted first. See [`corbeille.md`](corbeille.md). |
 | `CorbeilleRestoreView`, `CorbeillePurgeView` | `corbeille-restore`, `corbeille-purge` | `StaffRequiredMixin` | Staff only, POST-only. Restore or permanently purge one trashed row. The target model is resolved from the URL's `app_label`/`model_name` but validated against a hardcoded `CORBEILLE_MODELS` allowlist (404 otherwise) — never an arbitrary model looked up directly from user input. |
+| `SiteConfigUpdateView` | `site-config` | `StaffRequiredMixin` | Staff only. Edits the singleton `SiteConfig` row (site name, wordmark, tagline, sender address, feedback URL, timezone, default language); `get_object()` returns `annuaire.site_config.get_site_config()` rather than a plain lookup, so the form works even before a row exists. See [`site_config.md`](site_config.md). |
 | `GroupListView`, `GroupCreateView`, `GroupUpdateView`, `GroupDeleteView`, `GroupMembersUpdateView` | `group-list`, `group-create`, `group-edit`, `group-delete`, `group-members-edit` | `StaffRequiredMixin` | Staff only. Membership is assigned by picking `Person`s who have an `Account` (`GroupMembersUpdateView` saves via `group.account_set.set(...)`). Deletion is guarded: `documents.CategoryGroupAccess.group`, `photos.AlbumGroupAccess.group`, **and** `events.EventGroupAccess.group` are all `on_delete=PROTECT`, so deleting a `Group` still restricting a `documents.Category`, a `photos.Album`, or an `events.Event` raises `ProtectedError`, caught by `GroupDeleteView.post()` and shown as a French error naming the blocking categories, albums, and/or events; the confirm page also proactively disables the delete button and shows the same warning when it already knows the group is blocked. |
 | `ChaletUpdateView`, `ChaletOwnersUpdateView` | `chalet-edit`, `chalet-owners-edit` | `ChaletOwnerOrStaffMixin` | Chalet owner, or staff/superuser. |
 | `BlogPostListView`, `BlogPostDetailView` (read + comment) | `publications` | `LoginRequiredMixin` | Any logged-in user with a completed profile can comment; posting requires a `Person` profile. `BlogPostDetailView`'s `linked_documents`/`linked_albums` context is `accessible_documents(request.user)`/`accessible_albums(request.user)` filtered to the post, re-checked at render time rather than a stored snapshot — a document later moved into a locked category, or an album later restricted, silently disappears from the publication page, consistent with `DocumentDetailView`'s "invisible, not locked" rule (unlike `CategoryListView`'s categories or `AlbumListView`'s albums, which are visible-but-locked in their own listings). `linked_albums` is annotated with `photo_count`/`select_related("cover")` the same way `AlbumListView` is, since it's rendered through the same `_album_card.html` partial. |
@@ -123,7 +124,8 @@ access via `annuaire.calendar_data.build_calendar_entries(..., strict=True)`. In
 `annuaire`/`publications` until it was gated; nothing new should be added to this
 list without a deliberate decision — and since `LoginRequiredMiddleware` now fails
 closed, a new view that's meant to be public won't work at all until it's
-explicitly decorated and added here.
+explicitly decorated and added here. `branding-asset` (`/branding/<kind>`) is
+one such deliberate later addition — see below.
 
 Django's own auth views (`LoginView`, `PasswordResetView`,
 `PasswordResetDoneView`, `PasswordResetConfirmView`) already carry
@@ -140,6 +142,34 @@ ever sees a logout control.
 wrapper around `django.views.static.serve` so uploaded files
 (`Person.profile_photo`, `Chalet.photo`, blog `Attachment.file`) are no longer
 readable by anyone who obtains the URL.
+
+`/branding/<kind>` (`branding_asset`, `annuaire/views.py`, route name
+`branding-asset`) is the deliberate exception to that gate, and is
+`@login_not_required`: the configured logo/favicon (see
+[`site_config.md`](site_config.md)) must render on the login page itself, for
+a visitor who isn't authenticated yet. It is not a general public alias for
+`/media/`: `kind` is looked up against a fixed `{"logo": ..., "favicon":
+...}` mapping onto `SiteConfig.logo`/`SiteConfig.favicon` only, 404 on
+anything else — no path-traversal window into the rest of `MEDIA_ROOT`.
+
+`/jsi18n/` (route name `javascript-catalog`, `famille_busson/urls.py`) is
+Django's stock `JavaScriptCatalog` view (`domain="djangojs"`), wrapped
+directly in `login_not_required` rather than a project subclass. It carries
+no per-user data — only the compiled JS message catalog for the active
+language — and must be public because it's loaded as the first `<script>` on
+`base_threshold.html` too, so the login/signup/magic-link/password-reset
+pages' own JS can call `gettext()`/`interpolate()` before a session exists.
+See [`i18n.md`](i18n.md).
+
+`/annuaire/langue/` (`set_language`, `annuaire/views.py`, route name
+`set-language`) is a project-written replacement for Django's stock
+`django.conf.urls.i18n.set_language` — the stock view isn't compatible with
+this project's global `LoginRequiredMiddleware` failing closed, so it's a
+custom `@require_POST` + `@login_not_required` view instead. It works
+anonymously (e.g. the language toggle on the login page itself) and only
+writes to `Account.language` when the requester happens to be authenticated;
+an anonymous switch only sets the `django_language` cookie. See
+[`i18n.md`](i18n.md).
 
 The public privacy notice (`confidentialite/`, `PrivacyNoticeView`, route name
 `privacy-notice`) is also `@method_decorator(login_not_required, name="dispatch")` —

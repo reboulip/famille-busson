@@ -39,7 +39,7 @@ groups. The reminder additionally excludes anyone who RSVP'd "non" on that event
 | `annuaire/email_utils.py` | `OutgoingEmail`, `InlineImage`, `build_message`, `send_bulk_emails`, `send_one_email`. Transport and MIME. |
 | `annuaire/templates/annuaire/emails/_base.html` | The shared shell: ridge, wordmark, eaves line, card, footer. |
 | `annuaire/templates/annuaire/emails/_horizon.html` | The restrained ridge (credential flows). |
-| `annuaire/templates/annuaire/emails/_wordmark.html` | The "Famille Busson" wordmark, linked to `site_base_url` when given, plain text otherwise. Included by both `_base.html` and `_horizon.html`. |
+| `annuaire/templates/annuaire/emails/_wordmark.html` | The `{{ wordmark }}` text (from `SiteConfig`, via `email_context()`/`extra_email_context` — see [`site_config.md`](site_config.md)), linked to `site_base_url` when given, plain text otherwise. Included by both `_base.html` and `_horizon.html`. |
 | `annuaire/templates/annuaire/emails/_button.html` | The single call to action. |
 | `annuaire/management/commands/preview_emails.py` | Renders or sends any flow on demand. |
 
@@ -75,14 +75,32 @@ decided in exactly one place.
   easy to miss at a new call site. Absolute URLs (including this one) are built from
   `SITE_BASE_URL`, which must resolve to the real domain outside a request context — see
   [`deployment.md`](deployment.md#environment-variables).
-- **The wordmark and "site de la famille Busson" footer text link home, when a base URL
-  is available.** `_wordmark.html` renders an `<a href="{{ url }}">` when `url` is
-  passed, or falls back to a plain `<span>` otherwise — needed because the two Django
-  stock flows (password reset, magic link) render through `PasswordResetView`'s own
-  machinery rather than `annuaire.emails`' builders, so `AccountPasswordResetView`/
-  `MagicLinkRequestView` pass `site_base_url` in via `extra_email_context` instead.
-  Forgetting that on a new Django-stock email flow silently degrades to plain text, not
-  an error.
+- **The wordmark and footer text link home, when a base URL is available.**
+  `_wordmark.html` renders an `<a href="{{ url }}">` when `url` is passed, or falls back
+  to a plain `<span>` otherwise — needed because the two Django stock flows (password
+  reset, magic link) render through `PasswordResetView`'s own machinery rather than
+  `annuaire.emails`' builders, so `AccountPasswordResetView`/`MagicLinkRequestView`'s
+  `extra_email_context` is now a `@property` that re-reads `get_site_config()` per
+  request and passes `site_base_url`, `site_name` and `wordmark` in directly, instead of
+  a class attribute fixed at import time. Forgetting one of these keys on a new
+  Django-stock email flow silently degrades that piece to plain text/a blank site name,
+  not an error.
+- **`site_name`/`wordmark` are resolved once per email via `email_context()` (or per
+  request via the two `extra_email_context` properties above), from `SiteConfig` — see
+  [`site_config.md`](site_config.md).** `wordmark` falls back to `site_name` when blank.
+  `account_setup()`'s non-reset subject interpolates `site_name` too (`"Votre compte
+  {site_name}"`), so it is no longer a frozen literal string — the "Subjects are frozen"
+  rule above still governs its wording/structure, just not the site name inside it.
+- **Recipient-taking emails render in the recipient's own saved language, not always
+  French.** `birthday_reminder()`/`new_blog_post()`/`event_announcement()`/
+  `event_reminder()` wrap their body in `with translation.override(_recipient_language(
+  recipient)):`, which reads `recipient.account.language` and falls back to
+  `settings.LANGUAGE_CODE` when the recipient has no `Person`/`Account` or no saved
+  preference. `account_setup()` has no `Person`/`Account` link guaranteed at its call
+  site (it's keyed on a bare email address before one may exist), so it instead takes
+  an optional `language: str | None = None` kwarg, passed in by `annuaire/views.py`'s
+  callers from the target `Account`'s own `.language` where one exists — see
+  [`i18n.md`](i18n.md).
 - **New-post notifications are enqueued from `transaction.on_commit`, not straight off
   `post_save`.** `BlogPost`'s authors are a M2M, attached by the view *after* the row is
   saved — a notification built directly in the `post_save` receiver saw an empty author

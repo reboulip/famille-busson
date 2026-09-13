@@ -54,6 +54,14 @@ tinted ground**, so every alert is AA by construction in both palettes.
 
 Full contrast table: `design/web/SPEC.md` §3.2.
 
+**`--fb-ember`/`--fb-alpenglow` are per-deployment overridable (Phase 15.3),
+via `SiteConfig`'s brand colour fields** — the token values and roles
+described above are still the shipped defaults for both palettes; staff can
+only override them from `/annuaire/configuration/`, contrast-validated
+against these same thresholds. See
+[`site_config.md`](site_config.md#theme-and-brand-colours-phase-153) for the
+override mechanism and the theme registry it reads from.
+
 ## 3. Theme switching
 
 `data-bs-theme` on `<html>` drives both Bootstrap's dark theme and the `--fb-*`

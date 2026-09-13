@@ -38,4 +38,6 @@ nav:
   - Privacy: privacy.md
   - Audit log: audit.md
   - Corbeille: corbeille.md
+  - Site configuration: site_config.md
+  - Internationalization: i18n.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

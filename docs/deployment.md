@@ -44,7 +44,18 @@ fix ownership of the bind-mounted media volume before dropping privileges (see b
 The `tesseract-ocr`/`tesseract-ocr-fra` system packages are installed via `apt-get` in
 their own early layer, ahead of the OCR content-extraction pipeline that will consume
 them (see `ROADMAP.md`); `tests.yml`'s CI job installs the same packages so the test
-suite runs against the same environment.
+suite runs against the same environment. `gettext` is installed the same way, for
+Phase 15.4's i18n message catalogs: the Dockerfile runs
+`manage.py compilemessages` as its own step right after the app code is copied in, so
+`locale/fr/LC_MESSAGES/*.mo` is baked into the image at **build** time rather than
+compiled at container start — the `worker` service (`RUN_STARTUP_TASKS=0`, see
+"Scheduled tasks" below) sends notification emails and never runs the startup tasks
+that could otherwise compile it, so it would render every email untranslated if
+compilation were deferred to entrypoint time. The committed `.po` sources are tracked
+in git; the compiled `.mo` files are gitignored. See [`i18n.md`](i18n.md) for the full
+message-catalog workflow, and a warning-level system check (`annuaire.checks`, id
+`annuaire.W004`) that flags a configured language whose `.mo` didn't get compiled,
+same rationale as `W001`-`W003`.
 
 ## `docker-entrypoint.sh` — the root → chown → appuser dance
 

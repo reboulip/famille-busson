@@ -38,6 +38,21 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
 - [`corbeille.md`](corbeille.md) — the soft-delete/restore/purge trash for publications,
   documents, albums and photos: scope, the `soft_delete()`/never-override-`delete()`
   design, the no-cascade rule, and the daily automatic purge job.
+- [`site_config.md`](site_config.md) — Phase 15's `SiteConfig` singleton: the
+  fields it holds, how `get_site_config()` caches and never auto-creates a row,
+  the per-request timezone activation, the staff-only edit screen, the
+  conditional first-run seeding migration, (15.2) how templates and emails
+  now read `site_name`/`wordmark`/`sender_address`/`feedback_url` from it
+  instead of hardcoding "Famille Busson", and (15.3) the configurable
+  theme/brand-colour/logo/favicon fields, their WCAG contrast validation, and
+  the public `/branding/<kind>` asset route.
+- [`i18n.md`](i18n.md) — Phase 15's internationalization: (15.4) the
+  `LANGUAGES`/`LOCALE_PATHS`/`LocaleMiddleware` setup, how model/view/template/JS
+  strings are wrapped for translation, the `/jsi18n/` catalog route, and the
+  makemessages/msgen/compilemessages workflow; (15.5) the fully-translated English
+  locale, the `Account.language`/`SiteConfig.default_language`/cookie/browser
+  resolution precedence, the `/annuaire/langue/` switcher, and how to add a further
+  language.
 - [`ROADMAP_ARCHIVE.md`](ROADMAP_ARCHIVE.md) — history of roadmap items already shipped
   to production. Items are moved here from `ROADMAP.md` at release time (see the
   `/release` skill) so `ROADMAP.md` only ever shows pending work.
