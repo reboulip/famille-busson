@@ -18,7 +18,6 @@
             <legend>{% translate "Le billet" %}</legend>
             {{ form.media }}
             {{ form.title|as_crispy_field }}
-            {{ form.post_type|as_crispy_field }}
             {{ form.tags|as_crispy_field }}
             <datalist id="tag-suggestions">
                 {% for name in all_tag_names %}

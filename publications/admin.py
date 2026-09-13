@@ -11,8 +11,8 @@ class AttachmentInline(admin.TabularInline):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
-    list_display = ("title", "post_type", "created_at")
-    list_filter = ("post_type",)
+    list_display = ("title", "created_at")
+    list_filter = ("tags",)
     search_fields = ("title", "body")
     filter_horizontal = ("authors", "tags")
     inlines = [AttachmentInline]

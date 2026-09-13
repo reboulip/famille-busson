@@ -11,7 +11,6 @@ from publications.models import BlogPost, Tag
 def _post_data(**overrides):
     data = {
         "title": "Un billet",
-        "post_type": "NORMAL",
         "body": "Contenu.",
         "authors": [],
         "tags": "",

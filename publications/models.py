@@ -31,21 +31,8 @@ class Tag(models.Model):
 
 
 class BlogPost(SoftDeleteModelMixin, models.Model):
-    # post_type ("Busson connection") and tags coexist deliberately: Phase 16.2
-    # migrates post_type onto a tag and removes this field then, not now.
-    POST_TYPE_CHOICES = [
-        ("BC", _("Busson connection")),
-        ("NORMAL", _("Publication normale")),
-    ]
-
     title = models.CharField(max_length=200, verbose_name=_("Titre"))
     body = models.TextField(verbose_name=_("Contenu"))
-    post_type = models.CharField(
-        max_length=10,
-        choices=POST_TYPE_CHOICES,
-        default="NORMAL",
-        verbose_name=_("Type de publication"),
-    )
     tags = models.ManyToManyField(
         Tag,
         blank=True,
@@ -82,6 +69,14 @@ class BlogPost(SoftDeleteModelMixin, models.Model):
 
     def __str__(self):
         return self.title
+
+    @property
+    def accent(self) -> str:
+        """The first accented tag's accent, or "" -- drives the post card's
+        left-bar colour (fb-post-card--{{ accent }}), generalizing what used
+        to be a hardcoded rule keyed on the retired post_type field."""
+        tag = self.tags.filter(accent__gt="").order_by("name").first()
+        return tag.accent if tag else ""
 
 
 class Attachment(models.Model):

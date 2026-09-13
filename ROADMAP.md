@@ -81,10 +81,10 @@
   configurable label ("Chalet", "Maison", "Résidence"), which is where the "PSV" family
   jargon finally disappears. Model rename plus migration, templates, JS and tests.
   (requires: 15.1)
-- [ ] 16.2 · Publication taxonomy — the hardcoded `BlogPost.post_type` "Busson connection"
+- [x] 16.2 · Publication taxonomy — the hardcoded `BlogPost.post_type` "Busson connection"
   choice is replaced by the configurable tags from Phase 11, with a data migration.
   (requires: 11.4)
-- [ ] 16.3 · Vocabulary review — relation labels, default group names, seeded document
+- [x] 16.3 · Vocabulary review — relation labels, default group names, seeded document
   categories, and the remaining France-specific defaults (the BAN-first geocoder order,
   the `fr` language default) reviewed for a family that isn't this one. (requires: 15.4)
 - [x] 16.4 · Rename the project package — `famille_busson` becomes a neutral name across

@@ -208,6 +208,10 @@ TRASH_RETENTION_DAYS = env.int("TRASH_RETENTION_DAYS", default=30)
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
+# Stays hardcoded, unlike TIME_ZONE below: this is the msgid source language
+# every template/form string is written in, not a runtime default -- changing
+# it wouldn't translate anything, only shift the last-resort fallback that
+# annuaire.i18n.resolve_language() already shadows.
 LANGUAGE_CODE = "fr"
 
 LANGUAGES = [
@@ -217,11 +221,21 @@ LANGUAGES = [
 
 LOCALE_PATHS = [BASE_DIR / "locale"]
 
-TIME_ZONE = "Europe/Paris"
+# The actual France-specific default with no per-deployment override until now:
+# SiteConfig.timezone (see annuaire/site_config.py) only affects the request
+# cycle via SiteTimezoneMiddleware -- management commands and the qcluster
+# worker always run under this setting, which is also that field's own default.
+TIME_ZONE = env("TIME_ZONE", default="Europe/Paris")
 
 USE_I18N = True
 
 USE_TZ = True
+
+# BAN (France-only) is the default primary geocoding provider -- see
+# annuaire/geocoding.py's module docstring for the full primary/fallback
+# behaviour. A non-French deployment can set this to "photon" (worldwide,
+# OpenStreetMap-based) instead.
+GEOCODER_PRIMARY = env("GEOCODER_PRIMARY", default="ban")
 
 
 # Static files (CSS, JavaScript, Images)

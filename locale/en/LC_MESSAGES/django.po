@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 10:00+0200\n"
+"POT-Creation-Date: 2026-09-13 21:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -133,19 +133,19 @@ msgid ""
 "La photo est trop volumineuse (%(size)s Mo). Taille maximale : %(max)s Mo."
 msgstr "The photo is too large (%(size)s MB). Maximum size: %(max)s MB."
 
-#: annuaire/forms.py:165
+#: annuaire/forms.py:167
 msgid "Couleur invalide -- attendu un code hexadécimal, par exemple #9C4A22."
 msgstr "Invalid colour -- expected a hexadecimal code, e.g. #9C4A22."
 
-#: annuaire/forms.py:185
+#: annuaire/forms.py:187
 msgid "pour du texte"
 msgstr "for text"
 
-#: annuaire/forms.py:185
+#: annuaire/forms.py:187
 msgid "pour un élément non textuel"
 msgstr "for a non-text element"
 
-#: annuaire/forms.py:187
+#: annuaire/forms.py:189
 #, python-format
 msgid ""
 "Contraste %(measured)s:1 sur le fond %(surface)s -- il en faut "
@@ -154,105 +154,111 @@ msgstr ""
 "Contrast %(measured)s:1 against the %(surface)s background -- %(required)s:1 "
 "is required %(usage)s."
 
-#: annuaire/forms.py:221 documents/validators.py:40 photos/validators.py:23
+#: annuaire/forms.py:223 documents/validators.py:40 photos/validators.py:23
 #, python-format
 msgid ""
 "Le fichier est trop volumineux (%(size)s Mo). Taille maximale : %(max)s Mo."
 msgstr "The file is too large (%(size)s MB). Maximum size: %(max)s MB."
 
-#: annuaire/forms.py:242 annuaire/models.py:191 annuaire/models.py:227
-#: annuaire/templates/annuaire/chalet_detail.html:54
-#: annuaire/templates/annuaire/chalet_detail.html:80
-#: annuaire/templates/annuaire/chalet_detail.html:113
+#: annuaire/forms.py:244 annuaire/models.py:191 annuaire/models.py:225
 #: annuaire/templates/annuaire/person_relations_form.html:19
 #: annuaire/templates/annuaire/person_relations_form.html:56
-#: events/models.py:136 genealogy/models.py:42 genealogy/models.py:124
-#: photos/models.py:166
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113 events/models.py:136
+#: genealogy/models.py:42 genealogy/models.py:124 photos/models.py:166
 msgid "Personne"
 msgstr "Person"
 
-#: annuaire/forms.py:243
+#: annuaire/forms.py:245
 msgid "Choisissez une personne dans la recherche."
 msgstr "Choose a person from the search."
 
-#: annuaire/forms.py:266 annuaire/forms.py:290
+#: annuaire/forms.py:268 annuaire/forms.py:292
 msgid "Mot de passe"
 msgstr "Password"
 
-#: annuaire/forms.py:275
+#: annuaire/forms.py:277
 msgid "Email ou mot de passe incorrect."
 msgstr "Incorrect email or password."
 
-#: annuaire/forms.py:288
+#: annuaire/forms.py:290
 #: annuaire/templates/annuaire/bulk_account_create.html:21
 #: annuaire/templates/annuaire/bulk_account_create.html:59
 msgid "Email"
 msgstr "Email"
 
-#: annuaire/forms.py:291
+#: annuaire/forms.py:293
 msgid "Ton mot de passe"
 msgstr "Your password"
 
-#: annuaire/forms.py:295
+#: annuaire/forms.py:297
 msgid "Confirmez le mot de passe"
 msgstr "Confirm password"
 
-#: annuaire/forms.py:296
+#: annuaire/forms.py:298
 msgid "Confirme ton mot de passe"
 msgstr "Confirm your password"
 
-#: annuaire/forms.py:300
+#: annuaire/forms.py:302
 msgid "J'ai lu et j'accepte la politique de confidentialité"
 msgstr "I have read and accept the privacy policy"
 
-#: annuaire/forms.py:306 annuaire/views.py:192
+#: annuaire/forms.py:308 annuaire/views.py:192
 msgid "Un compte avec cet email existe déjà."
 msgstr "An account with this email already exists."
 
-#: annuaire/forms.py:322 annuaire/forms.py:444
+#: annuaire/forms.py:324 annuaire/forms.py:446
 msgid "Les mots de passe ne correspondent pas."
 msgstr "Passwords do not match."
 
-#: annuaire/forms.py:329 annuaire/templates/annuaire/chalet_detail.html:164
+#: annuaire/forms.py:331 annuaire/templates/annuaire/place_detail.html:164
 msgid "Personnes"
 msgstr "People"
 
-#: annuaire/forms.py:333 annuaire/models.py:229
+#: annuaire/forms.py:335 annuaire/models.py:227
 msgid "Date d'arrivée"
 msgstr "Arrival date"
 
-#: annuaire/forms.py:337 annuaire/models.py:230
+#: annuaire/forms.py:339 annuaire/models.py:228
 msgid "Date de départ"
 msgstr "Departure date"
 
-#: annuaire/forms.py:395
+#: annuaire/forms.py:397
 msgid "Adresses email"
 msgstr "Email addresses"
 
-#: annuaire/forms.py:396
+#: annuaire/forms.py:398
 msgid "Une adresse email par ligne"
 msgstr "One email address per line"
 
-#: annuaire/forms.py:397
+#: annuaire/forms.py:399
 msgid "Entrez une adresse email par ligne."
 msgstr "Enter one email address per line."
 
-#: annuaire/forms.py:404
+#: annuaire/forms.py:406
 msgid "Veuillez saisir au moins une adresse email."
 msgstr "Please enter at least one email address."
 
-#: annuaire/forms.py:412
+#: annuaire/forms.py:414
 #, python-format
 msgid "« %(email)s » n'est pas une adresse email valide."
 msgstr "\"%(email)s\" is not a valid email address."
 
-#: annuaire/forms.py:420
+#: annuaire/forms.py:422
 msgid "Nouveau mot de passe"
 msgstr "New password"
 
-#: annuaire/forms.py:425
+#: annuaire/forms.py:427
 msgid "Confirmez le nouveau mot de passe"
 msgstr "Confirm new password"
+
+#: annuaire/migrations/0026_chalet_to_place_rename.py:27 annuaire/models.py:213
+#, fuzzy
+#| msgid "Nom"
+msgctxt "place"
+msgid "Nom"
+msgstr "Name"
 
 #: annuaire/models.py:23
 msgid "L'adresse email est obligatoire"
@@ -352,7 +358,7 @@ msgstr "Useful info"
 msgid "Confidentialité dans les exports"
 msgstr "Privacy in exports"
 
-#: annuaire/models.py:147 annuaire/models.py:219
+#: annuaire/models.py:147 annuaire/models.py:218
 msgid "Propriétaires"
 msgstr "Owners"
 
@@ -361,18 +367,18 @@ msgid "Anonymisé·e le"
 msgstr "Anonymised on"
 
 #: annuaire/models.py:152 documents/models.py:161 genealogy/models.py:55
-#: photos/models.py:61 photos/models.py:138 publications/models.py:74
+#: photos/models.py:61 photos/models.py:138 publications/models.py:61
 msgid "Vecteur de recherche"
 msgstr "Search vector"
 
 #: annuaire/models.py:153 documents/models.py:162 genealogy/models.py:56
-#: photos/models.py:62 photos/models.py:139 publications/models.py:75
+#: photos/models.py:62 photos/models.py:139 publications/models.py:62
 msgid "Texte de recherche"
 msgstr "Search text"
 
 #: annuaire/models.py:154 documents/models.py:159 events/models.py:80
 #: events/models.py:141 genealogy/models.py:53 genealogy/models.py:107
-#: photos/models.py:59 publications/models.py:72 publications/models.py:137
+#: photos/models.py:59 publications/models.py:59 publications/models.py:132
 msgid "Date de création"
 msgstr "Date created"
 
@@ -432,11 +438,6 @@ msgstr "Marriage place"
 msgid "Date de fin"
 msgstr "End date"
 
-#: annuaire/models.py:213
-msgctxt "chalet"
-msgid "Nom"
-msgstr "Name"
-
 #: annuaire/models.py:214
 #: annuaire/templates/annuaire/emails/account_setup.txt:5
 msgid "Adresse"
@@ -448,163 +449,183 @@ msgstr "Address"
 msgid "Photo"
 msgstr "Photo"
 
-#: annuaire/models.py:228
-msgid "Chalet"
-msgstr "Chalet"
+#: annuaire/models.py:226 events/models.py:54
+msgid "Lieu"
+msgstr "Location"
 
-#: annuaire/models.py:245
+#: annuaire/models.py:243
 msgid "Création"
 msgstr "Creation"
 
-#: annuaire/models.py:246
+#: annuaire/models.py:244
 msgid "Modification"
 msgstr "Update"
 
-#: annuaire/models.py:247
+#: annuaire/models.py:245
 msgid "Suppression"
 msgstr "Deletion"
 
-#: annuaire/models.py:248
+#: annuaire/models.py:246
 msgid "Restauration"
 msgstr "Restoration"
 
-#: annuaire/models.py:249
+#: annuaire/models.py:247
 msgid "Purge définitive"
 msgstr "Permanent purge"
 
-#: annuaire/models.py:250
+#: annuaire/models.py:248
 msgid "Ajout à un groupe"
 msgstr "Added to a group"
 
-#: annuaire/models.py:251
+#: annuaire/models.py:249
 msgid "Retrait d'un groupe"
 msgstr "Removed from a group"
 
-#: annuaire/models.py:252
+#: annuaire/models.py:250
 msgid "Anonymisation"
 msgstr "Anonymisation"
 
-#: annuaire/models.py:254
+#: annuaire/models.py:252
 msgid "Type d'objet"
 msgstr "Object type"
 
-#: annuaire/models.py:255
+#: annuaire/models.py:253
 msgid "Identifiant de l'objet"
 msgstr "Object identifier"
 
-#: annuaire/models.py:256 annuaire/templates/annuaire/audit_event_list.html:17
+#: annuaire/models.py:254 annuaire/templates/annuaire/audit_event_list.html:17
 msgid "Objet"
 msgstr "Object"
 
-#: annuaire/models.py:257 annuaire/templates/annuaire/audit_event_list.html:17
+#: annuaire/models.py:255 annuaire/templates/annuaire/audit_event_list.html:17
 msgid "Action"
 msgstr "Action"
 
-#: annuaire/models.py:260
+#: annuaire/models.py:258
 msgid "Modifications"
 msgstr "Changes"
 
-#: annuaire/models.py:267 annuaire/templates/annuaire/audit_event_list.html:17
-#: publications/models.py:134
+#: annuaire/models.py:265 annuaire/templates/annuaire/audit_event_list.html:17
+#: publications/models.py:129
 msgid "Auteur"
 msgstr "Author"
 
-#: annuaire/models.py:269
+#: annuaire/models.py:267
 msgid "Auteur (archivé)"
 msgstr "Author (archived)"
 
-#: annuaire/models.py:270 annuaire/templates/annuaire/audit_event_list.html:17
+#: annuaire/models.py:268 annuaire/templates/annuaire/audit_event_list.html:17
 #: genealogy/models.py:45 genealogy/models.py:90
 msgid "Date"
 msgstr "Date"
 
-#: annuaire/models.py:274
+#: annuaire/models.py:272
 msgid "Événement d'audit"
 msgstr "Audit event"
 
-#: annuaire/models.py:275
+#: annuaire/models.py:273
 msgid "Événements d'audit"
 msgstr "Audit events"
 
-#: annuaire/models.py:287
+#: annuaire/models.py:285
 msgid "Nom du site"
 msgstr "Site name"
 
-#: annuaire/models.py:290
+#: annuaire/models.py:288
 msgid "Wordmark"
 msgstr "Wordmark"
 
-#: annuaire/models.py:291
+#: annuaire/models.py:289
 msgid "Accroche"
 msgstr "Tagline"
 
-#: annuaire/models.py:292
+#: annuaire/models.py:290
 msgid "Adresse d'expédition des emails"
 msgstr "Email sender address"
 
-#: annuaire/models.py:296
+#: annuaire/models.py:294
 msgid "Lien de retour/signalement"
 msgstr "Feedback/report link"
 
-#: annuaire/models.py:297
+#: annuaire/models.py:295
 msgid "Laisser vide pour masquer le lien « Signaler un bug » du menu."
 msgstr "Leave blank to hide the \"Report a bug\" link from the menu."
 
-#: annuaire/models.py:299
+#: annuaire/models.py:297
 msgid "Fuseau horaire"
 msgstr "Time zone"
 
-#: annuaire/models.py:307
+#: annuaire/models.py:303
+msgid "Libellé (singulier) des lieux"
+msgstr "Place label (singular)"
+
+#: annuaire/models.py:306
+msgid "Libellé (pluriel) des lieux"
+msgstr "Place label (plural)"
+
+#: annuaire/models.py:315
 msgid "Langue par défaut"
 msgstr "Default language"
 
-#: annuaire/models.py:308
+#: annuaire/models.py:316
 msgid ""
 "Sans effet tant que l'internationalisation (phase 15.4) n'est pas en place."
 msgstr "Has no effect until internationalisation (phase 15.4) is in place."
 
-#: annuaire/models.py:314
+#: annuaire/models.py:322
 msgid "Thème"
 msgstr "Theme"
 
-#: annuaire/models.py:322
+#: annuaire/models.py:330
 msgid "Couleur principale (clair)"
 msgstr "Primary colour (light)"
 
-#: annuaire/models.py:325
+#: annuaire/models.py:333
 msgid "Couleur principale (sombre)"
 msgstr "Primary colour (dark)"
 
-#: annuaire/models.py:328
+#: annuaire/models.py:336
 msgid "Couleur d'accent (clair)"
 msgstr "Accent colour (light)"
 
-#: annuaire/models.py:331
+#: annuaire/models.py:339
 msgid "Couleur d'accent (sombre)"
 msgstr "Accent colour (dark)"
 
-#: annuaire/models.py:333
+#: annuaire/models.py:341
 msgid "Logo"
 msgstr "Logo"
 
-#: annuaire/models.py:334
+#: annuaire/models.py:342
 msgid "Favicon"
 msgstr "Favicon"
 
-#: annuaire/models.py:337 documents/models.py:160 events/models.py:81
+#: annuaire/models.py:345 documents/models.py:160 events/models.py:81
 #: events/models.py:142 genealogy/models.py:54 genealogy/models.py:108
-#: photos/models.py:60 publications/models.py:73
+#: photos/models.py:60 publications/models.py:60
 msgid "Dernière modification"
 msgstr "Last updated"
 
-#: annuaire/models.py:340 annuaire/models.py:341 annuaire/models.py:344
+#: annuaire/models.py:348 annuaire/models.py:349 annuaire/models.py:352
 #: annuaire/templates/annuaire/site_config_form.html:8
 msgid "Configuration du site"
 msgstr "Site configuration"
 
-#: annuaire/models.py:351
+#: annuaire/models.py:359
 msgid "SiteConfig est un singleton : suppression interdite."
 msgstr "SiteConfig is a singleton: deletion is forbidden."
+
+#: annuaire/models.py:363
+#, fuzzy
+#| msgid "Présences"
+msgid "Résidence"
+msgstr "Stays"
+
+#: annuaire/models.py:367 annuaire/personal_data.py:365
+#, fuzzy
+#| msgid "Présences"
+msgid "Résidences"
+msgstr "Stays"
 
 #: annuaire/person_merge.py:170
 msgid "Impossible de fusionner une personne avec elle-même."
@@ -646,11 +667,9 @@ msgid "Vos préférences de notification."
 msgstr "Your notification preferences."
 
 #: annuaire/personal_data.py:365
-msgid "Chalets"
-msgstr "Chalets"
-
-#: annuaire/personal_data.py:365
-msgid "Les chalets dont vous êtes propriétaire."
+#, fuzzy
+#| msgid "Les chalets dont vous êtes propriétaire."
+msgid "Les résidences dont vous êtes propriétaire."
 msgstr "The chalets you own."
 
 #: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
@@ -658,11 +677,13 @@ msgid "Présences"
 msgstr "Stays"
 
 #: annuaire/personal_data.py:366
-msgid "Vos séjours enregistrés dans les chalets."
+#, fuzzy
+#| msgid "Vos séjours enregistrés dans les chalets."
+msgid "Vos séjours enregistrés."
 msgstr "Your recorded stays at the chalets."
 
 #: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:128
-#: publications/models.py:80
+#: publications/models.py:67
 #: publications/templates/publications/blogpost_confirm_delete.html:8
 #: publications/templates/publications/blogpost_detail.html:10
 #: publications/templates/publications/blogpost_form.html:10
@@ -675,8 +696,8 @@ msgstr "Posts"
 msgid "Les articles dont vous êtes auteur·e."
 msgstr "The posts you authored."
 
-#: annuaire/personal_data.py:369 publications/models.py:142
-#: publications/templates/publications/blogpost_detail.html:141
+#: annuaire/personal_data.py:369 publications/models.py:137
+#: publications/templates/publications/blogpost_detail.html:140
 msgid "Commentaires"
 msgstr "Comments"
 
@@ -930,16 +951,16 @@ msgid "à venir"
 msgstr "upcoming"
 
 #: annuaire/templates/annuaire/_profile_edit_actions.html:3
-#: annuaire/templates/annuaire/chalet_form.html:33
-#: annuaire/templates/annuaire/chalet_owners_form.html:20
 #: annuaire/templates/annuaire/group_form.html:19
 #: annuaire/templates/annuaire/group_members_form.html:21
 #: annuaire/templates/annuaire/person_create.html:32
 #: annuaire/templates/annuaire/person_owners_form.html:21
 #: annuaire/templates/annuaire/person_relations_form.html:32
-#: annuaire/templates/annuaire/presence_form.html:16
+#: annuaire/templates/annuaire/place_form.html:33
+#: annuaire/templates/annuaire/place_owners_form.html:20
 #: annuaire/templates/annuaire/profile_create.html:32
-#: annuaire/templates/annuaire/site_config_form.html:41
+#: annuaire/templates/annuaire/site_config_form.html:46
+#: annuaire/templates/annuaire/stay_form.html:16
 #: documents/templates/documents/category_form.html:23
 #: documents/templates/documents/document_form.html:73
 #: events/templates/events/_rsvp_form.html:28
@@ -948,7 +969,7 @@ msgstr "upcoming"
 #: photos/templates/photos/album_form.html:27
 #: photos/templates/photos/photo_form.html:19
 #: photos/templates/photos/photo_tag_form.html:25
-#: publications/templates/publications/blogpost_form.html:110
+#: publications/templates/publications/blogpost_form.html:109
 msgid "Enregistrer"
 msgstr "Save"
 
@@ -958,8 +979,6 @@ msgid "Modifier les relations"
 msgstr "Edit relations"
 
 #: annuaire/templates/annuaire/_profile_edit_actions.html:6
-#: annuaire/templates/annuaire/chalet_form.html:34
-#: annuaire/templates/annuaire/chalet_owners_form.html:21
 #: annuaire/templates/annuaire/group_confirm_delete.html:60
 #: annuaire/templates/annuaire/group_form.html:20
 #: annuaire/templates/annuaire/group_members_form.html:22
@@ -967,8 +986,10 @@ msgstr "Edit relations"
 #: annuaire/templates/annuaire/person_create.html:33
 #: annuaire/templates/annuaire/person_merge_form.html:45
 #: annuaire/templates/annuaire/person_owners_form.html:22
-#: annuaire/templates/annuaire/presence_form.html:17
-#: annuaire/templates/annuaire/site_config_form.html:42
+#: annuaire/templates/annuaire/place_form.html:34
+#: annuaire/templates/annuaire/place_owners_form.html:21
+#: annuaire/templates/annuaire/site_config_form.html:47
+#: annuaire/templates/annuaire/stay_form.html:17
 #: documents/templates/documents/category_confirm_delete.html:32
 #: documents/templates/documents/category_form.html:24
 #: documents/templates/documents/document_confirm_delete.html:29
@@ -983,8 +1004,8 @@ msgstr "Edit relations"
 #: photos/templates/photos/photo_confirm_delete.html:30
 #: photos/templates/photos/photo_form.html:20
 #: publications/templates/publications/blogpost_confirm_delete.html:30
-#: publications/templates/publications/blogpost_form.html:112
-#: publications/templates/publications/blogpost_form.html:114
+#: publications/templates/publications/blogpost_form.html:111
+#: publications/templates/publications/blogpost_form.html:113
 #: publications/templates/publications/comment_confirm_delete.html:26
 msgid "Annuler"
 msgstr "Cancel"
@@ -1026,7 +1047,7 @@ msgid "Rien à signaler pour l'instant"
 msgstr "Nothing to report yet"
 
 #: annuaire/templates/annuaire/activity_feed.html:33
-#: annuaire/templates/annuaire/home.html:166
+#: annuaire/templates/annuaire/home.html:165
 #: publications/templates/publications/blogpost_list.html:40
 msgid "Racontez une nouvelle, partagez des photos, ouvrez le bal."
 msgstr "Share some news, post some photos, get things started."
@@ -1153,8 +1174,8 @@ msgstr "Menu"
 
 #: annuaire/templates/annuaire/base.html:59
 #: photos/templates/photos/album_detail.html:77
-#: publications/templates/publications/blogpost_detail.html:56
-#: publications/templates/publications/blogpost_detail.html:92
+#: publications/templates/publications/blogpost_detail.html:55
+#: publications/templates/publications/blogpost_detail.html:91
 msgid "Fermer"
 msgstr "Close"
 
@@ -1178,7 +1199,7 @@ msgstr "Home"
 
 #: annuaire/templates/annuaire/base.html:99
 #: annuaire/templates/annuaire/calendar.html:9
-#: annuaire/templates/annuaire/chalet_detail.html:46
+#: annuaire/templates/annuaire/place_detail.html:46
 msgid "Calendrier"
 msgstr "Calendar"
 
@@ -1188,8 +1209,10 @@ msgid "Carte"
 msgstr "Map"
 
 #: annuaire/templates/annuaire/base.html:109
-#: annuaire/templates/annuaire/chalet_list.html:13
-msgid "Chalets et Présences"
+#: annuaire/templates/annuaire/place_list.html:13
+#, fuzzy, python-format
+#| msgid "Chalets et Présences"
+msgid "%(label)s et Présences"
 msgstr "Chalets and Stays"
 
 #: annuaire/templates/annuaire/base.html:116
@@ -1442,6 +1465,8 @@ msgid "Anniversaires"
 msgstr "Birthdays"
 
 #: annuaire/templates/annuaire/calendar.html:47
+#: annuaire/templates/annuaire/home.html:100
+#: annuaire/templates/annuaire/place_list.html:46
 msgid "Rien à afficher pour l'instant"
 msgstr "Nothing to display yet"
 
@@ -1450,7 +1475,9 @@ msgid "Les événements, présences et anniversaires à venir apparaîtront ici.
 msgstr "Upcoming events, stays and birthdays will appear here."
 
 #: annuaire/templates/annuaire/carte.html:18
-msgid "Où habite la famille, et où sont les chalets."
+#, fuzzy, python-format
+#| msgid "Où habite la famille, et où sont les chalets."
+msgid "Où habite la famille, et où sont les %(label)s."
 msgstr "Where the family lives, and where the chalets are."
 
 #: annuaire/templates/annuaire/carte.html:25
@@ -1470,12 +1497,17 @@ msgid "adresse non renseignée"
 msgstr "address not provided"
 
 #: annuaire/templates/annuaire/carte.html:40
-#, python-format
+#, fuzzy, python-format
+#| msgid ""
+#| "%(counter)s chalet sans adresse géolocalisée n'apparaît pas sur la carte."
+#| msgid_plural ""
+#| "%(counter)s chalets sans adresse géolocalisée n'apparaissent pas sur la "
+#| "carte."
 msgid ""
-"%(counter)s chalet sans adresse géolocalisée n'apparaît pas sur la carte."
+"%(counter)s %(label)s sans adresse géolocalisée n'apparaît pas sur la carte."
 msgid_plural ""
-"%(counter)s chalets sans adresse géolocalisée n'apparaissent pas sur la "
-"carte."
+"%(counter)s %(label_plural)s sans adresse géolocalisée n'apparaissent pas "
+"sur la carte."
 msgstr[0] ""
 "%(counter)s chalet without a geolocated address does not appear on the map."
 msgstr[1] ""
@@ -1488,169 +1520,6 @@ msgstr "Search for a member…"
 #: annuaire/templates/annuaire/carte.html:47
 msgid "Rechercher un membre sur la carte"
 msgstr "Search for a member on the map"
-
-#: annuaire/templates/annuaire/chalet_detail.html:9
-#: annuaire/templates/annuaire/chalet_form.html:8
-#: annuaire/templates/annuaire/chalet_owners_form.html:7
-#: annuaire/templates/annuaire/home.html:83
-#: annuaire/templates/annuaire/presence_form.html:6
-msgid "Chalets PSV"
-msgstr "PSV chalets"
-
-#: annuaire/templates/annuaire/chalet_detail.html:14
-#: annuaire/templates/annuaire/chalet_detail.html:63
-#: annuaire/templates/annuaire/chalet_detail.html:89
-#: annuaire/templates/annuaire/chalet_detail.html:122
-#: annuaire/templates/annuaire/group_list.html:29
-#: annuaire/templates/annuaire/personne_detail.html:210
-#: documents/templates/documents/category_detail.html:32
-#: documents/templates/documents/document_detail.html:29
-#: events/templates/events/event_detail.html:14
-#: photos/templates/photos/album_detail.html:22
-#: publications/templates/publications/blogpost_detail.html:34
-msgid "Modifier"
-msgstr "Edit"
-
-#: annuaire/templates/annuaire/chalet_detail.html:15
-msgid "Modifier les propriétaires"
-msgstr "Edit owners"
-
-#: annuaire/templates/annuaire/chalet_detail.html:44
-msgid "Vue des présences"
-msgstr "Stays view"
-
-#: annuaire/templates/annuaire/chalet_detail.html:45
-msgid "Liste"
-msgstr "List"
-
-#: annuaire/templates/annuaire/chalet_detail.html:51
-msgid "En ce moment"
-msgstr "Right now"
-
-#: annuaire/templates/annuaire/chalet_detail.html:54
-#: annuaire/templates/annuaire/chalet_detail.html:80
-#: annuaire/templates/annuaire/chalet_detail.html:113
-msgid "Du"
-msgstr "From"
-
-#: annuaire/templates/annuaire/chalet_detail.html:54
-#: annuaire/templates/annuaire/chalet_detail.html:80
-#: annuaire/templates/annuaire/chalet_detail.html:113
-msgid "Au"
-msgstr "To"
-
-#: annuaire/templates/annuaire/chalet_detail.html:67
-#: annuaire/templates/annuaire/chalet_detail.html:93
-#: annuaire/templates/annuaire/chalet_detail.html:126
-msgid "Supprimer cette présence ?"
-msgstr "Delete this stay?"
-
-#: annuaire/templates/annuaire/chalet_detail.html:67
-#: annuaire/templates/annuaire/chalet_detail.html:93
-#: annuaire/templates/annuaire/chalet_detail.html:126
-#: annuaire/templates/annuaire/group_list.html:30
-#: annuaire/templates/annuaire/person_relations_form.html:39
-#: annuaire/templates/annuaire/personne_detail.html:211
-#: documents/templates/documents/category_detail.html:33
-#: documents/templates/documents/document_detail.html:30
-#: events/templates/events/event_detail.html:15
-#: photos/templates/photos/album_detail.html:23
-#: photos/templates/photos/photo_detail.html:21
-#: publications/templates/publications/blogpost_detail.html:35
-#: publications/templates/publications/blogpost_detail.html:153
-msgid "Supprimer"
-msgstr "Delete"
-
-#: annuaire/templates/annuaire/chalet_detail.html:77
-#: events/templates/events/event_list.html:17
-msgid "À venir"
-msgstr "Upcoming"
-
-#: annuaire/templates/annuaire/chalet_detail.html:103
-msgid "Aucune présence en cours ou à venir"
-msgstr "No ongoing or upcoming stays"
-
-#: annuaire/templates/annuaire/chalet_detail.html:104
-msgid "Personne n'est annoncé dans ce chalet pour le moment."
-msgstr "No one is expected at this chalet at the moment."
-
-#: annuaire/templates/annuaire/chalet_detail.html:110
-#, python-format
-msgid "%(counter)s présence passée"
-msgid_plural "%(counter)s présences passées"
-msgstr[0] "%(counter)s past stay"
-msgstr[1] "%(counter)s past stays"
-
-#: annuaire/templates/annuaire/chalet_detail.html:160
-msgid "Ajouter une présence"
-msgstr "Add a stay"
-
-#: annuaire/templates/annuaire/chalet_detail.html:182
-#: annuaire/templates/annuaire/person_relations_form.html:82
-msgid "Ajouter"
-msgstr "Add"
-
-#: annuaire/templates/annuaire/chalet_form.html:9
-#, python-format
-msgid "Modifier %(name)s"
-msgstr "Edit %(name)s"
-
-#: annuaire/templates/annuaire/chalet_form.html:9
-#: annuaire/templates/annuaire/chalet_list.html:17
-#: annuaire/templates/annuaire/chalet_list.html:48
-#: annuaire/templates/annuaire/home.html:102
-msgid "Créer un chalet"
-msgstr "Create a chalet"
-
-#: annuaire/templates/annuaire/chalet_form.html:16
-msgid "Le chalet"
-msgstr "The chalet"
-
-#: annuaire/templates/annuaire/chalet_form.html:25
-msgid "Propriétaire(s)"
-msgstr "Owner(s)"
-
-#: annuaire/templates/annuaire/chalet_form.html:26
-#: annuaire/templates/annuaire/person_owners_form.html:16
-msgid "Chercher un propriétaire"
-msgstr "Search for an owner"
-
-#: annuaire/templates/annuaire/chalet_list.html:14
-msgid "Les chalets de la famille et le calendrier des présences."
-msgstr "The family's chalets and the stays calendar."
-
-#: annuaire/templates/annuaire/chalet_list.html:22
-msgid "Calendrier global des présences"
-msgstr "Overall stays calendar"
-
-#: annuaire/templates/annuaire/chalet_list.html:27
-msgid "Les chalets"
-msgstr "The chalets"
-
-#: annuaire/templates/annuaire/chalet_list.html:46
-msgid "Aucun chalet enregistré"
-msgstr "No chalet registered"
-
-#: annuaire/templates/annuaire/chalet_list.html:47
-msgid "Les chalets servent à noter qui monte, et quand."
-msgstr "Chalets are used to note who's coming up, and when."
-
-#: annuaire/templates/annuaire/chalet_owners_form.html:8
-#, python-format
-msgid "Propriétaires de %(name)s"
-msgstr "Owners of %(name)s"
-
-#: annuaire/templates/annuaire/chalet_owners_form.html:15
-#: annuaire/templates/annuaire/person_owners_form.html:15
-msgid "Propriétaires actuels"
-msgstr "Current owners"
-
-#: annuaire/templates/annuaire/chalet_owners_form.html:17
-msgid ""
-"Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix "
-"d'un badge pour le retirer."
-msgstr ""
-"Click a suggestion to add an owner, or the cross on a badge to remove one."
 
 #: annuaire/templates/annuaire/corbeille_list.html:10
 #, python-format
@@ -1933,8 +1802,8 @@ msgstr "Export as image"
 #: documents/templates/documents/document_detail.html:55
 #: documents/templates/documents/document_detail.html:90
 #: photos/templates/photos/album_detail.html:76
-#: publications/templates/publications/blogpost_detail.html:55
-#: publications/templates/publications/blogpost_detail.html:91
+#: publications/templates/publications/blogpost_detail.html:54
+#: publications/templates/publications/blogpost_detail.html:90
 msgid "Plein écran"
 msgstr "Full screen"
 
@@ -2046,6 +1915,36 @@ msgstr "Name"
 #: annuaire/templates/annuaire/group_list.html:28
 msgid "Membres"
 msgstr "Members"
+
+#: annuaire/templates/annuaire/group_list.html:29
+#: annuaire/templates/annuaire/personne_detail.html:210
+#: annuaire/templates/annuaire/place_detail.html:14
+#: annuaire/templates/annuaire/place_detail.html:63
+#: annuaire/templates/annuaire/place_detail.html:89
+#: annuaire/templates/annuaire/place_detail.html:122
+#: documents/templates/documents/category_detail.html:32
+#: documents/templates/documents/document_detail.html:29
+#: events/templates/events/event_detail.html:14
+#: photos/templates/photos/album_detail.html:22
+#: publications/templates/publications/blogpost_detail.html:33
+msgid "Modifier"
+msgstr "Edit"
+
+#: annuaire/templates/annuaire/group_list.html:30
+#: annuaire/templates/annuaire/person_relations_form.html:39
+#: annuaire/templates/annuaire/personne_detail.html:211
+#: annuaire/templates/annuaire/place_detail.html:67
+#: annuaire/templates/annuaire/place_detail.html:93
+#: annuaire/templates/annuaire/place_detail.html:126
+#: documents/templates/documents/category_detail.html:33
+#: documents/templates/documents/document_detail.html:30
+#: events/templates/events/event_detail.html:15
+#: photos/templates/photos/album_detail.html:23
+#: photos/templates/photos/photo_detail.html:21
+#: publications/templates/publications/blogpost_detail.html:34
+#: publications/templates/publications/blogpost_detail.html:152
+msgid "Supprimer"
+msgstr "Delete"
 
 #: annuaire/templates/annuaire/group_list.html:38
 msgid "Aucun groupe"
@@ -2199,15 +2098,22 @@ msgstr "Start by exploring who's part of the family."
 msgid "Voir l'annuaire"
 msgstr "View the directory"
 
-#: annuaire/templates/annuaire/home.html:100
-msgid "Aucun chalet pour l'instant"
-msgstr "No chalets yet"
-
 #: annuaire/templates/annuaire/home.html:101
+#, fuzzy, python-format
+#| msgid ""
+#| "Les chalets permettent de noter les lieux de séjour et de partager les "
+#| "présences."
 msgid ""
-"Les chalets permettent de noter les lieux de séjour et de partager les "
+"%(label)s permettent de noter les lieux de séjour et de partager les "
 "présences."
 msgstr "Chalets let you note stay locations and share stays."
+
+#: annuaire/templates/annuaire/home.html:102
+#: annuaire/templates/annuaire/place_form.html:9
+#: annuaire/templates/annuaire/place_list.html:17
+#: annuaire/templates/annuaire/place_list.html:48
+msgid "Créer"
+msgstr "Create"
 
 #: annuaire/templates/annuaire/home.html:107
 msgid "Prochaines présences"
@@ -2240,48 +2146,44 @@ msgstr "Create an event"
 msgid "Dernières publications"
 msgstr "Latest posts"
 
-#: annuaire/templates/annuaire/home.html:158 publications/models.py:37
-msgid "Busson connection"
-msgstr "Busson connection"
-
-#: annuaire/templates/annuaire/home.html:165
-#: annuaire/templates/annuaire/home.html:170
+#: annuaire/templates/annuaire/home.html:164
+#: annuaire/templates/annuaire/home.html:169
 msgid "Aucune publication"
 msgstr "No posts"
 
-#: annuaire/templates/annuaire/home.html:167
+#: annuaire/templates/annuaire/home.html:166
 #: publications/templates/publications/blogpost_list.html:41
 msgid "Écrire la première publication"
 msgstr "Write the first post"
 
-#: annuaire/templates/annuaire/home.html:171
+#: annuaire/templates/annuaire/home.html:170
 msgid "Les membres partagent ici les nouvelles, photos et souvenirs."
 msgstr "Members share news, photos and memories here."
 
-#: annuaire/templates/annuaire/home.html:172
-#: annuaire/templates/annuaire/home.html:203
+#: annuaire/templates/annuaire/home.html:171
+#: annuaire/templates/annuaire/home.html:202
 msgid "Voir les publications"
 msgstr "View posts"
 
-#: annuaire/templates/annuaire/home.html:180
+#: annuaire/templates/annuaire/home.html:179
 msgid "Derniers commentaires"
 msgstr "Latest comments"
 
-#: annuaire/templates/annuaire/home.html:183
-#: publications/templates/publications/blogpost_detail.html:149
+#: annuaire/templates/annuaire/home.html:182
+#: publications/templates/publications/blogpost_detail.html:148
 #: publications/templates/publications/comment_confirm_delete.html:17
 msgid "Anonyme"
 msgstr "Anonymous"
 
-#: annuaire/templates/annuaire/home.html:191
+#: annuaire/templates/annuaire/home.html:190
 msgid "sur"
 msgstr "on"
 
-#: annuaire/templates/annuaire/home.html:201
+#: annuaire/templates/annuaire/home.html:200
 msgid "Aucun commentaire"
 msgstr "No comments"
 
-#: annuaire/templates/annuaire/home.html:202
+#: annuaire/templates/annuaire/home.html:201
 msgid "Soyez le premier à réagir aux publications et messages de la famille."
 msgstr "Be the first to react to the family's posts and messages."
 
@@ -2295,8 +2197,11 @@ msgid "Content de vous revoir"
 msgstr "Good to see you again"
 
 #: annuaire/templates/annuaire/login.html:9
+#, fuzzy, python-format
+#| msgid ""
+#| "Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications."
 msgid ""
-"Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications."
+"Connectez-vous pour accéder à l'annuaire, aux %(label)s et aux publications."
 msgstr "Log in to access the directory, chalets and posts."
 
 #: annuaire/templates/annuaire/login.html:22
@@ -2640,6 +2545,16 @@ msgstr "Merge permanently"
 msgid "Propriétaires de %(first_name)s %(last_name)s"
 msgstr "Owners of %(first_name)s %(last_name)s"
 
+#: annuaire/templates/annuaire/person_owners_form.html:15
+#: annuaire/templates/annuaire/place_owners_form.html:15
+msgid "Propriétaires actuels"
+msgstr "Current owners"
+
+#: annuaire/templates/annuaire/person_owners_form.html:16
+#: annuaire/templates/annuaire/place_form.html:26
+msgid "Chercher un propriétaire"
+msgstr "Search for an owner"
+
 #: annuaire/templates/annuaire/person_owners_form.html:18
 msgid ""
 "Seules les personnes ayant un compte peuvent être propriétaires. Cliquez sur "
@@ -2680,6 +2595,11 @@ msgstr "Add this person's parents, children or spouse below."
 #: annuaire/templates/annuaire/person_relations_form.html:52
 msgid "Ajouter une relation"
 msgstr "Add a relation"
+
+#: annuaire/templates/annuaire/person_relations_form.html:82
+#: annuaire/templates/annuaire/place_detail.html:182
+msgid "Ajouter"
+msgstr "Add"
 
 #: annuaire/templates/annuaire/personne_detail.html:24
 msgid "Voir dans l'arbre"
@@ -2810,9 +2730,102 @@ msgstr "Add this person's parents, children or spouse."
 msgid "Gérer les propriétaires"
 msgstr "Manage owners"
 
-#: annuaire/templates/annuaire/presence_form.html:7
-msgid "Modifier la présence"
-msgstr "Edit the stay"
+#: annuaire/templates/annuaire/place_detail.html:15
+msgid "Modifier les propriétaires"
+msgstr "Edit owners"
+
+#: annuaire/templates/annuaire/place_detail.html:44
+msgid "Vue des présences"
+msgstr "Stays view"
+
+#: annuaire/templates/annuaire/place_detail.html:45
+msgid "Liste"
+msgstr "List"
+
+#: annuaire/templates/annuaire/place_detail.html:51
+msgid "En ce moment"
+msgstr "Right now"
+
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113
+msgid "Du"
+msgstr "From"
+
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113
+msgid "Au"
+msgstr "To"
+
+#: annuaire/templates/annuaire/place_detail.html:67
+#: annuaire/templates/annuaire/place_detail.html:93
+#: annuaire/templates/annuaire/place_detail.html:126
+msgid "Supprimer cette présence ?"
+msgstr "Delete this stay?"
+
+#: annuaire/templates/annuaire/place_detail.html:77
+#: events/templates/events/event_list.html:17
+msgid "À venir"
+msgstr "Upcoming"
+
+#: annuaire/templates/annuaire/place_detail.html:103
+msgid "Aucune présence en cours ou à venir"
+msgstr "No ongoing or upcoming stays"
+
+#: annuaire/templates/annuaire/place_detail.html:104
+#, fuzzy
+#| msgid "Personne n'est annoncé dans ce chalet pour le moment."
+msgid "Personne n'est annoncé ici pour le moment."
+msgstr "No one is expected at this chalet at the moment."
+
+#: annuaire/templates/annuaire/place_detail.html:110
+#, python-format
+msgid "%(counter)s présence passée"
+msgid_plural "%(counter)s présences passées"
+msgstr[0] "%(counter)s past stay"
+msgstr[1] "%(counter)s past stays"
+
+#: annuaire/templates/annuaire/place_detail.html:160
+msgid "Ajouter une présence"
+msgstr "Add a stay"
+
+#: annuaire/templates/annuaire/place_form.html:9
+#, python-format
+msgid "Modifier %(name)s"
+msgstr "Edit %(name)s"
+
+#: annuaire/templates/annuaire/place_form.html:25
+msgid "Propriétaire(s)"
+msgstr "Owner(s)"
+
+#: annuaire/templates/annuaire/place_list.html:14
+#, fuzzy, python-format
+#| msgid "Les chalets de la famille et le calendrier des présences."
+msgid "Les %(label)s de la famille et le calendrier des présences."
+msgstr "The family's chalets and the stays calendar."
+
+#: annuaire/templates/annuaire/place_list.html:22
+msgid "Calendrier global des présences"
+msgstr "Overall stays calendar"
+
+#: annuaire/templates/annuaire/place_list.html:47
+#, fuzzy, python-format
+#| msgid "Les photos apparaîtront ici une fois déposées."
+msgid "%(label)s et présences apparaîtront ici une fois créés."
+msgstr "Photos will appear here once uploaded."
+
+#: annuaire/templates/annuaire/place_owners_form.html:8
+#, python-format
+msgid "Propriétaires de %(name)s"
+msgstr "Owners of %(name)s"
+
+#: annuaire/templates/annuaire/place_owners_form.html:17
+msgid ""
+"Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix "
+"d'un badge pour le retirer."
+msgstr ""
+"Click a suggestion to add an owner, or the cross on a badge to remove one."
 
 #: annuaire/templates/annuaire/privacy_notice.html:11
 msgid "Qui est responsable de ce site"
@@ -3006,16 +3019,26 @@ msgid "Identité"
 msgstr "Identity"
 
 #: annuaire/templates/annuaire/site_config_form.html:21
+#, fuzzy
+#| msgid "Voir l'annuaire"
+msgid "Vocabulaire"
+msgstr "View the directory"
+
+#: annuaire/templates/annuaire/site_config_form.html:26
 msgid "Emails et retours"
 msgstr "Emails and feedback"
 
-#: annuaire/templates/annuaire/site_config_form.html:26
+#: annuaire/templates/annuaire/site_config_form.html:31
 msgid "Localisation"
 msgstr "Location"
 
-#: annuaire/templates/annuaire/site_config_form.html:31
+#: annuaire/templates/annuaire/site_config_form.html:36
 msgid "Marque"
 msgstr "Branding"
+
+#: annuaire/templates/annuaire/stay_form.html:7
+msgid "Modifier la présence"
+msgstr "Edit the stay"
 
 #: annuaire/templates/annuaire/update_form.html:10
 #, python-format
@@ -3040,7 +3063,7 @@ msgstr "Markdown formatting"
 
 #: annuaire/templates/annuaire/widgets/markdown_editor.html:13
 #: documents/models.py:137 events/models.py:45 genealogy/models.py:43
-#: genealogy/models.py:86 photos/models.py:32 publications/models.py:41
+#: genealogy/models.py:86 photos/models.py:32 publications/models.py:34
 msgid "Titre"
 msgstr "Title"
 
@@ -3203,12 +3226,16 @@ msgid "Vous n'êtes pas propriétaire de ce profil."
 msgstr "You are not an owner of this profile."
 
 #: annuaire/views.py:1433
-msgid "Vous devez compléter votre profil avant de créer un chalet."
+#, fuzzy
+#| msgid "Vous devez compléter votre profil avant de créer un chalet."
+msgid "Vous devez compléter votre profil avant de créer une résidence."
 msgstr "You must complete your profile before creating a chalet."
 
 #: annuaire/views.py:1465
-msgid "Vous n'êtes pas propriétaire de ce chalet."
-msgstr "You are not an owner of this chalet."
+#, fuzzy
+#| msgid "Vous n'êtes pas propriétaire de ce profil."
+msgid "Vous n'êtes pas propriétaire de cette résidence."
+msgstr "You are not an owner of this profile."
 
 #: annuaire/views.py:1549
 msgid "Erreur dans le formulaire de présence."
@@ -3313,15 +3340,15 @@ msgid "Document"
 msgstr "Document"
 
 #: documents/models.py:180 documents/models.py:205 photos/models.py:104
-#: publications/models.py:94
+#: publications/models.py:89
 msgid "Fichier"
 msgstr "File"
 
-#: documents/models.py:182 photos/models.py:106 publications/models.py:95
+#: documents/models.py:182 photos/models.py:106 publications/models.py:90
 msgid "Légende"
 msgstr "Caption"
 
-#: documents/models.py:183 photos/models.py:116 publications/models.py:97
+#: documents/models.py:183 photos/models.py:116 publications/models.py:92
 msgid "Date de téléversement"
 msgstr "Upload date"
 
@@ -3523,7 +3550,7 @@ msgid "déposé par %(uploader)s"
 msgstr "uploaded by %(uploader)s"
 
 #: documents/templates/documents/document_detail.html:47
-#: publications/templates/publications/blogpost_detail.html:47
+#: publications/templates/publications/blogpost_detail.html:46
 #, python-format
 msgid "%(counter)s image"
 msgid_plural "%(counter)s images"
@@ -3531,37 +3558,37 @@ msgstr[0] "%(counter)s image"
 msgstr[1] "%(counter)s images"
 
 #: documents/templates/documents/document_detail.html:51
-#: publications/templates/publications/blogpost_detail.html:51
+#: publications/templates/publications/blogpost_detail.html:50
 msgid "Image précédente"
 msgstr "Previous image"
 
 #: documents/templates/documents/document_detail.html:53
-#: publications/templates/publications/blogpost_detail.html:53
+#: publications/templates/publications/blogpost_detail.html:52
 msgid "Image suivante"
 msgstr "Next image"
 
 #: documents/templates/documents/document_detail.html:84
-#: publications/templates/publications/blogpost_detail.html:85
+#: publications/templates/publications/blogpost_detail.html:84
 msgid "Zoom"
 msgstr "Zoom"
 
 #: documents/templates/documents/document_detail.html:85
-#: publications/templates/publications/blogpost_detail.html:86
+#: publications/templates/publications/blogpost_detail.html:85
 msgid "Réduire"
 msgstr "Zoom out"
 
 #: documents/templates/documents/document_detail.html:87
-#: publications/templates/publications/blogpost_detail.html:88
+#: publications/templates/publications/blogpost_detail.html:87
 msgid "Agrandir"
 msgstr "Zoom in"
 
 #: documents/templates/documents/document_detail.html:89
-#: publications/templates/publications/blogpost_detail.html:90
+#: publications/templates/publications/blogpost_detail.html:89
 msgid "Télécharger"
 msgstr "Download"
 
 #: documents/templates/documents/document_detail.html:98
-#: publications/templates/publications/blogpost_detail.html:100
+#: publications/templates/publications/blogpost_detail.html:99
 msgid "Chargement du PDF…"
 msgstr "Loading the PDF…"
 
@@ -3706,10 +3733,6 @@ msgstr "End"
 #: events/models.py:51 events/templates/events/event_detail.html:22
 msgid "Journée entière"
 msgstr "All day"
-
-#: events/models.py:54
-msgid "Lieu"
-msgstr "Location"
 
 #: events/models.py:63
 msgid "Organisateurs·rices"
@@ -4528,7 +4551,7 @@ msgstr "You must complete your profile before creating an album."
 msgid "Vous n'êtes pas le créateur de cet album."
 msgstr "You are not the creator of this album."
 
-#: publications/forms.py:16 publications/models.py:27 publications/models.py:53
+#: publications/forms.py:16 publications/models.py:27 publications/models.py:40
 msgid "Étiquettes"
 msgstr "Tags"
 
@@ -4560,64 +4583,56 @@ msgstr "Tag"
 msgid "Accent"
 msgstr "Accent"
 
-#: publications/models.py:38
-msgid "Publication normale"
-msgstr "Normal post"
-
-#: publications/models.py:42
+#: publications/models.py:35
 msgid "Contenu"
 msgstr "Content"
 
-#: publications/models.py:47
-msgid "Type de publication"
-msgstr "Post type"
-
-#: publications/models.py:58
-#: publications/templates/publications/blogpost_form.html:30
+#: publications/models.py:45
+#: publications/templates/publications/blogpost_form.html:29
 msgid "Auteur(s)"
 msgstr "Author(s)"
 
-#: publications/models.py:64
-#: publications/templates/publications/blogpost_detail.html:117
-#: publications/templates/publications/blogpost_form.html:36
+#: publications/models.py:51
+#: publications/templates/publications/blogpost_detail.html:116
+#: publications/templates/publications/blogpost_form.html:35
 msgid "Documents liés"
 msgstr "Linked documents"
 
-#: publications/models.py:70
-#: publications/templates/publications/blogpost_detail.html:130
-#: publications/templates/publications/blogpost_form.html:52
+#: publications/models.py:57
+#: publications/templates/publications/blogpost_detail.html:129
+#: publications/templates/publications/blogpost_form.html:51
 msgid "Albums liés"
 msgstr "Linked albums"
 
-#: publications/models.py:79 publications/models.py:92
-#: publications/models.py:126
+#: publications/models.py:66 publications/models.py:87
+#: publications/models.py:121
 msgid "Publication"
 msgstr "Post"
 
-#: publications/models.py:96
+#: publications/models.py:91
 msgid "Est une image"
 msgstr "Is an image"
 
-#: publications/models.py:101
+#: publications/models.py:96
 msgid "Pièce jointe"
 msgstr "Attachment"
 
-#: publications/models.py:102
-#: publications/templates/publications/blogpost_detail.html:42
-#: publications/templates/publications/blogpost_form.html:70
+#: publications/models.py:97
+#: publications/templates/publications/blogpost_detail.html:41
+#: publications/templates/publications/blogpost_form.html:69
 msgid "Pièces jointes"
 msgstr "Attachments"
 
-#: publications/models.py:136 publications/models.py:141
+#: publications/models.py:131 publications/models.py:136
 msgid "Commentaire"
 msgstr "Comment"
 
-#: publications/templates/publications/_blogpost_card.html:13
+#: publications/templates/publications/_blogpost_card.html:14
 #: publications/templates/publications/blogpost_detail.html:13
 msgid "Par"
 msgstr "By"
 
-#: publications/templates/publications/_blogpost_card.html:17
+#: publications/templates/publications/_blogpost_card.html:18
 #: publications/templates/publications/blogpost_detail.html:17
 msgid "anonyme"
 msgstr "anonymous"
@@ -4676,19 +4691,19 @@ msgstr "posted on %(date)s"
 msgid "modifié le %(date)s"
 msgstr "updated on %(date)s"
 
-#: publications/templates/publications/blogpost_detail.html:160
+#: publications/templates/publications/blogpost_detail.html:159
 msgid "Aucun commentaire pour l'instant"
 msgstr "No comments yet"
 
-#: publications/templates/publications/blogpost_detail.html:161
+#: publications/templates/publications/blogpost_detail.html:160
 msgid "Soyez le premier à réagir."
 msgstr "Be the first to react."
 
-#: publications/templates/publications/blogpost_detail.html:167
+#: publications/templates/publications/blogpost_detail.html:166
 msgid "Votre commentaire"
 msgstr "Your comment"
 
-#: publications/templates/publications/blogpost_detail.html:170
+#: publications/templates/publications/blogpost_detail.html:169
 msgid "Commenter"
 msgstr "Comment"
 
@@ -4696,27 +4711,27 @@ msgstr "Comment"
 msgid "Le billet"
 msgstr "The post"
 
-#: publications/templates/publications/blogpost_form.html:31
+#: publications/templates/publications/blogpost_form.html:30
 msgid "Chercher un auteur"
 msgstr "Search for an author"
 
-#: publications/templates/publications/blogpost_form.html:44
+#: publications/templates/publications/blogpost_form.html:43
 msgid "Chercher un document"
 msgstr "Search for a document"
 
-#: publications/templates/publications/blogpost_form.html:48
+#: publications/templates/publications/blogpost_form.html:47
 msgid "Déposer un nouveau document"
 msgstr "Upload a new document"
 
-#: publications/templates/publications/blogpost_form.html:59
+#: publications/templates/publications/blogpost_form.html:58
 msgid "Chercher un album"
 msgstr "Search for an album"
 
-#: publications/templates/publications/blogpost_form.html:63
+#: publications/templates/publications/blogpost_form.html:62
 msgid "Créer un nouvel album"
 msgstr "Create a new album"
 
-#: publications/templates/publications/blogpost_form.html:87
+#: publications/templates/publications/blogpost_form.html:86
 msgid "Ajouter une pièce jointe"
 msgstr "Add an attachment"
 

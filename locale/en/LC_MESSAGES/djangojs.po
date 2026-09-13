@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 09:41+0200\n"
+"POT-Creation-Date: 2026-09-13 21:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,7 +63,7 @@ msgstr "Exit full screen"
 msgid "Plein écran"
 msgstr "Full screen"
 
-#: annuaire/static/js/map_init.js:298
+#: annuaire/static/js/map_init.js:300
 msgid "Aucun membre trouvé"
 msgstr "No member found"
 
@@ -161,11 +161,3 @@ msgstr "Upload failed."
 #: publications/static/js/publication_attachments.js:118
 msgid "Pièce jointe"
 msgstr "Attachment"
-
-#: publications/static/js/publication_attachments.js:149
-msgid ""
-"Cette publication est de type « Busson Connection » mais ne contient aucune "
-"pièce jointe. Voulez-vous l'enregistrer quand même ?"
-msgstr ""
-"This post is of type \"Busson Connection\" but has no attachment. Do you "
-"want to save it anyway?"

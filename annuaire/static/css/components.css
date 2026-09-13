@@ -572,7 +572,7 @@ a.fb-card:hover,
     border-radius: var(--fb-radius) 0 0 var(--fb-radius);
     background: var(--fb-alpenglow);
 }
-.fb-post-card--bc::before { background: var(--fb-gold); }
+.fb-post-card--gold::before { background: var(--fb-gold); }
 .fb-post-card__title { font-size: 1.25rem; margin-bottom: var(--fb-sp-1); }
 .fb-post-card__title a { text-decoration: none; color: var(--fb-ink); }
 .fb-post-card__title a:hover { color: var(--fb-ember); }

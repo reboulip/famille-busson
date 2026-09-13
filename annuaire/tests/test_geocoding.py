@@ -2,6 +2,7 @@ from decimal import Decimal
 
 import pytest
 import requests
+from django.test import override_settings
 
 from annuaire import geocoding
 
@@ -130,3 +131,42 @@ def test_geocode_uses_limit_one_regardless_of_search_addresses_default(monkeypat
     monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
     geocoding.geocode("une adresse")
     assert captured["limit"] == 1
+
+
+# ---------------------------------------------------------------------------
+# GEOCODER_PRIMARY = "photon" (16.3)
+# ---------------------------------------------------------------------------
+
+
+@override_settings(GEOCODER_PRIMARY="photon")
+def test_search_addresses_uses_photon_first_when_configured_as_primary(monkeypatch):
+    calls = []
+
+    def fake_get(url, params=None, timeout=None):
+        calls.append(url)
+        return _FakeResponse({"features": [_photon_feature(13.3777, 52.5163)]})
+
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
+    results = geocoding.search_addresses("Pariser Platz, Berlin")
+    assert results[0].source == "worldwide"
+    # BAN must not be queried when Photon-as-primary already returned a result.
+    assert calls == [geocoding.PHOTON_SEARCH_URL]
+
+
+@override_settings(GEOCODER_PRIMARY="photon")
+def test_search_addresses_falls_back_to_ban_when_photon_primary_is_empty(monkeypatch):
+    def fake_get(url, params=None, timeout=None):
+        if url == geocoding.PHOTON_SEARCH_URL:
+            return _FakeResponse({"features": []})
+        return _FakeResponse({"features": [_ban_feature(2.062821, 49.031624)]})
+
+    monkeypatch.setattr("annuaire.geocoding.requests.get", fake_get)
+    results = geocoding.search_addresses("8 Boulevard du Port, 80000 Amiens")
+    assert len(results) == 1
+    assert results[0].source == "ban"
+
+
+@override_settings(GEOCODER_PRIMARY="photon")
+def test_search_addresses_returns_empty_when_both_providers_empty_with_photon_primary(monkeypatch):
+    monkeypatch.setattr("annuaire.geocoding.requests.get", lambda *a, **k: _FakeResponse({"features": []}))
+    assert geocoding.search_addresses("adresse imaginaire") == []

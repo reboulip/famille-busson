@@ -154,7 +154,6 @@
                             <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
                             <p class="fb-meta">
                                 {{ post.created_at|date:"j F" }}
-                                {% if post.post_type == "BC" %}<span class="fb-chip fb-chip--gold">{% translate "Busson connection" %}</span>{% endif %}
                             </p>
                         </div>
                     {% endfor %}

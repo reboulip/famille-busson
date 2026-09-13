@@ -29,7 +29,6 @@ def restricted_album(db, restricted_group):
 def _post_data(**overrides):
     data = {
         "title": "Un billet",
-        "post_type": "NORMAL",
         "body": "Contenu.",
         "authors": [],
         "attachments-TOTAL_FORMS": "0",

@@ -129,6 +129,7 @@ TAG_NAMES = [
     ("Annonce", "accent"),
     ("Chalet", ""),
     ("Anniversaire", "gold"),
+    ("Busson connection", "gold"),
 ]
 
 POST_BODIES = [
@@ -430,7 +431,6 @@ class Command(BaseCommand):
             post = BlogPost.objects.create(
                 title=title,
                 body="\n\n".join(body_parts),
-                post_type=random.choices(["NORMAL", "BC"], weights=[3, 1])[0],
             )
             n_authors = random.choices([1, 2, 3], weights=[6, 3, 1])[0]
             post.authors.set(random.sample(persons, k=n_authors))

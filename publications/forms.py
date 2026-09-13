@@ -20,7 +20,7 @@ class BlogPostForm(forms.ModelForm):
 
     class Meta:
         model = BlogPost
-        fields = ["title", "post_type", "body", "authors", "documents", "albums"]
+        fields = ["title", "body", "authors", "documents", "albums"]
         widgets = {
             "authors": forms.MultipleHiddenInput,
             "documents": forms.MultipleHiddenInput,

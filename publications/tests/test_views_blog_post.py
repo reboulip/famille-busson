@@ -188,7 +188,6 @@ def test_blogpost_create_post_creates_post_and_assigns_author(auth_client, perso
     data = {
         "title": "Mon premier article",
         "body": "Contenu de l'article.",
-        "post_type": "NORMAL",
         "authors": [person.pk],
     }
     data.update(_empty_attachment_formset_data())
@@ -205,7 +204,6 @@ def test_blogpost_create_force_adds_current_user_as_author(auth_client, person, 
     data = {
         "title": "Article sans moi",
         "body": "x",
-        "post_type": "NORMAL",
         "authors": [other_person.pk],
     }
     data.update(_empty_attachment_formset_data())
@@ -216,16 +214,17 @@ def test_blogpost_create_force_adds_current_user_as_author(auth_client, person, 
 
 
 @pytest.mark.django_db
-def test_blogpost_create_with_bc_type(auth_client, person):
+def test_blogpost_create_with_busson_connection_tag(auth_client, person):
     data = {
         "title": "BC announcement",
         "body": "x",
-        "post_type": "BC",
+        "tags": "Busson connection",
         "authors": [person.pk],
     }
     data.update(_empty_attachment_formset_data())
     auth_client.post(reverse("blogpost-create"), data)
-    assert BlogPost.objects.get(title="BC announcement").post_type == "BC"
+    post = BlogPost.objects.get(title="BC announcement")
+    assert {t.name for t in post.tags.all()} == {"Busson connection"}
 
 
 @pytest.mark.django_db
@@ -233,7 +232,6 @@ def test_blogpost_create_with_attachment(auth_client, person):
     data = {
         "title": "Avec pj",
         "body": "x",
-        "post_type": "NORMAL",
         "authors": [person.pk],
         "attachments-TOTAL_FORMS": "3",
         "attachments-INITIAL_FORMS": "0",
@@ -250,7 +248,7 @@ def test_blogpost_create_with_attachment(auth_client, person):
 
 @pytest.mark.django_db
 def test_blogpost_create_invalid_returns_200(auth_client, person):
-    data = {"title": "", "body": "", "post_type": "NORMAL", "authors": [person.pk]}
+    data = {"title": "", "body": "", "authors": [person.pk]}
     data.update(_empty_attachment_formset_data())
     response = auth_client.post(reverse("blogpost-create"), data)
     assert response.status_code == 200
@@ -263,7 +261,6 @@ def test_blogpost_create_with_invalid_attachment_formset_does_not_create_post(au
     data = {
         "title": "Doit ne pas être créé",
         "body": "x",
-        "post_type": "NORMAL",
         "authors": [person.pk],
         "attachments-TOTAL_FORMS": "1",
         "attachments-INITIAL_FORMS": "0",
@@ -282,7 +279,6 @@ def test_blogpost_create_without_attachment_creates_post(auth_client, person):
     data = {
         "title": "Sans pièce jointe",
         "body": "x",
-        "post_type": "NORMAL",
         "authors": [person.pk],
     }
     data.update(_empty_attachment_formset_data())
@@ -313,7 +309,6 @@ def test_blogpost_create_supports_multiple_authors(auth_client, person, other_pe
     data = {
         "title": "Co-écrit",
         "body": "Du contenu.",
-        "post_type": "NORMAL",
         "authors": [str(person.pk), str(other_person.pk)],
     }
     data.update(_empty_attachment_formset_data())
@@ -334,7 +329,6 @@ def test_blogpost_update_with_invalid_attachment_formset_does_not_modify_post(
     data = {
         "title": "Titre tampon",
         "body": "Nouveau contenu.",
-        "post_type": "NORMAL",
         "authors": [person.pk],
         "attachments-TOTAL_FORMS": "1",
         "attachments-INITIAL_FORMS": "0",
@@ -386,7 +380,6 @@ def test_blogpost_update_post_updates_fields(auth_client, blog_post, person):
     data = {
         "title": "Titre modifié",
         "body": "Nouveau contenu.",
-        "post_type": "BC",
         "authors": [person.pk],
     }
     data.update(_empty_attachment_formset_data())
@@ -397,7 +390,6 @@ def test_blogpost_update_post_updates_fields(auth_client, blog_post, person):
     assert response.status_code == 302
     blog_post.refresh_from_db()
     assert blog_post.title == "Titre modifié"
-    assert blog_post.post_type == "BC"
 
 
 # ---------------------------------------------------------------------------

@@ -242,7 +242,6 @@ erDiagram
 | `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `body` | TextField | Contenu | required |
-| `post_type` | CharField | Type de publication | max_length=10, choices: BC=Busson connection, NORMAL=Publication normale, default='NORMAL', required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |

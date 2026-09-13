@@ -134,27 +134,5 @@
         picker.value = '';
     });
 
-    const postTypeField = form.querySelector('[name="post_type"]');
-    form.addEventListener('submit', (e) => {
-        if (!postTypeField || postTypeField.value !== 'BC') return;
-        const visibleBadges = badgesContainer.querySelectorAll('.attachment-badge').length;
-        const existingNotDeleted = Array.from(rowsContainer.querySelectorAll('.attachment-row'))
-            .filter((row) => {
-                const del = findField(row, 'DELETE');
-                return !del || !del.checked;
-            }).length;
-        if (visibleBadges === 0 && existingNotDeleted === 0) {
-            const ok = window.confirm(
-                gettext(
-                    "Cette publication est de type « Busson Connection » mais ne contient aucune pièce jointe. " +
-                    "Voulez-vous l'enregistrer quand même ?"
-                )
-            );
-            if (!ok) {
-                e.preventDefault();
-            }
-        }
-    });
-
     initExistingRows();
 })();

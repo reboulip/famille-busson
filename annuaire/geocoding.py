@@ -3,10 +3,12 @@ endpoint (`address_search_ajax`) and the `geocode_person_addresses` /
 `geocode_place_addresses` backfill commands.
 
 BAN (Base Adresse Nationale, France-only) is the primary/authoritative
-provider -- queried first, and used whenever it returns a confident match, so
-existing French behaviour is unchanged byte-for-byte. Photon
-(OpenStreetMap-based, worldwide, keyless) is only queried as a fallback, when
-BAN returns no results or its best match scores poorly.
+provider by default (settings.GEOCODER_PRIMARY = "ban") -- queried first, and
+used whenever it returns a confident match, so existing French behaviour is
+unchanged byte-for-byte. Photon (OpenStreetMap-based, worldwide, keyless) is
+the fallback, queried when the primary comes up empty or unconfident. A
+non-French deployment can flip GEOCODER_PRIMARY to "photon" to swap the
+roles -- see search_addresses() below.
 
 Both `geocode()` and `search_addresses()` return (latitude, longitude) --
 the OPPOSITE order of the GeoJSON `coordinates: [lon, lat]` arrays both
@@ -20,6 +22,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 import requests
+from django.conf import settings
 
 BAN_SEARCH_URL = "https://api-adresse.data.gouv.fr/search/"
 PHOTON_SEARCH_URL = "https://photon.komoot.io/api/"
@@ -107,7 +110,29 @@ def _feature_to_suggestion(feature: dict, *, source: str) -> AddressSuggestion |
 
 
 def search_addresses(query: str, limit: int = 5) -> list[AddressSuggestion]:
-    """BAN first; Photon only as a fallback when BAN comes up empty or unconfident."""
+    """Primary provider first (settings.GEOCODER_PRIMARY, default "ban"); the
+    other provider only as a fallback when the primary comes up empty or
+    unconfident.
+
+    Read from settings at call time, not cached at import -- so tests can
+    @override_settings(GEOCODER_PRIMARY=...) and see it take effect.
+
+    BAN's fallback trigger is a confidence-score threshold (_ban_needs_fallback);
+    Photon has no equivalent score, so when Photon is primary the only fallback
+    trigger is an empty result set -- the two directions are not symmetric.
+    """
+    if settings.GEOCODER_PRIMARY == "photon":
+        photon_features = _photon_search(query, limit)
+        if photon_features:
+            return [s for f in photon_features if (s := _feature_to_suggestion(f, source="worldwide")) is not None]
+
+        ban_features = _ban_search(query, limit)
+        if ban_features:
+            return [s for f in ban_features if (s := _feature_to_suggestion(f, source="ban")) is not None]
+
+        # Both empty -- nothing to fall back to.
+        return []
+
     ban_features = _ban_search(query, limit)
     if not _ban_needs_fallback(ban_features):
         return [s for f in ban_features if (s := _feature_to_suggestion(f, source="ban")) is not None]
