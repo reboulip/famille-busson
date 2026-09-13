@@ -97,7 +97,7 @@
 - [x] 16.6 · Deployment recipe — a templated compose file and `.env`, plus a "start here"
   guide covering DNS, TLS, an email provider, the backup job and the scheduler.
   (requires: 9.2, 9.6)
-- [ ] 16.7 · Reusability test — stand up a second, differently-branded instance from a
+- [x] 16.7 · Reusability test — stand up a second, differently-branded instance from a
   clean checkout, following only the recipe, and fix everything it surfaces. The phase
   isn't done until this passes. (requires: 16.4, 16.5, 16.6)
 

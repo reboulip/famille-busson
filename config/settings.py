@@ -383,8 +383,8 @@ LOGOUT_REDIRECT_URL = "/annuaire/login/"
 
 # Email
 # Generic SMTP settings, left empty by default (console backend). Production fills in
-# EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD etc. in /srv/bubu/.env once a provider
-# is chosen.
+# EMAIL_HOST/EMAIL_HOST_USER/EMAIL_HOST_PASSWORD etc. in the deployment's .env once a
+# provider is chosen.
 EMAIL_BACKEND = env("EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = env("EMAIL_HOST", default="")
 EMAIL_PORT = env.int("EMAIL_PORT", default=587)

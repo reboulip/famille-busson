@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 21:49+0200\n"
+"POT-Creation-Date: 2026-09-13 22:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -254,8 +253,6 @@ msgid "Confirmez le nouveau mot de passe"
 msgstr "Confirm new password"
 
 #: annuaire/migrations/0026_chalet_to_place_rename.py:27 annuaire/models.py:213
-#, fuzzy
-#| msgid "Nom"
 msgctxt "place"
 msgid "Nom"
 msgstr "Name"
@@ -616,16 +613,12 @@ msgid "SiteConfig est un singleton : suppression interdite."
 msgstr "SiteConfig is a singleton: deletion is forbidden."
 
 #: annuaire/models.py:363
-#, fuzzy
-#| msgid "Présences"
 msgid "Résidence"
-msgstr "Stays"
+msgstr "Residence"
 
 #: annuaire/models.py:367 annuaire/personal_data.py:365
-#, fuzzy
-#| msgid "Présences"
 msgid "Résidences"
-msgstr "Stays"
+msgstr "Residences"
 
 #: annuaire/person_merge.py:170
 msgid "Impossible de fusionner une personne avec elle-même."
@@ -667,20 +660,16 @@ msgid "Vos préférences de notification."
 msgstr "Your notification preferences."
 
 #: annuaire/personal_data.py:365
-#, fuzzy
-#| msgid "Les chalets dont vous êtes propriétaire."
 msgid "Les résidences dont vous êtes propriétaire."
-msgstr "The chalets you own."
+msgstr "The residences you own."
 
 #: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
 msgid "Présences"
 msgstr "Stays"
 
 #: annuaire/personal_data.py:366
-#, fuzzy
-#| msgid "Vos séjours enregistrés dans les chalets."
 msgid "Vos séjours enregistrés."
-msgstr "Your recorded stays at the chalets."
+msgstr "Your recorded stays."
 
 #: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:128
 #: publications/models.py:67
@@ -1210,10 +1199,9 @@ msgstr "Map"
 
 #: annuaire/templates/annuaire/base.html:109
 #: annuaire/templates/annuaire/place_list.html:13
-#, fuzzy, python-format
-#| msgid "Chalets et Présences"
+#, python-format
 msgid "%(label)s et Présences"
-msgstr "Chalets and Stays"
+msgstr "%(label)s and Stays"
 
 #: annuaire/templates/annuaire/base.html:116
 msgid "Tous les événements"
@@ -1475,10 +1463,9 @@ msgid "Les événements, présences et anniversaires à venir apparaîtront ici.
 msgstr "Upcoming events, stays and birthdays will appear here."
 
 #: annuaire/templates/annuaire/carte.html:18
-#, fuzzy, python-format
-#| msgid "Où habite la famille, et où sont les chalets."
+#, python-format
 msgid "Où habite la famille, et où sont les %(label)s."
-msgstr "Where the family lives, and where the chalets are."
+msgstr "Where the family lives, and where the %(label)s are."
 
 #: annuaire/templates/annuaire/carte.html:25
 #, python-format
@@ -1497,21 +1484,19 @@ msgid "adresse non renseignée"
 msgstr "address not provided"
 
 #: annuaire/templates/annuaire/carte.html:40
-#, fuzzy, python-format
-#| msgid ""
-#| "%(counter)s chalet sans adresse géolocalisée n'apparaît pas sur la carte."
-#| msgid_plural ""
-#| "%(counter)s chalets sans adresse géolocalisée n'apparaissent pas sur la "
-#| "carte."
+#, python-format
 msgid ""
-"%(counter)s %(label)s sans adresse géolocalisée n'apparaît pas sur la carte."
+"%(counter)s %(label_plural)s sans adresse géolocalisée n'apparaît pas sur la "
+"carte."
 msgid_plural ""
 "%(counter)s %(label_plural)s sans adresse géolocalisée n'apparaissent pas "
 "sur la carte."
 msgstr[0] ""
-"%(counter)s chalet without a geolocated address does not appear on the map."
+"%(counter)s %(label_plural)s without a geolocated address does not appear on "
+"the map."
 msgstr[1] ""
-"%(counter)s chalets without a geolocated address do not appear on the map."
+"%(counter)s %(label_plural)s without a geolocated address do not appear on "
+"the map."
 
 #: annuaire/templates/annuaire/carte.html:47
 msgid "Rechercher un membre…"
@@ -1668,9 +1653,9 @@ msgstr ""
 "birthday reminders on"
 
 #: annuaire/templates/annuaire/emails/birthday_reminder.html:60
-#: events/templates/events/emails/event_announcement.html:37
-#: events/templates/events/emails/event_reminder.html:36
-#: publications/templates/publications/emails/new_blog_post.html:50
+#: events/templates/events/emails/event_announcement.html:35
+#: events/templates/events/emails/event_reminder.html:34
+#: publications/templates/publications/emails/new_blog_post.html:51
 msgid "Gérer mes préférences"
 msgstr "Manage my preferences"
 
@@ -2099,14 +2084,11 @@ msgid "Voir l'annuaire"
 msgstr "View the directory"
 
 #: annuaire/templates/annuaire/home.html:101
-#, fuzzy, python-format
-#| msgid ""
-#| "Les chalets permettent de noter les lieux de séjour et de partager les "
-#| "présences."
+#, python-format
 msgid ""
 "%(label)s permettent de noter les lieux de séjour et de partager les "
 "présences."
-msgstr "Chalets let you note stay locations and share stays."
+msgstr "%(label)s let you note stay locations and share stays."
 
 #: annuaire/templates/annuaire/home.html:102
 #: annuaire/templates/annuaire/place_form.html:9
@@ -2197,12 +2179,10 @@ msgid "Content de vous revoir"
 msgstr "Good to see you again"
 
 #: annuaire/templates/annuaire/login.html:9
-#, fuzzy, python-format
-#| msgid ""
-#| "Connectez-vous pour accéder à l'annuaire, aux chalets et aux publications."
+#, python-format
 msgid ""
 "Connectez-vous pour accéder à l'annuaire, aux %(label)s et aux publications."
-msgstr "Log in to access the directory, chalets and posts."
+msgstr "Log in to access the directory, %(label)s and posts."
 
 #: annuaire/templates/annuaire/login.html:22
 msgid "Pas envie de saisir votre mot de passe ?"
@@ -2774,8 +2754,6 @@ msgid "Aucune présence en cours ou à venir"
 msgstr "No ongoing or upcoming stays"
 
 #: annuaire/templates/annuaire/place_detail.html:104
-#, fuzzy
-#| msgid "Personne n'est annoncé dans ce chalet pour le moment."
 msgid "Personne n'est annoncé ici pour le moment."
 msgstr "No one is expected at this chalet at the moment."
 
@@ -2800,20 +2778,18 @@ msgid "Propriétaire(s)"
 msgstr "Owner(s)"
 
 #: annuaire/templates/annuaire/place_list.html:14
-#, fuzzy, python-format
-#| msgid "Les chalets de la famille et le calendrier des présences."
+#, python-format
 msgid "Les %(label)s de la famille et le calendrier des présences."
-msgstr "The family's chalets and the stays calendar."
+msgstr "The family's %(label)s and the stays calendar."
 
 #: annuaire/templates/annuaire/place_list.html:22
 msgid "Calendrier global des présences"
 msgstr "Overall stays calendar"
 
 #: annuaire/templates/annuaire/place_list.html:47
-#, fuzzy, python-format
-#| msgid "Les photos apparaîtront ici une fois déposées."
+#, python-format
 msgid "%(label)s et présences apparaîtront ici une fois créés."
-msgstr "Photos will appear here once uploaded."
+msgstr "%(label)s and stays will appear here once created."
 
 #: annuaire/templates/annuaire/place_owners_form.html:8
 #, python-format
@@ -3019,10 +2995,8 @@ msgid "Identité"
 msgstr "Identity"
 
 #: annuaire/templates/annuaire/site_config_form.html:21
-#, fuzzy
-#| msgid "Voir l'annuaire"
 msgid "Vocabulaire"
-msgstr "View the directory"
+msgstr "Vocabulary"
 
 #: annuaire/templates/annuaire/site_config_form.html:26
 msgid "Emails et retours"
@@ -3226,16 +3200,12 @@ msgid "Vous n'êtes pas propriétaire de ce profil."
 msgstr "You are not an owner of this profile."
 
 #: annuaire/views.py:1433
-#, fuzzy
-#| msgid "Vous devez compléter votre profil avant de créer un chalet."
 msgid "Vous devez compléter votre profil avant de créer une résidence."
-msgstr "You must complete your profile before creating a chalet."
+msgstr "You must complete your profile before creating a residence."
 
 #: annuaire/views.py:1465
-#, fuzzy
-#| msgid "Vous n'êtes pas propriétaire de ce profil."
 msgid "Vous n'êtes pas propriétaire de cette résidence."
-msgstr "You are not an owner of this profile."
+msgstr "You are not an owner of this residence."
 
 #: annuaire/views.py:1549
 msgid "Erreur dans le formulaire de présence."
@@ -3819,64 +3789,56 @@ msgid "Voir l'événement"
 msgstr "View the event"
 
 #: events/templates/events/emails/event_announcement.html:33
-#, python-format
 msgid ""
 "Vous recevez cette notification car vous êtes abonné&middot;e aux annonces "
-"d'événements sur <a href=\"%(site_base_url)s\" class=\"em-ink\" "
-"style=\"color:#3A2C1E; text-decoration:underline;\">le site de la famille "
-"Busson</a>."
+"d'événements sur"
 msgstr ""
-"You are receiving this notification because you are subscribed to event "
-"announcements on <a href=\"%(site_base_url)s\" class=\"em-ink\" "
-"style=\"color:#3A2C1E; text-decoration:underline;\">the Busson family site</"
-"a>."
+"You are receiving this notification because you are subscribed&middot; to "
+"event announcements on"
 
 #: events/templates/events/emails/event_announcement.txt:1
-msgid "Un nouvel événement a été créé sur le site de la famille Busson :"
-msgstr "A new event has been created on the Busson family site:"
+#, python-format
+msgid "Un nouvel événement a été créé sur %(site_name)s :"
+msgstr "A new event has been created on %(site_name)s:"
 
 #: events/templates/events/emails/event_announcement.txt:9
 #, python-format
 msgid ""
 "Vous recevez cette notification car vous êtes abonné·e aux annonces "
-"d'événements sur le site de la famille Busson (%(site_base_url)s). Pour vous "
-"désabonner, modifiez votre profil : %(settings_url)s"
+"d'événements sur %(site_name)s (%(site_base_url)s). Pour vous désabonner, "
+"modifiez votre profil : %(settings_url)s"
 msgstr ""
 "You are receiving this notification because you are subscribed to event "
-"announcements on the Busson family site (%(site_base_url)s). To unsubscribe, "
-"edit your profile: %(settings_url)s"
+"announcements on %(site_name)s (%(site_base_url)s). To unsubscribe, edit "
+"your profile: %(settings_url)s"
 
 #: events/templates/events/emails/event_reminder.html:13
 msgid "Rappel"
 msgstr "Reminder"
 
 #: events/templates/events/emails/event_reminder.html:32
-#, python-format
 msgid ""
 "Vous recevez ce rappel car vous êtes abonné&middot;e aux annonces "
-"d'événements sur <a href=\"%(site_base_url)s\" class=\"em-ink\" "
-"style=\"color:#3A2C1E; text-decoration:underline;\">le site de la famille "
-"Busson</a>."
+"d'événements sur"
 msgstr ""
-"You are receiving this reminder because you are subscribed to event "
-"announcements on <a href=\"%(site_base_url)s\" class=\"em-ink\" "
-"style=\"color:#3A2C1E; text-decoration:underline;\">the Busson family site</"
-"a>."
+"You are receiving this reminder because you are subscribed&middot; to event "
+"announcements on"
 
 #: events/templates/events/emails/event_reminder.txt:1
-msgid "Rappel : un événement approche sur le site de la famille Busson :"
-msgstr "Reminder: an event is coming up on the Busson family site:"
+#, python-format
+msgid "Rappel : un événement approche sur %(site_name)s :"
+msgstr "Reminder: an event is coming up on %(site_name)s:"
 
 #: events/templates/events/emails/event_reminder.txt:9
 #, python-format
 msgid ""
 "Vous recevez ce rappel car vous êtes abonné·e aux annonces d'événements sur "
-"le site de la famille Busson (%(site_base_url)s). Pour vous désabonner, "
-"modifiez votre profil : %(settings_url)s"
+"%(site_name)s (%(site_base_url)s). Pour vous désabonner, modifiez votre "
+"profil : %(settings_url)s"
 msgstr ""
 "You are receiving this reminder because you are subscribed to event "
-"announcements on the Busson family site (%(site_base_url)s). To unsubscribe, "
-"edit your profile: %(settings_url)s"
+"announcements on %(site_name)s (%(site_base_url)s). To unsubscribe, edit "
+"your profile: %(settings_url)s"
 
 #: events/templates/events/event_confirm_delete.html:9
 msgid "Supprimer un événement ?"
@@ -4766,8 +4728,9 @@ msgid "Sur « %(title)s »."
 msgstr "On \"%(title)s\"."
 
 #: publications/templates/publications/emails/new_blog_post.html:13
-msgid "Un nouvel article vient d'être publié sur le site de la famille Busson."
-msgstr "A new post has just been published on the Busson family site."
+#, python-format
+msgid "Un nouvel article vient d'être publié sur %(site_name)s."
+msgstr "A new post has just been published on %(site_name)s."
 
 #: publications/templates/publications/emails/new_blog_post.html:30
 #: publications/templates/publications/emails/new_blog_post.txt:4
@@ -4780,31 +4743,28 @@ msgid "Lire l'article"
 msgstr "Read the post"
 
 #: publications/templates/publications/emails/new_blog_post.html:49
-#, python-format
 msgid ""
 "Vous recevez cette notification car vous êtes abonné&middot;e aux nouvelles "
-"publications sur <a href=\"%(site_base_url)s\" class=\"em-ink\" "
-"style=\"color:#3A2C1E; text-decoration:underline;\">le site de la famille "
-"Busson</a>."
+"publications sur"
 msgstr ""
-"You are receiving this notification because you are subscribed to new posts "
-"on <a href=\"%(site_base_url)s\" class=\"em-ink\" style=\"color:#3A2C1E; "
-"text-decoration:underline;\">the Busson family site</a>."
+"You are receiving this notification because you are subscribed&middot; to "
+"new posts on"
 
 #: publications/templates/publications/emails/new_blog_post.txt:1
-msgid "Un nouvel article a été publié sur le site de la famille Busson :"
-msgstr "A new post has been published on the Busson family site:"
+#, python-format
+msgid "Un nouvel article a été publié sur %(site_name)s :"
+msgstr "A new post has been published on %(site_name)s:"
 
 #: publications/templates/publications/emails/new_blog_post.txt:11
 #, python-format
 msgid ""
 "Vous recevez cette notification car vous êtes abonné·e aux nouvelles "
-"publications sur le site de la famille Busson (%(site_base_url)s). Pour vous "
-"désabonner, modifiez votre profil : %(settings_url)s"
+"publications sur %(site_name)s (%(site_base_url)s). Pour vous désabonner, "
+"modifiez votre profil : %(settings_url)s"
 msgstr ""
 "You are receiving this notification because you are subscribed to new posts "
-"on the Busson family site (%(site_base_url)s). To unsubscribe, edit your "
-"profile: %(settings_url)s"
+"on %(site_name)s (%(site_base_url)s). To unsubscribe, edit your profile: "
+"%(settings_url)s"
 
 #: publications/views.py:86
 msgid "Vous n'êtes pas auteur de cette publication."

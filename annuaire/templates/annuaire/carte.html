@@ -36,7 +36,7 @@
     {% endif %}
     {% if unresolved_place_count %}
         <p class="fb-alert fb-alert--warning search-result-count">
-            {% blocktranslate trimmed count counter=unresolved_place_count with label=site_config.place_label_singular_display|lower label_plural=site_config.place_label_plural_display|lower %}{{ counter }} {{ label }} sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} {{ label_plural }} sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
+            {% blocktranslate trimmed count counter=unresolved_place_count with label_plural=site_config.place_label_plural_display|lower %}{{ counter }} {{ label_plural }} sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} {{ label_plural }} sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
         </p>
     {% endif %}
 

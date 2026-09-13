@@ -10,7 +10,7 @@ stripper to keep in sync. Truncation happens in the sender, not here, so the
 plain-text half gets exactly the same string.
 {% endcomment %}
 {% block title %}{% blocktranslate trimmed with title=post.title %}Nouvel article : {{ title }}{% endblocktranslate %}{% endblock title %}
-{% block preheader %}{% if excerpt %}{{ excerpt }}{% else %}{% translate "Un nouvel article vient d'être publié sur le site de la famille Busson." %}{% endif %}{% endblock preheader %}
+{% block preheader %}{% if excerpt %}{{ excerpt }}{% else %}{% blocktranslate trimmed %}Un nouvel article vient d'être publié sur {{ site_name }}.{% endblocktranslate %}{% endif %}{% endblock preheader %}
 
 {% block body %}
 <tr>
@@ -46,6 +46,7 @@ plain-text half gets exactly the same string.
 {% endblock body %}
 
 {% block footer %}
-  {% blocktranslate trimmed %}Vous recevez cette notification car vous êtes abonné&middot;e aux nouvelles publications sur <a href="{{ site_base_url }}" class="em-ink" style="color:#3A2C1E; text-decoration:underline;">le site de la famille Busson</a>.{% endblocktranslate %}
+  {% blocktranslate trimmed %}Vous recevez cette notification car vous êtes abonné&middot;e aux nouvelles publications sur{% endblocktranslate %}
+  <a href="{{ site_base_url }}" class="em-ink" style="color:#3A2C1E; text-decoration:underline;">{{ site_name }}</a>.
   <a href="{{ settings_url }}" class="em-ink" style="color:#3A2C1E; text-decoration:underline;">{% translate "Gérer mes préférences" %}</a>
 {% endblock footer %}
