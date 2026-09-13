@@ -94,7 +94,7 @@
 ### Cluster: Démarrage et vérification
 - [x] 16.5 · `manage.py bootstrap_site` — an interactive first run: site identity, first
   superuser, default groups, starter document categories. (requires: 15.1)
-- [ ] 16.6 · Deployment recipe — a templated compose file and `.env`, plus a "start here"
+- [x] 16.6 · Deployment recipe — a templated compose file and `.env`, plus a "start here"
   guide covering DNS, TLS, an email provider, the backup job and the scheduler.
   (requires: 9.2, 9.6)
 - [ ] 16.7 · Reusability test — stand up a second, differently-branded instance from a

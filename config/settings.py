@@ -391,7 +391,7 @@ EMAIL_PORT = env.int("EMAIL_PORT", default=587)
 EMAIL_HOST_USER = env("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD", default="")
 EMAIL_USE_TLS = env.bool("EMAIL_USE_TLS", default=True)
-DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="no-reply@bubu.reboulip.fr")
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="")
 
 
 def _default_site_base_url(csrf_trusted_origins: list[str], allowed_hosts: list[str]) -> str:

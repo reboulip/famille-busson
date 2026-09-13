@@ -52,6 +52,14 @@ def test_every_backup_var_in_env_example_is_referenced_by_the_script():
     assert not unused, f".env.example declares {unused} but scripts/backup.sh never reads them"
 
 
+def test_data_dir_falls_through_data_root_before_compose_dir():
+    # 16.6: docker-compose.prod.yml's bind mounts key off DATA_ROOT. If this script's
+    # DATA_DIR ignored it, a deployment that relocates its data root via DATA_ROOT
+    # alone would have backups silently keep archiving the old/wrong directory.
+    content = _script_text()
+    assert 'DATA_DIR="${DATA_DIR:-${DATA_ROOT:-$COMPOSE_DIR/data}}"' in content
+
+
 def test_tar_failure_handling_treats_exit_1_as_a_warning_not_fatal():
     # "file changed as we read it" (tar exit 1) is near-certain on a live media/
     # tree and must not abort the whole backup -- only exit codes >= 2 are fatal.

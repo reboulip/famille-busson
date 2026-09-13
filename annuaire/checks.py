@@ -111,3 +111,24 @@ def site_name_check(app_configs, **kwargs):
             )
         ]
     return []
+
+
+@register()
+def default_from_email_check(app_configs, **kwargs):
+    """Warn (never error) when DEFAULT_FROM_EMAIL is unset outside DEBUG and
+    SiteConfig has no sender_address either.
+
+    Warning, not error: same rationale as W001-W005 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. Without either
+    value, outgoing mail (annuaire/email_utils.py) has no From address.
+    """
+    if not settings.DEBUG and not settings.DEFAULT_FROM_EMAIL and not get_site_config().sender_address:
+        return [
+            Warning(
+                "DEFAULT_FROM_EMAIL is unset outside of DEBUG and SiteConfig has no "
+                "sender_address either -- outgoing mail has no From address.",
+                hint="Set DEFAULT_FROM_EMAIL in the environment, or sender_address via bootstrap_site.",
+                id="annuaire.W006",
+            )
+        ]
+    return []

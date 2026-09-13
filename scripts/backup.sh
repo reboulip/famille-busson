@@ -34,7 +34,11 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 COMPOSE_DIR="${COMPOSE_DIR:-/srv/bubu}"
-DATA_DIR="${DATA_DIR:-$COMPOSE_DIR/data}"
+# Falls through DATA_ROOT (the same var docker-compose.prod.yml's bind mounts use,
+# see 16.6) before COMPOSE_DIR/data -- otherwise a deployment that relocates its
+# bind-mount root via DATA_ROOT alone would have this script silently keep
+# archiving the old/wrong directory, with no error.
+DATA_DIR="${DATA_DIR:-${DATA_ROOT:-$COMPOSE_DIR/data}}"
 BACKUP_DIR="${BACKUP_DIR:-/srv/bubu/backups}"
 BACKUP_KEEP_DAILY="${BACKUP_KEEP_DAILY:-7}"
 BACKUP_KEEP_WEEKLY="${BACKUP_KEEP_WEEKLY:-4}"
