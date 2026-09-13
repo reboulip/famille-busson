@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import Exists, F, OuterRef, ProtectedError, Q
+from django.db.models import Case, Exists, F, OuterRef, ProtectedError, Q, Value, When
 from django.db.models.functions import Lower
 from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect
@@ -59,13 +59,21 @@ DEFAULT_DOCUMENT_SORT = "recent"
 def document_search_ajax(request):
     """Backs the document picker on the publication form (annuaire's _person_picker.html
     reused as-is, driven entirely by data-search-url). Queryset is the same access
-    boundary as the document list itself -- never Document.objects.all()."""
+    boundary as the document list itself -- never Document.objects.all().
+
+    Tokenizes the query on whitespace and ANDs a title__icontains per token, so word
+    order doesn't matter and a mid-title match isn't hidden behind an alphabetical
+    truncation. Full-query prefix matches are ranked first."""
     q = request.GET.get("q", "").strip()
     if len(q) < 2:
         return JsonResponse({"results": []})
     exclude_ids = [int(x) for x in request.GET.get("exclude", "").split(",") if x.isdigit()]
-    qs = accessible_documents(request.user).filter(title__icontains=q).exclude(pk__in=exclude_ids)
-    qs = qs.order_by("title")[:10]
+    qs = accessible_documents(request.user).exclude(pk__in=exclude_ids)
+    for token in q.split():
+        qs = qs.filter(title__icontains=token)
+    qs = qs.annotate(
+        rank=Case(When(title__istartswith=q, then=Value(0)), default=Value(1)),
+    ).order_by("rank", Lower("title"), "pk")[:20]
     return JsonResponse({"results": [{"id": d.pk, "name": d.title} for d in qs]})
 
 

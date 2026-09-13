@@ -6,7 +6,7 @@ from django.urls import reverse
 
 from annuaire.models import Person
 from documents.models import Category, Document
-from photos.models import Album
+from photos.models import Album, Photo
 
 LOGIN_URL = "/annuaire/login/"
 
@@ -102,6 +102,19 @@ def test_search_excludes_album_restricted_to_another_group(
     titles = {a.title for a in matched.results}
     assert "Été à Genève public" in titles
     assert "Été à Genève privé" not in titles
+
+
+@pytest.mark.django_db
+def test_search_result_photo_card_does_not_leak_a_template_comment(auth_client, django_capture_on_commit_callbacks):
+    from photos.tests.conftest import make_uploaded_image
+
+    album = Album.objects.create(title="Été à Genève")
+    with django_capture_on_commit_callbacks(execute=True):
+        Photo.objects.create(album=album, caption="Genève", file=make_uploaded_image())
+
+    response = auth_client.get(reverse("search"), {"q": "genève"})
+
+    assert "#}" not in response.content.decode()
 
 
 @pytest.mark.django_db

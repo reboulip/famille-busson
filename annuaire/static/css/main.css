@@ -974,6 +974,19 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
 .document-viewer-pdf-pages { width: 100%; }
 
+.document-viewer-pdf-page-wrap {
+    display: block;
+    /* Sized in CSS pixels by document_viewer.js, mirroring the canvas's own box
+       exactly -- both the visual chrome below and the link overlay's percentage-based
+       positions (#146) depend on this wrapper matching the canvas pixel-for-pixel. */
+    position: relative;
+    max-width: none;
+    flex: none;
+    margin: 0 auto var(--fb-sp-3);
+    box-shadow: var(--fb-shadow-2);
+    background: var(--fb-card);
+}
+
 .document-viewer-pdf-page {
     display: block;
     /* Sized in CSS pixels by document_viewer.js, independently of the canvas backing
@@ -982,9 +995,20 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
        page losing its place. A max-width fit rule here would override both. */
     max-width: none;
     flex: none;
-    margin: 0 auto var(--fb-sp-3);
-    box-shadow: var(--fb-shadow-2);
-    background: var(--fb-card);
+}
+
+/* Hyperlinks embedded in the PDF (#146) -- a transparent overlay anchor per link
+   annotation, positioned by buildLinkOverlay() in document_viewer.js. */
+.document-viewer-pdf-link {
+    position: absolute;
+    display: block;
+    cursor: pointer;
+}
+
+.document-viewer-pdf-link:hover,
+.document-viewer-pdf-link:focus-visible {
+    outline: 2px solid var(--fb-alpenglow);
+    outline-offset: 1px;
 }
 
 .document-viewer-zoom {

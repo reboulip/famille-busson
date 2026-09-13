@@ -889,6 +889,7 @@ a.fb-card:hover,
 .fb-longform__body code { background: var(--fb-parchment); border-radius: var(--fb-radius-sm); }
 .fb-longform__body pre { padding: var(--fb-sp-3) var(--fb-sp-4); border: 1px solid var(--fb-border); overflow-x: auto; }
 .fb-longform__body img { max-width: 100%; height: auto; border-radius: var(--fb-radius-sm); }
+.fb-longform.fb-longform--full { max-width: none; margin-bottom: var(--fb-sp-6); }
 
 /* Attachments gallery */
 .fb-gallery {

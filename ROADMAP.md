@@ -109,11 +109,11 @@
 > they get their own light phase rather than blocking on one of those.
 
 ### Cluster: Documents
-- [ ] 17.1 · PDF viewer link annotations — enable pdf.js's link/annotation layer so
+- [x] 17.1 · PDF viewer link annotations — enable pdf.js's link/annotation layer so
   hyperlinks embedded in a PDF are clickable in the in-app viewer. [#146]
-- [ ] 17.2 · Document detail description full-width — fix the layout so the description
+- [x] 17.2 · Document detail description full-width — fix the layout so the description
   block spans the page's full width. [#144]
-- [ ] 17.3 · Document-link search fixes substring matching — fix the document picker
+- [x] 17.3 · Document-link search fixes substring matching — fix the document picker
   (used when linking a document to a publication) to match substrings, not just
   prefixes. [#142]
 
@@ -122,7 +122,7 @@
   font-size so it fits without scrolling) and prune/reorder sections (drop redundant
   "nouveau document" entry, move Publications after "Les Busson", group Documents +
   Photothèque). [#145] [#141]
-- [ ] 17.5 · Album view: fix leaked template comment — a Django `{# ... #}` comment
+- [x] 17.5 · Album view: fix leaked template comment — a Django `{# ... #}` comment
   renders as visible text in the album grid; fix the malformed/misplaced comment tag.
   [#140]
 
