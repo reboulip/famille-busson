@@ -58,8 +58,8 @@ the group for.
 | `relations_familiales` | Relations familiales | Every family `Relation` involving this person (parent/enfant, conjoint), with type, the other person, and marriage/end dates where set. |
 | `comptes_geres` | Comptes gérés | Profiles this person owns (`Person.owners`), and profiles that own this one, if it's accountless. |
 | `parametres` | Préférences de notification | The linked `Settings` row's notification toggles (anniversaires, publications, événements). |
-| `chalets` | Chalets | Chalets this person is listed as an owner of. |
-| `presences` | Présences | This person's `PresencePSV` chalet stays (unrestricted data — no access helper needed, same posture as the présences calendar elsewhere in the app). |
+| `places` | Résidences | Places this person is listed as an owner of. |
+| `presences` | Présences | This person's `Stay` records (unrestricted data — no access helper needed, same posture as the présences calendar elsewhere in the app). |
 | `publications` | Publications | Blog posts this person is a listed author of. |
 | `commentaires` | Commentaires | Comments this person posted, with a short excerpt and a link to the parent post. |
 | `documents` | Documents | Documents this person uploaded or redacted, restricted to what the viewer can see via `accessible_documents(viewer)`. |

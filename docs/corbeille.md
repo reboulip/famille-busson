@@ -14,8 +14,8 @@ Publications (`BlogPost`), `documents.Document`, `photos.Album`, and
 not-yet-built item (14.2's planned anonymisation flow, see
 [`privacy.md`](privacy.md)), with different concerns (family-tree integrity,
 `person_merge.py`'s meta-guard) than a trashable content row. Nothing else in
-the project is soft-deletable; `Relation`, `Comment`, `Event`, `Chalet`,
-`PresencePSV`, and the `genealogy` models still hard-delete exactly as before.
+the project is soft-deletable; `Relation`, `Comment`, `Event`, `Place`,
+`Stay`, and the `genealogy` models still hard-delete exactly as before.
 
 ## How it works: `soft_delete()`, never an overridden `Model.delete()`
 

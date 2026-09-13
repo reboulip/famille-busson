@@ -9,6 +9,8 @@ Published at https://reboulip.github.io/famille-busson/ on every push to `main` 
   `annuaire/models.py` or `publications/models.py` changes. Manual run:
   `uv run python manage.py generate_data_model_docs`. Generator source:
   `annuaire/management/commands/generate_data_model_docs.py`.
+- [`installation.md`](installation.md) — start here: standing up a fresh instance from
+  a clean checkout (DNS, TLS, email provider, first boot, backups, the scheduler).
 - [`deployment.md`](deployment.md) — how the app ships to production (Docker image, VPS
   layout, CI/CD workflows, environment variables).
 - [`restore.md`](restore.md) — the backup restore runbook: prerequisites, the drill vs.

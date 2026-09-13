@@ -25,6 +25,7 @@ markdown_extensions:
 
 nav:
   - Home: README.md
+  - Installation: installation.md
   - Data model: data_model.md
   - Deployment: deployment.md
   - Restore: restore.md

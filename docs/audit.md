@@ -42,7 +42,7 @@ In particular, `Account.password`, `Account.calendar_token`, and the
 `register_audit()` call, so they can't leak into the log even if a future edit
 to `annuaire/signals.py` widens another model's allowlist.
 
-**Not yet audited at all:** `Comment`, `Event`, `Chalet`, `PresencePSV`, and
+**Not yet audited at all:** `Comment`, `Event`, `Place`, `Stay`, and
 every `genealogy` model (`Story`, `Source`, `Citation`, `GedcomImport`, etc.).
 `Relation`'s own row is tracked, but not the side-effects of deleting it
 (the automatic inverse-`Relation` deletion described in `CLAUDE.md` §5 doesn't

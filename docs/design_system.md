@@ -153,8 +153,8 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
    touching the publications feed's `.fb-post-card`.
 9. **Page-specific rules on a component shared by more than one page go in `main.css`
    under a page-scoped class, never in `components.css`.** `.fb-record` is shared by
-   the profile and chalet detail pages; the profile's mobile sticky-identity condensing
-   hangs off a `.profile-record` class added only in `personne_detail.html`, so chalet
+   the profile and place detail pages; the profile's mobile sticky-identity condensing
+   hangs off a `.profile-record` class added only in `personne_detail.html`, so place
    detail's layout is untouched. A test (`test_the_shared_record_component_is_not_
    restyled_for_the_profile_page`) asserts `components.css` never mentions the
    page-scoped class at all.
@@ -175,7 +175,7 @@ empty-state watermark).
 
 It appears in exactly **three** places: the sidebar brand block, the threshold card
 header, and empty states. A ridge on every page would be wallpaper. `map_init.js`
-carries its own inline copy for photoless chalet markers — keep the two silhouettes in
+carries its own inline copy for photoless place markers — keep the two silhouettes in
 sync if either changes.
 
 ## 7. Things that will bite you

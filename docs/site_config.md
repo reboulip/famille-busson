@@ -16,8 +16,9 @@ can never be removed.
 | `site_name` | `CharField` | The site's display name. Read across templates (browser-tab titles, the homepage headline, the nav's brand section label) and emails (`email_context()`, the two Django-stock `extra_email_context` properties, the iCal `PRODID` line, `account_setup()`'s subject). |
 | `wordmark` | `CharField` | Kept separate from `site_name`, not derived from it — the wordmark can carry its own typographic treatment (e.g. a non-breaking space between words). Falls back to `site_name` wherever it's read (templates and emails alike) when left blank. Read by the sidebar/topbar brand link, `base.html`/`base_threshold.html`, and every email's `_wordmark.html` partial. |
 | `tagline` | `CharField` | Stored but not yet read anywhere. |
-| `sender_address` | `EmailField` | Used as the `from_email` for every outgoing message (`email_utils.build_message()`), falling back to `settings.DEFAULT_FROM_EMAIL` when blank. |
+| `sender_address` | `EmailField` | Used as the `from_email` for every outgoing message (`email_utils.build_message()`), falling back to `settings.DEFAULT_FROM_EMAIL` when blank. `DEFAULT_FROM_EMAIL`'s own code-level default is now `""` (Phase 16.6, no longer a Busson-specific address) — see [`deployment.md`](deployment.md#environment-variables)'s `annuaire.W006` check, which flags a deployment where neither this field nor the env var is set. |
 | `feedback_url` | `URLField` | Controls the "Signaler un bug" nav link in `base.html`/`base_threshold.html`: shown only when set, hidden entirely otherwise. |
+| `place_label_singular`, `place_label_plural` | `CharField` | Optional, blank by default. Rename the `Place` entity's displayed label (e.g. "Résidence"/"Résidences", "Maison"/"Maisons") without touching code. Read via the `place_label_singular_display`/`place_label_plural_display` properties, which fall back to "Résidence"/"Résidences" when blank. Only `Place`'s label is configurable this way — `Stay`'s own wording ("Séjour") is fixed. |
 | `timezone` | `CharField` | Defaults to `settings.TIME_ZONE`. Activated per-request by `SiteTimezoneMiddleware` (see below). |
 | `default_language` | `CharField` | Choices drawn live from `settings.LANGUAGES`. Read by `annuaire.i18n.resolve_language()` (Phase 15.5) as the site-wide fallback when a visitor has no saved `Account.language` and no `django_language` cookie yet — see [`i18n.md`](i18n.md). |
 | `theme` | `CharField` | Names an entry in the `annuaire.theming.THEMES` registry (see "Theme and brand colours" below). Only choice today: `"alpenglow"`. |
@@ -34,10 +35,18 @@ that used to hardcode "Famille Busson"/"les Busson"/"la famille Busson" or
 the repo's own GitHub issue tracker link. Phase 15.3 added the configurable
 theme/brand-colour/logo/favicon fields above. Phase 15.4 made every
 user-facing string translatable (see [`i18n.md`](i18n.md)) but did not yet
-wire `default_language` into that machinery. Phase 15.5 (this page's latest
-update) closed that gap — `default_language` now feeds
-`annuaire.i18n.resolve_language()`'s precedence chain. **`tagline` remains
-the only field still stored but unused.**
+wire `default_language` into that machinery. Phase 15.5 closed that gap —
+`default_language` now feeds `annuaire.i18n.resolve_language()`'s precedence
+chain. Phase 16.1 added `place_label_singular`/`place_label_plural`,
+alongside renaming the `Chalet`/`PresencePSV` models to `Place`/`Stay`.
+Phase 16.7's reusability drill (this page's latest update) found and fixed
+three outgoing-email templates Phase 15.2 had missed — the event
+announcement/reminder and new-blog-post notifications still hardcoded "le
+site de la famille Busson" in their body text — so `site_name` now reaches
+every outgoing email without exception, backed by a repo-wide source-text
+guard test (`annuaire/tests/test_no_residual_branding.py`) against this
+exact class of leak recurring. **`tagline` remains the only field still
+stored but unused.**
 
 ## Reading it: `get_site_config()`
 
@@ -70,8 +79,10 @@ graph — `middleware.py` in particular imports it lazily, inside
   `SiteConfig.timezone` at the start of the request and
   `timezone.deactivate()` afterwards. Since the field defaults to
   `settings.TIME_ZONE`, behaviour is unchanged until an admin actually edits
-  it. Only affects the request/response cycle — management commands and
-  background jobs still run under `settings.TIME_ZONE`.
+  it. Only affects the request/response cycle — management commands and the
+  background worker (`qcluster`) always run under `settings.TIME_ZONE` itself
+  (Phase 16.3: now `env`-driven, default `Europe/Paris` — see
+  [`deployment.md`](deployment.md)), never the staff-edited `SiteConfig.timezone`.
 
 ## Branding: where the fields are actually consumed (Phase 15.2)
 
@@ -157,24 +168,34 @@ carries no path-traversal window into the rest of `MEDIA_ROOT`. See
 `/annuaire/configuration/`) is staff-only (`StaffRequiredMixin`; see
 [`permissions.md`](permissions.md)). `get_object()` returns
 `get_site_config()` rather than a plain `get_object_or_404` lookup, so the
-edit form works even before any row exists — the first save creates it.
-`FormSiteConfig` (`annuaire/forms.py`) exposes 14 of the 15 fields above —
+edit form works even before any row exists — the first save creates it. The
+`manage.py bootstrap_site` management command (`annuaire/management/commands/
+bootstrap_site.py`) is the other way a row gets created: interactive (or
+`--noinput`-driven) first-run setup that seeds `site_name`, `wordmark`,
+`tagline`, `sender_address` and `feedback_url` in one step, alongside the
+first superuser and default groups/categories — it skips this step entirely
+if a `SiteConfig` row already exists, so it never overwrites an edit made
+through the screen above. See [`deployment.md`](deployment.md#one-time-setup).
+`FormSiteConfig` (`annuaire/forms.py`) exposes 16 of the 17 fields above —
 everything except `updated_at`, which is `auto_now` and not user-editable —
-across three fieldsets in `site_config_form.html`: identity, emails/feedback,
-and (new this wave) "Marque" for theme/colours/logo/favicon. The form now
-needs `enctype="multipart/form-data"` for the logo/favicon uploads.
+across five fieldsets in `site_config_form.html`: "Identité", "Vocabulaire"
+(new this wave, the two `place_label_*` fields), "Emails et retours",
+"Localisation" (timezone/default language), and "Marque" for
+theme/colours/logo/favicon. The form now needs `enctype="multipart/form-data"`
+for the logo/favicon uploads.
 Uploaded logo/favicon are capped at 2 MB. Linked from "Configuration" in the
 staff-only Administration group of the main nav
 (`annuaire/templates/annuaire/base.html`).
 
 Changes are recorded in the audit log: `SiteConfig` is registered with
-`register_audit()` in `annuaire/signals.py` for its 12 scalar fields (the
-original seven, plus `theme` and the four `brand_*` colours) — see
-[`audit.md`](audit.md). `logo`/`favicon` are deliberately excluded from that
-allowlist (files, not diffable scalars); their lifecycle is instead handled
-by `register_file_cleanup(SiteConfig, "logo", "favicon")`
+`register_audit()` in `annuaire/signals.py` for its 14 scalar fields (the
+original seven, plus `theme`, the four `brand_*` colours, and the two
+`place_label_*` fields) — see [`audit.md`](audit.md). `logo`/`favicon` are
+deliberately excluded from that allowlist (files, not diffable scalars);
+their lifecycle is instead handled by
+`register_file_cleanup(SiteConfig, "logo", "favicon")`
 (`annuaire/signals.py`), the same cleanup-on-delete/replace pattern used for
-`Person.profile_photo`/`Chalet.photo` (see `CLAUDE.md` §5).
+`Person.profile_photo`/`Place.photo` (see `CLAUDE.md` §5).
 
 ## First-run seeding
 
