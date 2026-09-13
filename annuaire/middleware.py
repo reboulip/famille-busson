@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 from django.shortcuts import redirect
 from django.urls import reverse
-from django.utils import timezone
+from django.utils import timezone, translation
 
 _request_id_var: contextvars.ContextVar[str | None] = contextvars.ContextVar("request_id", default=None)
 # Set by AuditActorMiddleware below; read by annuaire.audit.record_audit_event so
@@ -93,6 +93,30 @@ class SiteTimezoneMiddleware:
             response = self.get_response(request)
         finally:
             timezone.deactivate()
+        return response
+
+
+class UserLanguageMiddleware:
+    """Activates this project's own language precedence (see annuaire/i18n.py's
+    resolve_language) for the duration of a request, overriding whatever
+    django.middleware.locale.LocaleMiddleware guessed using its own algorithm.
+    Placed after AuthenticationMiddleware (resolve_language reads
+    request.user.language) and after LocaleMiddleware, so this is the language
+    LocaleMiddleware's own response-phase code (Content-Language header) ends
+    up reporting."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Imported lazily, same rationale as SiteTimezoneMiddleware above.
+        from .i18n import resolve_language
+
+        translation.activate(resolve_language(request))
+        try:
+            response = self.get_response(request)
+        finally:
+            translation.deactivate()
         return response
 
 

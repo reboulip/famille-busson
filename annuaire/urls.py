@@ -64,6 +64,7 @@ from .views import (
     my_profile,
     person_search_ajax,
     regenerate_calendar_token,
+    set_language,
 )
 
 urlpatterns = [
@@ -80,6 +81,7 @@ urlpatterns = [
     path("persons/search/", person_search_ajax, name="person-search-ajax"),
     path("addresses/search/", address_search_ajax, name="address-search-ajax"),
     path("markdown/preview/", markdown_preview, name="markdown-preview"),
+    path("langue/", set_language, name="set-language"),
     path("password/change/", ForcedPasswordChangeView.as_view(), name="password-change-forced"),
     path("password/reset/", AccountPasswordResetView.as_view(), name="password-reset"),
     path("password/reset/done/", AccountPasswordResetDoneView.as_view(), name="password-reset-done"),

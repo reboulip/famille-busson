@@ -86,6 +86,17 @@ Blocks:
                     · <a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">{% translate "Signaler un bug ou proposer une évolution" %}</a>
                 {% endif %}
                 {% if site_version %} · v{{ site_version }}{% endif %}
+                {% get_current_language as LANGUAGE_CODE %}
+                ·
+                <form method="post" action="{% url 'set-language' %}" class="fb-threshold__lang-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <input type="hidden" name="language" value="{% if LANGUAGE_CODE == 'fr' %}en{% else %}fr{% endif %}">
+                    <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm"
+                            aria-label="{% translate 'Changer de langue' %}">
+                        {% if LANGUAGE_CODE == 'fr' %}EN{% else %}FR{% endif %}
+                    </button>
+                </form>
             </p>
         </div>
     </div>

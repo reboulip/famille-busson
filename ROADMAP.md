@@ -67,7 +67,7 @@
   `compilemessages` wired into CI. French stops being hardcoded and becomes an extracted
   locale. This is the single largest item in the roadmap — hundreds of strings across
   every template — and the wave carrying it should carry little else.
-- [ ] 15.5 · English locale and language switcher — a second locale proving the scaffolding
+- [x] 15.5 · English locale and language switcher — a second locale proving the scaffolding
   actually works, plus a per-account language preference. (requires: 15.4)
 
 ## Phase 16 — Réutilisable par une autre famille

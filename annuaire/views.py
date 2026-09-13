@@ -18,13 +18,14 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.cache import patch_vary_headers
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import url_has_allowed_host_and_scheme, urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import get_supported_language_variant
 from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
@@ -205,20 +206,20 @@ def _build_password_reset_url(request, account):
     return request.build_absolute_uri(reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}))
 
 
-def _account_setup_email_content(email, reset_url, is_reset):
+def _account_setup_email_content(email, reset_url, is_reset, language=None):
     """Kept as a thin wrapper over annuaire.emails.account_setup so callers (and the
     tests that assert on the copy) keep a (subject, text_body) pair to look at, while
     the message itself is built in one place with its HTML half."""
-    message = emails.account_setup(email, reset_url, is_reset)
+    message = emails.account_setup(email, reset_url, is_reset, language=language)
     return message.subject, message.text_body
 
 
-def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
+def _send_account_setup_email(request, email, reset_url, is_reset, connection=None, language=None):
     """Best-effort: one recipient's SMTP failure must not lose the others'
     accounts (already created) or hide their reset link (still shown on screen
     regardless -- see bulk_account_create.html)."""
     try:
-        build_message(emails.account_setup(email, reset_url, is_reset), connection=connection).send(
+        build_message(emails.account_setup(email, reset_url, is_reset, language=language), connection=connection).send(
             fail_silently=False
         )
         return True
@@ -262,7 +263,7 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         for acc in accounts:
             reset_url = _build_password_reset_url(request, acc)
             reset_urls[acc.email] = reset_url
-            subject, body = _account_setup_email_content(acc.email, reset_url, is_reset=False)
+            subject, body = _account_setup_email_content(acc.email, reset_url, is_reset=False, language=acc.language)
             messages_to_send.append((acc.email, subject, body))
 
         sent, failed = send_bulk_emails(messages_to_send)
@@ -325,7 +326,9 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
                     sent_since_reconnect = 0
 
                 reset_url = _build_password_reset_url(self.request, account)
-                email_sent = _send_account_setup_email(self.request, email, reset_url, is_reset, connection=connection)
+                email_sent = _send_account_setup_email(
+                    self.request, email, reset_url, is_reset, connection=connection, language=account.language
+                )
                 sent_since_reconnect += 1
                 if not email_sent:
                     failed_emails.append(email)
@@ -1757,3 +1760,45 @@ def regenerate_calendar_token(request):
     request.user.regenerate_calendar_token()
     messages.success(request, _("Le lien de votre calendrier a été régénéré."))
     return redirect("calendrier")
+
+
+@login_not_required
+@require_POST
+def set_language(request):
+    """POST-only language switcher (base.html/base_threshold.html's chrome).
+
+    Not django.conf.urls.i18n's stock `set_language` view: that one isn't
+    `@login_not_required`-compatible with this project's global
+    LoginRequiredMiddleware. Always sets the `django_language` cookie (works
+    anonymously, e.g. from the login page); also saves Account.language when
+    the requester is authenticated, so resolve_language() (annuaire/i18n.py)
+    picks it up on every future request regardless of device/cookie state.
+    """
+    language_code = request.POST.get("language", "")
+    try:
+        language_code = get_supported_language_variant(language_code)
+    except LookupError:
+        return HttpResponseBadRequest("Unknown language code.")
+
+    next_url = request.POST.get("next") or "/"
+    if not url_has_allowed_host_and_scheme(
+        url=next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = "/"
+
+    if request.user.is_authenticated:
+        request.user.language = language_code
+        request.user.save(update_fields=["language"])
+
+    response = redirect(next_url)
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        language_code,
+        max_age=settings.LANGUAGE_COOKIE_AGE,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
+        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+    return response

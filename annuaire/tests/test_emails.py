@@ -116,6 +116,19 @@ def test_birthday_reminder_settings_link_targets_the_recipient_directly(person, 
     assert "/annuaire/profile/edit" not in message.html_body
 
 
+def test_birthday_reminder_renders_in_the_recipients_saved_language(person, other_person):
+    other_person.account.language = "en"
+    other_person.account.save(update_fields=["language"])
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert "birthday" in message.subject.lower()
+    assert "anniversaire" not in message.subject.lower()
+
+
+def test_birthday_reminder_falls_back_to_default_language_without_a_saved_preference(person, other_person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert "anniversaire" in message.subject.lower()
+
+
 def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
     """A row whose upload was cleaned up, or a media volume that isn't mounted, must
     fall back to initials rather than break the whole batch."""

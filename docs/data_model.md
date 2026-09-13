@@ -93,6 +93,7 @@ erDiagram
 | `calendar_token` | CharField | Jeton calendrier | max_length=64, unique, optional |
 | `privacy_notice_accepted_at` | DateTimeField | Date d'acceptation de la politique de confidentialité | optional |
 | `privacy_notice_version` | CharField | Version acceptée de la politique de confidentialité | max_length=20, default='', optional |
+| `language` | CharField | Langue | max_length=10, choices: fr=Français, en=English, default='', optional |
 | `groups` | ManyToManyField | groups | → Group (M2M), related_name='account_set' |
 | `user_permissions` | ManyToManyField | user permissions | → Permission (M2M), related_name='account_set' |
 
@@ -206,7 +207,7 @@ erDiagram
 | `sender_address` | CharField | Adresse d'expédition des emails | max_length=254, default='', optional |
 | `feedback_url` | CharField | Lien de retour/signalement | max_length=200, default='', optional |
 | `timezone` | CharField | Fuseau horaire | max_length=64, default='Europe/Paris', required |
-| `default_language` | CharField | Langue par défaut | max_length=10, choices: fr=Français, default='', optional |
+| `default_language` | CharField | Langue par défaut | max_length=10, choices: fr=Français, en=English, default='', optional |
 | `theme` | CharField | Thème | max_length=20, choices: alpenglow=Alpenglow, default='alpenglow', required |
 | `brand_primary_light` | CharField | Couleur principale (clair) | max_length=7, default='', optional |
 | `brand_primary_dark` | CharField | Couleur principale (sombre) | max_length=7, default='', optional |

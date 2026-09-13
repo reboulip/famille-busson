@@ -1,0 +1,171 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-13 09:41+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: annuaire/static/js/address_picker.js:25
+msgid ""
+"Adresse non géolocalisée — choisissez une suggestion dans la liste pour "
+"l'afficher sur la carte."
+msgstr ""
+"Address not geolocated — choose a suggestion from the list to show it on the "
+"map."
+
+#: annuaire/static/js/address_picker.js:54
+#: annuaire/static/js/person_picker.js:32
+msgid "Aucun résultat"
+msgstr "No results"
+
+#: annuaire/static/js/copy_to_clipboard.js:9
+msgid "Copié !"
+msgstr "Copied!"
+
+#: annuaire/static/js/family_tree.js:85
+msgid "Impossible d'afficher l'arbre généalogique (données invalides)."
+msgstr "Unable to display the family tree (invalid data)."
+
+#: annuaire/static/js/family_tree.js:90
+msgid "Aucun profil à afficher pour le moment."
+msgstr "No profile to display at the moment."
+
+#: annuaire/static/js/family_tree.js:96
+msgid "Aucune personne à centrer sur l'arbre."
+msgstr "No person to center the tree on."
+
+#: annuaire/static/js/family_tree.js:212
+msgid "Rechercher une personne…"
+msgstr "Search for a person…"
+
+#: annuaire/static/js/family_tree.js:265
+msgid "Génération…"
+msgstr "Generating…"
+
+#: annuaire/static/js/family_tree.js:360
+msgid "Quitter le plein écran"
+msgstr "Exit full screen"
+
+#: annuaire/static/js/family_tree.js:360
+msgid "Plein écran"
+msgstr "Full screen"
+
+#: annuaire/static/js/map_init.js:298
+msgid "Aucun membre trouvé"
+msgstr "No member found"
+
+#: annuaire/static/js/password_toggle.js:24
+#: annuaire/static/js/password_toggle.js:32
+msgid "Afficher"
+msgstr "Show"
+
+#: annuaire/static/js/password_toggle.js:25
+#: annuaire/static/js/password_toggle.js:35
+msgid "Afficher le mot de passe"
+msgstr "Show password"
+
+#: annuaire/static/js/password_toggle.js:32
+msgid "Masquer"
+msgstr "Hide"
+
+#: annuaire/static/js/password_toggle.js:35
+msgid "Masquer le mot de passe"
+msgstr "Hide password"
+
+#: annuaire/static/js/person_picker.js:77
+#: documents/static/js/document_files.js:65
+#: publications/static/js/publication_attachments.js:65
+#, javascript-format
+msgid "Retirer %s"
+msgstr "Remove %s"
+
+#: annuaire/static/js/presence_calendar.js:131
+msgid "Aucune présence dans cette fenêtre."
+msgstr "No stays in this window."
+
+#: annuaire/static/js/theme_toggle.js:46
+#, javascript-format
+msgid "Passer au thème %s"
+msgstr "Switch to %s theme"
+
+#: annuaire/static/js/unified_calendar.js:5
+msgid "Événement"
+msgstr "Event"
+
+#: annuaire/static/js/unified_calendar.js:6
+msgid "Présence"
+msgstr "Stay"
+
+#: annuaire/static/js/unified_calendar.js:7
+msgid "Anniversaire"
+msgstr "Birthday"
+
+#: annuaire/static/js/unified_calendar.js:152
+msgid "Rien de prévu ce mois-ci."
+msgstr "Nothing planned this month."
+
+#: documents/static/js/document_files.js:42
+#: publications/static/js/publication_attachments.js:42
+msgid "Modifier la légende"
+msgstr "Edit caption"
+
+#: documents/static/js/document_files.js:49
+#: publications/static/js/publication_attachments.js:49
+msgid "Légende (optionnel)"
+msgstr "Caption (optional)"
+
+#: documents/static/js/document_files.js:118
+msgid "Fichier"
+msgstr "File"
+
+#: documents/static/js/document_files.js:129
+#: photos/static/js/photo_upload.js:23
+#: publications/static/js/publication_attachments.js:129
+#, javascript-format
+msgid "Vous ne pouvez sélectionner que %s fichiers maximum."
+msgstr "You can only select up to %s files."
+
+#: documents/static/js/document_viewer.js:380
+msgid "Impossible d'afficher ce PDF ici. "
+msgstr "Unable to display this PDF here. "
+
+#: documents/static/js/document_viewer.js:383
+msgid "Télécharger le fichier"
+msgstr "Download the file"
+
+#: photos/static/js/photo_upload.js:68
+msgid "Ajoutée"
+msgstr "Added"
+
+#: photos/static/js/photo_upload.js:88
+msgid "Fichier trop volumineux."
+msgstr "File too large."
+
+#: photos/static/js/photo_upload.js:113 photos/static/js/photo_upload.js:119
+msgid "Échec de l'envoi."
+msgstr "Upload failed."
+
+#: publications/static/js/publication_attachments.js:118
+msgid "Pièce jointe"
+msgstr "Attachment"
+
+#: publications/static/js/publication_attachments.js:149
+msgid ""
+"Cette publication est de type « Busson Connection » mais ne contient aucune "
+"pièce jointe. Voulez-vous l'enregistrer quand même ?"
+msgstr ""
+"This post is of type \"Busson Connection\" but has no attachment. Do you "
+"want to save it anyway?"

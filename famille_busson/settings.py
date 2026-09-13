@@ -98,6 +98,10 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # After AuthenticationMiddleware (reads request.user.language) and after
+    # LocaleMiddleware (overrides its guess with this project's own
+    # precedence -- see annuaire/i18n.py::resolve_language).
+    "annuaire.middleware.UserLanguageMiddleware",
     # After AuthenticationMiddleware so request.user is resolved -- captures
     # the actor for annuaire.audit's signal-based logging (14.4).
     "annuaire.middleware.AuditActorMiddleware",
@@ -208,6 +212,7 @@ LANGUAGE_CODE = "fr"
 
 LANGUAGES = [
     ("fr", "Français"),
+    ("en", "English"),
 ]
 
 LOCALE_PATHS = [BASE_DIR / "locale"]

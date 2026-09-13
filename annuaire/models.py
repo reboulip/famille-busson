@@ -9,6 +9,14 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.translation import pgettext_lazy
 
 
+def _language_choices():
+    # A named module-level function, not a lambda: migration serialization
+    # can't pickle a lambda, but can reference an importable function -- and
+    # calling it at field-access time (not at class-definition time) means the
+    # choice list stays live even after Phase 15.4 replaces settings.LANGUAGES.
+    return settings.LANGUAGES
+
+
 class AccountManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -50,6 +58,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
     )
     privacy_notice_version = models.CharField(
         max_length=20, blank=True, default="", verbose_name=_("Version acceptée de la politique de confidentialité")
+    )
+    # Per-account UI language preference (Phase 15.5) -- on Account, not
+    # Person/Settings: choosing a display language is an act of the logged-in
+    # human, and Person.owners co-editability would otherwise let another
+    # member change it (same rationale as privacy_notice_accepted_at above).
+    # Blank means "no preference yet" -- resolve_language() falls through to
+    # the cookie/site-default/browser/settings chain (see annuaire/i18n.py).
+    language = models.CharField(
+        max_length=10, blank=True, default="", choices=_language_choices, verbose_name=_("Langue")
     )
     objects = AccountManager()
 
@@ -259,14 +276,6 @@ class AuditEvent(models.Model):
 
     def __str__(self):
         return f"{self.get_action_display()} — {self.object_repr}"
-
-
-def _language_choices():
-    # A named module-level function, not a lambda: migration serialization
-    # can't pickle a lambda, but can reference an importable function -- and
-    # calling it at field-access time (not at class-definition time) means the
-    # choice list stays live even after Phase 15.4 replaces settings.LANGUAGES.
-    return settings.LANGUAGES
 
 
 class SiteConfig(models.Model):

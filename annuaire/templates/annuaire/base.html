@@ -173,6 +173,16 @@
 
                     </nav>
                     <div class="fb-nav__foot">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        <form method="post" action="{% url 'set-language' %}" class="fb-nav__lang-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="hidden" name="language" value="{% if LANGUAGE_CODE == 'fr' %}en{% else %}fr{% endif %}">
+                            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm"
+                                    aria-label="{% translate 'Changer de langue' %}">
+                                {% if LANGUAGE_CODE == 'fr' %}EN{% else %}FR{% endif %}
+                            </button>
+                        </form>
                         <button type="button" class="fb-btn fb-btn--ghost fb-btn--sm" data-theme-toggle
                                 aria-label="{% translate 'Changer de thème' %}">
                             <span data-theme-icon>{% icon "moon" size=16 %}</span>
