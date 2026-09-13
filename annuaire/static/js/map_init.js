@@ -295,7 +295,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (results.length === 0) {
                 const li = document.createElement('li');
                 li.className = 'person-picker-empty';
-                li.textContent = 'Aucun membre trouvé';
+                li.textContent = gettext('Aucun membre trouvé');
                 resultsList.appendChild(li);
                 resultsList.hidden = false;
                 highlightedIndex = -1;

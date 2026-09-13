@@ -8,6 +8,7 @@ from django.db.models import Count, Sum
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -100,7 +101,7 @@ class EventCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant de créer un événement.")
+            messages.error(request, _("Vous devez compléter votre profil avant de créer un événement."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -135,7 +136,7 @@ class EventOrganiserOrStaffMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or not obj.organisers.filter(pk=profile.pk).exists():
-            raise PermissionDenied("Vous n'êtes pas organisateur·rice de cet événement.")
+            raise PermissionDenied(_("Vous n'êtes pas organisateur·rice de cet événement."))
         return obj
 
 
@@ -172,7 +173,7 @@ class EventRsvpView(LoginRequiredMixin, View):
         person_id = request.POST.get("person", "")
         person = get_object_or_404(Person, pk=person_id) if person_id.isdigit() else None
         if person is None or not can_edit_person(request.user, person):
-            raise PermissionDenied("Vous ne pouvez pas répondre pour cette personne.")
+            raise PermissionDenied(_("Vous ne pouvez pas répondre pour cette personne."))
 
         form = RsvpForm(request.POST)
         if form.is_valid():

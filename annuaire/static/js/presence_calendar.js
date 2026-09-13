@@ -128,7 +128,7 @@
                 empty.className = 'cal-empty-message';
                 empty.style.gridRow = '2';
                 empty.style.gridColumn = '1 / span ' + (nCols + 1);
-                empty.textContent = 'Aucune présence dans cette fenêtre.';
+                empty.textContent = gettext('Aucune présence dans cette fenêtre.');
                 grid.appendChild(empty);
             }
 

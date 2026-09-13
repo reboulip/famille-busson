@@ -1,3 +1,4 @@
+{% load i18n %}
 <script>
     // Keep MAX_BYTES in sync with PROFILE_PHOTO_MAX_SIZE_MB in annuaire/forms.py.
     (function () {
@@ -9,7 +10,7 @@
 
         var warning = document.createElement('div');
         warning.className = 'fb-alert fb-alert--warning mt-2 d-none';
-        warning.textContent = 'Cette photo dépasse 5 Mo et sera refusée par le serveur. Choisissez une image plus légère.';
+        warning.textContent = '{% translate "Cette photo dépasse 5 Mo et sera refusée par le serveur. Choisissez une image plus légère." %}';
         input.insertAdjacentElement('afterend', warning);
 
         input.addEventListener('change', function () {

@@ -1,17 +1,18 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype D — record detail, place variant. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Chalets PSV</p>
+            <p class="fb-eyebrow">{% translate "Chalets PSV" %}</p>
             <h1>{{ chalet.name }}</h1>
         </div>
         {% if can_edit_chalet %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'chalet-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
-                <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les propriétaires</a>
+                <a href="{% url 'chalet-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                <a href="{% url 'chalet-owners-edit' chalet.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier les propriétaires" %}</a>
             </div>
         {% endif %}
     </div>
@@ -40,17 +41,17 @@
         </div>
 
         <div>
-            <div class="fb-toolbar presence-view-toggle" role="group" aria-label="Vue des présences">
-                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm active" data-presence-view="list">Liste</button>
-                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-presence-view="calendar">Calendrier</button>
+            <div class="fb-toolbar presence-view-toggle" role="group" aria-label="{% translate 'Vue des présences' %}">
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm active" data-presence-view="list">{% translate "Liste" %}</button>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-presence-view="calendar">{% translate "Calendrier" %}</button>
             </div>
 
             <div class="presence-view-list">
                 {% if current_presences %}
-                    <div class="fb-section-head"><h2>En ce moment</h2></div>
+                    <div class="fb-section-head"><h2>{% translate "En ce moment" %}</h2></div>
                     <table class="fb-table">
                         <thead>
-                            <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                            <tr><th>{% translate "Personne" %}</th><th>{% translate "Du" %}</th><th>{% translate "Au" %}</th><th></th></tr>
                         </thead>
                         <tbody>
                             {% for presence in current_presences %}
@@ -59,11 +60,11 @@
                                     <td>{{ presence.start_date|date:"j F Y" }}</td>
                                     <td>{{ presence.end_date|date:"j F Y" }}</td>
                                     <td class="fb-table__actions presence-actions">
-                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
                                         <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
-                                                    onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                                    onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -73,10 +74,10 @@
                 {% endif %}
 
                 {% if future_presences %}
-                    <div class="fb-section-head"><h2>À venir</h2></div>
+                    <div class="fb-section-head"><h2>{% translate "À venir" %}</h2></div>
                     <table class="fb-table">
                         <thead>
-                            <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                            <tr><th>{% translate "Personne" %}</th><th>{% translate "Du" %}</th><th>{% translate "Au" %}</th><th></th></tr>
                         </thead>
                         <tbody>
                             {% for presence in future_presences %}
@@ -85,11 +86,11 @@
                                     <td>{{ presence.start_date|date:"j F Y" }}</td>
                                     <td>{{ presence.end_date|date:"j F Y" }}</td>
                                     <td class="fb-table__actions presence-actions">
-                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                        <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
                                         <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
                                             {% csrf_token %}
                                             <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
-                                                    onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                                    onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
                                         </form>
                                     </td>
                                 </tr>
@@ -99,15 +100,17 @@
                 {% endif %}
 
                 {% if not current_presences and not future_presences %}
-                    {% include "annuaire/_empty.html" with title="Aucune présence en cours ou à venir" body="Personne n'est annoncé dans ce chalet pour le moment." %}
+                    {% translate "Aucune présence en cours ou à venir" as empty_title %}
+                    {% translate "Personne n'est annoncé dans ce chalet pour le moment." as empty_body %}
+                    {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
                 {% endif %}
 
                 {% if past_presences %}
                     <details class="presence-past-details">
-                        <summary>{{ past_presences|length }} présence{{ past_presences|length|pluralize }} passée{{ past_presences|length|pluralize }}</summary>
+                        <summary>{% blocktranslate trimmed count counter=past_presences|length %}{{ counter }} présence passée{% plural %}{{ counter }} présences passées{% endblocktranslate %}</summary>
                         <table class="fb-table">
                             <thead>
-                                <tr><th>Personne</th><th>Du</th><th>Au</th><th></th></tr>
+                                <tr><th>{% translate "Personne" %}</th><th>{% translate "Du" %}</th><th>{% translate "Au" %}</th><th></th></tr>
                             </thead>
                             <tbody>
                                 {% for presence in past_presences %}
@@ -116,11 +119,11 @@
                                         <td>{{ presence.start_date|date:"j F Y" }}</td>
                                         <td>{{ presence.end_date|date:"j F Y" }}</td>
                                         <td class="fb-table__actions presence-actions">
-                                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
+                                            <a href="{% url 'presence-edit' chalet.pk presence.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
                                             <form method="post" action="{% url 'presence-delete' chalet.pk presence.pk %}" class="d-inline">
                                                 {% csrf_token %}
                                                 <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
-                                                        onclick="return confirm('Supprimer cette présence ?')">Supprimer</button>
+                                                        onclick="return confirm('{% translate "Supprimer cette présence ?" %}')">{% translate "Supprimer" %}</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -154,11 +157,11 @@
                 })();
             </script>
 
-            <div class="fb-section-head"><h2>Ajouter une présence</h2></div>
+            <div class="fb-section-head"><h2>{% translate "Ajouter une présence" %}</h2></div>
             <form method="post" action="{% url 'presence-add' chalet.pk %}" class="fb-card presence-form">
                 {% csrf_token %}
                 <div class="fb-field">
-                    <label class="fb-label" for="presence-person-search-input">Personnes</label>
+                    <label class="fb-label" for="presence-person-search-input">{% translate "Personnes" %}</label>
                     {% include "annuaire/_person_picker.html" with input_id="presence-person-search-input" %}
                     {% if presence_form.persons.errors %}<div class="fb-error">{{ presence_form.persons.errors }}</div>{% endif %}
                 </div>
@@ -176,7 +179,7 @@
                     <div class="fb-error">{{ presence_form.start_date.errors }}{{ presence_form.end_date.errors }}</div>
                 {% endif %}
                 <div class="fb-form__actions">
-                    <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Ajouter</button>
+                    <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Ajouter" %}</button>
                 </div>
             </form>
             <script src="{% static 'js/person_picker.js' %}"></script>

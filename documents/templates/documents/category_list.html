@@ -1,15 +1,16 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype C — the category tree, with indent guides. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Catégories de documents</h1>
-            <p class="fb-page-head__lede">Comment les documents sont classés.</p>
+            <h1>{% translate "Catégories de documents" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Comment les documents sont classés." %}</p>
         </div>
         {% if user.is_staff %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'category-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvelle catégorie</a>
+                <a href="{% url 'category-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Nouvelle catégorie" %}</a>
             </div>
         {% endif %}
     </div>
@@ -25,9 +26,13 @@
     {% else %}
         {% if user.is_staff %}
             {% url 'category-create' as create_url %}
-            {% include "annuaire/_empty.html" with title="Aucune catégorie" body="Les catégories servent à ranger les documents, et à en réserver certains à un groupe." action_url=create_url action_label="Créer une catégorie" %}
+            {% translate "Aucune catégorie" as empty_cat_title %}
+            {% translate "Les catégories servent à ranger les documents, et à en réserver certains à un groupe." as empty_cat_body %}
+            {% translate "Créer une catégorie" as empty_cat_action_label %}
+            {% include "annuaire/_empty.html" with title=empty_cat_title body=empty_cat_body action_url=create_url action_label=empty_cat_action_label %}
         {% else %}
-            {% include "annuaire/_empty.html" with title="Aucune catégorie" %}
+            {% translate "Aucune catégorie" as empty_cat_title_alt %}
+            {% include "annuaire/_empty.html" with title=empty_cat_title_alt %}
         {% endif %}
     {% endif %}
 {% endblock content %}

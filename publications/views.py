@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.shortcuts import redirect
 from django.urls import reverse, reverse_lazy
+from django.utils.translation import gettext as _
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -82,7 +83,7 @@ class AuthorOrStaffRequiredMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or not obj.authors.filter(pk=profile.pk).exists():
-            raise PermissionDenied("Vous n'êtes pas auteur de cette publication.")
+            raise PermissionDenied(_("Vous n'êtes pas auteur de cette publication."))
         return obj
 
 
@@ -153,7 +154,7 @@ class BlogPostDetailView(LoginRequiredMixin, DetailView):
         self.object = self.get_object()
         profile = getattr(request.user, "profile", None)
         if profile is None:
-            messages.error(request, "Vous devez compléter votre profil avant de commenter.")
+            messages.error(request, _("Vous devez compléter votre profil avant de commenter."))
             return redirect("profile-create")
         form = CommentForm(request.POST)
         if form.is_valid():
@@ -174,7 +175,7 @@ class BlogPostCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant de publier.")
+            messages.error(request, _("Vous devez compléter votre profil avant de publier."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 

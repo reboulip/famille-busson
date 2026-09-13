@@ -1,53 +1,56 @@
 {% extends "annuaire/base.html" %}
+{% load i18n %}
 {% block content %}
     {# Archetype E — long-form. Public page, so it keeps the app shell. #}
     <div class="fb-longform">
-        <p class="fb-eyebrow">Aide</p>
-        <h1 class="fb-longform__title">Politique de confidentialité</h1>
+        <p class="fb-eyebrow">{% translate "Aide" %}</p>
+        <h1 class="fb-longform__title">{% translate "Politique de confidentialité" %}</h1>
         <div class="fb-rule"></div>
 
         <div class="fb-longform__body">
-            <h2>Qui est responsable de ce site</h2>
+            <h2>{% translate "Qui est responsable de ce site" %}</h2>
             <p>
-                {% if controller_name %}{{ controller_name }}{% else %}<em>À compléter par l'administrateur du site.</em>{% endif %}
-                {% if controller_contact %}— contact : {{ controller_contact }}{% endif %}
+                {% if controller_name %}{{ controller_name }}{% else %}<em>{% translate "À compléter par l'administrateur du site." %}</em>{% endif %}
+                {% if controller_contact %}— {% blocktranslate trimmed with contact=controller_contact %}contact : {{ contact }}{% endblocktranslate %}{% endif %}
             </p>
 
-            <h2>Hébergement</h2>
+            <h2>{% translate "Hébergement" %}</h2>
             <p>
                 {% if hosting_provider %}
-                    Les données sont hébergées par {{ hosting_provider }}{% if hosting_country %}, en {{ hosting_country }}{% endif %}.
+                    {% if hosting_country %}{% blocktranslate trimmed with provider=hosting_provider country=hosting_country %}Les données sont hébergées par {{ provider }}, en {{ country }}.{% endblocktranslate %}{% else %}{% blocktranslate trimmed with provider=hosting_provider %}Les données sont hébergées par {{ provider }}.{% endblocktranslate %}{% endif %}
                 {% else %}
-                    <em>À compléter par l'administrateur du site.</em>
+                    <em>{% translate "À compléter par l'administrateur du site." %}</em>
                 {% endif %}
             </p>
 
-            <h2>Ce que le site collecte, et pourquoi</h2>
-            <p>Le tableau ci-dessous liste chaque catégorie de données personnelles conservées.</p>
+            <h2>{% translate "Ce que le site collecte, et pourquoi" %}</h2>
+            <p>{% translate "Le tableau ci-dessous liste chaque catégorie de données personnelles conservées." %}</p>
             <table class="fb-table table">
                 <thead>
-                    <tr><th>Catégorie</th><th>Description</th></tr>
+                    <tr><th>{% translate "Catégorie" %}</th><th>{% translate "Description" %}</th></tr>
                 </thead>
                 <tbody>
                     {% for category in categories %}
                         <tr>
-                            <td class="fb-table__strong">{{ category.label_fr }}</td>
-                            <td>{{ category.note_fr }}</td>
+                            <td class="fb-table__strong">{{ category.label }}</td>
+                            <td>{{ category.note }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
 
-            <h2>Durée de conservation</h2>
+            <h2>{% translate "Durée de conservation" %}</h2>
             <p>
-                {% if retention_summary %}{{ retention_summary }}{% else %}<em>À compléter par l'administrateur du site.</em>{% endif %}
+                {% if retention_summary %}{{ retention_summary }}{% else %}<em>{% translate "À compléter par l'administrateur du site." %}</em>{% endif %}
             </p>
 
-            <h2>Vos droits</h2>
+            <h2>{% translate "Vos droits" %}</h2>
             <p>
+                {% blocktranslate trimmed %}
                 Vous pouvez demander une copie de vos données personnelles depuis votre
                 profil (« Télécharger mes données »), ou contacter le responsable du site
                 ci-dessus pour toute autre demande (rectification, effacement).
+                {% endblocktranslate %}
             </p>
         </div>
     </div>

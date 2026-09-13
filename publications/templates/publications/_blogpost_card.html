@@ -1,5 +1,6 @@
 {% load static %}
 {% load markdown_extras %}
+{% load i18n %}
 {% comment %}
 Archetype C card. No medallion — a post has no portrait. The 3px left bar
 codes the type: alpenglow for a normal post, gold for a Busson connection.
@@ -9,11 +10,11 @@ codes the type: alpenglow for a normal post, gold for a Busson connection.
         <a class="stretched-link" href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
     </h2>
     <p class="fb-meta">
-        Par
+        {% translate "Par" %}
         {% for author in post.authors.all %}
             <a href="{% url 'personne-detail' author.pk %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
         {% empty %}
-            anonyme
+            {% translate "anonyme" %}
         {% endfor %}
         — {{ post.created_at|date:"j F Y" }}
         {# post_type and tags coexist deliberately -- Phase 16.2 migrates post_type onto a tag. #}

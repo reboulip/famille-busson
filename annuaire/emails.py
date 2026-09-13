@@ -14,6 +14,7 @@ import logging
 import unicodedata
 
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from annuaire.email_utils import InlineImage, OutgoingEmail, absolute_url, email_context, render_email
 from annuaire.models import Person
@@ -75,7 +76,7 @@ def birthday_reminder(
         photo_cid=photo.cid if photo else None,
         profile_url=absolute_url(reverse("personne-detail", kwargs={"pk": person.pk})),
         settings_url=_settings_url(recipient),
-        cta_label=f"Voir le profil de {person.first_name}",
+        cta_label=_("Voir le profil de %(first_name)s") % {"first_name": person.first_name},
     )
     html, text = render_email(
         "annuaire/emails/birthday_reminder.html",
@@ -85,7 +86,8 @@ def birthday_reminder(
     return OutgoingEmail(
         to=recipient_email,
         # Subject unchanged from the plain-text era -- subscribers filter on it.
-        subject=f"Anniversaire de {person.first_name} {person.last_name}",
+        subject=_("Anniversaire de %(first_name)s %(last_name)s")
+        % {"first_name": person.first_name, "last_name": person.last_name},
         text_body=text,
         html_body=html,
         inline_images=(photo,) if photo else (),
@@ -114,7 +116,7 @@ def new_blog_post(post, recipient_email: str, *, recipient: Person | None = None
     )
     return OutgoingEmail(
         to=recipient_email,
-        subject=f"Nouvel article : {post.title}",
+        subject=_("Nouvel article : %(title)s") % {"title": post.title},
         text_body=text,
         html_body=html,
     )
@@ -133,7 +135,7 @@ def event_announcement(event, recipient_email: str, *, recipient: Person | None 
     )
     return OutgoingEmail(
         to=recipient_email,
-        subject=f"Nouvel événement : {event.title}",
+        subject=_("Nouvel événement : %(title)s") % {"title": event.title},
         text_body=text,
         html_body=html,
     )
@@ -152,7 +154,7 @@ def event_reminder(event, recipient_email: str, *, recipient: Person | None = No
     )
     return OutgoingEmail(
         to=recipient_email,
-        subject=f"Rappel : {event.title}",
+        subject=_("Rappel : %(title)s") % {"title": event.title},
         text_body=text,
         html_body=html,
     )
@@ -160,7 +162,11 @@ def event_reminder(event, recipient_email: str, *, recipient: Person | None = No
 
 def account_setup(account_email: str, reset_url: str, is_reset: bool) -> OutgoingEmail:
     context = email_context(account_email=account_email, reset_url=reset_url, is_reset=is_reset)
-    subject = "Votre mot de passe a été réinitialisé" if is_reset else f"Votre compte {context['site_name']}"
+    subject = (
+        _("Votre mot de passe a été réinitialisé")
+        if is_reset
+        else _("Votre compte %(site_name)s") % {"site_name": context["site_name"]}
+    )
     context["subject"] = subject
     html, text = render_email(
         "annuaire/emails/account_setup.html",

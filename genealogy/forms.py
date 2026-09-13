@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from annuaire.widgets import MarkdownEditorWidget
 
@@ -18,10 +19,12 @@ class FormStory(forms.ModelForm):
 
 
 class FormGedcomUpload(forms.Form):
-    file = forms.FileField(label="Fichier GEDCOM (.ged)")
+    file = forms.FileField(label=_("Fichier GEDCOM (.ged)"))
 
     def clean_file(self):
         uploaded = self.cleaned_data["file"]
         if uploaded.size > MAX_FILE_BYTES:
-            raise forms.ValidationError(f"Fichier trop volumineux (max {MAX_FILE_BYTES // (1024 * 1024)} Mo).")
+            raise forms.ValidationError(
+                _("Fichier trop volumineux (max %(max_mb)s Mo).") % {"max_mb": MAX_FILE_BYTES // (1024 * 1024)}
+            )
         return uploaded

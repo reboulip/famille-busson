@@ -82,18 +82,18 @@ document.addEventListener('DOMContentLoaded', function () {
         graph = JSON.parse(container.dataset.graph || '[]');
         components = JSON.parse(container.dataset.components || '[]');
     } catch (e) {
-        container.textContent = "Impossible d'afficher l'arbre généalogique (données invalides).";
+        container.textContent = gettext("Impossible d'afficher l'arbre généalogique (données invalides).");
         return;
     }
 
     if (graph.length === 0) {
-        container.textContent = 'Aucun profil à afficher pour le moment.';
+        container.textContent = gettext('Aucun profil à afficher pour le moment.');
         return;
     }
 
     const initialMainId = container.dataset.mainId || (components.length > 0 ? components[0].root_id : null);
     if (!initialMainId) {
-        container.textContent = "Aucune personne à centrer sur l'arbre.";
+        container.textContent = gettext("Aucune personne à centrer sur l'arbre.");
         return;
     }
 
@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', function () {
     chart.setOrientationVertical();
     chart.setPersonDropdown(personLabel, {
         cont: document.getElementById('genealogie-search') || undefined,
-        placeholder: 'Rechercher une personne…',
+        placeholder: gettext('Rechercher une personne…'),
     });
     chart.setSingleParentEmptyCard(false);
     // family-chart rebuilds .card_cont on every updateMainId/branch change, so a
@@ -262,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
         exportChart.updateTree({ tree_position: 'fit', transition_time: 0 });
         const originalText = button.textContent;
         button.disabled = true;
-        button.textContent = 'Génération…';
+        button.textContent = gettext('Génération…');
 
         // Two rAFs: the tree update itself needs a frame to reflow, and a
         // zero-duration d3 transition still only applies on the *next* timer tick.
@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (fullscreenPanel && fullscreenButton) {
         const setFullscreen = (active) => {
             fullscreenPanel.classList.toggle('genealogie-panel--fullscreen', active);
-            fullscreenButton.textContent = active ? 'Quitter le plein écran' : 'Plein écran';
+            fullscreenButton.textContent = active ? gettext('Quitter le plein écran') : gettext('Plein écran');
             // family-chart has no resize/ResizeObserver handler -- it computes its
             // fit from getBoundingClientRect() at call time, so the re-fit must
             // wait a frame for the size/position change to actually reflow.

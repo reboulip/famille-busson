@@ -17,6 +17,9 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v5
 
+      - name: Install gettext
+        run: sudo apt-get update && sudo apt-get install -y gettext
+
       - name: Install dependencies (with dev and test groups)
         run: uv sync --group dev --group test
 
@@ -28,6 +31,15 @@ jobs:
 
       - name: ty check
         run: uv run ty check --exit-zero-on-warning
+
+      - name: Compile message catalogs
+        run: uv run python manage.py compilemessages
+
+      - name: Check message catalogs are up to date
+        run: |
+          uv run python manage.py makemessages --all --no-obsolete
+          uv run python manage.py makemessages -d djangojs --all --no-obsolete
+          git diff -I'^"POT-Creation-Date' --exit-code -- locale/
 
   test:
     # Skip only the redundant case: a develop -> main release PR's head commit was

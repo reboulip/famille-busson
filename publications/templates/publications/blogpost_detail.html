@@ -3,21 +3,22 @@
 {% load markdown_extras %}
 {% load icons %}
 {% load static %}
+{% load i18n %}
 {% block content %}
     {# Archetype E — long-form. Narrow measure, generous leading. #}
     <article class="fb-longform">
-        <p class="fb-eyebrow">Publications</p>
+        <p class="fb-eyebrow">{% translate "Publications" %}</p>
         <h1 class="fb-longform__title">{{ post.title }}</h1>
         <p class="fb-meta">
-            Par
+            {% translate "Par" %}
             {% for author in post.authors.all %}
                 <a href="{% url 'personne-detail' author.pk %}">{{ author }}</a>{% if not forloop.last %}, {% endif %}
             {% empty %}
-                anonyme
+                {% translate "anonyme" %}
             {% endfor %}
-            — publié le {{ post.created_at|date:"j F Y" }}
+            — {% blocktranslate trimmed with date=post.created_at|date:"j F Y" %}publié le {{ date }}{% endblocktranslate %}
             {% if post.updated_at and post.updated_at|date:"YmdHi" != post.created_at|date:"YmdHi" %}
-                (modifié le {{ post.updated_at|date:"j F Y" }})
+                ({% blocktranslate trimmed with date=post.updated_at|date:"j F Y" %}modifié le {{ date }}{% endblocktranslate %})
             {% endif %}
             <span class="fb-chip{% if post.post_type == 'BC' %} fb-chip--gold{% endif %}">{{ post.get_post_type_display }}</span>
             {% for tag in post.tags.all %}
@@ -30,29 +31,29 @@
 
         {% if can_edit %}
             <div class="fb-form__actions">
-                <a href="{% url 'blogpost-edit' post.pk %}" class="fb-btn fb-btn--quiet">{% icon "edit" size=16 %} Modifier</a>
-                <a href="{% url 'blogpost-delete' post.pk %}" class="fb-btn fb-btn--ghost fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+                <a href="{% url 'blogpost-edit' post.pk %}" class="fb-btn fb-btn--quiet">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                <a href="{% url 'blogpost-delete' post.pk %}" class="fb-btn fb-btn--ghost fb-btn--danger-text">{% icon "trash" size=16 %} {% translate "Supprimer" %}</a>
             </div>
         {% endif %}
     </article>
 
     {% if post.attachments.all %}
         <section class="fb-longform">
-            <div class="fb-section-head"><h2>Pièces jointes</h2></div>
+            <div class="fb-section-head"><h2>{% translate "Pièces jointes" %}</h2></div>
             {% if image_attachments %}
                 <div class="document-viewer" data-file-id="{{ image_attachments.0.pk }}">
                     <div class="document-viewer-toolbar">
                         <span class="document-viewer-caption">
-                            {% if image_attachments|length > 1 %}{{ image_attachments|length }} images{% else %}{{ image_attachments.0.caption|default:image_attachments.0.filename }}{% endif %}
+                            {% if image_attachments|length > 1 %}{% blocktranslate trimmed count counter=image_attachments|length %}{{ counter }} image{% plural %}{{ counter }} images{% endblocktranslate %}{% else %}{{ image_attachments.0.caption|default:image_attachments.0.filename }}{% endif %}
                         </span>
                         <div class="document-viewer-actions">
                             {% if image_attachments|length > 1 %}
-                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="Image précédente">{% icon "chevron-left" size=16 %}</button>
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-prev" aria-label="{% translate 'Image précédente' %}">{% icon "chevron-left" size=16 %}</button>
                                 <span class="document-viewer-carousel-counter">1 / {{ image_attachments|length }}</span>
-                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="Image suivante">{% icon "chevron-right" size=16 %}</button>
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-carousel-next" aria-label="{% translate 'Image suivante' %}">{% icon "chevron-right" size=16 %}</button>
                             {% endif %}
-                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
-                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} {% translate "Plein écran" %}</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="{% translate 'Fermer' %}"></button>
                         </div>
                     </div>
                     {% if image_attachments|length > 1 %}
@@ -81,14 +82,14 @@
                     <div class="document-viewer-toolbar">
                         <span class="document-viewer-caption">{{ attachment.caption|default:attachment.filename }}</span>
                         <div class="document-viewer-actions">
-                            <div class="document-viewer-zoom" role="group" aria-label="Zoom">
-                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-out" aria-label="Réduire">−</button>
+                            <div class="document-viewer-zoom" role="group" aria-label="{% translate 'Zoom' %}">
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-out" aria-label="{% translate 'Réduire' %}">−</button>
                                 <span class="document-viewer-zoom-level" aria-live="polite">100 %</span>
-                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-in" aria-label="Agrandir">+</button>
+                                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-zoom-in" aria-label="{% translate 'Agrandir' %}">+</button>
                             </div>
-                            <a href="{{ attachment.file.url }}" class="fb-btn fb-btn--quiet fb-btn--sm" download>{% icon "download" size=16 %} Télécharger</a>
-                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} Plein écran</button>
-                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="Fermer"></button>
+                            <a href="{{ attachment.file.url }}" class="fb-btn fb-btn--quiet fb-btn--sm" download>{% icon "download" size=16 %} {% translate "Télécharger" %}</a>
+                            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm document-viewer-fullscreen-btn">{% icon "expand" size=16 %} {% translate "Plein écran" %}</button>
+                            <button type="button" class="btn-close document-viewer-close-btn" aria-label="{% translate 'Fermer' %}"></button>
                         </div>
                     </div>
                     <div class="document-viewer-stage">
@@ -96,7 +97,7 @@
                              data-pdf-url="{{ attachment.file.url }}"
                              data-pdfjs-src="{% static 'vendor/pdfjs/pdf.min.mjs' %}"
                              data-pdfjs-worker-src="{% static 'vendor/pdfjs/pdf.worker.min.mjs' %}">
-                            <p class="document-viewer-pdf-loading">Chargement du PDF…</p>
+                            <p class="document-viewer-pdf-loading">{% translate "Chargement du PDF…" %}</p>
                         </div>
                     </div>
                 </div>
@@ -113,7 +114,7 @@
 
     {% if linked_documents %}
         <section class="fb-longform">
-            <div class="fb-section-head"><h2>Documents liés</h2></div>
+            <div class="fb-section-head"><h2>{% translate "Documents liés" %}</h2></div>
             {% for document in linked_documents %}
                 <p>
                     <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{% url 'document-detail' document.pk %}">
@@ -126,7 +127,7 @@
 
     {% if linked_albums %}
         <section class="fb-longform">
-            <div class="fb-section-head"><h2>Albums liés</h2></div>
+            <div class="fb-section-head"><h2>{% translate "Albums liés" %}</h2></div>
             <div class="fb-grid fb-grid--wide">
                 {% for album in linked_albums %}
                     {% include "photos/_album_card.html" with album=album %}
@@ -137,7 +138,7 @@
 
     <section class="fb-longform">
         <div class="fb-section-head">
-            <h2>Commentaires</h2>
+            <h2>{% translate "Commentaires" %}</h2>
             <span class="fb-meta">{{ post.comments.all|length }}</span>
         </div>
         {% for comment in post.comments.all %}
@@ -145,25 +146,28 @@
                 <span class="fb-comment__disc">{{ comment.author|default:"?"|stringformat:"s"|slice:":1"|upper }}</span>
                 <div>
                     <div class="fb-comment__head">
-                        <span class="fb-comment__author">{{ comment.author|default:"Anonyme" }}</span>
+                        {% translate "Anonyme" as comment_author_anonyme %}
+                        <span class="fb-comment__author">{{ comment.author|default:comment_author_anonyme }}</span>
                         <span class="fb-meta">{{ comment.created_at|date:"j F Y H:i" }}</span>
                         {% if user.is_staff %}
-                            <a href="{% url 'comment-delete' comment.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">Supprimer</a>
+                            <a href="{% url 'comment-delete' comment.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% translate "Supprimer" %}</a>
                         {% endif %}
                     </div>
                     <div class="markdown-body">{{ comment.body|markdown }}</div>
                 </div>
             </article>
         {% empty %}
-            {% include "annuaire/_empty.html" with title="Aucun commentaire pour l'instant" body="Soyez le premier à réagir." %}
+            {% translate "Aucun commentaire pour l'instant" as no_comments_title %}
+            {% translate "Soyez le premier à réagir." as no_comments_body %}
+            {% include "annuaire/_empty.html" with title=no_comments_title body=no_comments_body %}
         {% endfor %}
 
         <form method="post" class="fb-composer">
             {% csrf_token %}
-            <p class="fb-eyebrow fb-card__label">Votre commentaire</p>
+            <p class="fb-eyebrow fb-card__label">{% translate "Votre commentaire" %}</p>
             {{ comment_form.media }}
             {{ comment_form|crispy }}
-            <button type="submit" class="fb-btn fb-btn--primary">Commenter</button>
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Commenter" %}</button>
         </form>
     </section>
 {% endblock content %}

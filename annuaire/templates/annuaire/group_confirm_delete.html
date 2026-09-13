@@ -1,53 +1,53 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Supprimer un groupe ?</h1>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Supprimer un groupe ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer le groupe « {{ object.name }} » ?</h1>
+        <h1>{% blocktranslate trimmed with name=object.name %}Supprimer le groupe « {{ name }} » ?{% endblocktranslate %}</h1>
         <div class="fb-confirm__consequences">
             {% if member_count %}
                 <p class="fb-confirm__lead">
-                    {{ member_count }} membre{{ member_count|pluralize }} perdr{{ member_count|pluralize:"a,ont" }}
-                    l'accès associé à ce groupe.
+                    {% blocktranslate trimmed count counter=member_count %}{{ counter }} membre perdra l'accès associé à ce groupe.{% plural %}{{ counter }} membres perdront l'accès associé à ce groupe.{% endblocktranslate %}
                 </p>
             {% else %}
-                <p class="fb-confirm__lead">Ce groupe n'a aucun membre.</p>
+                <p class="fb-confirm__lead">{% translate "Ce groupe n'a aucun membre." %}</p>
             {% endif %}
         </div>
         {% if blocked_by %}
             <div class="fb-alert fb-alert--warning" role="alert">
-                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                <strong>{% translate "Suppression impossible :" %}</strong> {% translate "ce groupe restreint l'accès à" %}
                 {% if blocked_by|length == 1 %}
-                    la catégorie « {{ blocked_by.0 }} ». Retirez d'abord la restriction sur cette catégorie.
+                    {% blocktranslate trimmed with name=blocked_by.0 %}la catégorie « {{ name }} ». Retirez d'abord la restriction sur cette catégorie.{% endblocktranslate %}
                 {% else %}
-                    aux catégories : {{ blocked_by|join:", " }}. Retirez d'abord la restriction sur ces catégories.
+                    {% blocktranslate trimmed with names=blocked_by|join:", " %}aux catégories : {{ names }}. Retirez d'abord la restriction sur ces catégories.{% endblocktranslate %}
                 {% endif %}
             </div>
         {% endif %}
         {% if blocked_by_albums %}
             <div class="fb-alert fb-alert--warning" role="alert">
-                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                <strong>{% translate "Suppression impossible :" %}</strong> {% translate "ce groupe restreint l'accès à" %}
                 {% if blocked_by_albums|length == 1 %}
-                    l'album « {{ blocked_by_albums.0 }} ». Retirez d'abord la restriction sur cet album.
+                    {% blocktranslate trimmed with name=blocked_by_albums.0 %}l'album « {{ name }} ». Retirez d'abord la restriction sur cet album.{% endblocktranslate %}
                 {% else %}
-                    aux albums : {{ blocked_by_albums|join:", " }}. Retirez d'abord la restriction sur ces albums.
+                    {% blocktranslate trimmed with names=blocked_by_albums|join:", " %}aux albums : {{ names }}. Retirez d'abord la restriction sur ces albums.{% endblocktranslate %}
                 {% endif %}
             </div>
         {% endif %}
         {% if blocked_by_events %}
             <div class="fb-alert fb-alert--warning" role="alert">
-                <strong>Suppression impossible :</strong> ce groupe restreint l'accès à
+                <strong>{% translate "Suppression impossible :" %}</strong> {% translate "ce groupe restreint l'accès à" %}
                 {% if blocked_by_events|length == 1 %}
-                    l'événement « {{ blocked_by_events.0 }} ». Retirez d'abord la restriction sur cet événement.
+                    {% blocktranslate trimmed with name=blocked_by_events.0 %}l'événement « {{ name }} ». Retirez d'abord la restriction sur cet événement.{% endblocktranslate %}
                 {% else %}
-                    aux événements : {{ blocked_by_events|join:", " }}. Retirez d'abord la restriction sur ces événements.
+                    {% blocktranslate trimmed with names=blocked_by_events|join:", " %}aux événements : {{ names }}. Retirez d'abord la restriction sur ces événements.{% endblocktranslate %}
                 {% endif %}
             </div>
         {% endif %}
@@ -55,9 +55,9 @@
             {% csrf_token %}
             <div class="fb-form__actions">
                 <button class="fb-btn fb-btn--danger" type="submit" {% if blocked_by or blocked_by_albums or blocked_by_events %}disabled{% endif %}>
-                    {% icon "trash" size=16 %} Supprimer définitivement
+                    {% icon "trash" size=16 %} {% translate "Supprimer définitivement" %}
                 </button>
-                <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <a href="{% url 'group-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

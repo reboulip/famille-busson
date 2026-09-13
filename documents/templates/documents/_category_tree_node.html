@@ -1,6 +1,7 @@
 {% load documents_extras %}
 {% load markdown_extras %}
 {% load icons %}
+{% load i18n %}
 <li>
     {% comment %}
         The row wrapper is what the whole-row click overlay fills: it stops
@@ -24,7 +25,7 @@
                 {% icon "lock" size=16 %} {{ category.name }}
             </span>
             <span class="fb-chip fb-chip--lock">
-                Réservé au groupe{{ category|effective_groups|length|pluralize }} :
+                {% translate "Réservé au groupe" %}{{ category|effective_groups|length|pluralize }} :
                 {% for g in category|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
             </span>
         {% endif %}

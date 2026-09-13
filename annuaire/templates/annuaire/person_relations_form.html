@@ -1,21 +1,22 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
-            <h1>Relations de {{ person }}</h1>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
+            <h1>{% blocktranslate trimmed with person_name=person %}Relations de {{ person_name }}{% endblocktranslate %}</h1>
         </div>
         <div class="fb-page-head__actions">
-            <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">← Retour au profil</a>
+            <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "← Retour au profil" %}</a>
         </div>
     </div>
 
     {% if row_forms %}
         <table class="fb-table">
             <thead>
-                <tr><th>Personne</th><th>Type, dates et lieu du mariage</th><th></th></tr>
+                <tr><th>{% translate "Personne" %}</th><th>{% translate "Type, dates et lieu du mariage" %}</th><th></th></tr>
             </thead>
             <tbody>
                 {% for relation, edit_form in row_forms %}
@@ -28,14 +29,14 @@
                                 {{ edit_form.start_date }}
                                 {{ edit_form.marriage_place }}
                                 {{ edit_form.end_date }}
-                                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Enregistrer</button>
+                                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Enregistrer" %}</button>
                             </form>
                         </td>
                         <td class="fb-table__actions presence-actions">
                             <form method="post" action="{% url 'person-relation-delete' person.pk relation.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text"
-                                        onclick="return confirm('Supprimer cette relation ?')">Supprimer</button>
+                                        onclick="return confirm('{% translate 'Supprimer cette relation ?' %}')">{% translate "Supprimer" %}</button>
                             </form>
                         </td>
                     </tr>
@@ -43,14 +44,16 @@
             </tbody>
         </table>
     {% else %}
-        {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez ci-dessous les parents, enfants ou le conjoint de cette personne." %}
+        {% translate "Aucune relation enregistrée" as empty_title %}
+        {% translate "Ajoutez ci-dessous les parents, enfants ou le conjoint de cette personne." as empty_body %}
+        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
     {% endif %}
 
-    <div class="fb-section-head"><h2>Ajouter une relation</h2></div>
+    <div class="fb-section-head"><h2>{% translate "Ajouter une relation" %}</h2></div>
     <form method="post" action="{% url 'person-relation-add' person.pk %}" class="fb-form fb-card presence-form">
         {% csrf_token %}
         <div class="fb-field">
-            <label class="fb-label" for="relation-person-search-input">Personne</label>
+            <label class="fb-label" for="relation-person-search-input">{% translate "Personne" %}</label>
             {% include "annuaire/_person_picker.html" with input_id="relation-person-search-input" field_name="person2" single_select=True %}
             {% if add_form.person2.errors %}<div class="fb-error">{{ add_form.person2.errors }}</div>{% endif %}
         </div>
@@ -76,7 +79,7 @@
             <div class="fb-error">{{ add_form.relationship_type.errors }}{{ add_form.start_date.errors }}{{ add_form.marriage_place.errors }}{{ add_form.end_date.errors }}</div>
         {% endif %}
         <div class="fb-form__actions">
-            <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Ajouter</button>
+            <button type="submit" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Ajouter" %}</button>
         </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>

@@ -21,16 +21,19 @@ function initPasswordToggle(input) {
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'btn btn-outline-secondary';
-    button.textContent = 'Afficher';
-    button.setAttribute('aria-label', 'Afficher le mot de passe');
+    button.textContent = gettext('Afficher');
+    button.setAttribute('aria-label', gettext('Afficher le mot de passe'));
     button.setAttribute('aria-pressed', 'false');
     wrapper.appendChild(button);
 
     button.addEventListener('click', () => {
         const revealed = input.type === 'text';
         input.type = revealed ? 'password' : 'text';
-        button.textContent = revealed ? 'Afficher' : 'Masquer';
-        button.setAttribute('aria-label', revealed ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
+        button.textContent = revealed ? gettext('Afficher') : gettext('Masquer');
+        button.setAttribute(
+            'aria-label',
+            revealed ? gettext('Afficher le mot de passe') : gettext('Masquer le mot de passe')
+        );
         button.setAttribute('aria-pressed', revealed ? 'false' : 'true');
     });
 }

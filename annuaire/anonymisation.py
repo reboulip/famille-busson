@@ -31,6 +31,7 @@ from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from .audit import record_audit_event, suppress_generic_audit
 from .models import Account, AuditEvent, Person
@@ -50,11 +51,11 @@ class AnonymisationReport:
 
 def anonymise_person(person: Person, *, actor) -> AnonymisationReport:
     if person.anonymised_at is not None:
-        raise ValidationError("Cette personne a déjà été anonymisée.")
+        raise ValidationError(_("Cette personne a déjà été anonymisée."))
     if person.account_id is not None and person.account.is_staff:
         other_active_staff = Account.objects.filter(is_staff=True, is_active=True).exclude(pk=person.account_id)
         if not other_active_staff.exists():
-            raise ValidationError("Impossible d'anonymiser le dernier compte actif membre du personnel.")
+            raise ValidationError(_("Impossible d'anonymiser le dernier compte actif membre du personnel."))
 
     report = AnonymisationReport()
 

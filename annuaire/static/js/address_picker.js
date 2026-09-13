@@ -21,7 +21,9 @@ function initAddressPicker(input) {
 
     const warning = document.createElement('div');
     warning.className = 'address-picker-warning form-text text-warning-emphasis';
-    warning.textContent = "Adresse non géolocalisée — choisissez une suggestion dans la liste pour l'afficher sur la carte.";
+    warning.textContent = gettext(
+        "Adresse non géolocalisée — choisissez une suggestion dans la liste pour l'afficher sur la carte."
+    );
     warning.hidden = true;
     wrapper.appendChild(warning);
 
@@ -49,7 +51,7 @@ function initAddressPicker(input) {
         if (results.length === 0) {
             const li = document.createElement('li');
             li.className = 'address-picker-empty';
-            li.textContent = 'Aucun résultat';
+            li.textContent = gettext('Aucun résultat');
             resultsList.appendChild(li);
             resultsList.hidden = false;
             highlightedIndex = -1;

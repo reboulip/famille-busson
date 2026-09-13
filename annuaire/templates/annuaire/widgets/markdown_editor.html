@@ -1,27 +1,28 @@
 {% load icons %}
+{% load i18n %}
 <div class="markdown-editor" data-preview-url="{% url 'markdown-preview' %}">
     <ul class="nav nav-tabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active markdown-editor-tab" type="button" data-tab="write">Écrire</button>
+            <button class="nav-link active markdown-editor-tab" type="button" data-tab="write">{% translate "Écrire" %}</button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link markdown-editor-tab" type="button" data-tab="preview">Aperçu</button>
+            <button class="nav-link markdown-editor-tab" type="button" data-tab="preview">{% translate "Aperçu" %}</button>
         </li>
     </ul>
-    <div class="markdown-editor-toolbar" role="toolbar" aria-label="Mise en forme Markdown">
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="heading" title="Titre" aria-label="Titre">H</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="bold" title="Gras" aria-label="Gras"><strong>G</strong></button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="italic" title="Italique" aria-label="Italique"><em>I</em></button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="quote" title="Citation" aria-label="Citation">❝</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="code" title="Code" aria-label="Code">&lt;/&gt;</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="link" title="Lien" aria-label="Lien">{% icon "link" size=15 %}</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ul" title="Liste à puces" aria-label="Liste à puces">•</button>
-        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ol" title="Liste numérotée" aria-label="Liste numérotée">1.</button>
+    <div class="markdown-editor-toolbar" role="toolbar" aria-label="{% translate 'Mise en forme Markdown' %}">
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="heading" title="{% translate 'Titre' %}" aria-label="{% translate 'Titre' %}">H</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="bold" title="{% translate 'Gras' %}" aria-label="{% translate 'Gras' %}"><strong>G</strong></button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="italic" title="{% translate 'Italique' %}" aria-label="{% translate 'Italique' %}"><em>I</em></button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="quote" title="{% translate 'Citation' %}" aria-label="{% translate 'Citation' %}">❝</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="code" title="{% translate 'Code' %}" aria-label="{% translate 'Code' %}">&lt;/&gt;</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="link" title="{% translate 'Lien' %}" aria-label="{% translate 'Lien' %}">{% icon "link" size=15 %}</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ul" title="{% translate 'Liste à puces' %}" aria-label="{% translate 'Liste à puces' %}">•</button>
+        <button type="button" class="markdown-editor-toolbar-btn" data-md-action="ol" title="{% translate 'Liste numérotée' %}" aria-label="{% translate 'Liste numérotée' %}">1.</button>
     </div>
     <div class="markdown-editor-pane markdown-editor-write">
         {% include "django/forms/widgets/textarea.html" %}
     </div>
     <div class="markdown-editor-pane markdown-editor-preview markdown-body" hidden>
-        <p class="markdown-editor-empty fb-meta text-muted">Rien à prévisualiser.</p>
+        <p class="markdown-editor-empty fb-meta text-muted">{% translate "Rien à prévisualiser." %}</p>
     </div>
 </div>

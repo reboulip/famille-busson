@@ -1,4 +1,5 @@
 {% load static %}
+{% load i18n %}
 {% comment %}
 Archetype H — the threshold.
 
@@ -27,7 +28,8 @@ Blocks:
               the emails split full vs. restrained treatment
 {% endcomment %}
 <!DOCTYPE html>
-<html lang="fr">
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -77,14 +79,17 @@ Blocks:
                 </div>
             </div>
             <p class="fb-threshold__foot">
-                {{ site_config.site_name }} · site privé de la famille
+                {% blocktranslate trimmed with site_name=site_config.site_name %}
+                {{ site_name }} · site privé de la famille
+                {% endblocktranslate %}
                 {% if site_config.feedback_url %}
-                    · <a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a>
+                    · <a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">{% translate "Signaler un bug ou proposer une évolution" %}</a>
                 {% endif %}
                 {% if site_version %} · v{{ site_version }}{% endif %}
             </p>
         </div>
     </div>
+    <script src="{% url 'javascript-catalog' %}"></script>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/theme_toggle.js' %}"></script>
     {% block extra_js %}{% endblock extra_js %}

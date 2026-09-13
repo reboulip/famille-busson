@@ -1,22 +1,23 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype I — tabular. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Groupes</h1>
-            <p class="fb-page-head__lede">Les groupes réservent certaines catégories de documents à quelques membres.</p>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Groupes" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Les groupes réservent certaines catégories de documents à quelques membres." %}</p>
         </div>
         <div class="fb-page-head__actions">
-            <a href="{% url 'group-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Créer un groupe</a>
+            <a href="{% url 'group-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Créer un groupe" %}</a>
         </div>
     </div>
 
     {% if groups %}
         <table class="fb-table table">
             <thead>
-                <tr><th>Nom</th><th>Membres</th><th></th></tr>
+                <tr><th>{% translate "Nom" %}</th><th>{% translate "Membres" %}</th><th></th></tr>
             </thead>
             <tbody>
                 {% for group in groups %}
@@ -24,9 +25,9 @@
                         <td class="fb-table__strong">{{ group.name }}</td>
                         <td><span class="fb-chip">{{ group.account_set.count }}</span></td>
                         <td class="fb-table__actions">
-                            <a href="{% url 'group-members-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Membres</a>
-                            <a href="{% url 'group-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier</a>
-                            <a href="{% url 'group-delete' group.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">Supprimer</a>
+                            <a href="{% url 'group-members-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Membres" %}</a>
+                            <a href="{% url 'group-edit' group.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier" %}</a>
+                            <a href="{% url 'group-delete' group.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% translate "Supprimer" %}</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -34,6 +35,9 @@
         </table>
     {% else %}
         {% url 'group-create' as create_url %}
-        {% include "annuaire/_empty.html" with title="Aucun groupe" body="Les groupes servent à réserver certaines catégories de documents à quelques membres." action_url=create_url action_label="Créer le premier groupe" %}
+        {% translate "Aucun groupe" as empty_title %}
+        {% translate "Les groupes servent à réserver certaines catégories de documents à quelques membres." as empty_body %}
+        {% translate "Créer le premier groupe" as empty_action_label %}
+        {% include "annuaire/_empty.html" with title=empty_title body=empty_body action_url=create_url action_label=empty_action_label %}
     {% endif %}
 {% endblock content %}

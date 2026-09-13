@@ -1,39 +1,40 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype I — tabular. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Créer des comptes</h1>
-            <p class="fb-page-head__lede">Créer, réinitialiser et renvoyer les invitations de connexion.</p>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Créer des comptes" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Créer, réinitialiser et renvoyer les invitations de connexion." %}</p>
         </div>
     </div>
 
     {% if results %}
         <div class="fb-alert fb-alert--success">
-            <strong>Opération terminée.</strong> {{ results|length }} compte(s) traité(s).
+            <strong>{% translate "Opération terminée." %}</strong> {% blocktranslate trimmed with count=results|length %}{{ count }} compte(s) traité(s).{% endblocktranslate %}
         </div>
         <table class="fb-table">
             <thead>
-                <tr><th>Email</th><th>Statut</th><th>Invitation</th></tr>
+                <tr><th>{% translate "Email" %}</th><th>{% translate "Statut" %}</th><th>{% translate "Invitation" %}</th></tr>
             </thead>
             <tbody>
                 {% for row in results %}
                     <tr class="{% if row.status == 'error' %}table-danger{% elif row.status == 'reset' %}table-warning{% else %}table-success{% endif %}">
                         <td>{{ row.email }}</td>
                         <td>
-                            {% if row.status == 'created' %}Créé{% elif row.status == 'reset' %}Réinitialisé{% elif row.status == 'resent' %}Renvoyé{% else %}Échec de création{% endif %}
+                            {% if row.status == 'created' %}{% translate "Créé" %}{% elif row.status == 'reset' %}{% translate "Réinitialisé" %}{% elif row.status == 'resent' %}{% translate "Renvoyé" %}{% else %}{% translate "Échec de création" %}{% endif %}
                         </td>
                         <td>
                             {% if row.status == 'error' %}
                                 <span class="fb-meta">—</span>
                             {% elif row.email_sent %}
-                                <span class="fb-chip fb-chip--success">Envoyé</span>
+                                <span class="fb-chip fb-chip--success">{% translate "Envoyé" %}</span>
                             {% else %}
-                                <span class="fb-chip fb-chip--danger">Échec</span>
-                                <br><small class="fb-meta">Lien à transmettre manuellement : <code>{{ row.reset_url }}</code></small>
+                                <span class="fb-chip fb-chip--danger">{% translate "Échec" %}</span>
+                                <br><small class="fb-meta">{% translate "Lien à transmettre manuellement :" %} <code>{{ row.reset_url }}</code></small>
                             {% endif %}
                         </td>
                     </tr>
@@ -43,8 +44,8 @@
     {% endif %}
 
     <div class="fb-section-head">
-        <h2>Comptes sans profil</h2>
-        {% if pending_accounts %}<span class="fb-meta">{{ pending_accounts|length }} en attente</span>{% endif %}
+        <h2>{% translate "Comptes sans profil" %}</h2>
+        {% if pending_accounts %}<span class="fb-meta">{% blocktranslate trimmed with count=pending_accounts|length %}{{ count }} en attente{% endblocktranslate %}</span>{% endif %}
     </div>
 
     {% if pending_accounts %}
@@ -54,9 +55,9 @@
             <table class="fb-table">
                 <thead>
                     <tr>
-                        <th style="width:2.5rem"><input type="checkbox" id="pending-select-all" aria-label="Tout sélectionner"></th>
-                        <th>Email</th>
-                        <th>Dernière connexion</th>
+                        <th style="width:2.5rem"><input type="checkbox" id="pending-select-all" aria-label="{% translate 'Tout sélectionner' %}"></th>
+                        <th>{% translate "Email" %}</th>
+                        <th>{% translate "Dernière connexion" %}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -66,9 +67,9 @@
                             <td>{{ acc.email }}</td>
                             <td>
                                 {% if acc.last_login %}
-                                    <span class="fb-meta">Dernière connexion le {{ acc.last_login|date:"j F Y H:i" }}</span>
+                                    <span class="fb-meta">{% blocktranslate trimmed with date=acc.last_login|date:"j F Y H:i" %}Dernière connexion le {{ date }}{% endblocktranslate %}</span>
                                 {% else %}
-                                    <span class="fb-chip">Jamais connecté</span>
+                                    <span class="fb-chip">{% translate "Jamais connecté" %}</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -76,7 +77,7 @@
                 </tbody>
             </table>
             <div class="fb-form__actions">
-                <button type="submit" class="fb-btn fb-btn--primary">Renvoyer le lien d'invitation</button>
+                <button type="submit" class="fb-btn fb-btn--primary">{% translate "Renvoyer le lien d'invitation" %}</button>
             </div>
         </form>
         <script>
@@ -92,13 +93,14 @@
         })();
         </script>
     {% else %}
-        {% include "annuaire/_empty.html" with title="Tous les comptes sont rattachés à un profil" %}
+        {% translate "Tous les comptes sont rattachés à un profil" as empty_title %}
+        {% include "annuaire/_empty.html" with title=empty_title %}
     {% endif %}
 
-    <div class="fb-section-head"><h2>Créer ou réinitialiser des comptes</h2></div>
+    <div class="fb-section-head"><h2>{% translate "Créer ou réinitialiser des comptes" %}</h2></div>
 
     <div id="email-warnings" class="fb-alert fb-alert--warning d-none" role="alert">
-        <strong>Attention :</strong> les adresses suivantes ont déjà un compte — leur mot de passe sera réinitialisé :
+        <strong>{% translate "Attention :" %}</strong> {% translate "les adresses suivantes ont déjà un compte — leur mot de passe sera réinitialisé :" %}
         <ul id="email-warnings-list" class="fb-alert__list"></ul>
     </div>
 
@@ -106,7 +108,7 @@
         {% csrf_token %}
         {{ form|crispy }}
         <div class="fb-form__actions">
-            <button type="submit" class="fb-btn fb-btn--primary">Créer / réinitialiser les comptes</button>
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Créer / réinitialiser les comptes" %}</button>
         </div>
     </form>
 

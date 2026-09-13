@@ -20,7 +20,7 @@ function initPhotoUpload(container) {
         const files = Array.from(picker.files);
         picker.value = '';
         if (files.length > maxFiles) {
-            window.alert('Vous ne pouvez sélectionner que ' + maxFiles + ' fichiers maximum.');
+            window.alert(interpolate(gettext('Vous ne pouvez sélectionner que %s fichiers maximum.'), [maxFiles]));
             return;
         }
         queueUploads(files);
@@ -65,7 +65,7 @@ function initPhotoUpload(container) {
 
     function markDone(rowParts, data) {
         rowParts.progress.remove();
-        rowParts.status.textContent = 'Ajoutée';
+        rowParts.status.textContent = gettext('Ajoutée');
         rowParts.row.classList.add('photo-upload-row--done');
         if (data.thumbnail_url) {
             const img = document.createElement('img');
@@ -85,7 +85,7 @@ function initPhotoUpload(container) {
         const rowParts = buildRow(file.name);
 
         if (file.size > maxBytes) {
-            markError(rowParts, 'Fichier trop volumineux.');
+            markError(rowParts, gettext('Fichier trop volumineux.'));
             return Promise.resolve();
         }
 
@@ -110,13 +110,13 @@ function initPhotoUpload(container) {
                 if (xhr.status >= 200 && xhr.status < 300 && !data.error) {
                     markDone(rowParts, data);
                 } else {
-                    markError(rowParts, data.error || "Échec de l'envoi.");
+                    markError(rowParts, data.error || gettext("Échec de l'envoi."));
                 }
                 resolve();
             });
 
             xhr.addEventListener('error', () => {
-                markError(rowParts, "Échec de l'envoi.");
+                markError(rowParts, gettext("Échec de l'envoi."));
                 resolve();
             });
 

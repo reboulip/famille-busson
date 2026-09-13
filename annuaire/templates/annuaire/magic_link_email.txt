@@ -1,12 +1,15 @@
-{% autoescape off %}Bonjour,
+{% load i18n %}{% autoescape off %}{% translate "Bonjour," %}
 
+{% blocktranslate trimmed with site_name=site_name email=email %}
 Vous avez demandé un lien de connexion pour votre compte sur {{ site_name }}
 ({{ email }}).
+{% endblocktranslate %}
 
-Connectez-vous ici : {{ protocol }}://{{ domain }}{% url 'magic-link-confirm-token' uidb64=uid token=token %}
-Ce lien est à usage unique et expire dans {{ validity_minutes }} minutes.
+{% url 'magic-link-confirm-token' uidb64=uid token=token as magic_link_path %}
+{% blocktranslate trimmed with path=magic_link_path %}Connectez-vous ici : {{ protocol }}://{{ domain }}{{ path }}{% endblocktranslate %}
+{% blocktranslate trimmed with minutes=validity_minutes %}Ce lien est à usage unique et expire dans {{ minutes }} minutes.{% endblocktranslate %}
 
-Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email.
+{% translate "Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email." %}
 
-À bientôt !
+{% translate "À bientôt !" %}
 {% endautoescape %}

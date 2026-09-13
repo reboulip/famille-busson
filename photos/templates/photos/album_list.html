@@ -1,5 +1,6 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {% comment %}
         Archetype B — collection grid, place variant: rectangular media
@@ -7,11 +8,11 @@
     {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Photothèque</p>
-            <h1>Albums</h1>
+            <p class="fb-eyebrow">{% translate "Photothèque" %}</p>
+            <h1>{% translate "Albums" %}</h1>
         </div>
         <div class="fb-page-head__actions">
-            <a href="{% url 'album-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvel album</a>
+            <a href="{% url 'album-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Nouvel album" %}</a>
         </div>
     </div>
 
@@ -23,6 +24,9 @@
         </div>
     {% else %}
         {% url 'album-create' as create_url %}
-        {% include "annuaire/_empty.html" with title="Aucun album" body="Les albums rassemblent les photos de la famille par événement ou par période." action_url=create_url action_label="Créer un album" %}
+        {% translate "Aucun album" as empty_album_title %}
+        {% translate "Les albums rassemblent les photos de la famille par événement ou par période." as empty_album_body %}
+        {% translate "Créer un album" as empty_album_action_label %}
+        {% include "annuaire/_empty.html" with title=empty_album_title body=empty_album_body action_url=create_url action_label=empty_album_action_label %}
     {% endif %}
 {% endblock content %}

@@ -1,19 +1,20 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Fusionner « {{ loser }} » dans « {{ winner }} »</h1>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% blocktranslate trimmed with loser_name=loser winner_name=winner %}Fusionner « {{ loser_name }} » dans « {{ winner_name }} »{% endblocktranslate %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
         <div class="fb-confirm__consequences">
-            <p class="fb-confirm__lead">Cette action est irréversible. « {{ loser }} » sera supprimé·e ; toutes
+            <p class="fb-confirm__lead">{% blocktranslate trimmed with loser_name=loser winner_name=winner %}Cette action est irréversible. « {{ loser_name }} » sera supprimé·e ; toutes
                 ses relations, photos, documents, présences, récits et sources citées seront rattachés à
-                « {{ winner }} ».</p>
+                « {{ winner_name }} ».{% endblocktranslate %}</p>
         </div>
 
         <form method="POST">
@@ -21,17 +22,18 @@
 
             {% if differing_fields %}
                 <div class="fb-fieldset">
-                    <legend>Champs différents — choisissez la valeur à conserver</legend>
+                    <legend>{% translate "Champs différents — choisissez la valeur à conserver" %}</legend>
+                    {% translate "(vide)" as empty_value_label %}
                     {% for diff in differing_fields %}
                         <div class="fb-field">
                             <p class="fb-label">{{ diff.label }}</p>
                             <label class="fb-radio">
                                 <input type="radio" name="choice_{{ diff.name }}" value="1" checked>
-                                {{ winner }} : {{ diff.winner_value|default:"(vide)" }}
+                                {{ winner }} : {{ diff.winner_value|default:empty_value_label }}
                             </label>
                             <label class="fb-radio">
                                 <input type="radio" name="choice_{{ diff.name }}" value="2">
-                                {{ loser }} : {{ diff.loser_value|default:"(vide)" }}
+                                {{ loser }} : {{ diff.loser_value|default:empty_value_label }}
                             </label>
                         </div>
                     {% endfor %}
@@ -39,8 +41,8 @@
             {% endif %}
 
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Fusionner définitivement</button>
-                <a href="{% url 'person-duplicate-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} {% translate "Fusionner définitivement" %}</button>
+                <a href="{% url 'person-duplicate-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

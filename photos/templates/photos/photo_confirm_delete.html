@@ -1,32 +1,33 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Photothèque</p>
-            <h1>Supprimer cette photo ?</h1>
+            <p class="fb-eyebrow">{% translate "Photothèque" %}</p>
+            <h1>{% translate "Supprimer cette photo ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer « {{ object.caption|default:"cette photo" }} » ?</h1>
-        <p class="fb-meta">Dans l'album « {{ object.album.title }} ».</p>
+        {% translate "cette photo" as default_photo_caption %}
+        <h1>{% blocktranslate trimmed with caption=object.caption|default:default_photo_caption %}Supprimer « {{ caption }} » ?{% endblocktranslate %}</h1>
+        <p class="fb-meta">{% blocktranslate trimmed with title=object.album.title %}Dans l'album « {{ title }} ».{% endblocktranslate %}</p>
         <div class="fb-confirm__consequences">
             <p class="fb-confirm__lead">
-                La photo sera envoyée à la corbeille, récupérable pendant {{ trash_retention_days }} jours.
-                Passé ce délai, elle sera supprimée définitivement, avec :
+                {% blocktranslate trimmed with days=trash_retention_days %}La photo sera envoyée à la corbeille, récupérable pendant {{ days }} jours. Passé ce délai, elle sera supprimée définitivement, avec :{% endblocktranslate %}
             </p>
             <ul>
-                <li>sa légende ;</li>
-                <li>le fichier original et ses vignettes.</li>
+                <li>{% translate "sa légende ;" %}</li>
+                <li>{% translate "le fichier original et ses vignettes." %}</li>
             </ul>
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Envoyer à la corbeille</button>
-                <a href="{% url 'photo-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} {% translate "Envoyer à la corbeille" %}</button>
+                <a href="{% url 'photo-detail' object.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

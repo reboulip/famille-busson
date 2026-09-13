@@ -25,6 +25,7 @@ from django.utils.cache import patch_vary_headers
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
@@ -184,10 +185,10 @@ class SignupView(EmailRateLimitMixin, FormView):
         password = form.cleaned_data.get("password")
 
         if not Person.objects.filter(email=email).exists():
-            messages.error(self.request, "Adresse email non reconnue, vous ne pouvez pas créer de compte.")
+            messages.error(self.request, _("Adresse email non reconnue, vous ne pouvez pas créer de compte."))
             return self.form_invalid(form)
         elif Account.objects.filter(email=email).exists():
-            messages.error(self.request, "Un compte avec cet email existe déjà.")
+            messages.error(self.request, _("Un compte avec cet email existe déjà."))
             return redirect("login")
         else:
             user = Account.objects.create_user(email=email)
@@ -279,12 +280,12 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         if failed:
             messages.error(
                 self.request,
-                "Échec de l'envoi de l'email pour : " + ", ".join(failed),
+                _("Échec de l'envoi de l'email pour : %(emails)s") % {"emails": ", ".join(failed)},
             )
         if accounts:
             messages.success(
                 self.request,
-                f"Lien d'invitation renvoyé pour {len(sent)} compte(s).",
+                _("Lien d'invitation renvoyé pour %(count)s compte(s).") % {"count": len(sent)},
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
@@ -349,19 +350,21 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         if reset_emails:
             messages.warning(
                 self.request,
-                "Mot de passe réinitialisé pour : " + ", ".join(reset_emails),
+                _("Mot de passe réinitialisé pour : %(emails)s") % {"emails": ", ".join(reset_emails)},
             )
         if failed_emails:
             messages.error(
                 self.request,
-                "Échec de l'envoi de l'email pour : "
-                + ", ".join(failed_emails)
-                + " — communiquez le mot de passe temporaire manuellement.",
+                _(
+                    "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
+                    "temporaire manuellement."
+                )
+                % {"emails": ", ".join(failed_emails)},
             )
         if errored_emails:
             messages.error(
                 self.request,
-                "Échec de la création du compte pour : " + ", ".join(errored_emails),
+                _("Échec de la création du compte pour : %(emails)s") % {"emails": ", ".join(errored_emails)},
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
@@ -424,16 +427,16 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
             parts = []
             if blocked_by:
                 category_names = ", ".join(f"« {name} »" for name in blocked_by)
-                parts.append(f"les catégories {category_names}")
+                parts.append(_("les catégories %(names)s") % {"names": category_names})
             if blocked_by_albums:
                 album_names = ", ".join(f"« {name} »" for name in blocked_by_albums)
-                parts.append(f"les albums {album_names}")
+                parts.append(_("les albums %(names)s") % {"names": album_names})
             if blocked_by_events:
                 event_names = ", ".join(f"« {name} »" for name in blocked_by_events)
-                parts.append(f"les événements {event_names}")
+                parts.append(_("les événements %(names)s") % {"names": event_names})
             messages.error(
                 request,
-                f"Impossible de supprimer ce groupe : il est utilisé par {' et '.join(parts)}.",
+                _("Impossible de supprimer ce groupe : il est utilisé par %(parts)s.") % {"parts": " et ".join(parts)},
             )
             return self.get(request, *args, **kwargs)
 
@@ -547,7 +550,7 @@ class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
         user.must_change_password = False
         user.save()
         update_session_auth_hash(self.request, user)
-        messages.success(self.request, "Votre mot de passe a été mis à jour.")
+        messages.success(self.request, _("Votre mot de passe a été mis à jour."))
         return _first_login_redirect(user)
 
     def form_invalid(self, form):
@@ -730,7 +733,7 @@ class PrivacyNoticeView(TemplateView):
 @require_POST
 def accept_privacy_notice(request):
     record_acceptance(request.user)
-    messages.success(request, "Merci, votre acceptation a été enregistrée.")
+    messages.success(request, _("Merci, votre acceptation a été enregistrée."))
     return redirect("home")
 
 
@@ -791,7 +794,7 @@ class PersonCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant d'ajouter un membre de la famille.")
+            messages.error(request, _("Vous devez compléter votre profil avant d'ajouter un membre de la famille."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -837,7 +840,8 @@ class ProfileClaimView(LoginRequiredMixin, View):
             updated = Person.objects.filter(pk=person_pk, account__isnull=True).update(account=request.user)
             if not updated:
                 messages.error(
-                    request, "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà revendiqué."
+                    request,
+                    _("Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà revendiqué."),
                 )
                 return redirect("profile-claim")
             person = Person.objects.get(pk=person_pk)
@@ -1036,7 +1040,7 @@ class CorbeilleRestoreView(StaffRequiredMixin, View):
         model = _get_corbeille_model(app_label, model_name)
         instance = get_object_or_404(model.all_objects, pk=pk)
         instance.restore()
-        messages.success(request, "Élément restauré.")
+        messages.success(request, _("Élément restauré."))
         return redirect("corbeille-list")
 
 
@@ -1045,7 +1049,7 @@ class CorbeillePurgeView(StaffRequiredMixin, View):
         model = _get_corbeille_model(app_label, model_name)
         instance = get_object_or_404(model.all_objects, pk=pk)
         instance.purge()
-        messages.success(request, "Élément supprimé définitivement.")
+        messages.success(request, _("Élément supprimé définitivement."))
         return redirect("corbeille-list")
 
 
@@ -1067,7 +1071,7 @@ class PersonAnonymiseView(StaffRequiredMixin, View):
         except ValidationError as exc:
             messages.error(request, "; ".join(exc.messages))
             return redirect("person-anonymise", pk=person.pk)
-        messages.success(request, "Cette personne a été anonymisée.")
+        messages.success(request, _("Cette personne a été anonymisée."))
         return redirect("personne-detail", pk=person.pk)
 
 
@@ -1169,7 +1173,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         if not can_edit_person(self.request.user, obj):
-            raise PermissionDenied("Vous ne pouvez pas éditer ce profil.")
+            raise PermissionDenied(_("Vous ne pouvez pas éditer ce profil."))
         return obj
 
     def get_form_kwargs(self):
@@ -1208,7 +1212,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 def _get_person_for_relations_edit(request, pk):
     person = get_object_or_404(Person, pk=pk)
     if not can_edit_person(request.user, person):
-        raise PermissionDenied("Vous ne pouvez pas modifier ces relations.")
+        raise PermissionDenied(_("Vous ne pouvez pas modifier ces relations."))
     return person
 
 
@@ -1239,14 +1243,14 @@ class AddRelationView(LoginRequiredMixin, View):
         person = _get_person_for_relations_edit(request, kwargs["pk"])
         form = AddRelationForm(request.POST)
         if not form.is_valid():
-            messages.error(request, "Formulaire invalide. Vérifiez la personne et le type de relation.")
+            messages.error(request, _("Formulaire invalide. Vérifiez la personne et le type de relation."))
             return redirect("person-relations-edit", pk=person.pk)
         relation = form.save(commit=False)
         if relation.person2 == person:
-            messages.error(request, "Une personne ne peut pas être en relation avec elle-même.")
+            messages.error(request, _("Une personne ne peut pas être en relation avec elle-même."))
             return redirect("person-relations-edit", pk=person.pk)
         if Relation.objects.filter(person1=person, person2=relation.person2).exists():
-            messages.error(request, "Une relation avec cette personne existe déjà.")
+            messages.error(request, _("Une relation avec cette personne existe déjà."))
             return redirect("person-relations-edit", pk=person.pk)
         relation.person1 = person
         relation.save()
@@ -1261,7 +1265,7 @@ class UpdateRelationView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
         else:
-            messages.error(request, "Modification invalide.")
+            messages.error(request, _("Modification invalide."))
         return redirect("person-relations-edit", pk=person.pk)
 
 
@@ -1342,7 +1346,10 @@ class PersonMergeView(StaffRequiredMixin, View):
             messages.error(request, "; ".join(exc.messages))
             return redirect("person-merge", pk=winner.pk, loser_pk=loser.pk)
         moved_summary = ", ".join(f"{k} ({v})" for k, v in report.moved_counts.items())
-        messages.success(request, f"Fusion effectuée : {moved_summary or 'aucune donnée liée à déplacer'}.")
+        messages.success(
+            request,
+            _("Fusion effectuée : %(summary)s.") % {"summary": moved_summary or _("aucune donnée liée à déplacer")},
+        )
         return redirect("personne-detail", pk=winner.pk)
 
 
@@ -1358,9 +1365,9 @@ class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         if obj.account_id is not None:
-            raise PermissionDenied("Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables.")
+            raise PermissionDenied(_("Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."))
         if not can_edit_person(self.request.user, obj):
-            raise PermissionDenied("Vous n'êtes pas propriétaire de ce profil.")
+            raise PermissionDenied(_("Vous n'êtes pas propriétaire de ce profil."))
         return obj
 
     def get_context_data(self, **kwargs):
@@ -1420,7 +1427,7 @@ class ChaletCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant de créer un chalet.")
+            messages.error(request, _("Vous devez compléter votre profil avant de créer un chalet."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -1452,7 +1459,7 @@ class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or not obj.owners.filter(pk=profile.pk).exists():
-            raise PermissionDenied("Vous n'êtes pas propriétaire de ce chalet.")
+            raise PermissionDenied(_("Vous n'êtes pas propriétaire de ce chalet."))
         return obj
 
 
@@ -1536,7 +1543,7 @@ class AddPresenceView(LoginRequiredMixin, FormView):
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, "Erreur dans le formulaire de présence.")
+        messages.error(self.request, _("Erreur dans le formulaire de présence."))
         return redirect("chalet-detail", pk=self.kwargs["pk"])
 
 
@@ -1748,5 +1755,5 @@ class ICalFeedView(View):
 @require_POST
 def regenerate_calendar_token(request):
     request.user.regenerate_calendar_token()
-    messages.success(request, "Le lien de votre calendrier a été régénéré.")
+    messages.success(request, _("Le lien de votre calendrier a été régénéré."))
     return redirect("calendrier")

@@ -1,6 +1,7 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
     <link rel="stylesheet" href="{% static 'vendor/leaflet.markercluster/MarkerCluster.css' %}">
@@ -12,22 +13,22 @@
     {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Carte</h1>
-            <p class="fb-page-head__lede">Où habite la famille, et où sont les chalets.</p>
+            <h1>{% translate "Carte" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Où habite la famille, et où sont les chalets." %}</p>
         </div>
     </div>
 
     {% if unresolved_count %}
         <details class="fb-alert fb-alert--warning unresolved-persons-details">
             <summary class="search-result-count">
-                {{ unresolved_count }} profil{{ unresolved_count|pluralize }} sans adresse géolocalisée
-                {{ unresolved_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
+                {% blocktranslate trimmed count counter=unresolved_count %}{{ counter }} profil sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} profils sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
             </summary>
             <ul class="fb-alert__list">
+                {% translate "adresse non renseignée" as no_address_label %}
                 {% for p in unresolved_persons %}
                     <li>
                         <a href="{% url 'personne-detail' p.pk %}">{{ p }}</a>
-                        <span class="fb-meta">— {{ p.postal_address|default:"adresse non renseignée" }}</span>
+                        <span class="fb-meta">— {{ p.postal_address|default:no_address_label }}</span>
                     </li>
                 {% endfor %}
             </ul>
@@ -35,15 +36,14 @@
     {% endif %}
     {% if unresolved_chalet_count %}
         <p class="fb-alert fb-alert--warning search-result-count">
-            {{ unresolved_chalet_count }} chalet{{ unresolved_chalet_count|pluralize }} sans adresse géolocalisée
-            {{ unresolved_chalet_count|pluralize:"n'apparaît,n'apparaissent" }} pas sur la carte.
+            {% blocktranslate trimmed count counter=unresolved_chalet_count %}{{ counter }} chalet sans adresse géolocalisée n'apparaît pas sur la carte.{% plural %}{{ counter }} chalets sans adresse géolocalisée n'apparaissent pas sur la carte.{% endblocktranslate %}
         </p>
     {% endif %}
 
     <div class="fb-toolbar fb-toolbar--attached">
         <div class="person-picker person-picker-inline">
             <input type="text" id="carte-person-search" class="fb-input search-input"
-                   placeholder="Rechercher un membre…" autocomplete="off" aria-label="Rechercher un membre sur la carte">
+                   placeholder="{% translate 'Rechercher un membre…' %}" autocomplete="off" aria-label="{% translate 'Rechercher un membre sur la carte' %}">
             <ul id="carte-person-search-results" class="person-picker-results" role="listbox" hidden></ul>
         </div>
     </div>

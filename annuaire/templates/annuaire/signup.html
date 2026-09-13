@@ -1,11 +1,12 @@
 {% extends "annuaire/base_threshold.html" %}
 {% load static %}
 {% load crispy_forms_filters %}
-{% block title %}Inscription — {{ site_config.site_name }}{% endblock title %}
-{% block heading %}Créer votre compte{% endblock heading %}
+{% load i18n %}
+{% block title %}{% blocktranslate trimmed with site_name=site_config.site_name %}Inscription — {{ site_name }}{% endblocktranslate %}{% endblock title %}
+{% block heading %}{% translate "Créer votre compte" %}{% endblock heading %}
 {% block lede %}
     <p class="fb-meta fb-threshold__lede">
-        Votre adresse email doit déjà être connue de la famille pour que le compte soit rattaché à votre fiche.
+        {% translate "Votre adresse email doit déjà être connue de la famille pour que le compte soit rattaché à votre fiche." %}
     </p>
 {% endblock lede %}
 {% block content %}
@@ -13,12 +14,12 @@
         {% csrf_token %}
         {{ form.media }}
         {{ form|crispy }}
-        <button type="submit" class="fb-btn fb-btn--primary fb-btn--block">S'inscrire</button>
+        <button type="submit" class="fb-btn fb-btn--primary fb-btn--block">{% translate "S'inscrire" %}</button>
     </form>
 {% endblock content %}
 {% block links %}
     <div class="fb-threshold__links">
-        <span>Vous avez déjà un compte ? <a href="{% url 'login' %}">Connectez-vous ici</a>.</span>
+        <span>{% translate "Vous avez déjà un compte ?" %} <a href="{% url 'login' %}">{% translate "Connectez-vous ici" %}</a>.</span>
     </div>
 {% endblock links %}
 {% block extra_js %}

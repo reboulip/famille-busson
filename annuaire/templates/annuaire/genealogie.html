@@ -1,6 +1,7 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block vendor_css %}
     <link rel="stylesheet" href="{% static 'vendor/family-chart/family-chart.css' %}">
 {% endblock vendor_css %}
@@ -18,11 +19,15 @@
     {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Généalogie</h1>
-            <p class="fb-page-head__lede">L'arbre complet, branche par branche.</p>
+            <h1>{% translate "Généalogie" %}</h1>
+            <p class="fb-page-head__lede">{% translate "L'arbre complet, branche par branche." %}</p>
         </div>
     </div>
 
+    {% translate "Exporter le carnet d'adresses en Excel" as export_excel_label %}
+    {% translate "Exporter en GEDCOM" as export_gedcom_label %}
+    {% translate "Exporter en image" as export_image_label %}
+    {% translate "Plein écran" as fullscreen_label %}
     <div id="genealogie-panel">
         <div class="genealogie-toolbar fb-toolbar fb-toolbar--attached">
             <select id="genealogie-branch-picker" class="fb-select genealogie-branch-picker" hidden></select>
@@ -35,17 +40,17 @@
                 buttons keep their names once the text is not painted.
             {% endcomment %}
             <button type="button" id="genealogie-export" class="fb-btn fb-btn--quiet fb-btn--sm"
-                    aria-label="Exporter le carnet d'adresses en Excel"
-                    title="Exporter le carnet d'adresses en Excel"
-                    data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">Exporter le carnet d'adresses en Excel</span></button>
+                    aria-label="{{ export_excel_label }}"
+                    title="{{ export_excel_label }}"
+                    data-export-url="{% url 'genealogie-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">{{ export_excel_label }}</span></button>
             <button type="button" id="genealogie-export-gedcom" class="fb-btn fb-btn--quiet fb-btn--sm"
-                    aria-label="Exporter en GEDCOM"
-                    title="Exporter en GEDCOM"
-                    data-export-url="{% url 'gedcom-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">Exporter en GEDCOM</span></button>
+                    aria-label="{{ export_gedcom_label }}"
+                    title="{{ export_gedcom_label }}"
+                    data-export-url="{% url 'gedcom-export' %}">{% icon "download" size=16 %} <span class="genealogie-toolbar__label">{{ export_gedcom_label }}</span></button>
             <button type="button" id="genealogie-export-image" class="fb-btn fb-btn--quiet fb-btn--sm"
-                    aria-label="Exporter en image" title="Exporter en image">{% icon "image" size=16 %} <span class="genealogie-toolbar__label">Exporter en image</span></button>
+                    aria-label="{{ export_image_label }}" title="{{ export_image_label }}">{% icon "image" size=16 %} <span class="genealogie-toolbar__label">{{ export_image_label }}</span></button>
             <button type="button" id="genealogie-fullscreen" class="fb-btn fb-btn--quiet fb-btn--sm"
-                    aria-label="Plein écran" title="Plein écran">{% icon "expand" size=16 %} <span class="genealogie-toolbar__label">Plein écran</span></button>
+                    aria-label="{{ fullscreen_label }}" title="{{ fullscreen_label }}">{% icon "expand" size=16 %} <span class="genealogie-toolbar__label">{{ fullscreen_label }}</span></button>
         </div>
 
         <div class="d-lg-flex genealogie-layout">
@@ -54,7 +59,7 @@
                 <div id="genealogie-chart-mount" class="genealogie-chart-mount"></div>
             </div>
             <aside id="genealogie-detail" class="genealogie-detail d-none d-lg-block">
-                <p class="genealogie-detail-empty fb-meta">Sélectionnez une personne dans l'arbre.</p>
+                <p class="genealogie-detail-empty fb-meta">{% translate "Sélectionnez une personne dans l'arbre." %}</p>
             </aside>
         </div>
     </div>

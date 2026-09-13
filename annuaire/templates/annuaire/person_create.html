@@ -1,33 +1,36 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
-            <h1>Créer une fiche</h1>
-            <p class="fb-page-head__lede">Pour un membre de la famille qui n'aura pas de compte.</p>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
+            <h1>{% translate "Créer une fiche" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Pour un membre de la famille qui n'aura pas de compte." %}</p>
         </div>
     </div>
 
     <div class="fb-form">
         <div class="fb-alert fb-alert--warning">
+            {% blocktranslate trimmed %}
             Cette page sert à créer une fiche pour une personne qui <strong>ne doit pas
             avoir accès au site</strong> (un enfant, un autre membre de la famille…).
             Vous en deviendrez le propriétaire et pourrez la modifier comme la vôtre.
             Si vous renseignez son adresse email, cette personne pourra ensuite créer
             elle-même un compte à partir de cette adresse — ne la renseignez que si
             c'est bien votre intention.
+            {% endblocktranslate %}
         </div>
         <form method="POST" enctype="multipart/form-data" class="form">
             {% csrf_token %}
             <fieldset class="fb-fieldset">
-                <legend>La fiche</legend>
+                <legend>{% translate "La fiche" %}</legend>
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
-                <a href="{% url 'directory' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
+                <a href="{% url 'directory' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

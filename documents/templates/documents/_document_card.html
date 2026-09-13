@@ -1,5 +1,6 @@
 {% load markdown_extras %}
 {% load icons %}
+{% load i18n %}
 <article class="fb-card fb-post-card fb-post-card--doc">
     <div class="fb-post-card__body">
         <h3 class="fb-post-card__title">
@@ -14,7 +15,7 @@
         {% if document.document_date %} — {{ document.document_date|date:"j F Y" }}{% endif %}
         {% if document.redactor %} — {{ document.redactor }}{% endif %}
         {% if query and document.content_match and query|lower not in document.title|lower %}
-            <span class="fb-chip fb-chip--accent">Trouvé dans le contenu</span>
+            <span class="fb-chip fb-chip--accent">{% translate "Trouvé dans le contenu" %}</span>
         {% endif %}
     </p>
 </article>

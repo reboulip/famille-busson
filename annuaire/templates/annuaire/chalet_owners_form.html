@@ -1,23 +1,24 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Chalets PSV</p>
-            <h1>Propriétaires de {{ chalet.name }}</h1>
+            <p class="fb-eyebrow">{% translate "Chalets PSV" %}</p>
+            <h1>{% blocktranslate trimmed with name=chalet.name %}Propriétaires de {{ name }}{% endblocktranslate %}</h1>
         </div>
     </div>
 
     <form method="post" class="fb-form fb-card presence-form">
         {% csrf_token %}
         <div class="fb-field">
-            <label class="fb-label" for="owners-search-input">Propriétaires actuels</label>
+            <label class="fb-label" for="owners-search-input">{% translate "Propriétaires actuels" %}</label>
             {% include "annuaire/_person_picker.html" with input_id="owners-search-input" field_name="owners" initial_json=owners_initial_json %}
-            <p class="fb-help form-text">Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer.</p>
+            <p class="fb-help form-text">{% translate "Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer." %}</p>
         </div>
         <div class="fb-form__actions">
-            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
-            <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Enregistrer" %}</button>
+            <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
         </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>

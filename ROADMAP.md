@@ -62,7 +62,7 @@
   accessibility sweep is part of the item, not a follow-up. (requires: 15.1)
 
 ### Cluster: Internationalisation
-- [ ] 15.4 · i18n scaffolding — `LocaleMiddleware`, `gettext` over every user-facing string
+- [x] 15.4 · i18n scaffolding — `LocaleMiddleware`, `gettext` over every user-facing string
   in templates, forms, model `verbose_name`s and emails, and `makemessages`/
   `compilemessages` wired into CI. French stops being hardcoded and becomes an extracted
   locale. This is the single largest item in the roadmap — hundreds of strings across

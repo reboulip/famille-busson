@@ -94,6 +94,7 @@ MIDDLEWARE = [
     "annuaire.middleware.RequestIdMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "annuaire.middleware.SiteTimezoneMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -204,6 +205,12 @@ TRASH_RETENTION_DAYS = env.int("TRASH_RETENTION_DAYS", default=30)
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
 LANGUAGE_CODE = "fr"
+
+LANGUAGES = [
+    ("fr", "Français"),
+]
+
+LOCALE_PATHS = [BASE_DIR / "locale"]
 
 TIME_ZONE = "Europe/Paris"
 

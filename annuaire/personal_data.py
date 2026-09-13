@@ -29,6 +29,7 @@ from enum import StrEnum
 from django.db.models import Q
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from .models import Account, Person, Relation
 
@@ -45,8 +46,8 @@ class RetentionPolicy(StrEnum):
 @dataclass(frozen=True)
 class DataCategory:
     key: str
-    label_fr: str
-    note_fr: str
+    label: str
+    note: str
     collect: Callable[[Person, Account], list[dict]]
     retention: RetentionPolicy = RetentionPolicy.KEEP
 
@@ -342,49 +343,59 @@ def _collect_consentements(person: Person, viewer: Account) -> list[dict]:
 
 
 PERSONAL_DATA_CATEGORIES: list[DataCategory] = [
-    DataCategory("profil", "Profil", "Vos informations de profil.", _collect_profil),
+    DataCategory("profil", _("Profil"), _("Vos informations de profil."), _collect_profil),
     DataCategory(
         "relations_familiales",
-        "Relations familiales",
-        "Les liens familiaux enregistrés vous concernant.",
+        _("Relations familiales"),
+        _("Les liens familiaux enregistrés vous concernant."),
         _collect_relations_familiales,
     ),
     DataCategory(
-        "comptes_geres", "Comptes gérés", "Les profils que vous gérez, ou qui gèrent le vôtre.", _collect_comptes_geres
+        "comptes_geres",
+        _("Comptes gérés"),
+        _("Les profils que vous gérez, ou qui gèrent le vôtre."),
+        _collect_comptes_geres,
     ),
-    DataCategory("parametres", "Préférences de notification", "Vos préférences de notification.", _collect_parametres),
-    DataCategory("chalets", "Chalets", "Les chalets dont vous êtes propriétaire.", _collect_chalets),
-    DataCategory("presences", "Présences", "Vos séjours enregistrés dans les chalets.", _collect_presences),
-    DataCategory("publications", "Publications", "Les articles dont vous êtes auteur·e.", _collect_publications),
-    DataCategory("commentaires", "Commentaires", "Les commentaires que vous avez publiés.", _collect_commentaires),
+    DataCategory(
+        "parametres",
+        _("Préférences de notification"),
+        _("Vos préférences de notification."),
+        _collect_parametres,
+    ),
+    DataCategory("chalets", _("Chalets"), _("Les chalets dont vous êtes propriétaire."), _collect_chalets),
+    DataCategory("presences", _("Présences"), _("Vos séjours enregistrés dans les chalets."), _collect_presences),
+    DataCategory("publications", _("Publications"), _("Les articles dont vous êtes auteur·e."), _collect_publications),
+    DataCategory(
+        "commentaires", _("Commentaires"), _("Les commentaires que vous avez publiés."), _collect_commentaires
+    ),
     DataCategory(
         "documents",
-        "Documents",
-        "Les documents que vous avez déposés ou caviardés, parmi ceux que vous pouvez voir.",
+        _("Documents"),
+        _("Les documents que vous avez déposés ou caviardés, parmi ceux que vous pouvez voir."),
         _collect_documents,
     ),
     DataCategory(
         "photos",
-        "Photos",
-        "Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi ceux que vous pouvez voir.",
+        _("Photos"),
+        _("Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi ceux que vous pouvez voir."),
         _collect_photos,
     ),
     DataCategory(
         "evenements",
-        "Événements",
-        "Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux que vous pouvez voir.",
+        _("Événements"),
+        _("Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux que vous pouvez voir."),
         _collect_evenements,
     ),
     DataCategory(
         "genealogie",
-        "Généalogie",
-        "Les récits et citations généalogiques vous concernant ou rédigés par vous.",
+        _("Généalogie"),
+        _("Les récits et citations généalogiques vous concernant ou rédigés par vous."),
         _collect_genealogie,
     ),
     DataCategory(
         "consentements",
-        "Consentements",
-        "L'acceptation de la politique de confidentialité liée à votre compte.",
+        _("Consentements"),
+        _("L'acceptation de la politique de confidentialité liée à votre compte."),
         _collect_consentements,
     ),
 ]
@@ -423,15 +434,23 @@ def build_personal_data_archive(person: Person, viewer: Account) -> bytes:
 
 def _build_readme(person: Person, categories_data: dict[str, list[dict]]) -> str:
     lines = [
-        f"Export des données personnelles de {person} — générée le {timezone.now():%d/%m/%Y}.",
+        _("Export des données personnelles de %(person)s — générée le %(date)s.")
+        % {"person": person, "date": f"{timezone.now():%d/%m/%Y}"},
         "",
-        "Ce fichier liste les métadonnées et des liens vers le contenu hébergé sur le",
-        "site (voir donnees.json). Les documents, photos et pièces jointes eux-mêmes",
-        "ne sont pas inclus dans cette archive ; utilisez les liens fournis pour les",
-        "consulter en ligne. Votre photo de profil, elle, est incluse directement.",
+        str(
+            _(
+                "Ce fichier liste les métadonnées et des liens vers le contenu hébergé sur le "
+                "site (voir donnees.json). Les documents, photos et pièces jointes eux-mêmes "
+                "ne sont pas inclus dans cette archive ; utilisez les liens fournis pour les "
+                "consulter en ligne. Votre photo de profil, elle, est incluse directement."
+            )
+        ),
         "",
     ]
     for category in PERSONAL_DATA_CATEGORIES:
         count = len(categories_data.get(category.key, []))
-        lines.append(f"- {category.label_fr} ({count} élément(s)) : {category.note_fr}")
+        lines.append(
+            _("- %(label)s (%(count)s élément(s)) : %(note)s")
+            % {"label": category.label, "count": count, "note": category.note}
+        )
     return "\n".join(lines) + "\n"

@@ -1,26 +1,29 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
-            <h1>Rattacher mon compte à une fiche existante</h1>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
+            <h1>{% translate "Rattacher mon compte à une fiche existante" %}</h1>
         </div>
     </div>
 
     <div class="fb-alert fb-alert--warning">
+        {% blocktranslate trimmed %}
         Cette action est <strong>définitive</strong> : une fois votre compte rattaché à
         une fiche, seul un administrateur pourra le dérattacher. Ne choisissez que votre
         propre fiche.
+        {% endblocktranslate %}
     </div>
 
     <form method="get" action="{% url 'profile-claim' %}" class="fb-toolbar">
-        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher par nom ou prénom…"
-               class="fb-input fb-search" aria-label="Rechercher par nom ou prénom">
-        <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">Rechercher</button>
+        <input type="text" name="q" value="{{ query }}" placeholder="{% translate 'Rechercher par nom ou prénom…' %}"
+               class="fb-input fb-search" aria-label="{% translate 'Rechercher par nom ou prénom' %}">
+        <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Rechercher" %}</button>
         <span class="fb-toolbar__spacer"></span>
         {% if query %}
-            <a href="{% url 'profile-claim' %}" class="fb-btn fb-btn--ghost fb-btn--sm">Effacer</a>
+            <a href="{% url 'profile-claim' %}" class="fb-btn fb-btn--ghost fb-btn--sm">{% translate "Effacer" %}</a>
         {% endif %}
     </form>
 
@@ -32,11 +35,13 @@
                 <img src="{% if person.profile_photo %}{{ person.profile_photo.url }}{% else %}{% static 'default_profile_picture.png' %}{% endif %}"
                      alt="{{ person.first_name }} {{ person.last_name }}" class="fb-avatar">
                 <span class="fb-person-card__name">{{ person.first_name }} {{ person.last_name }}</span>
-                {% if person.birth_date %}<span class="fb-meta">Né(e) en {{ person.birth_date|date:"Y" }}</span>{% endif %}
-                <button type="submit" class="fb-btn fb-btn--primary fb-btn--sm">C'est moi</button>
+                {% if person.birth_date %}<span class="fb-meta">{% blocktranslate trimmed with year=person.birth_date|date:"Y" %}Né(e) en {{ year }}{% endblocktranslate %}</span>{% endif %}
+                <button type="submit" class="fb-btn fb-btn--primary fb-btn--sm">{% translate "C'est moi" %}</button>
             </form>
         {% empty %}
-            {% include "annuaire/_empty.html" with title="Aucune fiche sans compte trouvée" body="Toutes les fiches sont déjà rattachées à un compte, ou votre recherche ne renvoie rien." %}
+            {% translate "Aucune fiche sans compte trouvée" as empty_title %}
+            {% translate "Toutes les fiches sont déjà rattachées à un compte, ou votre recherche ne renvoie rien." as empty_body %}
+            {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
         {% endfor %}
     </div>
 {% endblock content %}

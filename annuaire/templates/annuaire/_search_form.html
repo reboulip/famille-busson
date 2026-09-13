@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 Shared global search field, mounted twice in base.html: once in .fb-topbar
 (mobile) and once at the top of .fb-sidebar's <nav> (desktop) -- .fb-topbar is
@@ -9,7 +10,7 @@ Params:
   input_id  required, a unique id for this mount's <input>
 {% endcomment %}
 <form method="get" action="{% url 'search' %}" class="fb-search-form" role="search">
-    <label class="visually-hidden" for="{{ input_id }}">Rechercher</label>
+    <label class="visually-hidden" for="{{ input_id }}">{% translate "Rechercher" %}</label>
     <input type="search" name="q" id="{{ input_id }}" class="fb-input fb-search"
-           placeholder="Rechercher…" minlength="2" aria-label="Rechercher">
+           placeholder="{% translate 'Rechercher…' %}" minlength="2" aria-label="{% translate 'Rechercher' %}">
 </form>

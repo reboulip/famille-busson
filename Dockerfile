@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Installed early so this layer is cached independently of dependency/code changes.
 # Needed by the documents app's OCR content-extraction pipeline.
-RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-fra \
+RUN apt-get update && apt-get install -y --no-install-recommends tesseract-ocr tesseract-ocr-fra gettext \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -22,6 +22,11 @@ COPY . .
 RUN uv sync --frozen --no-dev
 
 ENV PATH="/app/.venv/bin:$PATH"
+
+# Compiled here, not in docker-entrypoint.sh: the worker service sets
+# RUN_STARTUP_TASKS=0 and is what sends notification emails, so compiling only at
+# container start would leave worker-sent emails untranslated. .mo stays gitignored.
+RUN uv run python manage.py compilemessages
 
 # appuser runs the app itself (migrate/collectstatic/gunicorn), but the container
 # starts as root (no USER here) -- docker-entrypoint.sh chowns the bind-mounted

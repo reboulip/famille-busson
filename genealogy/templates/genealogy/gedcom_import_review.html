@@ -1,14 +1,17 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype I — tabular, with a destructive-confirm-flavoured action row. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Révision de l'import « {{ gedcom_import.original_filename }} »</h1>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% blocktranslate trimmed with filename=gedcom_import.original_filename %}Révision de l'import « {{ filename }} »{% endblocktranslate %}</h1>
             <p class="fb-page-head__lede">
+                {% blocktranslate trimmed %}
                 Aucune personne n'est ajoutée à l'annuaire tant que vous n'avez pas cliqué
                 sur « Appliquer l'import » ci-dessous.
+                {% endblocktranslate %}
             </p>
         </div>
     </div>
@@ -18,7 +21,7 @@
             {% csrf_token %}
             <table class="fb-table">
                 <thead>
-                    <tr><th>Individu importé</th><th>Naissance</th><th>Décès</th><th>Décision</th></tr>
+                    <tr><th>{% translate "Individu importé" %}</th><th>{% translate "Naissance" %}</th><th>{% translate "Décès" %}</th><th>{% translate "Décision" %}</th></tr>
                 </thead>
                 <tbody>
                     {% for row in rows %}
@@ -28,11 +31,11 @@
                             <td>{{ row.individual.death_date|default:"—" }}{% if row.individual.death_place %} · {{ row.individual.death_place }}{% endif %}</td>
                             <td>
                                 <select name="decision_{{ row.individual.pk }}" class="fb-select">
-                                    <option value="create" {% if row.individual.decision == "create" %}selected{% endif %}>Créer un nouveau profil</option>
+                                    <option value="create" {% if row.individual.decision == "create" %}selected{% endif %}>{% translate "Créer un nouveau profil" %}</option>
                                     {% for candidate in row.candidates %}
-                                        <option value="merge:{{ candidate.pk }}" {% if row.individual.match_person_id == candidate.pk %}selected{% endif %}>Fusionner avec {{ candidate }}</option>
+                                        <option value="merge:{{ candidate.pk }}" {% if row.individual.match_person_id == candidate.pk %}selected{% endif %}>{% blocktranslate trimmed %}Fusionner avec {{ candidate }}{% endblocktranslate %}</option>
                                     {% endfor %}
-                                    <option value="skip" {% if row.individual.decision == "skip" %}selected{% endif %}>Ignorer</option>
+                                    <option value="skip" {% if row.individual.decision == "skip" %}selected{% endif %}>{% translate "Ignorer" %}</option>
                                 </select>
                             </td>
                         </tr>
@@ -40,38 +43,41 @@
                 </tbody>
             </table>
             <div class="fb-form__actions">
-                <button type="submit" class="fb-btn fb-btn--quiet">Enregistrer les décisions de cette page</button>
+                <button type="submit" class="fb-btn fb-btn--quiet">{% translate "Enregistrer les décisions de cette page" %}</button>
             </div>
         </form>
 
         {% if page.has_other_pages %}
             <nav class="fb-pagination pagination">
                 {% if page.has_previous %}
-                    <a href="?page={{ page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                    <a href="?page={{ page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; {% translate "Précédent" %}</a>
                 {% endif %}
-                <span>Page {{ page.number }} / {{ page.paginator.num_pages }}</span>
+                <span>{% blocktranslate trimmed with num=page.number total=page.paginator.num_pages %}Page {{ num }} / {{ total }}{% endblocktranslate %}</span>
                 {% if page.has_next %}
-                    <a href="?page={{ page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                    <a href="?page={{ page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivant" %} &rarr;</a>
                 {% endif %}
             </nav>
         {% endif %}
     {% else %}
-        {% include "annuaire/_empty.html" with title="Aucun individu trouvé dans ce fichier" %}
+        {% translate "Aucun individu trouvé dans ce fichier" as empty_title_gedcom %}
+        {% include "annuaire/_empty.html" with title=empty_title_gedcom %}
     {% endif %}
 
     <div class="fb-record__actions" style="margin-top: var(--fb-sp-5)">
         <form method="post" action="{% url 'gedcom-import-apply' gedcom_import.pk %}" style="display:inline">
             {% csrf_token %}
+            {% translate "Appliquer cet import à l'annuaire ? Cette action est irréversible." as confirm_apply_message %}
             <button type="submit" class="fb-btn fb-btn--primary"
-                    onclick="return confirm('Appliquer cet import à l\'annuaire ? Cette action est irréversible.')">
-                {% icon "check" size=16 %} Appliquer l'import
+                    onclick="return confirm('{{ confirm_apply_message|escapejs }}')">
+                {% icon "check" size=16 %} {% translate "Appliquer l'import" %}
             </button>
         </form>
         <form method="post" action="{% url 'gedcom-import-discard' gedcom_import.pk %}" style="display:inline">
             {% csrf_token %}
+            {% translate "Abandonner cet import ?" as confirm_discard_message %}
             <button type="submit" class="fb-btn fb-btn--ghost fb-btn--danger-text"
-                    onclick="return confirm('Abandonner cet import ?')">
-                Abandonner l'import
+                    onclick="return confirm('{{ confirm_discard_message|escapejs }}')">
+                {% translate "Abandonner l'import" %}
             </button>
         </form>
     </div>

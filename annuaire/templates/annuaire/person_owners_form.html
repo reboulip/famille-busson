@@ -1,23 +1,25 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
-            <h1>Propriétaires de {{ person.first_name }} {{ person.last_name }}</h1>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
+            <h1>{% blocktranslate trimmed with first_name=person.first_name last_name=person.last_name %}Propriétaires de {{ first_name }} {{ last_name }}{% endblocktranslate %}</h1>
         </div>
     </div>
 
     <form method="post" class="fb-form fb-card presence-form">
         {% csrf_token %}
         <div class="fb-field">
-            <label class="fb-label" for="owners-search-input">Propriétaires actuels</label>
-            {% include "annuaire/_person_picker.html" with input_id="owners-search-input" field_name="owners" initial_json=owners_initial_json search_url=person_search_with_account_url aria_label="Chercher un propriétaire" %}
-            <p class="fb-help form-text">Seules les personnes ayant un compte peuvent être propriétaires. Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer.</p>
+            <label class="fb-label" for="owners-search-input">{% translate "Propriétaires actuels" %}</label>
+            {% translate "Chercher un propriétaire" as person_picker_aria_label %}
+            {% include "annuaire/_person_picker.html" with input_id="owners-search-input" field_name="owners" initial_json=owners_initial_json search_url=person_search_with_account_url aria_label=person_picker_aria_label %}
+            <p class="fb-help form-text">{% translate "Seules les personnes ayant un compte peuvent être propriétaires. Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour le retirer." %}</p>
         </div>
         <div class="fb-form__actions">
-            <button type="submit" class="fb-btn fb-btn--primary">Enregistrer</button>
-            <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Enregistrer" %}</button>
+            <a href="{% url 'personne-detail' person.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
         </div>
     </form>
     <script src="{% static 'js/person_picker.js' %}"></script>

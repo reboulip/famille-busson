@@ -18,9 +18,16 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect
 from django.urls import include, path
+from django.views.i18n import JavaScriptCatalog
 
 from annuaire.health import healthz
 from annuaire.views import branding_asset, media_serve
+
+# @login_not_required: the pre-login pages (login, signup, magic link, password
+# reset -- base_threshold.html) also need translated JS strings, and this route
+# carries no per-user data, only the compiled djangojs catalog for the active
+# language.
+javascript_catalog = login_not_required(JavaScriptCatalog.as_view(domain="djangojs"))
 
 
 @login_not_required
@@ -47,4 +54,5 @@ urlpatterns = [
     # "logo"/"favicon" by branding_asset -- no other MEDIA_ROOT file is reachable
     # through this route.
     path("branding/<str:kind>", branding_asset, name="branding-asset"),
+    path("jsi18n/", javascript_catalog, name="javascript-catalog"),
 ]

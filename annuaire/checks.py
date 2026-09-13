@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from django.conf import settings
 from django.core.checks import Warning, register
 
@@ -60,3 +62,31 @@ def sentry_dsn_check(app_configs, **kwargs):
             )
         ]
     return []
+
+
+@register()
+def compiled_locale_check(app_configs, **kwargs):
+    """Warn (never error) when a configured language has a .po but no compiled .mo.
+
+    Warning, not error: same rationale as W001-W003 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. A missing .mo falls
+    back to source-language (French) rendering, not a crash, so this can't be fatal --
+    but it's worth surfacing since it means a language silently isn't working.
+    """
+    if settings.DEBUG:
+        return []
+    errors = []
+    for code, name in settings.LANGUAGES:
+        for locale_path in settings.LOCALE_PATHS:
+            po_path = Path(locale_path) / code / "LC_MESSAGES" / "django.po"
+            mo_path = po_path.with_suffix(".mo")
+            if po_path.exists() and not mo_path.exists():
+                errors.append(
+                    Warning(
+                        f"Locale '{code}' ({name}) has a .po file but no compiled .mo file.",
+                        hint="Run `manage.py compilemessages` (done automatically at "
+                        "image build time in the Dockerfile).",
+                        id="annuaire.W004",
+                    )
+                )
+    return errors

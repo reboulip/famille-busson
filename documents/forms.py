@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from annuaire.widgets import MarkdownEditorWidget
 
@@ -64,16 +65,20 @@ class CategoryForm(forms.ModelForm):
         while node is not None:
             if node.groups.exists():
                 raise forms.ValidationError(
-                    "Impossible de restreindre cette catégorie : une catégorie parente restreint "
-                    "déjà l'accès, et cette restriction s'applique à toute sa descendance."
+                    _(
+                        "Impossible de restreindre cette catégorie : une catégorie parente restreint "
+                        "déjà l'accès, et cette restriction s'applique à toute sa descendance."
+                    )
                 )
             node = node.parent
         if self.instance.pk is not None and (
             ancestor_has_groups(self.instance) or descendant_has_groups(self.instance)
         ):
             raise forms.ValidationError(
-                "Impossible de restreindre cette catégorie : une catégorie parente ou une "
-                "sous-catégorie restreint déjà l'accès."
+                _(
+                    "Impossible de restreindre cette catégorie : une catégorie parente ou une "
+                    "sous-catégorie restreint déjà l'accès."
+                )
             )
         return cleaned_data
 
@@ -115,7 +120,7 @@ class BaseDocumentFileFormSet(forms.BaseInlineFormSet):
             if form.cleaned_data
         )
         if not has_file:
-            raise forms.ValidationError("Un document doit contenir au moins un fichier.")
+            raise forms.ValidationError(_("Un document doit contenir au moins un fichier."))
 
 
 DocumentFileFormSet = forms.inlineformset_factory(

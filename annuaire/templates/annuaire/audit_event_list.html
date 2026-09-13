@@ -1,24 +1,26 @@
 {% extends "annuaire/base.html" %}
+{% load i18n %}
 {% block content %}
     {# Archetype I — tabular. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Journal d'audit</h1>
-            <p class="fb-page-head__lede">Qui a créé, modifié ou supprimé quoi, et quand.</p>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Journal d'audit" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Qui a créé, modifié ou supprimé quoi, et quand." %}</p>
         </div>
     </div>
 
     {% if events %}
+        {% translate "Système" as default_actor_label %}
         <table class="fb-table table">
             <thead>
-                <tr><th>Date</th><th>Auteur</th><th>Action</th><th>Objet</th><th>Détails</th></tr>
+                <tr><th>{% translate "Date" %}</th><th>{% translate "Auteur" %}</th><th>{% translate "Action" %}</th><th>{% translate "Objet" %}</th><th>{% translate "Détails" %}</th></tr>
             </thead>
             <tbody>
                 {% for event in events %}
                     <tr>
                         <td>{{ event.timestamp }}</td>
-                        <td>{{ event.actor|default:event.actor_label|default:"Système" }}</td>
+                        <td>{{ event.actor|default:event.actor_label|default:default_actor_label }}</td>
                         <td>{{ event.get_action_display }}</td>
                         <td class="fb-table__strong">{{ event.object_repr }} <span class="fb-chip">{{ event.content_type.name }}</span></td>
                         <td>
@@ -34,15 +36,17 @@
         {% if is_paginated %}
             <nav class="fb-pagination pagination">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% blocktranslate trimmed %}&larr; Précédent{% endblocktranslate %}</a>
                 {% endif %}
-                <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                <span>{% blocktranslate trimmed with current=page_obj.number total=page_obj.paginator.num_pages %}Page {{ current }} / {{ total }}{% endblocktranslate %}</span>
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                    <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% blocktranslate trimmed %}Suivant &rarr;{% endblocktranslate %}</a>
                 {% endif %}
             </nav>
         {% endif %}
     {% else %}
-        {% include "annuaire/_empty.html" with title="Aucun événement" body="Le journal d'audit est vide pour le moment." %}
+        {% translate "Aucun événement" as empty_title %}
+        {% translate "Le journal d'audit est vide pour le moment." as empty_body %}
+        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
     {% endif %}
 {% endblock content %}

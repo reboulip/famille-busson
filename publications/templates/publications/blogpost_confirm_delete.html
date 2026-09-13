@@ -1,33 +1,33 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Publications</p>
-            <h1>Supprimer cette publication ?</h1>
+            <p class="fb-eyebrow">{% translate "Publications" %}</p>
+            <h1>{% translate "Supprimer cette publication ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer « {{ object.title }} » ?</h1>
-        <p class="fb-meta">Publiée le {{ object.created_at|date:"j F Y" }}.</p>
+        <h1>{% blocktranslate trimmed with title=object.title %}Supprimer « {{ title }} » ?{% endblocktranslate %}</h1>
+        <p class="fb-meta">{% blocktranslate trimmed with date=object.created_at|date:"j F Y" %}Publiée le {{ date }}.{% endblocktranslate %}</p>
         <div class="fb-confirm__consequences">
             <p class="fb-confirm__lead">
-                La publication sera envoyée à la corbeille, récupérable pendant {{ trash_retention_days }} jours.
-                Passé ce délai, elle sera supprimée définitivement, avec :
+                {% blocktranslate trimmed with days=trash_retention_days %}La publication sera envoyée à la corbeille, récupérable pendant {{ days }} jours. Passé ce délai, elle sera supprimée définitivement, avec :{% endblocktranslate %}
             </p>
             <ul>
-                <li>son contenu ;</li>
-                <li>{% with n=object.comments.count %}{% if n == 1 %}son commentaire{% else %}ses {{ n }} commentaires{% endif %}{% endwith %} ;</li>
-                <li>{% with n=object.attachments.count %}{% if n == 1 %}sa pièce jointe{% else %}ses {{ n }} pièces jointes{% endif %}{% endwith %}, fichiers compris.</li>
+                <li>{% translate "son contenu ;" %}</li>
+                <li>{% with n=object.comments.count %}{% if n == 1 %}{% translate "son commentaire" %}{% else %}{% blocktranslate trimmed %}ses {{ n }} commentaires{% endblocktranslate %}{% endif %}{% endwith %} ;</li>
+                <li>{% with n=object.attachments.count %}{% if n == 1 %}{% translate "sa pièce jointe" %}{% else %}{% blocktranslate trimmed %}ses {{ n }} pièces jointes{% endblocktranslate %}{% endif %}{% endwith %}{% translate ", fichiers compris." %}</li>
             </ul>
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Envoyer à la corbeille</button>
-                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} {% translate "Envoyer à la corbeille" %}</button>
+                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

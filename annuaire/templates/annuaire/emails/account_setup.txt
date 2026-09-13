@@ -1,12 +1,12 @@
-Bonjour,
+{% load i18n %}{% translate "Bonjour," %}
 
-{% if is_reset %}Le mot de passe de votre compte sur {{ site_name }} a été réinitialisé.{% else %}Un compte a été créé pour vous sur {{ site_name }}.{% endif %}
+{% if is_reset %}{% blocktranslate trimmed with site_name=site_name %}Le mot de passe de votre compte sur {{ site_name }} a été réinitialisé.{% endblocktranslate %}{% else %}{% blocktranslate trimmed with site_name=site_name %}Un compte a été créé pour vous sur {{ site_name }}.{% endblocktranslate %}{% endif %}
 
-Adresse : {{ account_email }}
+{% translate "Adresse" %} : {{ account_email }}
 
-Choisissez votre mot de passe ici : {{ reset_url }}
-Ce lien est à usage unique et expire dans 7 jours.
+{% translate "Choisissez votre mot de passe ici" %} : {{ reset_url }}
+{% translate "Ce lien est à usage unique et expire dans 7 jours." %}
 
-Si vous n'attendiez pas ce message, vous pouvez l'ignorer.
+{% translate "Si vous n'attendiez pas ce message, vous pouvez l'ignorer." %}
 
-À bientôt !
+{% translate "À bientôt !" %}

@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from annuaire.forms import ADDRESS_HELP_TEXT, AddressAutocompleteInput
 from annuaire.widgets import MarkdownEditorWidget
@@ -50,5 +51,5 @@ class RsvpForm(forms.ModelForm):
             "response": forms.RadioSelect,
         }
         labels = {
-            "guest_count": "Accompagnants supplémentaires",
+            "guest_count": _("Accompagnants supplémentaires"),
         }

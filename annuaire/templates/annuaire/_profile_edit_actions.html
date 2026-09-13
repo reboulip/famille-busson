@@ -1,7 +1,8 @@
+{% load i18n %}
 <div class="fb-form__actions">
-    <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+    <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
     {% if form.instance.pk %}
-        <a href="{% url 'person-relations-edit' form.instance.pk %}" class="fb-btn fb-btn--quiet">Modifier les relations</a>
-        <a href="{% url 'personne-detail' form.instance.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+        <a href="{% url 'person-relations-edit' form.instance.pk %}" class="fb-btn fb-btn--quiet">{% translate "Modifier les relations" %}</a>
+        <a href="{% url 'personne-detail' form.instance.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
     {% endif %}
 </div>

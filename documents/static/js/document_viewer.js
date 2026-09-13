@@ -377,10 +377,10 @@ function initPdfViewer(viewer) {
             await layout(false);
         } catch (error) {
             console.error('Échec du rendu PDF :', error);
-            container.textContent = "Impossible d'afficher ce PDF ici. ";
+            container.textContent = gettext("Impossible d'afficher ce PDF ici. ");
             const link = document.createElement('a');
             link.href = `${pdfUrl}?download=1`;
-            link.textContent = 'Télécharger le fichier';
+            link.textContent = gettext('Télécharger le fichier');
             container.appendChild(link);
         }
     })();

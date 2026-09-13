@@ -11,6 +11,7 @@ from django.http import FileResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.decorators import method_decorator
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.clickjacking import xframe_options_sameorigin
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
@@ -128,11 +129,11 @@ class PhotoUploadView(LoginRequiredMixin, View):
     def post(self, request, pk):
         album = get_object_or_404(Album, pk=pk)
         if not user_can_access_album(request.user, album):
-            raise PermissionDenied("Vous n'avez pas accès à cet album.")
+            raise PermissionDenied(_("Vous n'avez pas accès à cet album."))
 
         form = PhotoUploadForm(request.POST, request.FILES)
         if not form.is_valid():
-            error = next(iter(form.errors.get("file", [])), "Fichier invalide.")
+            error = next(iter(form.errors.get("file", [])), str(_("Fichier invalide.")))
             return JsonResponse({"error": error}, status=400)
 
         photo = form.save(commit=False)
@@ -161,7 +162,7 @@ class PhotoTagView(LoginRequiredMixin, View):
     def _get_photo(self, pk):
         photo = get_object_or_404(Photo.objects.select_related("album"), pk=pk)
         if not user_can_access_album(self.request.user, photo.album):
-            raise PermissionDenied("Vous n'avez pas accès à cette photo.")
+            raise PermissionDenied(_("Vous n'avez pas accès à cette photo."))
         return photo
 
     def get(self, request, pk):
@@ -223,7 +224,7 @@ class PhotoOwnerOrStaffRequiredMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or obj.uploaded_by_id != profile.pk:
-            raise PermissionDenied("Vous n'êtes pas le déposant de cette photo.")
+            raise PermissionDenied(_("Vous n'êtes pas le déposant de cette photo."))
         return obj
 
 
@@ -259,7 +260,7 @@ class AlbumCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant de créer un album.")
+            messages.error(request, _("Vous devez compléter votre profil avant de créer un album."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -276,7 +277,7 @@ class AlbumOwnerOrStaffRequiredMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or obj.created_by_id != profile.pk:
-            raise PermissionDenied("Vous n'êtes pas le créateur de cet album.")
+            raise PermissionDenied(_("Vous n'êtes pas le créateur de cet album."))
         return obj
 
 
@@ -327,7 +328,7 @@ class PhotoFileView(LoginRequiredMixin, View):
     def get(self, request, pk):
         photo = get_object_or_404(Photo, pk=pk)
         if not user_can_access_album(request.user, photo.album):
-            raise PermissionDenied("Vous n'avez pas accès à cette photo.")
+            raise PermissionDenied(_("Vous n'avez pas accès à cette photo."))
 
         field_file = {"web": photo.web, "thumbnail": photo.thumbnail}.get(self.variant)
         if not field_file:
