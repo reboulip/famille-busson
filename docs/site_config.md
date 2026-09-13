@@ -62,7 +62,7 @@ graph — `middleware.py` in particular imports it lazily, inside
 
 - **Every template:** the `site_config` context processor
   (`annuaire/context_processors.py`, registered in `TEMPLATES` in
-  `famille_busson/settings.py`) puts the `SiteConfig` instance in every
+  `config/settings.py`) puts the `SiteConfig` instance in every
   template's context under `site_config`.
 - **Every request's active timezone:** `SiteTimezoneMiddleware`
   (`annuaire/middleware.py`, registered in `MIDDLEWARE` right after

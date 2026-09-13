@@ -55,7 +55,7 @@ forever.
 `AuditActorMiddleware` (`annuaire/middleware.py`) reads `request.user` once per
 request and stores it in a `contextvars.ContextVar`, the same idiom the
 existing `RequestIdMiddleware` uses for request correlation IDs. It's
-registered in `MIDDLEWARE` (`famille_busson/settings.py`) right after
+registered in `MIDDLEWARE` (`config/settings.py`) right after
 `AuthenticationMiddleware`, so `request.user` is already resolved by the time
 it runs. `annuaire.audit`'s signal receivers — which run deep inside
 `.save()`/`.delete()`, with no access to the request object — read the

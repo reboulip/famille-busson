@@ -200,7 +200,7 @@ accept again.
 The notice's real-world legal content — who the data controller is, the
 hosting provider and country, a contact address for exercising data-subject
 rights, and a plain-language retention summary — comes from five environment
-variables (`famille_busson/settings.py`, all default `""`): `PRIVACY_CONTROLLER_NAME`,
+variables (`config/settings.py`, all default `""`): `PRIVACY_CONTROLLER_NAME`,
 `PRIVACY_CONTROLLER_CONTACT`, `PRIVACY_HOSTING_PROVIDER`,
 `PRIVACY_HOSTING_COUNTRY`, `PRIVACY_RETENTION_SUMMARY`. These are deliberately
 **not** hardcoded in a template and **not** an in-app editable field — they're

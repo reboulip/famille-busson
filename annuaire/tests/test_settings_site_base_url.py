@@ -5,7 +5,7 @@ from django.core.checks import Warning
 from django.test import override_settings
 
 from annuaire.checks import site_base_url_check
-from famille_busson.settings import _default_site_base_url
+from config.settings import _default_site_base_url
 
 
 def test_derives_from_the_first_csrf_trusted_origin():

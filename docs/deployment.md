@@ -67,7 +67,7 @@ The entrypoint runs twice per container start:
    reliable across VPS redeploys.
 2. **As `appuser`** (second pass, the `id -u` check no longer matches root): runs
    `manage.py migrate --noinput` and `collectstatic --noinput`, then `exec`s the
-   container's `CMD` (`gunicorn famille_busson.wsgi:application`).
+   container's `CMD` (`gunicorn config.wsgi:application`).
 
 ## Production stack (`docker-compose.prod.yml`)
 
@@ -86,7 +86,7 @@ above.
 `CACHES` was unset until this item, so every gunicorn worker held its own independent
 `LocMemCache` — a value written by one worker was invisible to the others, which quietly
 undermines anything relying on the cache being actually shared (rate-limiting, in
-particular — see a later item). `famille_busson/settings.py` now reads `CACHES` via
+particular — see a later item). `config/settings.py` now reads `CACHES` via
 `django-environ`'s `env.cache("CACHE_URL", default="locmemcache://")`, resolving a
 `redis://`/`valkey://` URL to Django's built-in `django.core.cache.backends.redis.
 RedisCache` (no `django-redis` package needed — only plain `redis`, the client library,
@@ -145,7 +145,7 @@ blip from taking the whole site down in production.
 `ALLOWED_HOSTS`'s first entry, because `SECURE_SSL_REDIRECT` (on by default outside
 `DEBUG`) would otherwise turn a plain-HTTP in-container request into a 301 that never
 reaches the view, and a request without a matching `Host` header gets a `DisallowedHost`
-400 instead — `famille_busson/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
+400 instead — `config/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
 half, the explicit header covers the second. A 503 response makes the script exit
 non-zero (via the propagating `HTTPError`), which is what marks the container unhealthy
 in `docker ps`/`docker compose ps` — this is visibility, not recovery; nothing restarts
@@ -175,12 +175,12 @@ automatically via `annuaire/file_cleanup.py`'s `register_file_cleanup`, wired in
 
 `.env.example` at the repo root is the checklist — copy it to `/srv/bubu/.env` on the
 VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` container
-directly, while `DATABASE_URL` is what Django (`famille_busson/settings.py`, via
+directly, while `DATABASE_URL` is what Django (`config/settings.py`, via
 `django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
 to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP. `SITE_BASE_URL`
 is used to build absolute links in emails sent outside a request context — birthday
 reminders and blog post notifications — and should still be set explicitly to
-`https://bubu.reboulip.fr` in production. If left unset, `famille_busson/settings.py`'s
+`https://bubu.reboulip.fr` in production. If left unset, `config/settings.py`'s
 `_default_site_base_url()` now derives a non-localhost fallback from
 `CSRF_TRUSTED_ORIGINS` (first entry) or, failing that, the first non-wildcard,
 non-localhost `ALLOWED_HOSTS` entry — falling back to `http://localhost:8000` only if
@@ -197,7 +197,7 @@ before launch — see [`privacy.md`](privacy.md#legal-facts-environment-variable
 
 ## App version
 
-`APP_VERSION` (`famille_busson/settings.py`) is read once at import time from
+`APP_VERSION` (`config/settings.py`) is read once at import time from
 `pyproject.toml`'s `[project].version`, via `tomllib` directly — not
 `importlib.metadata`, which has no dist-info to look up on this uv *virtual* project
 (no `[build-system]` table, `--no-install-project` in the Dockerfile). It's exposed to

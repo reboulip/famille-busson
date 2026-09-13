@@ -87,12 +87,12 @@
 - [ ] 16.3 · Vocabulary review — relation labels, default group names, seeded document
   categories, and the remaining France-specific defaults (the BAN-first geocoder order,
   the `fr` language default) reviewed for a family that isn't this one. (requires: 15.4)
-- [ ] 16.4 · Rename the project package — `famille_busson` becomes a neutral name across
+- [x] 16.4 · Rename the project package — `famille_busson` becomes a neutral name across
   settings, WSGI/ASGI, `manage.py`, `pyproject.toml`'s pytest config, the Dockerfile's
   gunicorn `CMD`, the compose files and the docs.
 
 ### Cluster: Démarrage et vérification
-- [ ] 16.5 · `manage.py bootstrap_site` — an interactive first run: site identity, first
+- [x] 16.5 · `manage.py bootstrap_site` — an interactive first run: site identity, first
   superuser, default groups, starter document categories. (requires: 15.1)
 - [ ] 16.6 · Deployment recipe — a templated compose file and `.env`, plus a "start here"
   guide covering DNS, TLS, an email provider, the backup job and the scheduler.

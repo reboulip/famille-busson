@@ -11,7 +11,7 @@ read the logs once you do.
 - `json` (default outside `DEBUG`) — one JSON object per line, for `docker logs` /
   a log aggregator to parse.
 
-A root (`""`) logger was added in `famille_busson/settings.py`'s `LOGGING` — previously
+A root (`""`) logger was added in `config/settings.py`'s `LOGGING` — previously
 only `django`/`django.request` were configured, so any `logging.getLogger(__name__)`
 call elsewhere (e.g. `annuaire/file_cleanup.py`) fell through to Python's unformatted
 `lastResort` handler. Every logger now reaches a handler either way.

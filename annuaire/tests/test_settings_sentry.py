@@ -7,7 +7,7 @@ from django.test import override_settings
 from sentry_sdk.types import Event, Hint
 
 from annuaire.checks import sentry_dsn_check
-from famille_busson.settings import _sentry_before_send
+from config.settings import _sentry_before_send
 
 # _sentry_before_send is typed against sentry-sdk's own Event/Hint TypedDicts, so a
 # plain dict literal needs an explicit cast to satisfy ty -- the real shape has many

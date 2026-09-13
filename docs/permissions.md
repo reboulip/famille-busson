@@ -4,7 +4,7 @@ Authorization is spread across a handful of mixins/helpers in `annuaire/views.py
 `publications/views.py` rather than one central place. This page collects them.
 
 **Every view is login-required by default.** `django.contrib.auth.middleware.LoginRequiredMiddleware`
-(`famille_busson/settings.py`'s `MIDDLEWARE`, after `AuthenticationMiddleware`)
+(`config/settings.py`'s `MIDDLEWARE`, after `AuthenticationMiddleware`)
 redirects any anonymous request to a view that hasn't explicitly opted out. A view
 must carry `@login_not_required` (function views) or
 `@method_decorator(login_not_required, name="dispatch")` (class-based views) to
@@ -106,7 +106,7 @@ There is no public create/edit UI for either model yet.
 ## Public (unauthenticated) surface
 
 Every view is gated except: `login` (`CustomLoginView`), `signup` (`SignupView`),
-`logout`, `healthz` (`famille_busson/urls.py`), `password_reset_confirm`
+`logout`, `healthz` (`config/urls.py`), `password_reset_confirm`
 (`AccountPasswordResetConfirmView` — must be reachable by a signed-out user
 following an emailed link), `password-reset` (`AccountPasswordResetView`) and
 `password-reset-done` (`AccountPasswordResetDoneView`) — the self-service "mot de
@@ -114,7 +114,7 @@ passe oublié" request form linked from the login page and its "check your email
 confirmation, both of which follow Django's stock no-user-enumeration behavior:
 requesting a reset for an unregistered email still redirects to the confirmation
 page without sending anything or revealing whether the account exists. `healthz`
-and the root `/` redirect (`famille_busson/urls.py`) are also public, each
+and the root `/` redirect (`config/urls.py`) are also public, each
 decorated `@login_not_required`. `ical-feed` (`ICalFeedView`, `calendrier/<token>.ics`)
 is also `@login_not_required` — unauthenticated by design, since a third-party
 calendar client can't carry a session — but it is **not** a blanket-public view: the
@@ -138,7 +138,7 @@ directly (no project subclass) and is **not** decorated — an anonymous `GET` t
 ever sees a logout control.
 
 `/media/<path>` is now gated too, via `media_serve`
-(`annuaire/views.py`, wired in `famille_busson/urls.py`) — an `@login_required`
+(`annuaire/views.py`, wired in `config/urls.py`) — an `@login_required`
 wrapper around `django.views.static.serve` so uploaded files
 (`Person.profile_photo`, `Chalet.photo`, blog `Attachment.file`) are no longer
 readable by anyone who obtains the URL.
@@ -152,7 +152,7 @@ a visitor who isn't authenticated yet. It is not a general public alias for
 ...}` mapping onto `SiteConfig.logo`/`SiteConfig.favicon` only, 404 on
 anything else — no path-traversal window into the rest of `MEDIA_ROOT`.
 
-`/jsi18n/` (route name `javascript-catalog`, `famille_busson/urls.py`) is
+`/jsi18n/` (route name `javascript-catalog`, `config/urls.py`) is
 Django's stock `JavaScriptCatalog` view (`domain="djangojs"`), wrapped
 directly in `login_not_required` rather than a project subclass. It carries
 no per-user data — only the compiled JS message catalog for the active

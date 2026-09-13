@@ -1,7 +1,7 @@
 """Structured JSON logging (9.9).
 
 Stdlib-only -- no structlog/python-json-logger dependency for what's really a
-~40-line formatter. Selected via LOG_FORMAT (see famille_busson/settings.py's
+~40-line formatter. Selected via LOG_FORMAT (see config/settings.py's
 LOGGING); referenced there by dotted string so settings.py carries no import-time
 coupling to this module.
 """

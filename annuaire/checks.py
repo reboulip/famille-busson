@@ -3,6 +3,8 @@ from pathlib import Path
 from django.conf import settings
 from django.core.checks import Warning, register
 
+from .site_config import get_site_config
+
 
 @register()
 def site_base_url_check(app_configs, **kwargs):
@@ -90,3 +92,22 @@ def compiled_locale_check(app_configs, **kwargs):
                     )
                 )
     return errors
+
+
+@register()
+def site_name_check(app_configs, **kwargs):
+    """Warn (never error) when SiteConfig.site_name is still blank outside DEBUG.
+
+    Warning, not error: same rationale as W001-W004 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. A blank site_name
+    means `bootstrap_site` was never run on this instance.
+    """
+    if not settings.DEBUG and not get_site_config().site_name:
+        return [
+            Warning(
+                "SiteConfig.site_name is blank outside of DEBUG -- bootstrap_site was never run on this instance.",
+                hint="Run `manage.py bootstrap_site` to configure this instance.",
+                id="annuaire.W005",
+            )
+        ]
+    return []

@@ -103,7 +103,7 @@ whole batch, so a mid-batch failure never rolls back an already-committed
 purge, and each object's deferred `post_delete` file cleanup fires at the
 right moment for that object alone.
 
-`TRASH_RETENTION_DAYS` (`famille_busson/settings.py`, env-backed, default
+`TRASH_RETENTION_DAYS` (`config/settings.py`, env-backed, default
 `30`) is the single source of truth for the retention window, read by both the
 purge job and the confirm-delete/corbeille templates' copy.
 
