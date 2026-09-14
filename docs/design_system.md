@@ -194,9 +194,10 @@ sync if either changes.
   string), `markdown-editor-toolbar-btn` (exact attribute order), `category-tree__row`,
   `fb-post-card--doc`, `fb-post-card__body`, `fb-post-card__meta`, `profile-record`,
   `profile-record__actions`, `profile-identity`, `profile-identity--pinned`,
-  `profile-identity-sentinel`, `genealogie-toolbar__label`. `.fb-post-card` and
-  `.fb-post-card .fb-meta a` (components.css), `.f3 div.card` (main.css), and the
-  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`
+  `profile-identity-sentinel`, `genealogie-toolbar__label`, `fb-longform--full`.
+  `.fb-post-card` and `.fb-post-card .fb-meta a` (components.css), `.f3 div.card`
+  (main.css), and the
+  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`/`.fb-longform.fb-longform--full`
   rules also carry source-text-tested declarations, not just names — see below.
 - **`{# … #}` comments are single-line only.** A multi-line one renders as visible text
   on the page. Use `{% comment %}…{% endcomment %}`.
