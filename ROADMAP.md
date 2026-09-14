@@ -118,7 +118,7 @@
   prefixes. [#142]
 
 ### Cluster: Interface
-- [ ] 17.4 · Sidebar/menu overhaul — compact the main navigation (padding/margin/
+- [x] 17.4 · Sidebar/menu overhaul — compact the main navigation (padding/margin/
   font-size so it fits without scrolling) and prune/reorder sections (drop redundant
   "nouveau document" entry, move Publications after "Les Busson", group Documents +
   Photothèque). [#145] [#141]

@@ -1,7 +1,24 @@
+import re
+from pathlib import Path
+
 import pytest
 from django.urls import reverse
 
 from annuaire.models import SiteConfig
+
+COMPONENTS_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "components.css"
+
+
+def _rule_body(css_text: str, selector: str) -> str:
+    stripped = re.sub(r"/\*.*?\*/", "", css_text, flags=re.DOTALL)
+    match = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", stripped)
+    assert match, f"No {selector!r} rule found in {COMPONENTS_CSS}"
+    return match.group(1)
+
+
+def _declared_value(body: str, prop: str) -> str | None:
+    match = re.search(rf"{prop}\s*:\s*([^;]+);", body)
+    return match.group(1).strip() if match else None
 
 
 @pytest.mark.django_db
@@ -245,3 +262,46 @@ def test_sidebar_place_entry_names_presences_too(auth_client):
     # #127: the section covers the presence calendar as well as the places.
     content = auth_client.get(reverse("directory")).content.decode()
     assert "Résidences et Présences" in content
+
+
+# ---------------------------------------------------------------------------
+# Sidebar overhaul (17.4, #145/#141)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_sidebar_drops_the_redundant_create_shortcuts(auth_client):
+    # Every list page already has its own primary create action -- these nav
+    # entries were pure duplication.
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert f'href="{reverse("document-create")}"' not in content
+    assert f'href="{reverse("blogpost-create")}"' not in content
+
+
+@pytest.mark.django_db
+def test_sidebar_publications_precede_documents_et_photos(auth_client):
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert content.index(f'href="{reverse("blogpost-list")}"') < content.index(f'href="{reverse("document-list")}"')
+
+
+@pytest.mark.django_db
+def test_sidebar_groups_documents_and_albums_under_one_label(auth_client):
+    content = auth_client.get(reverse("directory")).content.decode()
+    between = content[
+        content.index(f'href="{reverse("document-list")}"') : content.index(f'href="{reverse("album-list")}"')
+    ]
+    assert "fb-nav__label" not in between
+
+
+@pytest.mark.django_db
+def test_sidebar_events_link_has_no_group_heading_of_its_own(auth_client):
+    # Folded into the unlabelled top group -- a heading for a single link was the
+    # most expensive vertical space in the menu.
+    content = auth_client.get(reverse("directory")).content.decode()
+    before = content[: content.index(f'href="{reverse("event-list")}"')]
+    assert "fb-nav__label" not in before[before.rindex("<nav") :]
+
+
+def test_sidebar_nav_links_are_denser_than_before():
+    body = _rule_body(COMPONENTS_CSS.read_text(encoding="utf-8"), ".fb-nav a,\n.fb-nav__logout")
+    assert _declared_value(body, "font-size") == "0.875rem"

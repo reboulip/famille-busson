@@ -94,6 +94,7 @@
                                 <li><a href="{% url 'home' %}" {% if un == 'home' %}aria-current="page"{% endif %}>{% translate "Accueil" %}</a></li>
                                 <li><a href="{% url 'activity-feed' %}" {% if un == 'activity-feed' %}aria-current="page"{% endif %}>{% translate "Quoi de neuf" %}</a></li>
                                 <li><a href="{% url 'calendrier' %}" {% if un == 'calendrier' %}aria-current="page"{% endif %}>{% translate "Calendrier" %}</a></li>
+                                <li><a href="{% url 'event-list' %}" {% if un == 'event-list' or un == 'event-detail' %}aria-current="page"{% endif %}>{% translate "Tous les événements" %}</a></li>
                             </ul>
                         </div>
 
@@ -108,37 +109,18 @@
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">{% translate "Événements" %}</p>
-                            <ul>
-                                <li><a href="{% url 'event-list' %}" {% if un == 'event-list' or un == 'event-detail' %}aria-current="page"{% endif %}>{% translate "Tous les événements" %}</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">{% translate "Photothèque" %}</p>
-                            <ul>
-                                <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>{% translate "Tous les albums" %}</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="fb-nav__group">
                             <p class="fb-eyebrow fb-nav__label">{% translate "Publications" %}</p>
                             <ul>
                                 <li><a href="{% url 'blogpost-list' %}" {% if un == 'blogpost-list' or un == 'blogpost-detail' %}aria-current="page"{% endif %}>{% translate "Toutes les publications" %}</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="{% url 'blogpost-create' %}" {% if un == 'blogpost-create' %}aria-current="page"{% endif %}>{% translate "Nouvelle publication" %}</a></li>
-                                {% endif %}
                             </ul>
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">{% translate "Documents" %}</p>
+                            <p class="fb-eyebrow fb-nav__label">{% translate "Documents et photos" %}</p>
                             <ul>
                                 <li><a href="{% url 'document-list' %}" {% if un == 'document-list' or un == 'document-detail' %}aria-current="page"{% endif %}>{% translate "Tous les documents" %}</a></li>
                                 <li><a href="{% url 'category-list' %}" {% if un == 'category-list' or un == 'category-detail' %}aria-current="page"{% endif %}>{% translate "Catégories" %}</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="{% url 'document-create' %}" {% if un == 'document-create' %}aria-current="page"{% endif %}>{% translate "Nouveau document" %}</a></li>
-                                {% endif %}
+                                <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>{% translate "Tous les albums" %}</a></li>
                             </ul>
                         </div>
 
