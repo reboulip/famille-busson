@@ -41,9 +41,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "keyring>=25.7.0",
+    "keyrings-alt>=5.0.2",
     "pre-commit>=4.6.2",
     "ruff>=0.16.3",
     "ty>=0.0.72",
+    "typesafe-sdk>=0.7.0",
 ]
 docs = [
     "mkdocs>=1.6.1",
