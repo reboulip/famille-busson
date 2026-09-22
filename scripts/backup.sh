@@ -10,9 +10,13 @@ set -euo pipefail
 # Usage (see docs/deployment.md's "Sauvegardes" section for the cron entry):
 #   cd /srv/bubu && bash scripts/backup.sh [--dry-run]
 #
-# Reads its configuration from the environment -- when invoked via cron this comes
-# from sourcing ENV_FILE (default: ./.env) below, matching how docker compose itself
-# reads /srv/bubu/.env.
+# Reads its configuration from ENV_FILE (default: ./.env) below -- loaded as plain
+# KEY=VALUE data (see load_env_file), the same way docker compose itself reads
+# /srv/bubu/.env, not executed as a shell script. A previous version used `source`,
+# which ran .env as bash: a value containing shell metacharacters (Django's
+# SECRET_KEY charset includes "()", for instance) broke with a bash syntax error, and
+# in principle a value containing "$(...)" or backticks would have been executed
+# rather than just stored.
 
 DRY_RUN=0
 for arg in "$@"; do
@@ -25,12 +29,36 @@ for arg in "$@"; do
     esac
 done
 
+# Parses "KEY=VALUE" lines and exports them, without ever passing file content to the
+# shell to execute -- unlike `source`, a value is taken completely literally (no
+# expansion of $(), ``, $VAR, or globs), and a single layer of surrounding '...' or
+# "..." quoting is stripped, matching how compose's own .env parser treats a quoted
+# value. Blank lines and lines starting with '#' (after leading whitespace) are
+# skipped; anything else that isn't a valid KEY=VALUE line is a hard error -- a
+# malformed line almost always means the file's contents aren't what was intended, so
+# guessing/ignoring it is worse than stopping here with a clear line number.
+load_env_file() {
+    local file="$1" line_no=0 line key value
+    while IFS= read -r line || [ -n "$line" ]; do
+        line_no=$((line_no + 1))
+        [[ "$line" =~ ^[[:space:]]*($|#) ]] && continue
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
+            if [[ "$value" =~ ^\'(.*)\'$ ]] || [[ "$value" =~ ^\"(.*)\"$ ]]; then
+                value="${BASH_REMATCH[1]}"
+            fi
+            export "$key=$value"
+        else
+            echo "ERROR: $file line $line_no is not a KEY=VALUE line -- fix it before continuing (not shown here, in case it's a secret)." >&2
+            exit 1
+        fi
+    done < "$file"
+}
+
 ENV_FILE="${ENV_FILE:-.env}"
 if [ -f "$ENV_FILE" ]; then
-    set -a
-    # shellcheck disable=SC1090
-    source "$ENV_FILE"
-    set +a
+    load_env_file "$ENV_FILE"
 fi
 
 COMPOSE_DIR="${COMPOSE_DIR:-/srv/bubu}"
