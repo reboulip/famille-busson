@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 21:49+0200\n"
+"POT-Creation-Date: 2026-09-22 21:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -138,11 +138,11 @@ msgstr "File"
 msgid "Vous ne pouvez sélectionner que %s fichiers maximum."
 msgstr "You can only select up to %s files."
 
-#: documents/static/js/document_viewer.js:380
+#: documents/static/js/document_viewer.js:453
 msgid "Impossible d'afficher ce PDF ici. "
 msgstr "Unable to display this PDF here. "
 
-#: documents/static/js/document_viewer.js:383
+#: documents/static/js/document_viewer.js:456
 msgid "Télécharger le fichier"
 msgstr "Download the file"
 

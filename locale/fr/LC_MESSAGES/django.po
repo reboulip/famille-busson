@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-13 22:16+0200\n"
+"POT-Creation-Date: 2026-09-22 21:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -87,7 +87,7 @@ msgid "Adresse postale"
 msgstr "Adresse postale"
 
 #: annuaire/exports.py:52 annuaire/templates/annuaire/annuaire_list.html:9
-#: annuaire/templates/annuaire/base.html:106
+#: annuaire/templates/annuaire/base.html:107
 #: annuaire/templates/annuaire/home.html:60
 #: annuaire/templates/annuaire/person_create.html:7
 #: annuaire/templates/annuaire/person_owners_form.html:7
@@ -444,7 +444,7 @@ msgid "Adresse"
 msgstr "Adresse"
 
 #: annuaire/models.py:217 genealogy/models.py:70 photos/models.py:145
-#: photos/models.py:164 photos/templates/photos/_photo_search_card.html:8
+#: photos/models.py:164 photos/templates/photos/_photo_search_card.html:10
 #: photos/templates/photos/photo_detail.html:11
 msgid "Photo"
 msgstr "Photo"
@@ -676,7 +676,7 @@ msgstr "Présences"
 msgid "Vos séjours enregistrés."
 msgstr "Vos séjours enregistrés."
 
-#: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:128
+#: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:115
 #: publications/models.py:67
 #: publications/templates/publications/blogpost_confirm_delete.html:8
 #: publications/templates/publications/blogpost_detail.html:10
@@ -699,8 +699,7 @@ msgstr "Commentaires"
 msgid "Les commentaires que vous avez publiés."
 msgstr "Les commentaires que vous avez publiés."
 
-#: annuaire/personal_data.py:373 annuaire/templates/annuaire/base.html:138
-#: documents/models.py:167
+#: annuaire/personal_data.py:373 documents/models.py:167
 #: documents/templates/documents/category_confirm_delete.html:8
 #: documents/templates/documents/category_detail.html:17
 #: documents/templates/documents/category_detail.html:70
@@ -735,9 +734,8 @@ msgstr ""
 "Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi "
 "ceux que vous pouvez voir."
 
-#: annuaire/personal_data.py:385 annuaire/templates/annuaire/base.html:114
-#: annuaire/templates/annuaire/calendar.html:34 events/models.py:92
-#: events/templates/events/event_confirm_delete.html:8
+#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:34
+#: events/models.py:92 events/templates/events/event_confirm_delete.html:8
 #: events/templates/events/event_detail.html:9
 #: events/templates/events/event_form.html:9
 #: events/templates/events/event_list.html:8
@@ -752,7 +750,7 @@ msgstr ""
 "Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux "
 "que vous pouvez voir."
 
-#: annuaire/personal_data.py:391 annuaire/templates/annuaire/base.html:107
+#: annuaire/personal_data.py:391 annuaire/templates/annuaire/base.html:108
 #: annuaire/templates/annuaire/genealogie.html:23
 msgid "Généalogie"
 msgstr "Généalogie"
@@ -1105,7 +1103,7 @@ msgid "Effacer"
 msgstr "Effacer"
 
 #: annuaire/templates/annuaire/audit_event_list.html:7
-#: annuaire/templates/annuaire/base.html:150
+#: annuaire/templates/annuaire/base.html:132
 #: annuaire/templates/annuaire/bulk_account_create.html:9
 #: annuaire/templates/annuaire/corbeille_list.html:7
 #: annuaire/templates/annuaire/group_confirm_delete.html:8
@@ -1122,7 +1120,7 @@ msgid "Administration"
 msgstr "Administration"
 
 #: annuaire/templates/annuaire/audit_event_list.html:8
-#: annuaire/templates/annuaire/base.html:156
+#: annuaire/templates/annuaire/base.html:138
 msgid "Journal d'audit"
 msgstr "Journal d'audit"
 
@@ -1135,7 +1133,7 @@ msgid "Système"
 msgstr "Système"
 
 #: annuaire/templates/annuaire/audit_event_list.html:17
-#: photos/templates/photos/_photo_card.html:15
+#: photos/templates/photos/_photo_card.html:17
 msgid "Détails"
 msgstr "Détails"
 
@@ -1201,142 +1199,122 @@ msgstr "Accueil"
 msgid "Calendrier"
 msgstr "Calendrier"
 
-#: annuaire/templates/annuaire/base.html:108
+#: annuaire/templates/annuaire/base.html:100
+msgid "Tous les événements"
+msgstr "Tous les événements"
+
+#: annuaire/templates/annuaire/base.html:109
 #: annuaire/templates/annuaire/carte.html:17
 msgid "Carte"
 msgstr "Carte"
 
-#: annuaire/templates/annuaire/base.html:109
+#: annuaire/templates/annuaire/base.html:110
 #: annuaire/templates/annuaire/place_list.html:13
 #, python-format
 msgid "%(label)s et Présences"
 msgstr "%(label)s et Présences"
 
-#: annuaire/templates/annuaire/base.html:116
-msgid "Tous les événements"
-msgstr "Tous les événements"
-
-#: annuaire/templates/annuaire/base.html:121
-#: photos/templates/photos/album_confirm_delete.html:8
-#: photos/templates/photos/album_detail.html:10
-#: photos/templates/photos/album_form.html:7
-#: photos/templates/photos/album_list.html:12
-#: photos/templates/photos/photo_confirm_delete.html:8
-#: photos/templates/photos/photo_detail.html:8
-#: photos/templates/photos/photo_form.html:7
-#: photos/templates/photos/photo_tag_form.html:7
-msgid "Photothèque"
-msgstr "Photothèque"
-
-#: annuaire/templates/annuaire/base.html:123
-msgid "Tous les albums"
-msgstr "Tous les albums"
-
-#: annuaire/templates/annuaire/base.html:130
+#: annuaire/templates/annuaire/base.html:117
 msgid "Toutes les publications"
 msgstr "Toutes les publications"
 
-#: annuaire/templates/annuaire/base.html:132
-#: publications/templates/publications/blogpost_form.html:11
-#: publications/templates/publications/blogpost_list.html:13
-#: publications/templates/publications/emails/new_blog_post.html:19
-msgid "Nouvelle publication"
-msgstr "Nouvelle publication"
+#: annuaire/templates/annuaire/base.html:122
+msgid "Documents et photos"
+msgstr "Documents et photos"
 
-#: annuaire/templates/annuaire/base.html:140
+#: annuaire/templates/annuaire/base.html:124
 msgid "Tous les documents"
 msgstr "Tous les documents"
 
-#: annuaire/templates/annuaire/base.html:141 documents/models.py:49
+#: annuaire/templates/annuaire/base.html:125 documents/models.py:49
 msgid "Catégories"
 msgstr "Catégories"
 
-#: annuaire/templates/annuaire/base.html:143
-#: documents/templates/documents/document_form.html:12
-msgid "Nouveau document"
-msgstr "Nouveau document"
+#: annuaire/templates/annuaire/base.html:126
+msgid "Tous les albums"
+msgstr "Tous les albums"
 
-#: annuaire/templates/annuaire/base.html:152
+#: annuaire/templates/annuaire/base.html:134
 #: annuaire/templates/annuaire/bulk_account_create.html:10
 msgid "Créer des comptes"
 msgstr "Créer des comptes"
 
-#: annuaire/templates/annuaire/base.html:153
+#: annuaire/templates/annuaire/base.html:135
 #: annuaire/templates/annuaire/group_list.html:9
 msgid "Groupes"
 msgstr "Groupes"
 
-#: annuaire/templates/annuaire/base.html:154
+#: annuaire/templates/annuaire/base.html:136
 #: annuaire/templates/annuaire/person_duplicate_list.html:9
 msgid "Doublons potentiels"
 msgstr "Doublons potentiels"
 
-#: annuaire/templates/annuaire/base.html:155
+#: annuaire/templates/annuaire/base.html:137
 msgid "Importer un GEDCOM"
 msgstr "Importer un GEDCOM"
 
-#: annuaire/templates/annuaire/base.html:157
+#: annuaire/templates/annuaire/base.html:139
 #: annuaire/templates/annuaire/corbeille_list.html:8
 msgid "Corbeille"
 msgstr "Corbeille"
 
-#: annuaire/templates/annuaire/base.html:158
+#: annuaire/templates/annuaire/base.html:140
 msgid "Configuration"
 msgstr "Configuration"
 
-#: annuaire/templates/annuaire/base.html:159
+#: annuaire/templates/annuaire/base.html:141
 msgid "Console d'admin"
 msgstr "Console d'admin"
 
-#: annuaire/templates/annuaire/base.html:167
+#: annuaire/templates/annuaire/base.html:149
 #: annuaire/templates/annuaire/help_magic_link.html:6
 #: annuaire/templates/annuaire/privacy_notice.html:6
 msgid "Aide"
 msgstr "Aide"
 
-#: annuaire/templates/annuaire/base.html:169
+#: annuaire/templates/annuaire/base.html:151
 #: annuaire/templates/annuaire/help_magic_link.html:7
 msgid "Comment fonctionne la connexion par lien ?"
 msgstr "Comment fonctionne la connexion par lien ?"
 
-#: annuaire/templates/annuaire/base.html:170
+#: annuaire/templates/annuaire/base.html:152
 #: annuaire/templates/annuaire/privacy_notice.html:7
 msgid "Politique de confidentialité"
 msgstr "Politique de confidentialité"
 
-#: annuaire/templates/annuaire/base.html:172
+#: annuaire/templates/annuaire/base.html:154
 #: annuaire/templates/annuaire/base_threshold.html:86
 msgid "Signaler un bug ou proposer une évolution"
 msgstr "Signaler un bug ou proposer une évolution"
 
-#: annuaire/templates/annuaire/base.html:185
+#: annuaire/templates/annuaire/base.html:167
 #: annuaire/templates/annuaire/base_threshold.html:96
 msgid "Changer de langue"
 msgstr "Changer de langue"
 
-#: annuaire/templates/annuaire/base.html:190
+#: annuaire/templates/annuaire/base.html:172
 msgid "Changer de thème"
 msgstr "Changer de thème"
 
-#: annuaire/templates/annuaire/base.html:198
+#: annuaire/templates/annuaire/base.html:180
 msgid "Déconnexion"
 msgstr "Déconnexion"
 
-#: annuaire/templates/annuaire/base.html:202
+#: annuaire/templates/annuaire/base.html:184
 #: annuaire/templates/annuaire/emails/magic_link.html:33
 #: annuaire/templates/annuaire/login.html:17
 msgid "Se connecter"
 msgstr "Se connecter"
 
-#: annuaire/templates/annuaire/base.html:222
+#: annuaire/templates/annuaire/base.html:204
 msgid "La politique de confidentialité a été mise à jour."
 msgstr "La politique de confidentialité a été mise à jour."
 
-#: annuaire/templates/annuaire/base.html:225
+#: annuaire/templates/annuaire/base.html:207
 msgid "Consultez-la"
 msgstr "Consultez-la"
 
-#: annuaire/templates/annuaire/base.html:229
+#: annuaire/templates/annuaire/base.html:211
 msgid "J'ai lu et j'accepte"
 msgstr "J'ai lu et j'accepte"
 
@@ -3642,6 +3620,10 @@ msgstr "Publications liées"
 msgid "Modifier « %(title)s »"
 msgstr "Modifier « %(title)s »"
 
+#: documents/templates/documents/document_form.html:12
+msgid "Nouveau document"
+msgstr "Nouveau document"
+
 #: documents/templates/documents/document_form.html:19
 msgid "Le document"
 msgstr "Le document"
@@ -3723,7 +3705,7 @@ msgstr "Type de fichier non autorisé : « %(extension)s »."
 msgid "sans extension"
 msgstr "sans extension"
 
-#: documents/views.py:210
+#: documents/views.py:218
 msgid ""
 "Impossible de supprimer cette catégorie : elle contient des documents ou des "
 "sous-catégories. Supprimez-les d'abord."
@@ -3731,15 +3713,15 @@ msgstr ""
 "Impossible de supprimer cette catégorie : elle contient des documents ou des "
 "sous-catégories. Supprimez-les d'abord."
 
-#: documents/views.py:230
+#: documents/views.py:238
 msgid "Vous n'avez pas accès à ce document."
 msgstr "Vous n'avez pas accès à ce document."
 
-#: documents/views.py:259
+#: documents/views.py:267
 msgid "Vous n'êtes pas le déposant de ce document."
 msgstr "Vous n'êtes pas le déposant de ce document."
 
-#: documents/views.py:296
+#: documents/views.py:304
 msgid "Vous devez compléter votre profil avant de déposer un document."
 msgstr "Vous devez compléter votre profil avant de déposer un document."
 
@@ -4395,11 +4377,22 @@ msgstr ""
 "La zone de la photo doit être définie entièrement (les quatre valeurs) ou "
 "pas du tout."
 
-#: photos/templates/photos/_photo_card.html:16
+#: photos/templates/photos/_photo_card.html:18
 #: photos/templates/photos/photo_detail.html:38
 #: photos/templates/photos/photo_tag_form.html:20
 msgid "Identifier des personnes"
 msgstr "Identifier des personnes"
+
+#: photos/templates/photos/album_confirm_delete.html:8
+#: photos/templates/photos/album_detail.html:10
+#: photos/templates/photos/album_form.html:7
+#: photos/templates/photos/album_list.html:12
+#: photos/templates/photos/photo_confirm_delete.html:8
+#: photos/templates/photos/photo_detail.html:8
+#: photos/templates/photos/photo_form.html:7
+#: photos/templates/photos/photo_tag_form.html:7
+msgid "Photothèque"
+msgstr "Photothèque"
 
 #: photos/templates/photos/album_confirm_delete.html:9
 msgid "Supprimer un album ?"
@@ -4733,6 +4726,12 @@ msgstr "Votre commentaire"
 #: publications/templates/publications/blogpost_detail.html:169
 msgid "Commenter"
 msgstr "Commenter"
+
+#: publications/templates/publications/blogpost_form.html:11
+#: publications/templates/publications/blogpost_list.html:13
+#: publications/templates/publications/emails/new_blog_post.html:19
+msgid "Nouvelle publication"
+msgstr "Nouvelle publication"
 
 #: publications/templates/publications/blogpost_form.html:18
 msgid "Le billet"
