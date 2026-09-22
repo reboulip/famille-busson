@@ -2,8 +2,20 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.checks import Warning, register
+from django.db import DatabaseError
 
 from .site_config import get_site_config
+
+
+def _site_config_or_none():
+    """Checks run before `migrate` applies anything, so on a database whose
+    SiteConfig table doesn't exist yet the query below raises instead of
+    returning a row -- which would abort `migrate` itself and leave the
+    instance permanently unable to migrate. None means "can't tell yet"."""
+    try:
+        return get_site_config()
+    except DatabaseError:
+        return None
 
 
 @register()
@@ -102,7 +114,10 @@ def site_name_check(app_configs, **kwargs):
     `collectstatic` at container boot under `set -euo pipefail`. A blank site_name
     means `bootstrap_site` was never run on this instance.
     """
-    if not settings.DEBUG and not get_site_config().site_name:
+    if settings.DEBUG:
+        return []
+    config = _site_config_or_none()
+    if config is not None and not config.site_name:
         return [
             Warning(
                 "SiteConfig.site_name is blank outside of DEBUG -- bootstrap_site was never run on this instance.",
@@ -122,7 +137,10 @@ def default_from_email_check(app_configs, **kwargs):
     `collectstatic` at container boot under `set -euo pipefail`. Without either
     value, outgoing mail (annuaire/email_utils.py) has no From address.
     """
-    if not settings.DEBUG and not settings.DEFAULT_FROM_EMAIL and not get_site_config().sender_address:
+    if settings.DEBUG or settings.DEFAULT_FROM_EMAIL:
+        return []
+    config = _site_config_or_none()
+    if config is not None and not config.sender_address:
         return [
             Warning(
                 "DEFAULT_FROM_EMAIL is unset outside of DEBUG and SiteConfig has no "
