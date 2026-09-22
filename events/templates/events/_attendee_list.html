@@ -2,8 +2,9 @@
 Attendee list -- params: attendees (Rsvp queryset with response="yes"),
 attendee_headcount (int, count(yes) + sum(guest_count where yes)).
 {% endcomment %}
+{% load i18n %}
 <div class="fb-card">
-    <h2>Participants ({{ attendee_headcount }})</h2>
+    <h2>{% blocktranslate trimmed with count=attendee_headcount %}Participants ({{ count }}){% endblocktranslate %}</h2>
     {% if attendees %}
         <ul>
             {% for rsvp in attendees %}
@@ -15,6 +16,6 @@ attendee_headcount (int, count(yes) + sum(guest_count where yes)).
             {% endfor %}
         </ul>
     {% else %}
-        <p class="fb-meta">Personne n'a encore confirmé sa présence.</p>
+        <p class="fb-meta">{% translate "Personne n'a encore confirmé sa présence." %}</p>
     {% endif %}
 </div>

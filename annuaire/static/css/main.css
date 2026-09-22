@@ -1,5 +1,5 @@
 /* =========================================================================
-   Famille Busson — view-specific CSS
+   View-specific CSS
    =========================================================================
 
    Load order (annuaire/templates/annuaire/base.html):
@@ -22,7 +22,7 @@
      5  Person / address pickers
      6  Markdown body and editor
      7  Document viewer (pdf.js and images)
-     8  Chalet placeholder
+     8  Place placeholder
    ========================================================================= */
 
 /* =========================================================================
@@ -67,7 +67,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 }
 
 /* --- Profile record (#124) ---------------------------------------------- */
-/* Page-scoped on purpose: the .fb-record component is shared with the chalet
+/* Page-scoped on purpose: the .fb-record component is shared with the place
    detail page, so these rules hang off .profile-record instead. */
 
 /* The actions moved out of the rail to below the relations, where they read as
@@ -311,7 +311,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     display: block;
 }
 
-/* A chalet with no photo: the ridge mark, drawn by map_init.js's RIDGE_SVG.
+/* A place with no photo: the ridge mark, drawn by map_init.js's RIDGE_SVG.
    Was a 🏔️ emoji until the Alpenglow design pass -- it rendered as a tofu box
    wherever the system has no emoji font, and could not follow the theme. */
 .map-marker-avatar-placeholder {
@@ -328,7 +328,7 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 }
 
 /* An event marker: a centered calendar glyph, not the bottom-aligned ridge
-   (a different modifier so this doesn't affect the chalet placeholder). */
+   (a different modifier so this doesn't affect the place placeholder). */
 .map-marker-avatar-event {
     align-items: center;
     justify-content: center;
@@ -974,6 +974,19 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 
 .document-viewer-pdf-pages { width: 100%; }
 
+.document-viewer-pdf-page-wrap {
+    display: block;
+    /* Sized in CSS pixels by document_viewer.js, mirroring the canvas's own box
+       exactly -- both the visual chrome below and the link overlay's percentage-based
+       positions (#146) depend on this wrapper matching the canvas pixel-for-pixel. */
+    position: relative;
+    max-width: none;
+    flex: none;
+    margin: 0 auto var(--fb-sp-3);
+    box-shadow: var(--fb-shadow-2);
+    background: var(--fb-card);
+}
+
 .document-viewer-pdf-page {
     display: block;
     /* Sized in CSS pixels by document_viewer.js, independently of the canvas backing
@@ -982,9 +995,20 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
        page losing its place. A max-width fit rule here would override both. */
     max-width: none;
     flex: none;
-    margin: 0 auto var(--fb-sp-3);
-    box-shadow: var(--fb-shadow-2);
-    background: var(--fb-card);
+}
+
+/* Hyperlinks embedded in the PDF (#146) -- a transparent overlay anchor per link
+   annotation, positioned by buildLinkOverlay() in document_viewer.js. */
+.document-viewer-pdf-link {
+    position: absolute;
+    display: block;
+    cursor: pointer;
+}
+
+.document-viewer-pdf-link:hover,
+.document-viewer-pdf-link:focus-visible {
+    outline: 2px solid var(--fb-alpenglow);
+    outline-offset: 1px;
 }
 
 .document-viewer-zoom {
@@ -1003,14 +1027,14 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
 .document-file { margin-bottom: var(--fb-sp-3); }
 
 /* =========================================================================
-   8. Chalet placeholder
+   8. Place placeholder
    -------------------------------------------------------------------------
    Was a 🏔️ emoji, which renders as a tofu box wherever the system has no
    emoji font -- already visible in the project's own .shots/01-landing.png.
    It is now the ridge, on the sky band. See annuaire/templates/annuaire/_ridge.html.
    ========================================================================= */
 
-.chalet-photo-placeholder {
+.place-photo-placeholder {
     background: var(--fb-sky);
     border-radius: var(--fb-radius-sm);
     display: flex;
@@ -1020,12 +1044,12 @@ a:hover > .profile-portrait { border-color: var(--fb-gold); }
     aspect-ratio: 3 / 2;
 }
 
-.chalet-photo-placeholder.large {
+.place-photo-placeholder.large {
     width: 100%;
     aspect-ratio: 3 / 2;
 }
 
-.chalet-photo-placeholder.mini {
+.place-photo-placeholder.mini {
     width: 54px;
     height: 36px;
     aspect-ratio: auto;

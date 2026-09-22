@@ -880,37 +880,37 @@ def test_carte_persons_json_includes_avatar(auth_client, person):
 
 
 @pytest.mark.django_db
-def test_carte_includes_chalets_with_coordinates(auth_client, chalet):
-    chalet.latitude = Decimal("46.096")
-    chalet.longitude = Decimal("7.228")
-    chalet.save()
+def test_carte_includes_places_with_coordinates(auth_client, place):
+    place.latitude = Decimal("46.096")
+    place.longitude = Decimal("7.228")
+    place.save()
     response = auth_client.get(reverse("carte"))
-    chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["entries"][0]["name"] == chalet.name
-    assert chalets[0]["entries"][0]["url"] == reverse("chalet-detail", kwargs={"pk": chalet.pk})
+    places = json.loads(response.context["places_json"])
+    assert places[0]["entries"][0]["name"] == place.name
+    assert places[0]["entries"][0]["url"] == reverse("place-detail", kwargs={"pk": place.pk})
 
 
 @pytest.mark.django_db
-def test_carte_excludes_chalets_without_coordinates(auth_client, chalet):
+def test_carte_excludes_places_without_coordinates(auth_client, place):
     response = auth_client.get(reverse("carte"))
-    chalets = json.loads(response.context["chalets_json"])
-    assert chalets == []
+    places = json.loads(response.context["places_json"])
+    assert places == []
 
 
 @pytest.mark.django_db
-def test_carte_unresolved_chalet_count(auth_client, chalet):
+def test_carte_unresolved_place_count(auth_client, place):
     response = auth_client.get(reverse("carte"))
-    assert response.context["unresolved_chalet_count"] == 1
+    assert response.context["unresolved_place_count"] == 1
 
 
 @pytest.mark.django_db
-def test_carte_chalet_without_photo_uses_emoji_sentinel(auth_client, chalet):
-    chalet.latitude = Decimal("46.096")
-    chalet.longitude = Decimal("7.228")
-    chalet.save()
+def test_carte_place_without_photo_uses_emoji_sentinel(auth_client, place):
+    place.latitude = Decimal("46.096")
+    place.longitude = Decimal("7.228")
+    place.save()
     response = auth_client.get(reverse("carte"))
-    chalets = json.loads(response.context["chalets_json"])
-    assert chalets[0]["entries"][0]["avatar"] == "placeholder::chalet"
+    places = json.loads(response.context["places_json"])
+    assert places[0]["entries"][0]["avatar"] == "placeholder::place"
 
 
 @pytest.mark.django_db

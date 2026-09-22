@@ -1,3 +1,4 @@
+{% load i18n %}
 {% comment %}
 One activity-feed row. `entry` is an annuaire.activity.FeedEntry (kind, item,
 timestamp, count).
@@ -5,21 +6,21 @@ timestamp, count).
 <div class="fb-feed__item">
     {% if entry.kind == "post" %}
         <a href="{% url 'blogpost-detail' entry.item.pk %}">« {{ entry.item.title }} »</a>
-        <span class="fb-meta">nouvelle publication — {{ entry.timestamp|date:"j F" }}</span>
+        <span class="fb-meta">{% blocktranslate trimmed with date=entry.timestamp|date:"j F" %}nouvelle publication — {{ date }}{% endblocktranslate %}</span>
     {% elif entry.kind == "comment" %}
         <span class="fb-meta">
-            {{ entry.item.author|default:"Anonyme" }} a commenté
+            {{ entry.item.author|default:"Anonyme" }} {% translate "a commenté" %}
             <a href="{% url 'blogpost-detail' entry.item.post.pk %}">« {{ entry.item.post.title }} »</a>
             — {{ entry.timestamp|date:"j F" }}
         </span>
     {% elif entry.kind == "document" %}
         <a href="{% url 'document-detail' entry.item.pk %}">{{ entry.item.title }}</a>
-        <span class="fb-meta">nouveau document — {{ entry.timestamp|date:"j F" }}</span>
+        <span class="fb-meta">{% blocktranslate trimmed with date=entry.timestamp|date:"j F" %}nouveau document — {{ date }}{% endblocktranslate %}</span>
     {% elif entry.kind == "album_photos" %}
         <a href="{% url 'album-detail' entry.item.pk %}">{{ entry.item.title }}</a>
-        <span class="fb-meta">{{ entry.count }} nouvelle{{ entry.count|pluralize }} photo{{ entry.count|pluralize }} — {{ entry.timestamp|date:"j F" }}</span>
+        <span class="fb-meta">{% blocktranslate trimmed count counter=entry.count with date=entry.timestamp|date:"j F" %}{{ counter }} nouvelle photo — {{ date }}{% plural %}{{ counter }} nouvelles photos — {{ date }}{% endblocktranslate %}</span>
     {% elif entry.kind == "member" %}
         <a href="{% url 'personne-detail' entry.item.pk %}">{{ entry.item }}</a>
-        <span class="fb-meta">a rejoint l'annuaire — {{ entry.timestamp|date:"j F" }}</span>
+        <span class="fb-meta">{% blocktranslate trimmed with date=entry.timestamp|date:"j F" %}a rejoint l'annuaire — {{ date }}{% endblocktranslate %}</span>
     {% endif %}
 </div>

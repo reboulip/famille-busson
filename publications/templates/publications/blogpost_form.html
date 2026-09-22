@@ -2,22 +2,22 @@
 {% load crispy_forms_filters %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype G — form. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Publications</p>
-            <h1>{% if object %}Modifier « {{ object.title }} »{% else %}Nouvelle publication{% endif %}</h1>
+            <p class="fb-eyebrow">{% translate "Publications" %}</p>
+            <h1>{% if object %}{% blocktranslate trimmed with title=object.title %}Modifier « {{ title }} »{% endblocktranslate %}{% else %}{% translate "Nouvelle publication" %}{% endif %}</h1>
         </div>
     </div>
 
     <form method="POST" enctype="multipart/form-data" id="blogpost-form" data-empty-prefix="__prefix__" class="fb-form">
         {% csrf_token %}
         <fieldset class="fb-fieldset">
-            <legend>Le billet</legend>
+            <legend>{% translate "Le billet" %}</legend>
             {{ form.media }}
             {{ form.title|as_crispy_field }}
-            {{ form.post_type|as_crispy_field }}
             {{ form.tags|as_crispy_field }}
             <datalist id="tag-suggestions">
                 {% for name in all_tag_names %}
@@ -26,42 +26,45 @@
             </datalist>
             {{ form.body|as_crispy_field }}
             <div class="fb-field">
-                <label class="fb-label" for="author-search-input">Auteur(s)</label>
-                {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label="Chercher un auteur" %}
+                <label class="fb-label" for="author-search-input">{% translate "Auteur(s)" %}</label>
+                {% translate "Chercher un auteur" as author_search_aria_label %}
+                {% include "annuaire/_person_picker.html" with input_id="author-search-input" field_name="authors" initial_json=authors_initial_json aria_label=author_search_aria_label %}
                 {% if form.authors.errors %}<div class="fb-error">{{ form.authors.errors }}</div>{% endif %}
             </div>
             <div class="fb-field">
-                <label class="fb-label" for="document-search-input">Documents liés</label>
+                <label class="fb-label" for="document-search-input">{% translate "Documents liés" %}</label>
                 {% comment %}
                     Deliberate reuse of the person-picker component under a document-flavoured
                     search URL -- it's already generic (data-search-url/data-field-name driven),
                     so a second implementation would just be duplication.
                 {% endcomment %}
                 {% url 'document-search-ajax' as document_search_url %}
-                {% include "annuaire/_person_picker.html" with input_id="document-search-input" field_name="documents" search_url=document_search_url initial_json=documents_initial_json aria_label="Chercher un document" %}
+                {% translate "Chercher un document" as document_search_aria_label %}
+                {% include "annuaire/_person_picker.html" with input_id="document-search-input" field_name="documents" search_url=document_search_url initial_json=documents_initial_json aria_label=document_search_aria_label %}
                 {% if form.documents.errors %}<div class="fb-error">{{ form.documents.errors }}</div>{% endif %}
                 <a href="{% url 'document-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
-                    {% icon "plus" size=16 %} Déposer un nouveau document
+                    {% icon "plus" size=16 %} {% translate "Déposer un nouveau document" %}
                 </a>
             </div>
             <div class="fb-field">
-                <label class="fb-label" for="album-search-input">Albums liés</label>
+                <label class="fb-label" for="album-search-input">{% translate "Albums liés" %}</label>
                 {% comment %}
                     Same deliberate reuse of the person-picker component as the
                     documents field above, under an album-flavoured search URL.
                 {% endcomment %}
                 {% url 'album-search-ajax' as album_search_url %}
-                {% include "annuaire/_person_picker.html" with input_id="album-search-input" field_name="albums" search_url=album_search_url initial_json=albums_initial_json aria_label="Chercher un album" %}
+                {% translate "Chercher un album" as album_search_aria_label %}
+                {% include "annuaire/_person_picker.html" with input_id="album-search-input" field_name="albums" search_url=album_search_url initial_json=albums_initial_json aria_label=album_search_aria_label %}
                 {% if form.albums.errors %}<div class="fb-error">{{ form.albums.errors }}</div>{% endif %}
                 <a href="{% url 'album-create' %}" target="_blank" rel="noopener" class="fb-btn fb-btn--quiet fb-btn--sm">
-                    {% icon "plus" size=16 %} Créer un nouvel album
+                    {% icon "plus" size=16 %} {% translate "Créer un nouvel album" %}
                 </a>
             </div>
         </fieldset>
 
         {% with subform=formsets.0 %}
             <fieldset class="fb-fieldset">
-                <legend>Pièces jointes</legend>
+                <legend>{% translate "Pièces jointes" %}</legend>
                 {{ subform.management_form }}
 
                 <div class="attachment-formset-rows" hidden>
@@ -78,7 +81,7 @@
                 <div class="attachment-badges" id="attachment-badges" aria-live="polite"></div>
 
                 <button type="button" class="fb-btn fb-btn--quiet" id="add-attachment-btn">
-                    {% icon "plus" size=16 %} Ajouter une pièce jointe
+                    {% icon "plus" size=16 %} {% translate "Ajouter une pièce jointe" %}
                 </button>
                 {% comment %}
                     No accept list: publications.Attachment has no extension validator, so a
@@ -100,11 +103,11 @@
         {% endwith %}
 
         <div class="fb-form__actions">
-            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+            <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
             {% if object %}
-                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <a href="{% url 'blogpost-detail' object.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             {% else %}
-                <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             {% endif %}
         </div>
     </form>

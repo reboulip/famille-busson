@@ -1,29 +1,32 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Documents</p>
-            <h1>Supprimer ce document ?</h1>
+            <p class="fb-eyebrow">{% translate "Documents" %}</p>
+            <h1>{% translate "Supprimer ce document ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer « {{ object.title }} » ?</h1>
-        <p class="fb-meta">Dans {{ object.category.name }}.</p>
+        <h1>{% blocktranslate trimmed with title=object.title %}Supprimer « {{ title }} » ?{% endblocktranslate %}</h1>
+        <p class="fb-meta">{% blocktranslate trimmed with category=object.category.name %}Dans {{ category }}.{% endblocktranslate %}</p>
         <div class="fb-confirm__consequences">
-            <p class="fb-confirm__lead">Cette action est irréversible. Seront supprimés :</p>
+            <p class="fb-confirm__lead">
+                {% blocktranslate trimmed with days=trash_retention_days %}Le document sera envoyé à la corbeille, récupérable pendant {{ days }} jours. Passé ce délai, il sera supprimé définitivement, avec :{% endblocktranslate %}
+            </p>
             <ul>
-                <li>le document et sa description ;</li>
-                <li>tous ses fichiers, y compris les originaux déposés.</li>
+                <li>{% translate "sa description ;" %}</li>
+                <li>{% translate "tous ses fichiers, y compris les originaux déposés." %}</li>
             </ul>
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} Supprimer définitivement</button>
-                <a href="{% url 'document-detail' object.pk %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <button class="fb-btn fb-btn--danger" type="submit">{% icon "trash" size=16 %} {% translate "Envoyer à la corbeille" %}</button>
+                <a href="{% url 'document-detail' object.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

@@ -1,19 +1,24 @@
 {% extends "annuaire/base_threshold.html" %}
-{% block title %}Vérifiez vos emails — Famille Busson{% endblock title %}
+{% load i18n %}
+{% block title %}{% blocktranslate trimmed with site_name=site_config.site_name %}Vérifiez vos emails — {{ site_name }}{% endblocktranslate %}{% endblock title %}
 {% block ridge %}<div class="fb-horizon"></div>{% endblock ridge %}
-{% block heading %}Vérifiez vos emails{% endblock heading %}
+{% block heading %}{% translate "Vérifiez vos emails" %}{% endblock heading %}
 {% block content %}
     <div class="fb-alert fb-alert--info">
+        {% blocktranslate trimmed %}
         Si un compte existe avec cette adresse, vous allez recevoir un email avec un
         lien de connexion.
+        {% endblocktranslate %}
     </div>
     <p class="fb-meta">
+        {% blocktranslate trimmed %}
         Rien reçu au bout de quelques minutes ? Regardez dans les indésirables, ou
-        <a href="{% url 'magic-link-request' %}">demandez un nouveau lien</a>.
+        {% endblocktranslate %}
+        <a href="{% url 'magic-link-request' %}">{% translate "demandez un nouveau lien" %}</a>.
     </p>
 {% endblock content %}
 {% block links %}
     <div class="fb-threshold__links">
-        <span><a href="{% url 'login' %}">Retour à la connexion</a></span>
+        <span><a href="{% url 'login' %}">{% translate "Retour à la connexion" %}</a></span>
     </div>
 {% endblock links %}

@@ -5,7 +5,7 @@ import tomllib
 import pytest
 from django.urls import reverse
 
-from famille_busson.settings import BASE_DIR, _read_app_version
+from config.settings import BASE_DIR, _read_app_version
 
 
 def _pyproject_version() -> str:
@@ -19,14 +19,14 @@ def test_read_app_version_matches_pyproject_toml():
 
 
 def test_read_app_version_is_empty_when_the_file_is_missing(tmp_path, monkeypatch):
-    import famille_busson.settings as settings_module
+    import config.settings as settings_module
 
     monkeypatch.setattr(settings_module, "BASE_DIR", tmp_path)
     assert _read_app_version() == ""
 
 
 def test_read_app_version_is_empty_on_malformed_toml(tmp_path, monkeypatch):
-    import famille_busson.settings as settings_module
+    import config.settings as settings_module
 
     (tmp_path / "pyproject.toml").write_text("not valid toml [[[")
     monkeypatch.setattr(settings_module, "BASE_DIR", tmp_path)

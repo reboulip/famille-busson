@@ -1,0 +1,51 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% load icons %}
+{% load i18n %}
+{% block content %}
+    {% comment %}
+        Archetype B — collection grid, place variant: rectangular media, not
+        round medallions. People are round, places are rectangular.
+    {% endcomment %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <h1>{% blocktranslate with label=site_config.place_label_plural_display %}{{ label }} et Présences{% endblocktranslate %}</h1>
+            <p class="fb-page-head__lede">{% blocktranslate with label=site_config.place_label_plural_display|lower %}Les {{ label }} de la famille et le calendrier des présences.{% endblocktranslate %}</p>
+        </div>
+        <div class="fb-page-head__actions">
+            <a href="{% url 'place-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Créer" %}</a>
+        </div>
+    </div>
+
+    <div class="fb-section-head">
+        <h2>{% translate "Calendrier global des présences" %}</h2>
+    </div>
+    {% include "annuaire/_presence_calendar.html" %}
+
+    <div class="fb-section-head">
+        <h2>{{ site_config.place_label_plural_display }}</h2>
+    </div>
+    <div class="fb-grid fb-grid--wide">
+        {% for place in places %}
+            <a href="{% url 'place-detail' place.pk %}" class="fb-card fb-card--link fb-place-card">
+                {% if place.photo %}
+                    <img src="{{ place.photo.url }}" alt="{{ place.name }}" class="fb-place-card__media">
+                {% else %}
+                    <span class="fb-place-placeholder">
+                        {% include "annuaire/_ridge.html" %}
+                    </span>
+                {% endif %}
+                <span class="fb-place-card__body">
+                    <span class="fb-place-card__name">{{ place.name }}</span>
+                    <span class="fb-meta">{{ place.address }}</span>
+                </span>
+            </a>
+        {% empty %}
+            {% url 'place-create' as create_url %}
+            {% translate "Rien à afficher pour l'instant" as empty_title %}
+            {% blocktranslate with label=site_config.place_label_plural_display asvar empty_body %}{{ label }} et présences apparaîtront ici une fois créés.{% endblocktranslate %}
+            {% translate "Créer" as empty_label %}
+            {% include "annuaire/_empty.html" with title=empty_title body=empty_body action_url=create_url action_label=empty_label %}
+        {% endfor %}
+    </div>
+{% endblock content %}

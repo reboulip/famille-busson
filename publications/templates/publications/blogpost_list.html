@@ -1,28 +1,29 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype C — collection feed. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Publications</h1>
-            <p class="fb-page-head__lede">Nouvelles, souvenirs et annonces de la famille.</p>
+            <h1>{% translate "Publications" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Nouvelles, souvenirs et annonces de la famille." %}</p>
         </div>
         {% if user.is_authenticated %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'blogpost-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} Nouvelle publication</a>
+                <a href="{% url 'blogpost-create' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Nouvelle publication" %}</a>
             </div>
         {% endif %}
     </div>
 
     <form method="get" action="{% url 'blogpost-list' %}" class="fb-toolbar">
-        <select name="tag" class="fb-select" style="width:auto" aria-label="Filtrer par étiquette" onchange="this.form.submit()">
-            <option value="">Toutes les étiquettes</option>
+        <select name="tag" class="fb-select" style="width:auto" aria-label="{% translate 'Filtrer par étiquette' %}" onchange="this.form.submit()">
+            <option value="">{% translate "Toutes les étiquettes" %}</option>
             {% for tag in filter_tags %}
                 <option value="{{ tag.pk }}" {% if selected_tag == tag.pk|stringformat:"s" %}selected{% endif %}>{{ tag.name }}</option>
             {% endfor %}
         </select>
         {% if selected_tag %}
-            <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm">Effacer</a>
+            <a href="{% url 'blogpost-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm">{% translate "Effacer" %}</a>
         {% endif %}
     </form>
 
@@ -31,12 +32,17 @@
             {% include "publications/_blogpost_card.html" %}
         {% empty %}
             {% if selected_tag %}
-                {% include "annuaire/_empty.html" with title="Aucune publication avec cette étiquette" %}
+                {% translate "Aucune publication avec cette étiquette" as empty_tag_title %}
+                {% include "annuaire/_empty.html" with title=empty_tag_title %}
             {% elif user.is_authenticated %}
                 {% url 'blogpost-create' as create_url %}
-                {% include "annuaire/_empty.html" with title="Aucune publication pour l'instant" body="Racontez une nouvelle, partagez des photos, ouvrez le bal." action_url=create_url action_label="Écrire la première publication" %}
+                {% translate "Aucune publication pour l'instant" as empty_auth_title %}
+                {% translate "Racontez une nouvelle, partagez des photos, ouvrez le bal." as empty_auth_body %}
+                {% translate "Écrire la première publication" as empty_auth_action_label %}
+                {% include "annuaire/_empty.html" with title=empty_auth_title body=empty_auth_body action_url=create_url action_label=empty_auth_action_label %}
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucune publication pour l'instant" %}
+                {% translate "Aucune publication pour l'instant" as empty_title %}
+                {% include "annuaire/_empty.html" with title=empty_title %}
             {% endif %}
         {% endfor %}
     </div>
@@ -44,11 +50,11 @@
     {% if is_paginated %}
         <nav class="fb-pagination pagination">
             {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; {% translate "Précédent" %}</a>
             {% endif %}
-            <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+            <span>{% blocktranslate trimmed with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} / {{ pages }}{% endblocktranslate %}</span>
             {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivant" %} &rarr;</a>
             {% endif %}
         </nav>
     {% endif %}

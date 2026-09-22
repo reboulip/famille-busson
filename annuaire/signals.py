@@ -1,14 +1,19 @@
+from django.contrib.auth.models import Group
+from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 
+from .audit import register_audit, register_m2m_membership_audit
 from .file_cleanup import register_file_cleanup
 from .markdown_utils import markdown_to_text
-from .models import Account, Chalet, Person, Relation, Settings
+from .models import Account, Person, Place, Relation, Settings, SiteConfig
 from .search.indexing import register_search_index
 from .search.registry import SearchSpec
+from .site_config import CACHE_KEY as SITE_CONFIG_CACHE_KEY
 
 register_file_cleanup(Person, "profile_photo")
-register_file_cleanup(Chalet, "photo")
+register_file_cleanup(Place, "photo")
+register_file_cleanup(SiteConfig, "logo", "favicon")
 
 register_search_index(
     Person,
@@ -48,6 +53,11 @@ def link_account_to_person(sender, instance, created, **kwargs):
 def create_settings_for_person(sender, instance, created, **kwargs):
     if created:
         Settings.objects.get_or_create(person=instance)
+
+
+@receiver(post_save, sender=SiteConfig)
+def invalidate_site_config_cache(sender, instance, **kwargs):
+    cache.delete(SITE_CONFIG_CACHE_KEY)
 
 
 @receiver(post_save, sender=Relation)
@@ -90,3 +100,99 @@ def create_inverse_relation(sender, instance: Relation, created, **kwargs):
 @receiver(post_delete, sender=Relation)
 def delete_inverse_relation(sender, instance: Relation, **kwargs):
     Relation.objects.filter(person1=instance.person2, person2=instance.person1).delete()
+
+
+# --- Audit log (14.4) -- registered last, after every other receiver above,
+# so a save/delete this module already reacts to is fully settled before the
+# corresponding audit row is written. ------------------------------------
+
+register_audit(
+    Person,
+    fields=[
+        "first_name",
+        "last_name",
+        "email",
+        "phone_number",
+        "postal_address",
+        "latitude",
+        "longitude",
+        "birth_date",
+        "birth_place",
+        "deceased",
+        "death_date",
+        "death_place",
+        "description",
+        "export_privacy",
+    ],
+)
+register_audit(
+    Relation, fields=["person1_id", "person2_id", "relationship_type", "start_date", "marriage_place", "end_date"]
+)
+register_audit(
+    SiteConfig,
+    fields=[
+        "site_name",
+        "wordmark",
+        "tagline",
+        "sender_address",
+        "feedback_url",
+        "place_label_singular",
+        "place_label_plural",
+        "timezone",
+        "default_language",
+        "theme",
+        "brand_primary_light",
+        "brand_primary_dark",
+        "brand_accent_light",
+        "brand_accent_dark",
+    ],
+)
+
+
+def _account_groups_forward_target(instance, pk_set):
+    # instance: Account whose own .groups changed. pk_set: Group pks.
+    if not pk_set:
+        return []
+    names = list(Group.objects.filter(pk__in=pk_set).values_list("name", flat=True))
+    return [(instance, {"groupes": {"to": ", ".join(names)}})]
+
+
+def _account_groups_reverse_target(instance, pk_set):
+    # instance: Group edited via its reverse account_set accessor (see
+    # GroupMembersUpdateView.post(), which uses group.account_set.set(...)).
+    # pk_set: Account pks whose membership in this group changed.
+    if not pk_set:
+        return []
+    group_name = instance.name
+    return [(account, {"groupes": {"to": group_name}}) for account in Account.objects.filter(pk__in=pk_set)]
+
+
+register_m2m_membership_audit(
+    Account.groups.through,
+    forward_target=_account_groups_forward_target,
+    reverse_target=_account_groups_reverse_target,
+)
+
+
+def _person_owners_forward_target(instance, pk_set):
+    # instance: the Person whose .owners changed. pk_set: owner Person pks.
+    if not pk_set:
+        return []
+    names = [str(p) for p in Person.objects.filter(pk__in=pk_set)]
+    return [(instance, {"proprietaires": {"to": ", ".join(names)}})]
+
+
+def _person_owners_reverse_target(instance, pk_set):
+    # instance: the owner, edited via its reverse .managed_profiles accessor.
+    # pk_set: the managed Person pks whose .owners set changed.
+    if not pk_set:
+        return []
+    owner_name = str(instance)
+    return [(person, {"proprietaires": {"to": owner_name}}) for person in Person.objects.filter(pk__in=pk_set)]
+
+
+register_m2m_membership_audit(
+    Person.owners.through,
+    forward_target=_person_owners_forward_target,
+    reverse_target=_person_owners_reverse_target,
+)

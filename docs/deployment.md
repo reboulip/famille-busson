@@ -4,7 +4,9 @@ famille-busson runs on a single VPS (`bubu.reboulip.fr`) as two Docker container
 Postgres and the Django app behind Gunicorn — deployed automatically on every push to
 `main`. This page ties together what's otherwise spread across `Dockerfile`,
 `docker-entrypoint.sh`, `docker-compose.prod.yml`, `.env.example` and the two deploy
-workflows.
+workflows. For the from-scratch "stand up a fresh instance" recipe (a different family,
+or a differently-branded copy), see [`installation.md`](installation.md) instead — this
+page documents how *this* instance's CI/CD and running stack work.
 
 ## CI/CD pipeline
 
@@ -44,7 +46,18 @@ fix ownership of the bind-mounted media volume before dropping privileges (see b
 The `tesseract-ocr`/`tesseract-ocr-fra` system packages are installed via `apt-get` in
 their own early layer, ahead of the OCR content-extraction pipeline that will consume
 them (see `ROADMAP.md`); `tests.yml`'s CI job installs the same packages so the test
-suite runs against the same environment.
+suite runs against the same environment. `gettext` is installed the same way, for
+Phase 15.4's i18n message catalogs: the Dockerfile runs
+`manage.py compilemessages` as its own step right after the app code is copied in, so
+`locale/fr/LC_MESSAGES/*.mo` is baked into the image at **build** time rather than
+compiled at container start — the `worker` service (`RUN_STARTUP_TASKS=0`, see
+"Scheduled tasks" below) sends notification emails and never runs the startup tasks
+that could otherwise compile it, so it would render every email untranslated if
+compilation were deferred to entrypoint time. The committed `.po` sources are tracked
+in git; the compiled `.mo` files are gitignored. See [`i18n.md`](i18n.md) for the full
+message-catalog workflow, and a warning-level system check (`annuaire.checks`, id
+`annuaire.W004`) that flags a configured language whose `.mo` didn't get compiled,
+same rationale as `W001`-`W003`.
 
 ## `docker-entrypoint.sh` — the root → chown → appuser dance
 
@@ -56,15 +69,21 @@ The entrypoint runs twice per container start:
    reliable across VPS redeploys.
 2. **As `appuser`** (second pass, the `id -u` check no longer matches root): runs
    `manage.py migrate --noinput` and `collectstatic --noinput`, then `exec`s the
-   container's `CMD` (`gunicorn famille_busson.wsgi:application`).
+   container's `CMD` (`gunicorn config.wsgi:application`).
 
 ## Production stack (`docker-compose.prod.yml`)
 
+Bind mounts, the `web` image, and the published port are `${VAR:-<current-value>}`
+templated (`DATA_ROOT`, `APP_IMAGE`, `WEB_PORT` — see "Environment variables" below),
+so a different deployment can relocate its data directory, run a different image, or
+publish a different port purely via `.env`, without editing this file. The table below
+shows this project's own current values, which are exactly the defaults.
+
 | Service | Image | Notes |
 |---|---|---|
-| `db` | `postgres:16-alpine` | Data at `/srv/bubu/data/postgres` on the host; healthcheck gates `web`'s startup. |
-| `cache` | `valkey/valkey:8-alpine` | Data at `/srv/bubu/data/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
-| `web` | `ghcr.io/reboulip/famille-busson:latest` | Media at `/srv/bubu/data/media`; protected document storage at `/srv/bubu/data/documents` (see below); reads `.env`; published on host port `8001` → container `8000`; healthcheck via `/healthz` (see below). |
+| `db` | `postgres:16-alpine` | Data at `${DATA_ROOT:-/srv/bubu/data}/postgres` on the host; healthcheck gates `web`'s startup. |
+| `cache` | `valkey/valkey:8-alpine` | Data at `${DATA_ROOT:-/srv/bubu/data}/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
+| `web` | `${APP_IMAGE:-ghcr.io/reboulip/famille-busson:latest}` | Media at `${DATA_ROOT:-/srv/bubu/data}/media`; protected document storage at `${DATA_ROOT:-/srv/bubu/data}/documents` (see below); reads `.env`; published on host port `${WEB_PORT:-8001}` → container `8000`; healthcheck via `/healthz` (see below). |
 
 On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
 from this repo's `docker-compose.prod.yml`), `.env` (see below), and the data volumes
@@ -75,7 +94,7 @@ above.
 `CACHES` was unset until this item, so every gunicorn worker held its own independent
 `LocMemCache` — a value written by one worker was invisible to the others, which quietly
 undermines anything relying on the cache being actually shared (rate-limiting, in
-particular — see a later item). `famille_busson/settings.py` now reads `CACHES` via
+particular — see a later item). `config/settings.py` now reads `CACHES` via
 `django-environ`'s `env.cache("CACHE_URL", default="locmemcache://")`, resolving a
 `redis://`/`valkey://` URL to Django's built-in `django.core.cache.backends.redis.
 RedisCache` (no `django-redis` package needed — only plain `redis`, the client library,
@@ -134,7 +153,7 @@ blip from taking the whole site down in production.
 `ALLOWED_HOSTS`'s first entry, because `SECURE_SSL_REDIRECT` (on by default outside
 `DEBUG`) would otherwise turn a plain-HTTP in-container request into a 301 that never
 reaches the view, and a request without a matching `Host` header gets a `DisallowedHost`
-400 instead — `famille_busson/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
+400 instead — `config/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
 half, the explicit header covers the second. A 503 response makes the script exit
 non-zero (via the propagating `HTTPError`), which is what marks the container unhealthy
 in `docker ps`/`docker compose ps` — this is visibility, not recovery; nothing restarts
@@ -164,12 +183,18 @@ automatically via `annuaire/file_cleanup.py`'s `register_file_cleanup`, wired in
 
 `.env.example` at the repo root is the checklist — copy it to `/srv/bubu/.env` on the
 VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` container
-directly, while `DATABASE_URL` is what Django (`famille_busson/settings.py`, via
+directly, while `DATABASE_URL` is what Django (`config/settings.py`, via
 `django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
-to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP. `SITE_BASE_URL`
+to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP.
+`DEFAULT_FROM_EMAIL` no longer defaults to a Busson-specific address in code — it's `""`
+until set — so production must set it explicitly (or configure `SiteConfig.sender_address`
+via `bootstrap_site`/the site configuration screen instead, see [`site_config.md`](site_config.md)).
+A warning-level system check (`annuaire.checks`, id `annuaire.W006`) flags the case where
+neither is set outside `DEBUG`, since outgoing mail would then have no From address.
+`SITE_BASE_URL`
 is used to build absolute links in emails sent outside a request context — birthday
 reminders and blog post notifications — and should still be set explicitly to
-`https://bubu.reboulip.fr` in production. If left unset, `famille_busson/settings.py`'s
+`https://bubu.reboulip.fr` in production. If left unset, `config/settings.py`'s
 `_default_site_base_url()` now derives a non-localhost fallback from
 `CSRF_TRUSTED_ORIGINS` (first entry) or, failing that, the first non-wildcard,
 non-localhost `ALLOWED_HOSTS` entry — falling back to `http://localhost:8000` only if
@@ -177,9 +202,36 @@ neither yields anything. This is a safety net, not a substitute: a warning-level
 check (`annuaire.checks`, id `annuaire.W001`) flags a `SITE_BASE_URL` that still resolves
 to localhost outside `DEBUG`.
 
+The five `PRIVACY_*` variables (`PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CONTACT`,
+`PRIVACY_HOSTING_PROVIDER`, `PRIVACY_HOSTING_COUNTRY`, `PRIVACY_RETENTION_SUMMARY`) feed
+the public privacy notice page's legal facts (who the data controller is, hosting
+provider/country, rights-request contact, retention summary) and all default to `""`.
+Development and tests are fine leaving them unset; **production must set all five**
+before launch — see [`privacy.md`](privacy.md#legal-facts-environment-variables-not-hardcoded).
+
+`TIME_ZONE` (default `Europe/Paris`) is what `config/settings.py`'s `TIME_ZONE` setting
+reads — the zone management commands and the `worker`/`qcluster` background process
+always run under, regardless of `SiteConfig.timezone` (which only activates per-request,
+during the web request/response cycle — see [`site_config.md`](site_config.md)).
+`GEOCODER_PRIMARY` (default `ban`) picks which provider `annuaire/geocoding.py`'s
+`search_addresses()` queries first — BAN (France-only, authoritative) by default, with
+Photon (worldwide, OpenStreetMap-based) as the fallback; set it to `photon` to swap the
+two roles for a deployment outside France.
+
+`DATA_ROOT`, `APP_IMAGE`, `WEB_PORT` (the "Deployment (compose-level)" block in
+`.env.example`, right after the database section) are read by `docker-compose.prod.yml`
+itself, not by Django — they template the host bind-mount root (default
+`/srv/bubu/data`), the image to run (default `ghcr.io/reboulip/famille-busson:latest`),
+and the published host port (default `8001`) across all four services (`db`, `cache`,
+`web`, `worker`). Byte-identical to the previous hardcoded values off an untouched
+`.env`; a different deployment can relocate its data directory, run a different image,
+or publish a different port without editing `docker-compose.prod.yml` itself. See
+[`installation.md`](installation.md) for the from-scratch setup walkthrough that uses
+these.
+
 ## App version
 
-`APP_VERSION` (`famille_busson/settings.py`) is read once at import time from
+`APP_VERSION` (`config/settings.py`) is read once at import time from
 `pyproject.toml`'s `[project].version`, via `tomllib` directly — not
 `importlib.metadata`, which has no dist-info to look up on this uv *virtual* project
 (no `[build-system]` table, `--no-install-project` in the Dockerfile). It's exposed to
@@ -305,6 +357,24 @@ writing anything.
 
 ## One-time setup
 
+**First-run only, on a fresh install with no accounts yet:**
+`bootstrap_site` (`annuaire/management/commands/bootstrap_site.py`) does the interactive
+first-run setup — the first superuser (with a linked `Person` profile), the default
+groups and starter document categories, and the `SiteConfig` row (site name, wordmark,
+sender address, feedback URL) — in one step, instead of several manual `manage.py shell`
+operations. Idempotent: safe to re-run, it never overwrites an already-configured site.
+Run it interactively, or non-interactively with `--noinput` plus every `--admin-*`/
+`--site-*` flag:
+
+```
+cd /srv/bubu && docker compose exec -T web python manage.py bootstrap_site
+```
+
+A blank `SiteConfig.site_name` outside `DEBUG` (i.e. `bootstrap_site` was never run) is
+flagged by a warning-level system check (`annuaire.checks`, id `annuaire.W005`), same
+rationale as `W001`-`W004`. See [`site_config.md`](site_config.md) for the full
+`SiteConfig` model.
+
 Some features ship with a manual backfill step that only needs to run once on the VPS,
 after the deploy that introduces them — unlike the recurring jobs above. Run it by hand,
 the same way as a scheduled command (`docker compose exec` from `/srv/bubu`), but just
@@ -322,14 +392,14 @@ only after their next profile edit. Safe to re-run — skips anyone who already 
 coordinates.
 
 ```
-cd /srv/bubu && docker compose exec -T web python manage.py geocode_chalet_addresses
+cd /srv/bubu && docker compose exec -T web python manage.py geocode_place_addresses
 ```
 
-Same idea, for `Chalet.address`/`Chalet.latitude`/`Chalet.longitude`: geocodes every
-existing chalet address that doesn't yet have coordinates (same BAN-then-Photon
-`geocode()` fallback as above), so chalets that already had
+Same idea, for `Place.address`/`Place.latitude`/`Place.longitude`: geocodes every
+existing place address that doesn't yet have coordinates (same BAN-then-Photon
+`geocode()` fallback as above), so places that already had
 an address on file before the coordinate fields shipped are backfilled immediately
-instead of only after their next edit. Safe to re-run — skips any chalet that already
+instead of only after their next edit. Safe to re-run — skips any place that already
 has coordinates.
 
 ## Deploying
@@ -337,4 +407,7 @@ has coordinates.
 Nothing manual: pushing to `main` triggers `build-and-deploy.yml`, which builds/pushes
 the image, copies `docker-compose.prod.yml` to the VPS, then over SSH runs
 `docker compose pull && docker compose up -d && docker image prune -f`. Required repo
-secrets: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`.
+secrets: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`. The
+deploy directory (`/srv/bubu`) and image name (`ghcr.io/reboulip/famille-busson`) live
+in one workflow-level `env:` block (`DEPLOY_DIR`, `IMAGE_NAME`) instead of being
+repeated across each step — no behaviour change, just one place to look.

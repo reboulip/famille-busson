@@ -1,14 +1,17 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype I — tabular. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Doublons potentiels</h1>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Doublons potentiels" %}</h1>
             <p class="fb-page-head__lede">
+                {% blocktranslate trimmed %}
                 Détectés à chaque affichage de cette page (nom et prénom identiques, même nom et même
                 date de naissance, ou adresse email identique) — cette liste n'est jamais mémorisée.
+                {% endblocktranslate %}
             </p>
         </div>
     </div>
@@ -16,7 +19,7 @@
     {% if candidates %}
         <table class="fb-table table">
             <thead>
-                <tr><th>Personne 1</th><th>Personne 2</th><th>Raison</th><th></th></tr>
+                <tr><th>{% translate "Personne 1" %}</th><th>{% translate "Personne 2" %}</th><th>{% translate "Raison" %}</th><th></th></tr>
             </thead>
             <tbody>
                 {% for candidate in candidates %}
@@ -25,13 +28,14 @@
                         <td><a href="{% url 'personne-detail' candidate.person2.pk %}">{{ candidate.person2 }}</a></td>
                         <td><span class="fb-chip">{{ candidate.reason }}</span></td>
                         <td class="fb-table__actions">
-                            <a href="{% url 'person-merge' candidate.person1.pk candidate.person2.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Fusionner</a>
+                            <a href="{% url 'person-merge' candidate.person1.pk candidate.person2.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Fusionner" %}</a>
                         </td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     {% else %}
-        {% include "annuaire/_empty.html" with title="Aucun doublon détecté" %}
+        {% translate "Aucun doublon détecté" as empty_title %}
+        {% include "annuaire/_empty.html" with title=empty_title %}
     {% endif %}
 {% endblock content %}

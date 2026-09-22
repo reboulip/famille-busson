@@ -63,7 +63,7 @@ def test_new_comment_is_included(person):
 
 @pytest.mark.django_db
 def test_document_in_locked_category_is_excluded(person):
-    group = Group.objects.create(name="SCI grand chalet")
+    group = Group.objects.create(name="SCI grand place")
     category = Category.objects.create(name="Réservé")
     category.groups.add(group)
     Document.objects.create(title="Secret", category=category)
@@ -102,7 +102,7 @@ def test_photos_aggregate_per_album_not_per_photo(person):
 
 @pytest.mark.django_db
 def test_album_restricted_to_another_group_is_excluded(person):
-    group = Group.objects.create(name="SCI grand chalet")
+    group = Group.objects.create(name="SCI grand place")
     album = Album.objects.create(title="Privé")
     album.groups.add(group)
     Photo.objects.create(album=album, file=_uploaded_image())

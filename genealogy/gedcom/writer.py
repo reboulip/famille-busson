@@ -76,7 +76,7 @@ def render_gedcom(record_lines: list[str]) -> bytes:
     HEAD/TRLR envelope and encode as CRLF UTF-8 bytes."""
     lines = [
         "0 HEAD",
-        "1 SOUR famille_busson",
+        "1 SOUR genealogy-export",
         "1 GEDC",
         "2 VERS 5.5.1",
         "2 FORM LINEAGE-LINKED",

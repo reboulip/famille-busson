@@ -20,6 +20,7 @@ from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.utils.translation import gettext_lazy as _
 
 from .models import Person, Relation
 from .search.indexing import enqueue_reindex
@@ -34,8 +35,8 @@ HANDLED_RELATIONS: set[str] = {
     "settings",  # O2O CASCADE -- left to cascade-delete with the loser
     "ascending_relations",  # Relation.person1
     "descending_relations",  # Relation.person2
-    "owned_chalets",  # Chalet.owners M2M
-    "presencepsv_set",  # PresencePSV.person
+    "owned_places",  # Place.owners M2M
+    "stays",  # Stay.person
     "blog_posts",  # BlogPost.authors M2M
     "comments",  # Comment.author
     "documents",  # Document.uploaded_by
@@ -65,14 +66,14 @@ HANDLED_HIDDEN_RELATIONS: set[tuple[str, str, str]] = {
 # holds the M2M (used to .add(winner) on each of the loser's related rows).
 _M2M_REVERSE_FIELD = {
     "blog_posts": "authors",
-    "owned_chalets": "owners",
+    "owned_places": "owners",
     "organised_events": "organisers",
 }
 
 # Simple (model, field_name) FK repoints: no unique-together constraint on the
 # far side, so a blind bulk .update() is safe.
 _SIMPLE_REPOINTS: list[tuple[str, str]] = [
-    ("annuaire", "presencepsv", "person"),
+    ("annuaire", "stay", "person"),
     ("publications", "comment", "author"),
     ("documents", "document", "uploaded_by"),
     ("documents", "document", "redactor"),
@@ -166,9 +167,9 @@ def merge_persons(winner: Person, loser: Person, *, field_choices: dict[str, int
     name to 1 (keep winner's value) or 2 (take loser's value); any field not
     listed defaults to the winner's value if non-blank, else the loser's."""
     if winner.pk == loser.pk:
-        raise ValidationError("Impossible de fusionner une personne avec elle-même.")
+        raise ValidationError(_("Impossible de fusionner une personne avec elle-même."))
     if winner.account_id is not None and loser.account_id is not None:
-        raise ValidationError("Ces deux profils ont chacun un compte lié à un utilisateur ; la fusion est refusée.")
+        raise ValidationError(_("Ces deux profils ont chacun un compte lié à un utilisateur ; la fusion est refusée."))
 
     field_choices = field_choices or {}
     report = MergeReport()

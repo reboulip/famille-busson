@@ -1,10 +1,12 @@
-C'est aujourd'hui l'anniversaire de {{ person.first_name }} {{ person.last_name }} !
+{% load i18n %}{% blocktranslate trimmed with first_name=person.first_name last_name=person.last_name %}C'est aujourd'hui l'anniversaire de {{ first_name }} {{ last_name }} !{% endblocktranslate %}
 
-Un petit mot fait toujours plaisir : passez lui souhaiter un joyeux anniversaire.
+{% translate "Un petit mot fait toujours plaisir : passez lui souhaiter un joyeux anniversaire." %}
 
 {{ profile_url }}
 
 --
-Vous recevez ce rappel car vous êtes abonné·e aux rappels d'anniversaire sur le site
-de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
-profil : {{ settings_url }}
+{% blocktranslate trimmed %}
+Vous recevez ce rappel car vous êtes abonné·e aux rappels d'anniversaire sur
+{{ site_name }} ({{ site_base_url }}).
+{% endblocktranslate %}
+{% blocktranslate trimmed %}Pour vous désabonner, modifiez votre profil : {{ settings_url }}{% endblocktranslate %}

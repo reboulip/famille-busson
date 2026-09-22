@@ -6,6 +6,8 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives, get_connection
 from django.template.loader import render_to_string
 
+from .site_config import get_site_config
+
 logger = logging.getLogger("django")
 
 # A fresh SMTP connection per email pushed large batches past the provider's timeout
@@ -109,7 +111,7 @@ def build_message(email: OutgoingEmail, connection=None) -> EmailMultiAlternativ
     message = _InlineImageEmail(
         subject=email.subject,
         body=email.text_body,
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=get_site_config().sender_address or settings.DEFAULT_FROM_EMAIL,
         to=[email.to],
         connection=connection,
         inline_images=email.inline_images,
@@ -174,10 +176,15 @@ def render_email(html_template: str, text_template: str, context: dict) -> tuple
 
 def email_context(**extra) -> dict:
     """Shared context for every email template: absolute URLs (an email has no
-    request to resolve relative links against) and the site name."""
+    request to resolve relative links against) and the site name. Flat scalar
+    keys, not the SiteConfig instance itself -- Django's PasswordResetView also
+    renders two of these templates from its own extra_email_context, which only
+    ever carries scalars (see AccountPasswordResetView/MagicLinkRequestView)."""
+    config = get_site_config()
     context = {
         "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
-        "site_name": "Famille Busson",
+        "site_name": config.site_name,
+        "wordmark": config.wordmark or config.site_name,
     }
     context.update(extra)
     return context

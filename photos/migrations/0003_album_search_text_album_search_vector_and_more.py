@@ -15,8 +15,11 @@ def backfill_album_and_photo_search_indexes(apps, schema_editor):
     # weights read AND that already exist at this point in migration history --
     # a later migration on either live model must never cause this historical
     # replay to SELECT a column that doesn't exist yet during a fresh `migrate`.
+    # all_objects, not objects: 14.5's SoftDeleteManager filters on deleted_at,
+    # a column this migration predates -- the live model's default manager
+    # would 500 on a fresh DB.
     album_spec = get_spec(Album)
-    for album in Album.objects.only("pk", "title", "description").iterator():
+    for album in Album.all_objects.only("pk", "title", "description").iterator():
         apply_index(Album, album.pk, build_index_payload(album, album_spec))
 
     photo_spec = get_spec(Photo)
@@ -24,7 +27,7 @@ def backfill_album_and_photo_search_indexes(apps, schema_editor):
     # current Album column along with it, reintroducing the exact hazard
     # .only() exists to avoid. album.description is fetched lazily instead --
     # one extra query per photo, acceptable at this project's scale.
-    for photo in Photo.objects.only("pk", "caption", "album").iterator():
+    for photo in Photo.all_objects.only("pk", "caption", "album").iterator():
         apply_index(Photo, photo.pk, build_index_payload(photo, photo_spec))
 
 

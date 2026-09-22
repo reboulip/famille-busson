@@ -1,5 +1,5 @@
 /* =========================================================================
-   Famille Busson — component layer
+   Component layer
    =========================================================================
 
    Depends on tokens.css. Nothing here hardcodes a colour: every value comes
@@ -311,8 +311,8 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     display: flex;
     align-items: center;
     gap: var(--fb-sp-3);
-    margin: var(--fb-sp-4);
-    padding: var(--fb-sp-2) var(--fb-sp-3);
+    margin: var(--fb-sp-3);
+    padding: var(--fb-sp-1) var(--fb-sp-3);
     background: var(--fb-card);
     border: 1px solid var(--fb-border);
     border-radius: var(--fb-radius);
@@ -322,7 +322,7 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
 }
 .fb-identity:hover { border-color: var(--fb-alpenglow); color: var(--fb-ink); }
 .fb-identity img {
-    width: 32px; height: 32px;
+    width: 28px; height: 28px;
     border-radius: 50%;
     object-fit: cover;
     border: 1px solid var(--fb-border);
@@ -348,8 +348,8 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     min-height: 0;
     overflow-y: auto;
 }
-.fb-nav__group { margin-top: var(--fb-sp-5); }
-.fb-nav__label { padding: 0 var(--fb-sp-3) var(--fb-sp-2); }
+.fb-nav__group { margin-top: var(--fb-sp-4); }
+.fb-nav__label { padding: 0 var(--fb-sp-3) var(--fb-sp-1); }
 .fb-nav ul { list-style: none; margin: 0; padding: 0; }
 
 .fb-nav a,
@@ -357,14 +357,14 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
     display: block;
     width: 100%;
     text-align: left;
-    padding: var(--fb-sp-2) var(--fb-sp-3);
+    padding: var(--fb-sp-1) var(--fb-sp-3);
     margin-bottom: 1px;
     border: 0;
     border-left: 3px solid transparent;
     border-radius: 0 var(--fb-radius-sm) var(--fb-radius-sm) 0;
     background: none;
     font: inherit;
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
     color: var(--fb-ink);
     text-decoration: none;
     cursor: pointer;
@@ -436,7 +436,7 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
 .fb-search-form { margin: 0; }
 .fb-topbar .fb-search-form { flex: 1 1 auto; min-width: 0; }
 .fb-topbar .fb-search-form .fb-input { width: 100%; }
-.fb-nav .fb-search-form { margin-bottom: var(--fb-sp-5); }
+.fb-nav .fb-search-form { margin-bottom: var(--fb-sp-4); }
 .fb-nav .fb-search-form .fb-input { width: 100%; }
 
 /* --- Mobile ------------------------------------------------------------- */
@@ -544,7 +544,7 @@ a.fb-card:hover,
 .fb-place-card__name { display: block; font-family: var(--fb-font-display); font-weight: 600; margin-bottom: 2px; }
 .fb-place-card__body .fb-meta { display: block; }
 
-/* Placeholder for a chalet with no photo. Replaces the 🏔️ emoji currently
+/* Placeholder for a place with no photo. Replaces the 🏔️ emoji currently
    used, which renders as a tofu box wherever the system has no emoji font —
    already visible in the project's own screenshots. */
 .fb-place-placeholder {
@@ -572,7 +572,7 @@ a.fb-card:hover,
     border-radius: var(--fb-radius) 0 0 var(--fb-radius);
     background: var(--fb-alpenglow);
 }
-.fb-post-card--bc::before { background: var(--fb-gold); }
+.fb-post-card--gold::before { background: var(--fb-gold); }
 .fb-post-card__title { font-size: 1.25rem; margin-bottom: var(--fb-sp-1); }
 .fb-post-card__title a { text-decoration: none; color: var(--fb-ink); }
 .fb-post-card__title a:hover { color: var(--fb-ember); }
@@ -802,7 +802,7 @@ a.fb-card:hover,
 }
 
 /* =========================================================================
-   7. Archetype D — record detail (personne, chalet)
+   7. Archetype D — record detail (personne, résidence)
    -------------------------------------------------------------------------
    Today a person page is one full-width column: an image that grows on hover,
    an <h1> with four buttons crammed inline after it, emoji-bulleted contact
@@ -889,6 +889,7 @@ a.fb-card:hover,
 .fb-longform__body code { background: var(--fb-parchment); border-radius: var(--fb-radius-sm); }
 .fb-longform__body pre { padding: var(--fb-sp-3) var(--fb-sp-4); border: 1px solid var(--fb-border); overflow-x: auto; }
 .fb-longform__body img { max-width: 100%; height: auto; border-radius: var(--fb-radius-sm); }
+.fb-longform.fb-longform--full { max-width: none; margin-bottom: var(--fb-sp-6); }
 
 /* Attachments gallery */
 .fb-gallery {

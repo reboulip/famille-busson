@@ -1,0 +1,58 @@
+"""config URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/4.1/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+
+from django.contrib import admin
+from django.contrib.auth.decorators import login_not_required
+from django.shortcuts import redirect
+from django.urls import include, path
+from django.views.i18n import JavaScriptCatalog
+
+from annuaire.health import healthz
+from annuaire.views import branding_asset, media_serve
+
+# @login_not_required: the pre-login pages (login, signup, magic link, password
+# reset -- base_threshold.html) also need translated JS strings, and this route
+# carries no per-user data, only the compiled djangojs catalog for the active
+# language.
+javascript_catalog = login_not_required(JavaScriptCatalog.as_view(domain="djangojs"))
+
+
+@login_not_required
+def root_redirect(request):
+    return redirect("home")
+
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("healthz", healthz, name="healthz"),
+    path("annuaire/", include("annuaire.urls")),
+    path("publications/", include("publications.urls")),
+    path("documents/", include("documents.urls")),
+    path("photos/", include("photos.urls")),
+    path("evenements/", include("events.urls")),
+    path("genealogie/", include("genealogy.urls")),
+    path("", root_redirect),
+    # Served by Django in prod too (whitenoise only covers STATIC_URL, not uploads).
+    # Auth-gated: uploaded files (profile photos, place photos, blog attachments)
+    # must not be readable by anyone who guesses/obtains the URL.
+    path("media/<path:path>", media_serve),
+    # Public counterpart to the above: the login page itself needs to render the
+    # configured logo/favicon for an anonymous visitor. Enumerated to exactly
+    # "logo"/"favicon" by branding_asset -- no other MEDIA_ROOT file is reachable
+    # through this route.
+    path("branding/<str:kind>", branding_asset, name="branding-asset"),
+    path("jsi18n/", javascript_catalog, name="javascript-catalog"),
+]

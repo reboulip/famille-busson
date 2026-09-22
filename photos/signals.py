@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django_q.tasks import async_task
 
+from annuaire.audit import register_audit
 from annuaire.file_cleanup import register_file_cleanup
 from annuaire.markdown_utils import markdown_to_text
 from annuaire.search.indexing import register_search_index
@@ -79,3 +80,7 @@ def enqueue_derivative_generation(sender, instance, created, **kwargs):
 
 
 register_file_cleanup(Photo, "file", "thumbnail", "web")
+
+# Audit log (14.4) -- registered last, after the receivers above.
+register_audit(Album, fields=["title", "description", "date_start", "date_end", "cover_id", "created_by_id"])
+register_audit(Photo, fields=["caption", "taken_at", "uploaded_by_id", "album_id"])

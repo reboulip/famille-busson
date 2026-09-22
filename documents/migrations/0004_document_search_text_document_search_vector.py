@@ -17,8 +17,10 @@ def backfill_document_search_index(apps, schema_editor):
     # from a separate query, unaffected) AND that already exist at this point
     # in migration history -- a later migration on this same live model must
     # never cause this historical replay to SELECT a column that doesn't exist
-    # yet during a fresh `migrate`.
-    for document in Document.objects.only("pk", "title", "description").iterator():
+    # yet during a fresh `migrate`. all_objects, not objects: 14.5's
+    # SoftDeleteManager filters on deleted_at, a column this migration
+    # predates -- the live model's default manager would 500 on a fresh DB.
+    for document in Document.all_objects.only("pk", "title", "description").iterator():
         apply_index(Document, document.pk, build_index_payload(document, spec))
 
 

@@ -25,6 +25,7 @@ markdown_extensions:
 
 nav:
   - Home: README.md
+  - Installation: installation.md
   - Data model: data_model.md
   - Deployment: deployment.md
   - Restore: restore.md
@@ -35,4 +36,9 @@ nav:
   - Permissions: permissions.md
   - Authentication: authentication.md
   - Search: search.md
+  - Privacy: privacy.md
+  - Audit log: audit.md
+  - Corbeille: corbeille.md
+  - Site configuration: site_config.md
+  - Internationalization: i18n.md
   - Roadmap archive: ROADMAP_ARCHIVE.md

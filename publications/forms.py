@@ -1,4 +1,5 @@
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from annuaire.widgets import MarkdownEditorWidget
 from documents.access import accessible_documents
@@ -12,14 +13,14 @@ from .models import Attachment, BlogPost, Comment, Tag
 class BlogPostForm(forms.ModelForm):
     tags = forms.CharField(
         required=False,
-        label="Étiquettes",
-        help_text="Séparez les étiquettes par des virgules.",
-        widget=forms.TextInput(attrs={"list": "tag-suggestions", "placeholder": "photos, réunion, annonce"}),
+        label=_("Étiquettes"),
+        help_text=_("Séparez les étiquettes par des virgules."),
+        widget=forms.TextInput(attrs={"list": "tag-suggestions", "placeholder": _("photos, réunion, annonce")}),
     )
 
     class Meta:
         model = BlogPost
-        fields = ["title", "post_type", "body", "authors", "documents", "albums"]
+        fields = ["title", "body", "authors", "documents", "albums"]
         widgets = {
             "authors": forms.MultipleHiddenInput,
             "documents": forms.MultipleHiddenInput,
@@ -46,7 +47,7 @@ class BlogPostForm(forms.ModelForm):
         names = dict.fromkeys(name.strip() for name in raw.split(",") if name.strip())
         tags = []
         for name in names:
-            tag, _ = Tag.objects.get_or_create(name__iexact=name, defaults={"name": name})
+            tag, _created = Tag.objects.get_or_create(name__iexact=name, defaults={"name": name})
             tags.append(tag)
         return tags
 

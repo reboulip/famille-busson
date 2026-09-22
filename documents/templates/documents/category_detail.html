@@ -2,41 +2,42 @@
 {% load markdown_extras %}
 {% load documents_extras %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
             {% if ancestors %}
-                <nav class="category-breadcrumb" aria-label="Fil d'ariane">
+                <nav class="category-breadcrumb" aria-label="{% translate "Fil d'ariane" %}">
                     {% for ancestor in ancestors %}
                         <a href="{% url 'category-detail' ancestor.pk %}">{{ ancestor.name }}</a> /
                     {% endfor %}
                     {{ category.name }}
                 </nav>
             {% else %}
-                <p class="fb-eyebrow">Documents</p>
+                <p class="fb-eyebrow">{% translate "Documents" %}</p>
             {% endif %}
             <h1>{{ category.name }}</h1>
             <p class="fb-page-head__lede">
-                Visible par :
-                {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}Tous{% endif %}
+                {% translate "Visible par :" %}
+                {% if access_groups %}{% for g in access_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}{% else %}{% translate "Tous" %}{% endif %}
             </p>
         </div>
         <div class="fb-page-head__actions">
             {% if can_access %}
                 <a href="{% url 'document-create' %}?category={{ category.pk }}" class="fb-btn fb-btn--primary">
-                    {% icon "plus" size=16 %} Ajouter un document
+                    {% icon "plus" size=16 %} {% translate "Ajouter un document" %}
                 </a>
             {% endif %}
             {% if user.is_staff %}
-                <a href="{% url 'category-edit' category.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
-                <a href="{% url 'category-delete' category.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+                <a href="{% url 'category-edit' category.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                <a href="{% url 'category-delete' category.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} {% translate "Supprimer" %}</a>
             {% endif %}
         </div>
     </div>
 
     {% if children %}
         <div class="fb-card" style="margin-bottom: var(--fb-sp-5)">
-            <p class="fb-eyebrow fb-card__label">Sous-catégories</p>
+            <p class="fb-eyebrow fb-card__label">{% translate "Sous-catégories" %}</p>
             <ul class="category-tree">
                 {% for child in children %}
                     <li>
@@ -59,19 +60,21 @@
 
     {% if not can_access %}
         <div class="fb-alert fb-alert--warning" role="alert">
-            Cette catégorie est réservée.
+            {% translate "Cette catégorie est réservée." %}
         </div>
     {% else %}
         {% if category.description %}
             <div class="fb-card markdown-body" style="margin-bottom: var(--fb-sp-5)">{{ category.description|markdown }}</div>
         {% endif %}
 
-        <div class="fb-section-head"><h2>Documents</h2></div>
+        <div class="fb-section-head"><h2>{% translate "Documents" %}</h2></div>
         <div>
             {% for document in documents %}
                 {% include "documents/_document_card.html" %}
             {% empty %}
-                {% include "annuaire/_empty.html" with title="Aucun document dans cette catégorie" body="Déposez-en un pour commencer à la remplir." %}
+                {% translate "Aucun document dans cette catégorie" as no_docs_in_cat_title %}
+                {% translate "Déposez-en un pour commencer à la remplir." as no_docs_in_cat_body %}
+                {% include "annuaire/_empty.html" with title=no_docs_in_cat_title body=no_docs_in_cat_body %}
             {% endfor %}
         </div>
     {% endif %}

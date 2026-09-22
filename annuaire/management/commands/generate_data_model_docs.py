@@ -4,6 +4,7 @@ from django.apps import apps
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.models import Field, ManyToManyField, Model
+from django.utils import translation
 
 DOC_APP_LABELS = ["annuaire", "publications", "documents", "photos", "events", "genealogy"]
 
@@ -107,6 +108,13 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options) -> None:
+        # Keeps docs/data_model.md deterministic regardless of the active language --
+        # this is a generator run from a shell, not a request, so there's no per-user
+        # language to respect.
+        with translation.override(settings.LANGUAGE_CODE):
+            self._generate()
+
+    def _generate(self) -> None:
         all_models: list[type[Model]] = []
         sections = []
         for label in DOC_APP_LABELS:

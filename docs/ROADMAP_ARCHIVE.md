@@ -3,6 +3,71 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.5.0 — Phases 14–17: vie privée et traçabilité, site configurable et réutilisable, corrections diverses
+
+> Four phases: personal-data rights and an audit trail, then two phases making the site
+> configurable and reusable by another family (branding, i18n, generic domain vocabulary,
+> package rename, bootstrap and deployment recipe), plus a batch of small field-reported
+> fixes and UI polish.
+
+### Phase 14 — Vie privée et traçabilité
+- **Personal data export** — a member downloads everything the site holds on them
+  (profile, publications, comments, documents, photos, présences) as a single archive.
+- **Erasure and anonymisation** — a staff flow anonymising a person while preserving
+  referential integrity (their publications survive under an anonymised author), with a
+  written retention policy.
+- **Privacy notice** — a French page describing what is collected and why, linked from
+  signup and the sidebar, with acceptance recorded.
+- **Audit log** — who changed or deleted what, and when, across `Person`, `Relation`,
+  `Document`, photos and group membership. Staff-visible.
+- **Corbeille** — deletions on the destructive paths (publications, documents, photos)
+  become recoverable for a retention window instead of immediate.
+
+### Phase 15 — Le site devient configurable
+- **`SiteConfig`** — a singleton holding site name, wordmark, tagline, sender address,
+  feedback URL, timezone and default language; editable by staff and exposed to every
+  template.
+- **Strings out of the templates** — every "Famille Busson"/"les Busson" reference in
+  templates and all five email templates now reads from `SiteConfig`.
+- **Configurable brand** — the theme becomes one named theme with a small overridable set
+  of brand colours, plus logo and favicon upload, both palettes still clearing their
+  documented contrast ratios after an override.
+- **i18n scaffolding** — `LocaleMiddleware`, `gettext` over every user-facing string in
+  templates, forms, model `verbose_name`s and emails, `makemessages`/`compilemessages`
+  wired into CI. French stops being hardcoded and becomes an extracted locale.
+- **English locale and language switcher** — a second locale proving the scaffolding
+  actually works, plus a per-account language preference.
+
+### Phase 16 — Réutilisable par une autre famille
+- **`Chalet`/`PresencePSV` become generic** — a `Place`/`Stay` pair with a configurable
+  label ("Chalet", "Maison", "Résidence"), dropping the "PSV" family jargon.
+- **Publication taxonomy** — the hardcoded "Busson connection" post type replaced by
+  configurable tags, with a data migration.
+- **Vocabulary review** — relation labels, default group names, seeded document
+  categories, and the remaining France-specific defaults (BAN-first geocoder order, `fr`
+  language default) reviewed for a family that isn't this one.
+- **Rename the project package** — `famille_busson` becomes a neutral name across
+  settings, WSGI/ASGI, `manage.py`, `pyproject.toml`'s pytest config, the Dockerfile's
+  gunicorn `CMD`, the compose files and the docs.
+- **`manage.py bootstrap_site`** — an interactive first run: site identity, first
+  superuser, default groups, starter document categories.
+- **Deployment recipe** — a templated compose file and `.env`, plus a "start here" guide
+  covering DNS, TLS, an email provider, the backup job and the scheduler.
+- **Reusability test** — a second, differently-branded instance stood up from a clean
+  checkout, following only the recipe, with everything it surfaced fixed.
+
+### Phase 17 — Corrections diverses et confort d'usage
+- **PDF viewer link annotations** — pdf.js's link/annotation layer enabled so hyperlinks
+  embedded in a PDF are clickable in the in-app viewer. [#146]
+- **Document detail description full-width** — fixed the layout so the description block
+  spans the page's full width. [#144]
+- **Document-link search fixes substring matching** — the document picker (used when
+  linking a document to a publication) now matches substrings, not just prefixes. [#142]
+- **Sidebar/menu overhaul** — compact main navigation (padding/margin/font-size so it fits
+  without scrolling) and pruned/reordered sections. [#145] [#141]
+- **Album view: fixed leaked template comment** — a Django `{# ... #}` comment was
+  rendering as visible text in the album grid. [#140]
+
 ## v1.4.0 — Phases 8–13: retours du terrain, socle, photothèque, recherche, calendrier et généalogie approfondie
 
 > Six phases: a batch of field-reported fixes, the infrastructure foundation (backups,

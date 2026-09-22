@@ -1,33 +1,35 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Documents</p>
-            <h1>Supprimer une catégorie ?</h1>
+            <p class="fb-eyebrow">{% translate "Documents" %}</p>
+            <h1>{% translate "Supprimer une catégorie ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer la catégorie « {{ object.name }} » ?</h1>
+        <h1>{% blocktranslate trimmed with name=object.name %}Supprimer la catégorie « {{ name }} » ?{% endblocktranslate %}</h1>
         {% if document_count or child_count %}
             <div class="fb-alert fb-alert--warning" role="alert">
-                Cette catégorie contient {{ document_count }} document{{ document_count|pluralize }}
-                et {{ child_count }} sous-catégorie{{ child_count|pluralize }}. Supprimez-les d'abord.
+                {% with doc_suffix=document_count|pluralize child_suffix=child_count|pluralize %}
+                    {% blocktranslate trimmed with docs=document_count subs=child_count docsfx=doc_suffix childsfx=child_suffix %}Cette catégorie contient {{ docs }} document{{ docsfx }} et {{ subs }} sous-catégorie{{ childsfx }}. Supprimez-les d'abord.{% endblocktranslate %}
+                {% endwith %}
             </div>
         {% else %}
             <div class="fb-confirm__consequences">
-                <p class="fb-confirm__lead">Cette catégorie est vide : rien d'autre ne sera supprimé.</p>
+                <p class="fb-confirm__lead">{% translate "Cette catégorie est vide : rien d'autre ne sera supprimé." %}</p>
             </div>
         {% endif %}
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
                 <button class="fb-btn fb-btn--danger" type="submit" {% if document_count or child_count %}disabled{% endif %}>
-                    {% icon "trash" size=16 %} Supprimer définitivement
+                    {% icon "trash" size=16 %} {% translate "Supprimer définitivement" %}
                 </button>
-                <a href="{% url 'category-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <a href="{% url 'category-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

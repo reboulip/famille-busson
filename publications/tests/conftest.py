@@ -23,12 +23,10 @@ def blog_post(db, person):
 
 @pytest.fixture
 def bc_post(db, person):
-    post = BlogPost.objects.create(
-        title="Annonce BC",
-        body="Une annonce Busson connection.",
-        post_type="BC",
-    )
+    tag, _created = Tag.objects.get_or_create(name="Busson connection", defaults={"accent": "gold"})
+    post = BlogPost.objects.create(title="Annonce BC", body="Une annonce Busson connection.")
     post.authors.add(person)
+    post.tags.add(tag)
     return post
 
 

@@ -1,0 +1,40 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% load static %}
+{% load i18n %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{{ site_config.place_label_plural_display }}</p>
+            <h1>{% if object %}{% blocktranslate trimmed with name=object.name %}Modifier {{ name }}{% endblocktranslate %}{% else %}{% translate "Créer" %}{% endif %}</h1>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="fb-form">
+        {% csrf_token %}
+        <fieldset class="fb-fieldset">
+            <legend>{{ site_config.place_label_singular_display }}</legend>
+            {{ form.media }}
+            {{ form.name|as_crispy_field }}
+            {{ form.address|as_crispy_field }}
+            {{ form.latitude }}
+            {{ form.longitude }}
+            {{ form.photo|as_crispy_field }}
+            {% if show_owner_picker %}
+                <div class="fb-field">
+                    <label class="fb-label" for="owner-search-input">{% translate "Propriétaire(s)" %}</label>
+                    {% translate "Chercher un propriétaire" as owner_picker_aria_label %}
+                    {% include "annuaire/_person_picker.html" with input_id="owner-search-input" field_name="owners" initial_json=owners_initial_json aria_label=owner_picker_aria_label %}
+                    {% if form.owners.errors %}<div class="fb-error">{{ form.owners.errors }}</div>{% endif %}
+                </div>
+            {% endif %}
+        </fieldset>
+        <div class="fb-form__actions">
+            <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
+            <a href="{% url 'place-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
+        </div>
+    </form>
+    {% if show_owner_picker %}
+        <script src="{% static 'js/person_picker.js' %}"></script>
+    {% endif %}
+{% endblock content %}

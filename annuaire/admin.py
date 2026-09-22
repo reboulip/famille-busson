@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import Account, Chalet, Person, PresencePSV, Relation
+from .models import Account, Person, Place, Relation, Stay
 
 
 @admin.register(Account)
@@ -44,5 +44,5 @@ class PersonAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Relation)
-admin.site.register(Chalet)
-admin.site.register(PresencePSV)
+admin.site.register(Place)
+admin.site.register(Stay)

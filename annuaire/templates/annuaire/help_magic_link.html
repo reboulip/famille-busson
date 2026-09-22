@@ -1,49 +1,58 @@
 {% extends "annuaire/base.html" %}
+{% load i18n %}
 {% block content %}
     {# Archetype E — long-form. Public page, so it keeps the app shell. #}
     <div class="fb-longform">
-        <p class="fb-eyebrow">Aide</p>
-        <h1 class="fb-longform__title">Comment fonctionne la connexion par lien ?</h1>
+        <p class="fb-eyebrow">{% translate "Aide" %}</p>
+        <h1 class="fb-longform__title">{% translate "Comment fonctionne la connexion par lien ?" %}</h1>
         <div class="fb-rule"></div>
 
         <div class="fb-longform__body">
             <p>
+                {% blocktranslate trimmed %}
                 La connexion par lien (« magic link ») permet de se connecter sans avoir à
                 saisir de mot de passe.
+                {% endblocktranslate %}
             </p>
 
             <ol>
-                <li>Sur la page de connexion, cliquez sur « Recevez un lien de connexion par email ».</li>
-                <li>Saisissez l'adresse email associée à votre compte, puis validez.</li>
+                <li>{% translate "Sur la page de connexion, cliquez sur « Recevez un lien de connexion par email »." %}</li>
+                <li>{% translate "Saisissez l'adresse email associée à votre compte, puis validez." %}</li>
                 <li>
+                    {% blocktranslate trimmed %}
                     Si un compte existe avec cette adresse, vous recevez un email contenant
                     un lien de connexion. Ce lien est <strong>à usage unique</strong> et
                     <strong>valable 15 minutes</strong>.
+                    {% endblocktranslate %}
                 </li>
-                <li>Cliquez sur le lien reçu par email : une page de confirmation s'affiche.</li>
-                <li>Cliquez sur le bouton « Confirmez votre connexion » pour terminer la connexion.</li>
+                <li>{% translate "Cliquez sur le lien reçu par email : une page de confirmation s'affiche." %}</li>
+                <li>{% translate "Cliquez sur le bouton « Confirmez votre connexion » pour terminer la connexion." %}</li>
             </ol>
 
-            <h2>Pourquoi une étape de confirmation ?</h2>
+            <h2>{% translate "Pourquoi une étape de confirmation ?" %}</h2>
             <p>
+                {% blocktranslate trimmed %}
                 Certaines messageries ouvrent automatiquement les liens reçus pour vérifier
                 qu'ils sont sûrs. Sans cette étape supplémentaire, un tel lien pourrait être
                 « utilisé » avant même que vous ne cliquiez dessus, et le lien ne
                 fonctionnerait alors plus. Le bouton de confirmation garantit que c'est bien
                 vous qui vous connectez.
+                {% endblocktranslate %}
             </p>
 
-            <h2>Le lien a expiré ou ne fonctionne plus</h2>
+            <h2>{% translate "Le lien a expiré ou ne fonctionne plus" %}</h2>
             <p>
+                {% blocktranslate trimmed %}
                 Passé le délai de 15 minutes, ou si le lien a déjà été utilisé, il n'est
                 plus valide. Il suffit d'en redemander un nouveau depuis la page de
                 connexion.
+                {% endblocktranslate %}
             </p>
         </div>
 
         <div class="fb-form__actions">
-            <a href="{% url 'magic-link-request' %}" class="fb-btn fb-btn--primary">Recevoir un lien de connexion</a>
-            <a href="{% url 'login' %}" class="fb-btn fb-btn--ghost">Retour à la connexion</a>
+            <a href="{% url 'magic-link-request' %}" class="fb-btn fb-btn--primary">{% translate "Recevoir un lien de connexion" %}</a>
+            <a href="{% url 'login' %}" class="fb-btn fb-btn--ghost">{% translate "Retour à la connexion" %}</a>
         </div>
     </div>
 {% endblock content %}

@@ -1,5 +1,10 @@
+import pytest
+
 from annuaire.calendar_data import CalendarEntry
 from annuaire.ical import render_ics
+
+# render_ics() now reads SiteConfig (via get_site_config()) for the PRODID line.
+pytestmark = pytest.mark.django_db
 
 
 def _entry(
@@ -67,8 +72,8 @@ def test_render_ics_escapes_comma_semicolon_and_newline_in_summary():
 
 
 def test_render_ics_includes_location_when_subtitle_present():
-    body = render_ics([_entry(subtitle="Chalet des Alpes")]).decode("utf-8")
-    assert "LOCATION:Chalet des Alpes" in body
+    body = render_ics([_entry(subtitle="Place des Alpes")]).decode("utf-8")
+    assert "LOCATION:Place des Alpes" in body
 
 
 def test_render_ics_omits_location_when_no_subtitle():

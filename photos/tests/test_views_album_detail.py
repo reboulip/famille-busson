@@ -20,6 +20,13 @@ def test_album_detail_shows_photos(auth_client, album, photo):
 
 
 @pytest.mark.django_db
+def test_album_detail_does_not_leak_a_template_comment(auth_client, album, photo):
+    response = auth_client.get(reverse("album-detail", kwargs={"pk": album.pk}))
+    content = response.content.decode()
+    assert "#}" not in content
+
+
+@pytest.mark.django_db
 def test_album_detail_locked_hides_photos(auth_client, restricted_album):
     Photo.objects.create(album=restricted_album, file=make_uploaded_image())
     response = auth_client.get(reverse("album-detail", kwargs={"pk": restricted_album.pk}))

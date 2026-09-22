@@ -1,13 +1,11 @@
-Un nouvel article a été publié sur le site de la famille Busson :
+{% load i18n %}{% blocktranslate trimmed %}Un nouvel article a été publié sur {{ site_name }} :{% endblocktranslate %}
 
 {{ post.title }}{% if authors %}
-Par {{ authors }}{% endif %}
+{% blocktranslate trimmed with authors=authors %}Par {{ authors }}{% endblocktranslate %}{% endif %}
 {% if excerpt %}
 {{ excerpt }}
 {% endif %}
 {{ post_url }}
 
 --
-Vous recevez cette notification car vous êtes abonné·e aux nouvelles publications sur
-le site de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
-profil : {{ settings_url }}
+{% blocktranslate trimmed %}Vous recevez cette notification car vous êtes abonné·e aux nouvelles publications sur {{ site_name }} ({{ site_base_url }}). Pour vous désabonner, modifiez votre profil : {{ settings_url }}{% endblocktranslate %}

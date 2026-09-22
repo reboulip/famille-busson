@@ -39,14 +39,14 @@
         const editBtn = document.createElement('button');
         editBtn.type = 'button';
         editBtn.className = 'btn btn-sm btn-link p-0 ms-2 document-file-badge-edit text-white';
-        editBtn.setAttribute('aria-label', 'Modifier la légende');
+        editBtn.setAttribute('aria-label', gettext('Modifier la légende'));
         editBtn.textContent = '✎';
         badge.appendChild(editBtn);
 
         const captionField = document.createElement('input');
         captionField.type = 'text';
         captionField.className = 'form-control form-control-sm document-file-badge-caption ms-2';
-        captionField.placeholder = 'Légende (optionnel)';
+        captionField.placeholder = gettext('Légende (optionnel)');
         captionField.value = captionInput ? captionInput.value : '';
         captionField.hidden = !captionField.value;
         captionField.addEventListener('input', () => {
@@ -62,7 +62,7 @@
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'btn-close btn-close-white btn-close-sm ms-2';
-        closeBtn.setAttribute('aria-label', 'Retirer ' + displayName);
+        closeBtn.setAttribute('aria-label', interpolate(gettext('Retirer %s'), [displayName]));
         closeBtn.addEventListener('click', () => removeRow(row, badge));
         badge.appendChild(closeBtn);
 
@@ -115,7 +115,7 @@
         rows.forEach((row) => {
             const isExisting = row.dataset.existing === '1';
             if (!isExisting) return;
-            const name = existingFilename(row) || 'Fichier';
+            const name = existingFilename(row) || gettext('Fichier');
             makeBadge(row, name);
         });
     }
@@ -126,7 +126,7 @@
 
     picker.addEventListener('change', () => {
         if (picker.files.length > MAX_FILES_PER_SELECTION) {
-            window.alert('Vous ne pouvez sélectionner que ' + MAX_FILES_PER_SELECTION + ' fichiers maximum.');
+            window.alert(interpolate(gettext('Vous ne pouvez sélectionner que %s fichiers maximum.'), [MAX_FILES_PER_SELECTION]));
             picker.value = '';
             return;
         }

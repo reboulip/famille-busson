@@ -1,54 +1,55 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype C — collection feed. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>Documents</h1>
-            <p class="fb-page-head__lede">Actes, plans et archives de la famille.</p>
+            <h1>{% translate "Documents" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Actes, plans et archives de la famille." %}</p>
         </div>
         <div class="fb-page-head__actions">
             <a href="{% url 'document-create' %}{% if selected_category %}?category={{ selected_category }}{% endif %}"
-               class="fb-btn fb-btn--primary" data-live-filter-carry="category">{% icon "plus" size=16 %} Ajouter un document</a>
+               class="fb-btn fb-btn--primary" data-live-filter-carry="category">{% icon "plus" size=16 %} {% translate "Ajouter un document" %}</a>
         </div>
     </div>
 
     <form method="get" action="{% url 'document-list' %}" class="fb-toolbar" id="document-filter-form"
           data-live-filter="#document-results" autocomplete="off">
-        <input type="text" name="q" value="{{ query }}" placeholder="Rechercher…"
-               class="fb-input fb-search" aria-label="Rechercher un document">
-        <select name="category" class="fb-select" style="width:auto" aria-label="Filtrer par catégorie">
-            <option value="">Toutes les catégories</option>
+        <input type="text" name="q" value="{{ query }}" placeholder="{% translate 'Rechercher…' %}"
+               class="fb-input fb-search" aria-label="{% translate 'Rechercher un document' %}">
+        <select name="category" class="fb-select" style="width:auto" aria-label="{% translate 'Filtrer par catégorie' %}">
+            <option value="">{% translate "Toutes les catégories" %}</option>
             {% for cat in filter_categories %}
                 <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
             {% endfor %}
         </select>
-        <select name="redactor" class="fb-select" style="width:auto" aria-label="Filtrer par rédacteur">
-            <option value="">Tous les rédacteurs</option>
+        <select name="redactor" class="fb-select" style="width:auto" aria-label="{% translate 'Filtrer par rédacteur' %}">
+            <option value="">{% translate "Tous les rédacteurs" %}</option>
             {% for redactor in filter_redactors %}
                 <option value="{{ redactor.pk }}" {% if selected_redactor == redactor.pk|stringformat:"s" %}selected{% endif %}>{{ redactor }}</option>
             {% endfor %}
         </select>
-        <select name="year" class="fb-select" style="width:auto" aria-label="Filtrer par année de rédaction">
-            <option value="">Toutes les années</option>
+        <select name="year" class="fb-select" style="width:auto" aria-label="{% translate 'Filtrer par année de rédaction' %}">
+            <option value="">{% translate "Toutes les années" %}</option>
             {% for d in filter_years %}
                 <option value="{{ d.year }}" {% if selected_year == d.year|stringformat:"s" %}selected{% endif %}>{{ d.year }}</option>
             {% endfor %}
         </select>
-        <select name="sort" class="fb-select" style="width:auto" data-live-filter-default="recent" aria-label="Trier">
-            <option value="recent" {% if sort == "recent" %}selected{% endif %}>Date de dépôt (récent → ancien)</option>
-            <option value="deposit_asc" {% if sort == "deposit_asc" %}selected{% endif %}>Date de dépôt (ancien → récent)</option>
-            <option value="title_asc" {% if sort == "title_asc" %}selected{% endif %}>Titre (A → Z)</option>
-            <option value="title_desc" {% if sort == "title_desc" %}selected{% endif %}>Titre (Z → A)</option>
-            <option value="redactor_asc" {% if sort == "redactor_asc" %}selected{% endif %}>Rédacteur (A → Z)</option>
-            <option value="redactor_desc" {% if sort == "redactor_desc" %}selected{% endif %}>Rédacteur (Z → A)</option>
-            <option value="date_asc" {% if sort == "date_asc" %}selected{% endif %}>Date de rédaction (ancien → récent)</option>
-            <option value="date_desc" {% if sort == "date_desc" %}selected{% endif %}>Date de rédaction (récent → ancien)</option>
+        <select name="sort" class="fb-select" style="width:auto" data-live-filter-default="recent" aria-label="{% translate 'Trier' %}">
+            <option value="recent" {% if sort == "recent" %}selected{% endif %}>{% translate "Date de dépôt (récent → ancien)" %}</option>
+            <option value="deposit_asc" {% if sort == "deposit_asc" %}selected{% endif %}>{% translate "Date de dépôt (ancien → récent)" %}</option>
+            <option value="title_asc" {% if sort == "title_asc" %}selected{% endif %}>{% translate "Titre (A → Z)" %}</option>
+            <option value="title_desc" {% if sort == "title_desc" %}selected{% endif %}>{% translate "Titre (Z → A)" %}</option>
+            <option value="redactor_asc" {% if sort == "redactor_asc" %}selected{% endif %}>{% translate "Rédacteur (A → Z)" %}</option>
+            <option value="redactor_desc" {% if sort == "redactor_desc" %}selected{% endif %}>{% translate "Rédacteur (Z → A)" %}</option>
+            <option value="date_asc" {% if sort == "date_asc" %}selected{% endif %}>{% translate "Date de rédaction (ancien → récent)" %}</option>
+            <option value="date_desc" {% if sort == "date_desc" %}selected{% endif %}>{% translate "Date de rédaction (récent → ancien)" %}</option>
         </select>
         <span class="fb-toolbar__spacer"></span>
         <a href="{% url 'document-list' %}" class="fb-btn fb-btn--ghost fb-btn--sm" data-live-filter-reset
-           {% if not query and not selected_category and not selected_redactor and not selected_year and sort == "recent" %}hidden{% endif %}>Effacer</a>
+           {% if not query and not selected_category and not selected_redactor and not selected_year and sort == "recent" %}hidden{% endif %}>{% translate "Effacer" %}</a>
     </form>
 
     <div id="document-results" aria-live="polite">

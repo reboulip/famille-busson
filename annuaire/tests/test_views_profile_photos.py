@@ -24,7 +24,7 @@ def album(db):
 
 @pytest.fixture
 def restricted_album(db):
-    group = Group.objects.create(name="SCI grand chalet")
+    group = Group.objects.create(name="SCI grand place")
     album = Album.objects.create(title="Album privé")
     album.groups.add(group)
     return album

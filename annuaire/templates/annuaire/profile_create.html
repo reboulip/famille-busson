@@ -1,32 +1,35 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
-            <h1>Créer mon profil</h1>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
+            <h1>{% translate "Créer mon profil" %}</h1>
         </div>
     </div>
 
     <div class="fb-form">
         <div class="fb-alert fb-alert--info">
+            {% blocktranslate trimmed %}
             Vous êtes déjà dans l'annuaire ?
-            <a href="{% url 'profile-claim' %}">Rattachez votre compte à votre fiche existante</a>
-            plutôt que d'en créer une nouvelle.
+            {% endblocktranslate %}
+            <a href="{% url 'profile-claim' %}">{% translate "Rattachez votre compte à votre fiche existante" %}</a>
+            {% translate "plutôt que d'en créer une nouvelle." %}
         </div>
         <form method="POST" enctype="multipart/form-data" class="form">
             {% csrf_token %}
             <fieldset class="fb-fieldset">
-                <legend>Mon profil</legend>
+                <legend>{% translate "Mon profil" %}</legend>
                 {{ form.media }}
                 {{ form|crispy }}
             </fieldset>
             <fieldset class="fb-fieldset">
-                <legend>Notifications</legend>
+                <legend>{% translate "Notifications" %}</legend>
                 {{ settings_form|crispy }}
             </fieldset>
             <div class="fb-form__actions">
-                <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
+                <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
             </div>
         </form>
     </div>

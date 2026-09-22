@@ -1,5 +1,6 @@
+{% load i18n %}
 {% if query %}
-    <p class="fb-meta">{{ persons|length }} résultat{{ persons|length|pluralize }} pour « {{ query }} »</p>
+    <p class="fb-meta">{% blocktranslate trimmed count counter=persons|length with query=query %}{{ counter }} résultat pour « {{ query }} »{% plural %}{{ counter }} résultats pour « {{ query }} »{% endblocktranslate %}</p>
 {% endif %}
 
 <div class="fb-grid">
@@ -7,10 +8,14 @@
         {% include "annuaire/_person_card.html" %}
     {% empty %}
         {% if query %}
-            {% include "annuaire/_empty.html" with title="Aucune personne trouvée" body="Essayez avec une autre orthographe, ou effacez la recherche." %}
+            {% translate "Aucune personne trouvée" as empty_title %}
+            {% translate "Essayez avec une autre orthographe, ou effacez la recherche." as empty_body %}
+            {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
         {% else %}
             {% url 'person-create' as create_url %}
-            {% include "annuaire/_empty.html" with title="Aucune personne dans l'annuaire" action_url=create_url action_label="Ajouter un membre" %}
+            {% translate "Aucune personne dans l'annuaire" as empty_title %}
+            {% translate "Ajouter un membre" as empty_label %}
+            {% include "annuaire/_empty.html" with title=empty_title action_url=create_url action_label=empty_label %}
         {% endif %}
     {% endfor %}
 </div>

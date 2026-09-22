@@ -1,7 +1,7 @@
 import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from publications.models import Attachment, BlogPost, Comment
+from publications.models import Attachment, BlogPost, Comment, Tag
 
 
 @pytest.mark.django_db
@@ -44,8 +44,21 @@ def test_blogpost_str_returns_title(blog_post):
 
 
 @pytest.mark.django_db
-def test_blogpost_default_type_is_normal(blog_post):
-    assert blog_post.post_type == "NORMAL"
+def test_blogpost_accent_is_blank_with_no_tags(blog_post):
+    assert blog_post.accent == ""
+
+
+@pytest.mark.django_db
+def test_blogpost_accent_is_blank_when_no_tag_is_accented(blog_post):
+    blog_post.tags.add(Tag.objects.create(name="Photos", accent=""))
+    assert blog_post.accent == ""
+
+
+@pytest.mark.django_db
+def test_blogpost_accent_reflects_first_accented_tag(blog_post):
+    blog_post.tags.add(Tag.objects.create(name="Aaa", accent=""))
+    blog_post.tags.add(Tag.objects.create(name="Zzz", accent="gold"))
+    assert blog_post.accent == "gold"
 
 
 @pytest.mark.django_db

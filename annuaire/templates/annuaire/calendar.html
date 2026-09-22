@@ -1,12 +1,13 @@
 {% extends "annuaire/base.html" %}
 {% load static %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype B-adjacent — a windowed collection, not a paginated list. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <h1>{% icon "calendar" size=24 %} Calendrier</h1>
-            <p class="fb-page-head__lede">Événements, présences et anniversaires de la famille, au même endroit.</p>
+            <h1>{% icon "calendar" size=24 %} {% translate "Calendrier" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Événements, présences et anniversaires de la famille, au même endroit." %}</p>
         </div>
     </div>
 
@@ -20,19 +21,19 @@
              data-active-types="{{ active_types|join:',' }}"
              data-feed-url="{% url 'calendar-feed-ajax' %}">
             <div class="unified-calendar-toolbar">
-                <div class="fb-btn-group" role="group" aria-label="Navigation">
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="Mois précédent">← Mois</button>
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">Aujourd'hui</button>
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="Mois suivant">Mois →</button>
+                <div class="fb-btn-group" role="group" aria-label="{% translate 'Navigation' %}">
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="{% translate 'Mois précédent' %}">{% translate '← Mois' %}</button>
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">{% translate "Aujourd'hui" %}</button>
+                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="{% translate 'Mois suivant' %}">{% translate 'Mois →' %}</button>
                 </div>
                 <span class="unified-calendar-range fb-meta"></span>
             </div>
-            <div class="cal-filters" role="group" aria-label="Filtrer par type">
+            <div class="cal-filters" role="group" aria-label="{% translate 'Filtrer par type' %}">
                 {% for t in all_types %}
                     <button type="button" class="fb-chip cal-filter-chip cal-type-{{ t }}" data-type="{{ t }}">
-                        {% if t == "event" %}Événements
-                        {% elif t == "presence" %}Présences
-                        {% elif t == "birthday" %}Anniversaires
+                        {% if t == "event" %}{% translate "Événements" %}
+                        {% elif t == "presence" %}{% translate "Présences" %}
+                        {% elif t == "birthday" %}{% translate "Anniversaires" %}
                         {% endif %}
                     </button>
                 {% endfor %}
@@ -43,6 +44,8 @@
         <script src="{% static 'js/calendar_core.js' %}"></script>
         <script src="{% static 'js/unified_calendar.js' %}"></script>
     {% else %}
-        {% include "annuaire/_empty.html" with title="Rien à afficher pour l'instant" body="Les événements, présences et anniversaires à venir apparaîtront ici." %}
+        {% translate "Rien à afficher pour l'instant" as empty_title %}
+        {% translate "Les événements, présences et anniversaires à venir apparaîtront ici." as empty_body %}
+        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
     {% endif %}
 {% endblock content %}

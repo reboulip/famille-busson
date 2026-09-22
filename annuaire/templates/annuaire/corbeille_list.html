@@ -1,0 +1,49 @@
+{% extends "annuaire/base.html" %}
+{% load i18n %}
+{% block content %}
+    {# Archetype I — tabular. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Corbeille" %}</h1>
+            <p class="fb-page-head__lede">
+                {% blocktranslate trimmed with days=trash_retention_days %}
+                Publications, documents, albums et photos supprimés, récupérables pendant
+                {{ days }} jours avant leur suppression définitive.
+                {% endblocktranslate %}
+            </p>
+        </div>
+    </div>
+
+    {% if rows %}
+        <table class="fb-table table">
+            <thead>
+                <tr><th>{% translate "Type" %}</th><th>{% translate "Élément" %}</th><th>{% translate "Supprimé par" %}</th><th>{% translate "Supprimé le" %}</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.label }}</td>
+                        <td class="fb-table__strong">{{ row.object }}</td>
+                        <td>{{ row.object.deleted_by|default:"—" }}</td>
+                        <td>{{ row.object.deleted_at }}</td>
+                        <td class="fb-table__actions">
+                            <form method="post" action="{% url 'corbeille-restore' row.app_label row.model_name row.object.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Restaurer" %}</button>
+                            </form>
+                            <form method="post" action="{% url 'corbeille-purge' row.app_label row.model_name row.object.pk %}">
+                                {% csrf_token %}
+                                <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% translate "Supprimer définitivement" %}</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        {% translate "Corbeille vide" as empty_title %}
+        {% translate "Rien n'a été supprimé récemment." as empty_body %}
+        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
+    {% endif %}
+{% endblock content %}

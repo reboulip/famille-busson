@@ -1,4 +1,4 @@
-Un nouvel événement a été créé sur le site de la famille Busson :
+{% load i18n %}{% blocktranslate trimmed %}Un nouvel événement a été créé sur {{ site_name }} :{% endblocktranslate %}
 
 {{ event.title }}
 {{ event.start }}{% if event.location %} · {{ event.location }}{% endif %}
@@ -6,6 +6,8 @@ Un nouvel événement a été créé sur le site de la famille Busson :
 {{ event_url }}
 
 --
+{% blocktranslate trimmed %}
 Vous recevez cette notification car vous êtes abonné·e aux annonces d'événements sur
-le site de la famille Busson ({{ site_base_url }}). Pour vous désabonner, modifiez votre
+{{ site_name }} ({{ site_base_url }}). Pour vous désabonner, modifiez votre
 profil : {{ settings_url }}
+{% endblocktranslate %}

@@ -6,7 +6,7 @@
             const text = target.value !== undefined ? target.value : target.textContent;
             const originalLabel = button.textContent;
             navigator.clipboard.writeText(text).then(() => {
-                button.textContent = 'Copié !';
+                button.textContent = gettext('Copié !');
                 setTimeout(() => {
                     button.textContent = originalLabel;
                 }, 2000);

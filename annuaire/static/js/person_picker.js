@@ -29,7 +29,7 @@ function initPicker(picker) {
         if (results.length === 0) {
             const li = document.createElement('li');
             li.className = 'person-picker-empty';
-            li.textContent = 'Aucun résultat';
+            li.textContent = gettext('Aucun résultat');
             resultsList.appendChild(li);
             resultsList.hidden = false;
             highlightedIndex = -1;
@@ -74,7 +74,7 @@ function initPicker(picker) {
         const closeBtn = document.createElement('button');
         closeBtn.type = 'button';
         closeBtn.className = 'btn-close btn-close-white btn-close-sm ms-1';
-        closeBtn.setAttribute('aria-label', 'Retirer ' + name);
+        closeBtn.setAttribute('aria-label', interpolate(gettext('Retirer %s'), [name]));
         closeBtn.addEventListener('click', () => removePerson(id));
         badge.appendChild(closeBtn);
         selectedZone.appendChild(badge);

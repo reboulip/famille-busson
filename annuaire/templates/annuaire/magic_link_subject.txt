@@ -1,1 +1,1 @@
-Votre lien de connexion
+{% load i18n %}{% translate "Votre lien de connexion" %}

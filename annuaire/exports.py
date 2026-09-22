@@ -14,17 +14,20 @@ from __future__ import annotations
 import io
 from collections.abc import Iterable
 
+from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 from openpyxl import Workbook
 
 from .models import Person
 from .privacy import always_redacted
 
 EXPORT_COLUMNS: list[tuple[str, str]] = [
-    ("Nom", "last_name"),
-    ("Prénom", "first_name"),
-    ("Adresse email", "email"),
-    ("Numéro de téléphone", "phone_number"),
-    ("Adresse postale", "postal_address"),
+    # pgettext_lazy: same "person" context as Person.last_name's own verbose_name.
+    (pgettext_lazy("person", "Nom"), "last_name"),
+    (_("Prénom"), "first_name"),
+    (_("Adresse email"), "email"),
+    (_("Numéro de téléphone"), "phone_number"),
+    (_("Adresse postale"), "postal_address"),
 ]
 
 
@@ -36,7 +39,7 @@ def build_export_rows(person_ids: Iterable[int]) -> list[list[str]]:
     (see annuaire/privacy.py)."""
     persons = Person.objects.filter(pk__in=person_ids).order_by("last_name", "first_name", "pk")
     return [
-        [getattr(person, attr) or "" for _, attr in EXPORT_COLUMNS]
+        [getattr(person, attr) or "" for _column_label, attr in EXPORT_COLUMNS]
         for person in persons
         if not always_redacted(person)
     ]
@@ -46,8 +49,8 @@ def build_persons_workbook(rows: list[list[str]]) -> bytes:
     """A single-sheet .xlsx: header row from EXPORT_COLUMNS, then one row per entry."""
     workbook = Workbook()
     sheet = workbook.active
-    sheet.title = "Annuaire"
-    sheet.append([header for header, _ in EXPORT_COLUMNS])
+    sheet.title = str(_("Annuaire"))
+    sheet.append([str(header) for header, _attr in EXPORT_COLUMNS])
     for row in rows:
         sheet.append(row)
     buffer = io.BytesIO()

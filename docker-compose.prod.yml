@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - /srv/bubu/data/postgres:/var/lib/postgresql/data
+      - ${DATA_ROOT:-/srv/bubu/data}/postgres:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
     command: ["valkey-server", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
     volumes:
-      - /srv/bubu/data/valkey:/data
+      - ${DATA_ROOT:-/srv/bubu/data}/valkey:/data
     healthcheck:
       test: ["CMD-SHELL", "valkey-cli ping || redis-cli ping"]
       interval: 10s
@@ -32,7 +32,7 @@ services:
       retries: 5
 
   web:
-    image: ghcr.io/reboulip/famille-busson:latest
+    image: ${APP_IMAGE:-ghcr.io/reboulip/famille-busson:latest}
     restart: unless-stopped
     depends_on:
       db:
@@ -45,10 +45,10 @@ services:
       CACHE_URL: ${CACHE_URL:-redis://cache:6379/0}
       QUEUE_URL: ${QUEUE_URL:-redis://cache:6379/1}
     volumes:
-      - /srv/bubu/data/media:/app/media
-      - /srv/bubu/data/documents:/app/documents_data
+      - ${DATA_ROOT:-/srv/bubu/data}/media:/app/media
+      - ${DATA_ROOT:-/srv/bubu/data}/documents:/app/documents_data
     ports:
-      - "8001:8000"
+      - "${WEB_PORT:-8001}:8000"
     healthcheck:
       # python, not curl/wget -- the python:3.13-slim base image ships neither. See
       # scripts/healthcheck.py for why this can't be a bare curl one-liner anyway
@@ -66,7 +66,7 @@ services:
   # ephemeral container filesystem instead. RUN_STARTUP_TASKS=0 stops it from racing
   # `web` to run migrate/collectstatic/sync_scheduled_tasks on every deploy.
   worker:
-    image: ghcr.io/reboulip/famille-busson:latest
+    image: ${APP_IMAGE:-ghcr.io/reboulip/famille-busson:latest}
     restart: unless-stopped
     command: ["python", "manage.py", "qcluster"]
     depends_on:
@@ -81,5 +81,5 @@ services:
       QUEUE_URL: ${QUEUE_URL:-redis://cache:6379/1}
       RUN_STARTUP_TASKS: 0
     volumes:
-      - /srv/bubu/data/media:/app/media
-      - /srv/bubu/data/documents:/app/documents_data
+      - ${DATA_ROOT:-/srv/bubu/data}/media:/app/media
+      - ${DATA_ROOT:-/srv/bubu/data}/documents:/app/documents_data

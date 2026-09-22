@@ -1,0 +1,4778 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-22 21:47+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: annuaire/anonymisation.py:54
+msgid "Cette personne a déjà été anonymisée."
+msgstr "This person has already been anonymised."
+
+#: annuaire/anonymisation.py:58
+msgid "Impossible d'anonymiser le dernier compte actif membre du personnel."
+msgstr "Cannot anonymise the last active staff account."
+
+#: annuaire/emails.py:90
+#, python-format
+msgid "Voir le profil de %(first_name)s"
+msgstr "View %(first_name)s's profile"
+
+#: annuaire/emails.py:100
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:12
+#, python-format
+msgid "Anniversaire de %(first_name)s %(last_name)s"
+msgstr "%(first_name)s %(last_name)s's birthday"
+
+#: annuaire/emails.py:131
+#: publications/templates/publications/emails/new_blog_post.html:12
+#, python-format
+msgid "Nouvel article : %(title)s"
+msgstr "New post: %(title)s"
+
+#: annuaire/emails.py:151
+#: events/templates/events/emails/event_announcement.html:7
+#, python-format
+msgid "Nouvel événement : %(title)s"
+msgstr "New event: %(title)s"
+
+#: annuaire/emails.py:171 events/templates/events/emails/event_reminder.html:6
+#, python-format
+msgid "Rappel : %(title)s"
+msgstr "Reminder: %(title)s"
+
+#: annuaire/emails.py:186
+#: annuaire/templates/annuaire/emails/account_setup.html:18
+msgid "Votre mot de passe a été réinitialisé"
+msgstr "Your password has been reset"
+
+#: annuaire/emails.py:188
+#: annuaire/templates/annuaire/emails/account_setup.html:18
+#, python-format
+msgid "Votre compte %(site_name)s"
+msgstr "Your %(site_name)s account"
+
+#: annuaire/exports.py:26 annuaire/models.py:101
+msgctxt "person"
+msgid "Nom"
+msgstr "Last name"
+
+#: annuaire/exports.py:27 annuaire/models.py:105 genealogy/models.py:219
+msgid "Prénom"
+msgstr "First name"
+
+#: annuaire/exports.py:28 annuaire/models.py:38
+msgid "Adresse email"
+msgstr "Email address"
+
+#: annuaire/exports.py:29 annuaire/models.py:111
+msgid "Numéro de téléphone"
+msgstr "Phone number"
+
+#: annuaire/exports.py:30 annuaire/models.py:108
+msgid "Adresse postale"
+msgstr "Postal address"
+
+#: annuaire/exports.py:52 annuaire/templates/annuaire/annuaire_list.html:9
+#: annuaire/templates/annuaire/base.html:107
+#: annuaire/templates/annuaire/home.html:60
+#: annuaire/templates/annuaire/person_create.html:7
+#: annuaire/templates/annuaire/person_owners_form.html:7
+#: annuaire/templates/annuaire/person_relations_form.html:8
+#: annuaire/templates/annuaire/personne_detail.html:19
+#: annuaire/templates/annuaire/profile_claim.html:7
+#: annuaire/templates/annuaire/profile_create.html:7
+#: annuaire/templates/annuaire/update_form.html:8
+msgid "Annuaire"
+msgstr "Directory"
+
+#: annuaire/forms.py:29
+msgid ""
+"Suggestions : Base Adresse Nationale (data.gouv.fr) et, pour l'étranger, "
+"Photon (OpenStreetMap/ODbL)"
+msgstr ""
+"Suggestions: Base Adresse Nationale (data.gouv.fr) and, for addresses "
+"abroad, Photon (OpenStreetMap/ODbL)"
+
+#: annuaire/forms.py:36
+msgid ""
+"Utilisé pour les documents généalogiques (arbre, futur export vers d'autres "
+"logiciels de généalogie) ; laissez vide si ce lieu n'est pas connu."
+msgstr ""
+"Used for genealogical records (tree, future export to other genealogy "
+"software); leave blank if this place is unknown."
+
+#: annuaire/forms.py:41
+msgid ""
+"Un export GEDCOM (pour Geneanet, MyHeritage, Gramps...) est destiné à "
+"quitter le site, potentiellement vers un service public. Par défaut, vos "
+"informations y sont masquées tant que vous êtes en vie. « Toujours masquer » "
+"s'applique aussi au carnet d'adresses Excel et au flux calendrier."
+msgstr ""
+"A GEDCOM export (for Geneanet, MyHeritage, Gramps...) is meant to leave the "
+"site, potentially towards a public service. By default, your information is "
+"hidden there while you are alive. \"Always hide\" also applies to the Excel "
+"address book and the calendar feed."
+
+#: annuaire/forms.py:128
+#, python-format
+msgid ""
+"La photo est trop volumineuse (%(size)s Mo). Taille maximale : %(max)s Mo."
+msgstr "The photo is too large (%(size)s MB). Maximum size: %(max)s MB."
+
+#: annuaire/forms.py:167
+msgid "Couleur invalide -- attendu un code hexadécimal, par exemple #9C4A22."
+msgstr "Invalid colour -- expected a hexadecimal code, e.g. #9C4A22."
+
+#: annuaire/forms.py:187
+msgid "pour du texte"
+msgstr "for text"
+
+#: annuaire/forms.py:187
+msgid "pour un élément non textuel"
+msgstr "for a non-text element"
+
+#: annuaire/forms.py:189
+#, python-format
+msgid ""
+"Contraste %(measured)s:1 sur le fond %(surface)s -- il en faut "
+"%(required)s:1 %(usage)s."
+msgstr ""
+"Contrast %(measured)s:1 against the %(surface)s background -- %(required)s:1 "
+"is required %(usage)s."
+
+#: annuaire/forms.py:223 documents/validators.py:40 photos/validators.py:23
+#, python-format
+msgid ""
+"Le fichier est trop volumineux (%(size)s Mo). Taille maximale : %(max)s Mo."
+msgstr "The file is too large (%(size)s MB). Maximum size: %(max)s MB."
+
+#: annuaire/forms.py:244 annuaire/models.py:191 annuaire/models.py:225
+#: annuaire/templates/annuaire/person_relations_form.html:19
+#: annuaire/templates/annuaire/person_relations_form.html:56
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113 events/models.py:136
+#: genealogy/models.py:42 genealogy/models.py:124 photos/models.py:166
+msgid "Personne"
+msgstr "Person"
+
+#: annuaire/forms.py:245
+msgid "Choisissez une personne dans la recherche."
+msgstr "Choose a person from the search."
+
+#: annuaire/forms.py:268 annuaire/forms.py:292
+msgid "Mot de passe"
+msgstr "Password"
+
+#: annuaire/forms.py:277
+msgid "Email ou mot de passe incorrect."
+msgstr "Incorrect email or password."
+
+#: annuaire/forms.py:290
+#: annuaire/templates/annuaire/bulk_account_create.html:21
+#: annuaire/templates/annuaire/bulk_account_create.html:59
+msgid "Email"
+msgstr "Email"
+
+#: annuaire/forms.py:293
+msgid "Ton mot de passe"
+msgstr "Your password"
+
+#: annuaire/forms.py:297
+msgid "Confirmez le mot de passe"
+msgstr "Confirm password"
+
+#: annuaire/forms.py:298
+msgid "Confirme ton mot de passe"
+msgstr "Confirm your password"
+
+#: annuaire/forms.py:302
+msgid "J'ai lu et j'accepte la politique de confidentialité"
+msgstr "I have read and accept the privacy policy"
+
+#: annuaire/forms.py:308 annuaire/views.py:192
+msgid "Un compte avec cet email existe déjà."
+msgstr "An account with this email already exists."
+
+#: annuaire/forms.py:324 annuaire/forms.py:446
+msgid "Les mots de passe ne correspondent pas."
+msgstr "Passwords do not match."
+
+#: annuaire/forms.py:331 annuaire/templates/annuaire/place_detail.html:164
+msgid "Personnes"
+msgstr "People"
+
+#: annuaire/forms.py:335 annuaire/models.py:227
+msgid "Date d'arrivée"
+msgstr "Arrival date"
+
+#: annuaire/forms.py:339 annuaire/models.py:228
+msgid "Date de départ"
+msgstr "Departure date"
+
+#: annuaire/forms.py:397
+msgid "Adresses email"
+msgstr "Email addresses"
+
+#: annuaire/forms.py:398
+msgid "Une adresse email par ligne"
+msgstr "One email address per line"
+
+#: annuaire/forms.py:399
+msgid "Entrez une adresse email par ligne."
+msgstr "Enter one email address per line."
+
+#: annuaire/forms.py:406
+msgid "Veuillez saisir au moins une adresse email."
+msgstr "Please enter at least one email address."
+
+#: annuaire/forms.py:414
+#, python-format
+msgid "« %(email)s » n'est pas une adresse email valide."
+msgstr "\"%(email)s\" is not a valid email address."
+
+#: annuaire/forms.py:422
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+#: annuaire/forms.py:427
+msgid "Confirmez le nouveau mot de passe"
+msgstr "Confirm new password"
+
+#: annuaire/migrations/0026_chalet_to_place_rename.py:27 annuaire/models.py:213
+msgctxt "place"
+msgid "Nom"
+msgstr "Name"
+
+#: annuaire/models.py:23
+msgid "L'adresse email est obligatoire"
+msgstr "Email address is required"
+
+#: annuaire/models.py:39
+msgid "Actif"
+msgstr "Active"
+
+#: annuaire/models.py:40
+msgid "Membre du personnel"
+msgstr "Staff member"
+
+#: annuaire/models.py:41
+msgid "Doit changer le mot de passe"
+msgstr "Must change password"
+
+#: annuaire/models.py:47
+msgid "Dernière consultation du fil"
+msgstr "Last feed view"
+
+#: annuaire/models.py:51
+msgid "Jeton calendrier"
+msgstr "Calendar token"
+
+#: annuaire/models.py:57
+msgid "Date d'acceptation de la politique de confidentialité"
+msgstr "Privacy policy acceptance date"
+
+#: annuaire/models.py:60
+msgid "Version acceptée de la politique de confidentialité"
+msgstr "Accepted privacy policy version"
+
+#: annuaire/models.py:69
+msgid "Langue"
+msgstr "Language"
+
+#: annuaire/models.py:95
+msgid "Automatique (masqué·e tant que vivant·e)"
+msgstr "Automatic (hidden while living)"
+
+#: annuaire/models.py:96
+msgid "Toujours partager"
+msgstr "Always share"
+
+#: annuaire/models.py:97
+msgid "Toujours masquer"
+msgstr "Always hide"
+
+#: annuaire/models.py:103
+msgid "Compte"
+msgstr "Account"
+
+#: annuaire/models.py:106
+msgid "Adresse électronique"
+msgstr "Email address"
+
+#: annuaire/models.py:107
+msgid "Photo de profil"
+msgstr "Profile photo"
+
+#: annuaire/models.py:109 annuaire/models.py:215 events/models.py:57
+msgid "Latitude"
+msgstr "Latitude"
+
+#: annuaire/models.py:110 annuaire/models.py:216 events/models.py:58
+msgid "Longitude"
+msgstr "Longitude"
+
+#: annuaire/models.py:112 genealogy/models.py:15 genealogy/models.py:221
+msgid "Date de naissance"
+msgstr "Date of birth"
+
+#: annuaire/models.py:117 genealogy/models.py:16 genealogy/models.py:222
+msgid "Lieu de naissance"
+msgstr "Place of birth"
+
+#: annuaire/models.py:126 annuaire/templates/annuaire/personne_detail.html:57
+#: annuaire/templates/annuaire/personne_detail.html:62
+#: annuaire/templates/annuaire/personne_detail.html:113
+msgid "Décédé·e"
+msgstr "Deceased"
+
+#: annuaire/models.py:127 genealogy/models.py:17 genealogy/models.py:223
+msgid "Date de décès"
+msgstr "Date of death"
+
+#: annuaire/models.py:128 genealogy/models.py:18 genealogy/models.py:224
+msgid "Lieu de décès"
+msgstr "Place of death"
+
+#: annuaire/models.py:129
+msgid "Infos utiles"
+msgstr "Useful info"
+
+#: annuaire/models.py:140
+msgid "Confidentialité dans les exports"
+msgstr "Privacy in exports"
+
+#: annuaire/models.py:147 annuaire/models.py:218
+msgid "Propriétaires"
+msgstr "Owners"
+
+#: annuaire/models.py:151
+msgid "Anonymisé·e le"
+msgstr "Anonymised on"
+
+#: annuaire/models.py:152 documents/models.py:161 genealogy/models.py:55
+#: photos/models.py:61 photos/models.py:138 publications/models.py:61
+msgid "Vecteur de recherche"
+msgstr "Search vector"
+
+#: annuaire/models.py:153 documents/models.py:162 genealogy/models.py:56
+#: photos/models.py:62 photos/models.py:139 publications/models.py:62
+msgid "Texte de recherche"
+msgstr "Search text"
+
+#: annuaire/models.py:154 documents/models.py:159 events/models.py:80
+#: events/models.py:141 genealogy/models.py:53 genealogy/models.py:107
+#: photos/models.py:59 publications/models.py:59 publications/models.py:132
+msgid "Date de création"
+msgstr "Date created"
+
+#: annuaire/models.py:161 annuaire/personal_data.py:346
+msgid "Profil"
+msgstr "Profile"
+
+#: annuaire/models.py:163
+msgid "Recevoir un rappel pour les anniversaires"
+msgstr "Receive a reminder for birthdays"
+
+#: annuaire/models.py:166
+msgid "Recevoir une notification pour les nouveaux articles"
+msgstr "Receive a notification for new posts"
+
+#: annuaire/models.py:171
+msgid "Recevoir les annonces et rappels d'événements"
+msgstr "Receive event announcements and reminders"
+
+#: annuaire/models.py:175 annuaire/models.py:176
+msgid "Paramètres de notification"
+msgstr "Notification settings"
+
+#: annuaire/models.py:184
+msgid "mariage"
+msgstr "marriage"
+
+#: annuaire/models.py:185
+msgid "conjoint"
+msgstr "spouse"
+
+#: annuaire/models.py:186
+msgid "parent"
+msgstr "parent"
+
+#: annuaire/models.py:187
+msgid "enfant"
+msgstr "child"
+
+#: annuaire/models.py:194
+msgid "En relation avec"
+msgstr "Related to"
+
+#: annuaire/models.py:196
+msgid "Type de relation"
+msgstr "Relationship type"
+
+#: annuaire/models.py:202 photos/models.py:34
+msgid "Date de début"
+msgstr "Start date"
+
+#: annuaire/models.py:203 genealogy/models.py:21 genealogy/models.py:261
+msgid "Lieu du mariage"
+msgstr "Marriage place"
+
+#: annuaire/models.py:204 genealogy/models.py:46 photos/models.py:35
+msgid "Date de fin"
+msgstr "End date"
+
+#: annuaire/models.py:214
+#: annuaire/templates/annuaire/emails/account_setup.txt:5
+msgid "Adresse"
+msgstr "Address"
+
+#: annuaire/models.py:217 genealogy/models.py:70 photos/models.py:145
+#: photos/models.py:164 photos/templates/photos/_photo_search_card.html:10
+#: photos/templates/photos/photo_detail.html:11
+msgid "Photo"
+msgstr "Photo"
+
+#: annuaire/models.py:226 events/models.py:54
+msgid "Lieu"
+msgstr "Location"
+
+#: annuaire/models.py:243
+msgid "Création"
+msgstr "Creation"
+
+#: annuaire/models.py:244
+msgid "Modification"
+msgstr "Update"
+
+#: annuaire/models.py:245
+msgid "Suppression"
+msgstr "Deletion"
+
+#: annuaire/models.py:246
+msgid "Restauration"
+msgstr "Restoration"
+
+#: annuaire/models.py:247
+msgid "Purge définitive"
+msgstr "Permanent purge"
+
+#: annuaire/models.py:248
+msgid "Ajout à un groupe"
+msgstr "Added to a group"
+
+#: annuaire/models.py:249
+msgid "Retrait d'un groupe"
+msgstr "Removed from a group"
+
+#: annuaire/models.py:250
+msgid "Anonymisation"
+msgstr "Anonymisation"
+
+#: annuaire/models.py:252
+msgid "Type d'objet"
+msgstr "Object type"
+
+#: annuaire/models.py:253
+msgid "Identifiant de l'objet"
+msgstr "Object identifier"
+
+#: annuaire/models.py:254 annuaire/templates/annuaire/audit_event_list.html:17
+msgid "Objet"
+msgstr "Object"
+
+#: annuaire/models.py:255 annuaire/templates/annuaire/audit_event_list.html:17
+msgid "Action"
+msgstr "Action"
+
+#: annuaire/models.py:258
+msgid "Modifications"
+msgstr "Changes"
+
+#: annuaire/models.py:265 annuaire/templates/annuaire/audit_event_list.html:17
+#: publications/models.py:129
+msgid "Auteur"
+msgstr "Author"
+
+#: annuaire/models.py:267
+msgid "Auteur (archivé)"
+msgstr "Author (archived)"
+
+#: annuaire/models.py:268 annuaire/templates/annuaire/audit_event_list.html:17
+#: genealogy/models.py:45 genealogy/models.py:90
+msgid "Date"
+msgstr "Date"
+
+#: annuaire/models.py:272
+msgid "Événement d'audit"
+msgstr "Audit event"
+
+#: annuaire/models.py:273
+msgid "Événements d'audit"
+msgstr "Audit events"
+
+#: annuaire/models.py:285
+msgid "Nom du site"
+msgstr "Site name"
+
+#: annuaire/models.py:288
+msgid "Wordmark"
+msgstr "Wordmark"
+
+#: annuaire/models.py:289
+msgid "Accroche"
+msgstr "Tagline"
+
+#: annuaire/models.py:290
+msgid "Adresse d'expédition des emails"
+msgstr "Email sender address"
+
+#: annuaire/models.py:294
+msgid "Lien de retour/signalement"
+msgstr "Feedback/report link"
+
+#: annuaire/models.py:295
+msgid "Laisser vide pour masquer le lien « Signaler un bug » du menu."
+msgstr "Leave blank to hide the \"Report a bug\" link from the menu."
+
+#: annuaire/models.py:297
+msgid "Fuseau horaire"
+msgstr "Time zone"
+
+#: annuaire/models.py:303
+msgid "Libellé (singulier) des lieux"
+msgstr "Place label (singular)"
+
+#: annuaire/models.py:306
+msgid "Libellé (pluriel) des lieux"
+msgstr "Place label (plural)"
+
+#: annuaire/models.py:315
+msgid "Langue par défaut"
+msgstr "Default language"
+
+#: annuaire/models.py:316
+msgid ""
+"Sans effet tant que l'internationalisation (phase 15.4) n'est pas en place."
+msgstr "Has no effect until internationalisation (phase 15.4) is in place."
+
+#: annuaire/models.py:322
+msgid "Thème"
+msgstr "Theme"
+
+#: annuaire/models.py:330
+msgid "Couleur principale (clair)"
+msgstr "Primary colour (light)"
+
+#: annuaire/models.py:333
+msgid "Couleur principale (sombre)"
+msgstr "Primary colour (dark)"
+
+#: annuaire/models.py:336
+msgid "Couleur d'accent (clair)"
+msgstr "Accent colour (light)"
+
+#: annuaire/models.py:339
+msgid "Couleur d'accent (sombre)"
+msgstr "Accent colour (dark)"
+
+#: annuaire/models.py:341
+msgid "Logo"
+msgstr "Logo"
+
+#: annuaire/models.py:342
+msgid "Favicon"
+msgstr "Favicon"
+
+#: annuaire/models.py:345 documents/models.py:160 events/models.py:81
+#: events/models.py:142 genealogy/models.py:54 genealogy/models.py:108
+#: photos/models.py:60 publications/models.py:60
+msgid "Dernière modification"
+msgstr "Last updated"
+
+#: annuaire/models.py:348 annuaire/models.py:349 annuaire/models.py:352
+#: annuaire/templates/annuaire/site_config_form.html:8
+msgid "Configuration du site"
+msgstr "Site configuration"
+
+#: annuaire/models.py:359
+msgid "SiteConfig est un singleton : suppression interdite."
+msgstr "SiteConfig is a singleton: deletion is forbidden."
+
+#: annuaire/models.py:363
+msgid "Résidence"
+msgstr "Residence"
+
+#: annuaire/models.py:367 annuaire/personal_data.py:365
+msgid "Résidences"
+msgstr "Residences"
+
+#: annuaire/person_merge.py:170
+msgid "Impossible de fusionner une personne avec elle-même."
+msgstr "Cannot merge a person with themselves."
+
+#: annuaire/person_merge.py:172
+msgid ""
+"Ces deux profils ont chacun un compte lié à un utilisateur ; la fusion est "
+"refusée."
+msgstr ""
+"Both profiles each have an account linked to a user; the merge is refused."
+
+#: annuaire/personal_data.py:346
+msgid "Vos informations de profil."
+msgstr "Your profile information."
+
+#: annuaire/personal_data.py:349
+msgid "Relations familiales"
+msgstr "Family relations"
+
+#: annuaire/personal_data.py:350
+msgid "Les liens familiaux enregistrés vous concernant."
+msgstr "The family relationships recorded about you."
+
+#: annuaire/personal_data.py:355
+msgid "Comptes gérés"
+msgstr "Managed accounts"
+
+#: annuaire/personal_data.py:356
+msgid "Les profils que vous gérez, ou qui gèrent le vôtre."
+msgstr "The profiles you manage, or that manage yours."
+
+#: annuaire/personal_data.py:361
+msgid "Préférences de notification"
+msgstr "Notification preferences"
+
+#: annuaire/personal_data.py:362
+msgid "Vos préférences de notification."
+msgstr "Your notification preferences."
+
+#: annuaire/personal_data.py:365
+msgid "Les résidences dont vous êtes propriétaire."
+msgstr "The residences you own."
+
+#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
+msgid "Présences"
+msgstr "Stays"
+
+#: annuaire/personal_data.py:366
+msgid "Vos séjours enregistrés."
+msgstr "Your recorded stays."
+
+#: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:115
+#: publications/models.py:67
+#: publications/templates/publications/blogpost_confirm_delete.html:8
+#: publications/templates/publications/blogpost_detail.html:10
+#: publications/templates/publications/blogpost_form.html:10
+#: publications/templates/publications/blogpost_list.html:8
+#: publications/templates/publications/comment_confirm_delete.html:9
+msgid "Publications"
+msgstr "Posts"
+
+#: annuaire/personal_data.py:367
+msgid "Les articles dont vous êtes auteur·e."
+msgstr "The posts you authored."
+
+#: annuaire/personal_data.py:369 publications/models.py:137
+#: publications/templates/publications/blogpost_detail.html:140
+msgid "Commentaires"
+msgstr "Comments"
+
+#: annuaire/personal_data.py:369
+msgid "Les commentaires que vous avez publiés."
+msgstr "The comments you have posted."
+
+#: annuaire/personal_data.py:373 documents/models.py:167
+#: documents/templates/documents/category_confirm_delete.html:8
+#: documents/templates/documents/category_detail.html:17
+#: documents/templates/documents/category_detail.html:70
+#: documents/templates/documents/category_form.html:7
+#: documents/templates/documents/document_confirm_delete.html:8
+#: documents/templates/documents/document_detail.html:11
+#: documents/templates/documents/document_form.html:11
+#: documents/templates/documents/document_list.html:9
+msgid "Documents"
+msgstr "Documents"
+
+#: annuaire/personal_data.py:374
+msgid ""
+"Les documents que vous avez déposés ou caviardés, parmi ceux que vous pouvez "
+"voir."
+msgstr "The documents you have uploaded or redacted, among those you can see."
+
+#: annuaire/personal_data.py:379
+#: annuaire/templates/annuaire/personne_detail.html:137 genealogy/models.py:48
+#: genealogy/templates/genealogy/story_form.html:24 photos/models.py:146
+#: photos/templates/photos/album_detail.html:37
+msgid "Photos"
+msgstr "Photos"
+
+#: annuaire/personal_data.py:380
+msgid ""
+"Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi "
+"ceux que vous pouvez voir."
+msgstr ""
+"The albums and photos you have uploaded, and the photos where you are "
+"tagged, among those you can see."
+
+#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:34
+#: events/models.py:92 events/templates/events/event_confirm_delete.html:8
+#: events/templates/events/event_detail.html:9
+#: events/templates/events/event_form.html:9
+#: events/templates/events/event_list.html:8
+msgid "Événements"
+msgstr "Events"
+
+#: annuaire/personal_data.py:386
+msgid ""
+"Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux "
+"que vous pouvez voir."
+msgstr ""
+"The events you created, organised or responded to, among those you can see."
+
+#: annuaire/personal_data.py:391 annuaire/templates/annuaire/base.html:108
+#: annuaire/templates/annuaire/genealogie.html:23
+msgid "Généalogie"
+msgstr "Genealogy"
+
+#: annuaire/personal_data.py:392
+msgid ""
+"Les récits et citations généalogiques vous concernant ou rédigés par vous."
+msgstr "The genealogical stories and citations about you or written by you."
+
+#: annuaire/personal_data.py:397
+msgid "Consentements"
+msgstr "Consents"
+
+#: annuaire/personal_data.py:398
+msgid "L'acceptation de la politique de confidentialité liée à votre compte."
+msgstr "Your account's acceptance of the privacy policy."
+
+#: annuaire/personal_data.py:437
+#, python-format
+msgid "Export des données personnelles de %(person)s — générée le %(date)s."
+msgstr "Personal data export for %(person)s — generated on %(date)s."
+
+#: annuaire/personal_data.py:442
+msgid ""
+"Ce fichier liste les métadonnées et des liens vers le contenu hébergé sur le "
+"site (voir donnees.json). Les documents, photos et pièces jointes eux-mêmes "
+"ne sont pas inclus dans cette archive ; utilisez les liens fournis pour les "
+"consulter en ligne. Votre photo de profil, elle, est incluse directement."
+msgstr ""
+"This file lists metadata and links to the content hosted on the site (see "
+"donnees.json). The documents, photos and attachments themselves are not "
+"included in this archive; use the links provided to view them online. Your "
+"profile photo, however, is included directly."
+
+#: annuaire/personal_data.py:453
+#, python-format
+msgid "- %(label)s (%(count)s élément(s)) : %(note)s"
+msgstr "- %(label)s (%(count)s item(s)): %(note)s"
+
+#: annuaire/templates/annuaire/_activity_entry.html:9
+#, python-format
+msgid "nouvelle publication — %(date)s"
+msgstr "new post — %(date)s"
+
+#: annuaire/templates/annuaire/_activity_entry.html:12
+msgid "a commenté"
+msgstr "commented"
+
+#: annuaire/templates/annuaire/_activity_entry.html:18
+#, python-format
+msgid "nouveau document — %(date)s"
+msgstr "new document — %(date)s"
+
+#: annuaire/templates/annuaire/_activity_entry.html:21
+#, python-format
+msgid "%(counter)s nouvelle photo — %(date)s"
+msgid_plural "%(counter)s nouvelles photos — %(date)s"
+msgstr[0] "%(counter)s new photo — %(date)s"
+msgstr[1] "%(counter)s new photos — %(date)s"
+
+#: annuaire/templates/annuaire/_activity_entry.html:24
+#, python-format
+msgid "a rejoint l'annuaire — %(date)s"
+msgstr "joined the directory — %(date)s"
+
+#: annuaire/templates/annuaire/_annuaire_results.html:3
+#, python-format
+msgid "%(counter)s résultat pour « %(query)s »"
+msgid_plural "%(counter)s résultats pour « %(query)s »"
+msgstr[0] "%(counter)s result for \"%(query)s\""
+msgstr[1] "%(counter)s results for \"%(query)s\""
+
+#: annuaire/templates/annuaire/_annuaire_results.html:11
+msgid "Aucune personne trouvée"
+msgstr "No person found"
+
+#: annuaire/templates/annuaire/_annuaire_results.html:12
+msgid "Essayez avec une autre orthographe, ou effacez la recherche."
+msgstr "Try a different spelling, or clear the search."
+
+#: annuaire/templates/annuaire/_annuaire_results.html:16
+msgid "Aucune personne dans l'annuaire"
+msgstr "No one in the directory"
+
+#: annuaire/templates/annuaire/_annuaire_results.html:17
+msgid "Ajouter un membre"
+msgstr "Add a member"
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:9
+msgid "S'abonner au calendrier"
+msgstr "Subscribe to the calendar"
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:10
+msgid ""
+"Ajoutez ce lien dans Google Calendar, Apple Calendar ou tout autre client "
+"compatible iCal."
+msgstr ""
+"Add this link to Google Calendar, Apple Calendar, or any other iCal-"
+"compatible client."
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:12
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:18
+#: genealogy/models.py:91
+msgid "Lien"
+msgstr "Link"
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:15
+#: annuaire/templates/annuaire/_calendar_subscribe.html:22
+msgid "Copier"
+msgstr "Copy"
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:19
+msgid "Lien webcal"
+msgstr "Webcal link"
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:27
+msgid "Régénérer le lien ? L\\'ancien lien cessera de fonctionner."
+msgstr "Regenerate the link? The old link will stop working."
+
+#: annuaire/templates/annuaire/_calendar_subscribe.html:28
+msgid "Régénérer le lien"
+msgstr "Regenerate the link"
+
+#: annuaire/templates/annuaire/_person_card.html:5
+msgid "(décédé·e)"
+msgstr "(deceased)"
+
+#: annuaire/templates/annuaire/_person_card.html:12
+#: annuaire/templates/annuaire/personne_detail.html:70
+msgid "décédé·e"
+msgstr "deceased"
+
+#: annuaire/templates/annuaire/_person_picker.html:2
+msgid "Tapez au moins 2 lettres pour chercher…"
+msgstr "Type at least 2 letters to search…"
+
+#: annuaire/templates/annuaire/_person_picker.html:3
+msgid "Chercher une personne"
+msgstr "Search for a person"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:24
+msgid "Navigation"
+msgstr "Navigation"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:8
+#: annuaire/templates/annuaire/calendar.html:25
+msgid "Mois précédent"
+msgstr "Previous month"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:8
+#: annuaire/templates/annuaire/calendar.html:25
+msgid "← Mois"
+msgstr "← Month"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:26
+msgid "Aujourd'hui"
+msgstr "Today"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:10
+#: annuaire/templates/annuaire/calendar.html:27
+msgid "Mois suivant"
+msgstr "Next month"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:10
+#: annuaire/templates/annuaire/calendar.html:27
+msgid "Mois →"
+msgstr "Month →"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:12
+msgid "Échelle"
+msgstr "Scale"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:13
+msgid "Semaines"
+msgstr "Weeks"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:14
+msgid "Mois"
+msgstr "Months"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:22
+msgid "passé"
+msgstr "past"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:23
+msgid "en cours"
+msgstr "ongoing"
+
+#: annuaire/templates/annuaire/_presence_calendar.html:24
+msgid "à venir"
+msgstr "upcoming"
+
+#: annuaire/templates/annuaire/_profile_edit_actions.html:3
+#: annuaire/templates/annuaire/group_form.html:19
+#: annuaire/templates/annuaire/group_members_form.html:21
+#: annuaire/templates/annuaire/person_create.html:32
+#: annuaire/templates/annuaire/person_owners_form.html:21
+#: annuaire/templates/annuaire/person_relations_form.html:32
+#: annuaire/templates/annuaire/place_form.html:33
+#: annuaire/templates/annuaire/place_owners_form.html:20
+#: annuaire/templates/annuaire/profile_create.html:32
+#: annuaire/templates/annuaire/site_config_form.html:46
+#: annuaire/templates/annuaire/stay_form.html:16
+#: documents/templates/documents/category_form.html:23
+#: documents/templates/documents/document_form.html:73
+#: events/templates/events/_rsvp_form.html:28
+#: events/templates/events/event_form.html:36
+#: genealogy/templates/genealogy/story_form.html:36
+#: photos/templates/photos/album_form.html:27
+#: photos/templates/photos/photo_form.html:19
+#: photos/templates/photos/photo_tag_form.html:25
+#: publications/templates/publications/blogpost_form.html:109
+msgid "Enregistrer"
+msgstr "Save"
+
+#: annuaire/templates/annuaire/_profile_edit_actions.html:5
+#: annuaire/templates/annuaire/personne_detail.html:285
+msgid "Modifier les relations"
+msgstr "Edit relations"
+
+#: annuaire/templates/annuaire/_profile_edit_actions.html:6
+#: annuaire/templates/annuaire/group_confirm_delete.html:60
+#: annuaire/templates/annuaire/group_form.html:20
+#: annuaire/templates/annuaire/group_members_form.html:22
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:34
+#: annuaire/templates/annuaire/person_create.html:33
+#: annuaire/templates/annuaire/person_merge_form.html:45
+#: annuaire/templates/annuaire/person_owners_form.html:22
+#: annuaire/templates/annuaire/place_form.html:34
+#: annuaire/templates/annuaire/place_owners_form.html:21
+#: annuaire/templates/annuaire/site_config_form.html:47
+#: annuaire/templates/annuaire/stay_form.html:17
+#: documents/templates/documents/category_confirm_delete.html:32
+#: documents/templates/documents/category_form.html:24
+#: documents/templates/documents/document_confirm_delete.html:29
+#: documents/templates/documents/document_form.html:75
+#: documents/templates/documents/document_form.html:77
+#: events/templates/events/event_confirm_delete.html:22
+#: events/templates/events/event_form.html:38
+#: events/templates/events/event_form.html:40
+#: genealogy/templates/genealogy/story_confirm_delete.html:27
+#: photos/templates/photos/album_confirm_delete.html:43
+#: photos/templates/photos/album_form.html:28
+#: photos/templates/photos/photo_confirm_delete.html:30
+#: photos/templates/photos/photo_form.html:20
+#: publications/templates/publications/blogpost_confirm_delete.html:30
+#: publications/templates/publications/blogpost_form.html:111
+#: publications/templates/publications/blogpost_form.html:113
+#: publications/templates/publications/comment_confirm_delete.html:26
+msgid "Annuler"
+msgstr "Cancel"
+
+#: annuaire/templates/annuaire/_profile_photo_size_check.html:13
+msgid ""
+"Cette photo dépasse 5 Mo et sera refusée par le serveur. Choisissez une "
+"image plus légère."
+msgstr ""
+"This photo exceeds 5 MB and will be rejected by the server. Choose a smaller "
+"image."
+
+#: annuaire/templates/annuaire/_search_form.html:13
+#: annuaire/templates/annuaire/_search_form.html:15
+#: annuaire/templates/annuaire/profile_claim.html:23
+msgid "Rechercher"
+msgstr "Search"
+
+#: annuaire/templates/annuaire/_search_form.html:15
+#: documents/templates/documents/document_list.html:20
+msgid "Rechercher…"
+msgstr "Search…"
+
+#: annuaire/templates/annuaire/activity_feed.html:8
+#: annuaire/templates/annuaire/base.html:98
+msgid "Quoi de neuf"
+msgstr "What's new"
+
+#: annuaire/templates/annuaire/activity_feed.html:13
+msgid "Depuis votre dernière visite"
+msgstr "Since your last visit"
+
+#: annuaire/templates/annuaire/activity_feed.html:22
+msgid "Plus tôt"
+msgstr "Earlier"
+
+#: annuaire/templates/annuaire/activity_feed.html:32
+msgid "Rien à signaler pour l'instant"
+msgstr "Nothing to report yet"
+
+#: annuaire/templates/annuaire/activity_feed.html:33
+#: annuaire/templates/annuaire/home.html:165
+#: publications/templates/publications/blogpost_list.html:40
+msgid "Racontez une nouvelle, partagez des photos, ouvrez le bal."
+msgstr "Share some news, post some photos, get things started."
+
+#: annuaire/templates/annuaire/activity_feed.html:34
+msgid "Écrire une publication"
+msgstr "Write a post"
+
+#: annuaire/templates/annuaire/annuaire_list.html:10
+msgid "Tous les membres de la famille, avec ou sans compte."
+msgstr "All family members, with or without an account."
+
+#: annuaire/templates/annuaire/annuaire_list.html:14
+msgid "Ajouter un membre de la famille sans compte"
+msgstr "Add a family member without an account"
+
+#: annuaire/templates/annuaire/annuaire_list.html:21
+#: annuaire/templates/annuaire/profile_claim.html:21
+msgid "Rechercher par nom ou prénom…"
+msgstr "Search by first or last name…"
+
+#: annuaire/templates/annuaire/annuaire_list.html:22
+#: annuaire/templates/annuaire/profile_claim.html:22
+msgid "Rechercher par nom ou prénom"
+msgstr "Search by first or last name"
+
+#: annuaire/templates/annuaire/annuaire_list.html:23
+#: documents/templates/documents/document_list.html:40
+msgid "Trier"
+msgstr "Sort"
+
+#: annuaire/templates/annuaire/annuaire_list.html:24
+msgid "Plus récents d'abord"
+msgstr "Newest first"
+
+#: annuaire/templates/annuaire/annuaire_list.html:25
+msgid "Nom (A → Z)"
+msgstr "Name (A → Z)"
+
+#: annuaire/templates/annuaire/annuaire_list.html:26
+msgid "Nom (Z → A)"
+msgstr "Name (Z → A)"
+
+#: annuaire/templates/annuaire/annuaire_list.html:27
+msgid "Date de naissance (croissant)"
+msgstr "Date of birth (ascending)"
+
+#: annuaire/templates/annuaire/annuaire_list.html:28
+msgid "Date de naissance (décroissant)"
+msgstr "Date of birth (descending)"
+
+#: annuaire/templates/annuaire/annuaire_list.html:32
+#: annuaire/templates/annuaire/profile_claim.html:26
+#: documents/templates/documents/document_list.html:52
+#: publications/templates/publications/blogpost_list.html:26
+msgid "Effacer"
+msgstr "Clear"
+
+#: annuaire/templates/annuaire/audit_event_list.html:7
+#: annuaire/templates/annuaire/base.html:132
+#: annuaire/templates/annuaire/bulk_account_create.html:9
+#: annuaire/templates/annuaire/corbeille_list.html:7
+#: annuaire/templates/annuaire/group_confirm_delete.html:8
+#: annuaire/templates/annuaire/group_form.html:7
+#: annuaire/templates/annuaire/group_list.html:8
+#: annuaire/templates/annuaire/group_members_form.html:7
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:8
+#: annuaire/templates/annuaire/person_duplicate_list.html:8
+#: annuaire/templates/annuaire/person_merge_form.html:8
+#: annuaire/templates/annuaire/site_config_form.html:7
+#: genealogy/templates/genealogy/gedcom_import_review.html:8
+#: genealogy/templates/genealogy/gedcom_import_upload.html:8
+msgid "Administration"
+msgstr "Administration"
+
+#: annuaire/templates/annuaire/audit_event_list.html:8
+#: annuaire/templates/annuaire/base.html:138
+msgid "Journal d'audit"
+msgstr "Audit log"
+
+#: annuaire/templates/annuaire/audit_event_list.html:9
+msgid "Qui a créé, modifié ou supprimé quoi, et quand."
+msgstr "Who created, changed or deleted what, and when."
+
+#: annuaire/templates/annuaire/audit_event_list.html:14
+msgid "Système"
+msgstr "System"
+
+#: annuaire/templates/annuaire/audit_event_list.html:17
+#: photos/templates/photos/_photo_card.html:17
+msgid "Détails"
+msgstr "Details"
+
+#: annuaire/templates/annuaire/audit_event_list.html:39
+msgid "&larr; Précédent"
+msgstr "&larr; Previous"
+
+#: annuaire/templates/annuaire/audit_event_list.html:41
+#: annuaire/templates/annuaire/personne_detail.html:162
+#: annuaire/templates/annuaire/search_results.html:32
+#, python-format
+msgid "Page %(current)s / %(total)s"
+msgstr "Page %(current)s / %(total)s"
+
+#: annuaire/templates/annuaire/audit_event_list.html:43
+msgid "Suivant &rarr;"
+msgstr "Next &rarr;"
+
+#: annuaire/templates/annuaire/audit_event_list.html:48
+msgid "Aucun événement"
+msgstr "No events"
+
+#: annuaire/templates/annuaire/audit_event_list.html:49
+msgid "Le journal d'audit est vide pour le moment."
+msgstr "The audit log is empty for now."
+
+#: annuaire/templates/annuaire/base.html:45
+msgid "Ouvrir le menu"
+msgstr "Open menu"
+
+#: annuaire/templates/annuaire/base.html:57
+msgid "Menu"
+msgstr "Menu"
+
+#: annuaire/templates/annuaire/base.html:59
+#: photos/templates/photos/album_detail.html:77
+#: publications/templates/publications/blogpost_detail.html:55
+#: publications/templates/publications/blogpost_detail.html:91
+msgid "Fermer"
+msgstr "Close"
+
+#: annuaire/templates/annuaire/base.html:66
+#, python-format
+msgid "Accueil — %(site_name)s"
+msgstr "Home — %(site_name)s"
+
+#: annuaire/templates/annuaire/base.html:79
+#: annuaire/templates/annuaire/profile_create.html:23
+msgid "Mon profil"
+msgstr "My profile"
+
+#: annuaire/templates/annuaire/base.html:84
+msgid "Navigation principale"
+msgstr "Main navigation"
+
+#: annuaire/templates/annuaire/base.html:97
+msgid "Accueil"
+msgstr "Home"
+
+#: annuaire/templates/annuaire/base.html:99
+#: annuaire/templates/annuaire/calendar.html:9
+#: annuaire/templates/annuaire/place_detail.html:46
+msgid "Calendrier"
+msgstr "Calendar"
+
+#: annuaire/templates/annuaire/base.html:100
+msgid "Tous les événements"
+msgstr "All events"
+
+#: annuaire/templates/annuaire/base.html:109
+#: annuaire/templates/annuaire/carte.html:17
+msgid "Carte"
+msgstr "Map"
+
+#: annuaire/templates/annuaire/base.html:110
+#: annuaire/templates/annuaire/place_list.html:13
+#, python-format
+msgid "%(label)s et Présences"
+msgstr "%(label)s and Stays"
+
+#: annuaire/templates/annuaire/base.html:117
+msgid "Toutes les publications"
+msgstr "All posts"
+
+#: annuaire/templates/annuaire/base.html:122
+msgid "Documents et photos"
+msgstr "Documents and photos"
+
+#: annuaire/templates/annuaire/base.html:124
+msgid "Tous les documents"
+msgstr "All documents"
+
+#: annuaire/templates/annuaire/base.html:125 documents/models.py:49
+msgid "Catégories"
+msgstr "Categories"
+
+#: annuaire/templates/annuaire/base.html:126
+msgid "Tous les albums"
+msgstr "All albums"
+
+#: annuaire/templates/annuaire/base.html:134
+#: annuaire/templates/annuaire/bulk_account_create.html:10
+msgid "Créer des comptes"
+msgstr "Create accounts"
+
+#: annuaire/templates/annuaire/base.html:135
+#: annuaire/templates/annuaire/group_list.html:9
+msgid "Groupes"
+msgstr "Groups"
+
+#: annuaire/templates/annuaire/base.html:136
+#: annuaire/templates/annuaire/person_duplicate_list.html:9
+msgid "Doublons potentiels"
+msgstr "Potential duplicates"
+
+#: annuaire/templates/annuaire/base.html:137
+msgid "Importer un GEDCOM"
+msgstr "Import a GEDCOM"
+
+#: annuaire/templates/annuaire/base.html:139
+#: annuaire/templates/annuaire/corbeille_list.html:8
+msgid "Corbeille"
+msgstr "Trash"
+
+#: annuaire/templates/annuaire/base.html:140
+msgid "Configuration"
+msgstr "Configuration"
+
+#: annuaire/templates/annuaire/base.html:141
+msgid "Console d'admin"
+msgstr "Admin console"
+
+#: annuaire/templates/annuaire/base.html:149
+#: annuaire/templates/annuaire/help_magic_link.html:6
+#: annuaire/templates/annuaire/privacy_notice.html:6
+msgid "Aide"
+msgstr "Help"
+
+#: annuaire/templates/annuaire/base.html:151
+#: annuaire/templates/annuaire/help_magic_link.html:7
+msgid "Comment fonctionne la connexion par lien ?"
+msgstr "How does link login work?"
+
+#: annuaire/templates/annuaire/base.html:152
+#: annuaire/templates/annuaire/privacy_notice.html:7
+msgid "Politique de confidentialité"
+msgstr "Privacy policy"
+
+#: annuaire/templates/annuaire/base.html:154
+#: annuaire/templates/annuaire/base_threshold.html:86
+msgid "Signaler un bug ou proposer une évolution"
+msgstr "Report a bug or suggest an improvement"
+
+#: annuaire/templates/annuaire/base.html:167
+#: annuaire/templates/annuaire/base_threshold.html:96
+msgid "Changer de langue"
+msgstr "Change language"
+
+#: annuaire/templates/annuaire/base.html:172
+msgid "Changer de thème"
+msgstr "Change theme"
+
+#: annuaire/templates/annuaire/base.html:180
+msgid "Déconnexion"
+msgstr "Log out"
+
+#: annuaire/templates/annuaire/base.html:184
+#: annuaire/templates/annuaire/emails/magic_link.html:33
+#: annuaire/templates/annuaire/login.html:17
+msgid "Se connecter"
+msgstr "Log in"
+
+#: annuaire/templates/annuaire/base.html:204
+msgid "La politique de confidentialité a été mise à jour."
+msgstr "The privacy policy has been updated."
+
+#: annuaire/templates/annuaire/base.html:207
+msgid "Consultez-la"
+msgstr "View it"
+
+#: annuaire/templates/annuaire/base.html:211
+msgid "J'ai lu et j'accepte"
+msgstr "I have read and accept"
+
+#: annuaire/templates/annuaire/base_threshold.html:82
+#, python-format
+msgid "%(site_name)s · site privé de la famille"
+msgstr "%(site_name)s · private family site"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:11
+msgid "Créer, réinitialiser et renvoyer les invitations de connexion."
+msgstr "Create, reset and resend login invitations."
+
+#: annuaire/templates/annuaire/bulk_account_create.html:17
+msgid "Opération terminée."
+msgstr "Operation completed."
+
+#: annuaire/templates/annuaire/bulk_account_create.html:17
+#, python-format
+msgid "%(count)s compte(s) traité(s)."
+msgstr "%(count)s account(s) processed."
+
+#: annuaire/templates/annuaire/bulk_account_create.html:21
+#: genealogy/models.py:199
+msgid "Statut"
+msgstr "Status"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:21
+msgid "Invitation"
+msgstr "Invitation"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:28
+msgid "Créé"
+msgstr "Created"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:28
+msgid "Réinitialisé"
+msgstr "Reset"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:28
+msgid "Renvoyé"
+msgstr "Resent"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:28
+msgid "Échec de création"
+msgstr "Creation failed"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:34
+msgid "Envoyé"
+msgstr "Sent"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:36
+msgid "Échec"
+msgstr "Failed"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:37
+msgid "Lien à transmettre manuellement :"
+msgstr "Link to share manually:"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:47
+msgid "Comptes sans profil"
+msgstr "Accounts without a profile"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:48
+#, python-format
+msgid "%(count)s en attente"
+msgstr "%(count)s pending"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:58
+msgid "Tout sélectionner"
+msgstr "Select all"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:60
+msgid "Dernière connexion"
+msgstr "Last login"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:70
+#, python-format
+msgid "Dernière connexion le %(date)s"
+msgstr "Last login on %(date)s"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:72
+msgid "Jamais connecté"
+msgstr "Never logged in"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:80
+msgid "Renvoyer le lien d'invitation"
+msgstr "Resend invitation link"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:96
+msgid "Tous les comptes sont rattachés à un profil"
+msgstr "All accounts are linked to a profile"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:100
+msgid "Créer ou réinitialiser des comptes"
+msgstr "Create or reset accounts"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:103
+msgid "Attention :"
+msgstr "Warning:"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:103
+msgid ""
+"les adresses suivantes ont déjà un compte — leur mot de passe sera "
+"réinitialisé :"
+msgstr ""
+"the following addresses already have an account — their password will be "
+"reset:"
+
+#: annuaire/templates/annuaire/bulk_account_create.html:111
+msgid "Créer / réinitialiser les comptes"
+msgstr "Create / reset accounts"
+
+#: annuaire/templates/annuaire/calendar.html:10
+msgid "Événements, présences et anniversaires de la famille, au même endroit."
+msgstr "Family events, stays and birthdays, all in one place."
+
+#: annuaire/templates/annuaire/calendar.html:31
+msgid "Filtrer par type"
+msgstr "Filter by type"
+
+#: annuaire/templates/annuaire/calendar.html:36
+msgid "Anniversaires"
+msgstr "Birthdays"
+
+#: annuaire/templates/annuaire/calendar.html:47
+#: annuaire/templates/annuaire/home.html:100
+#: annuaire/templates/annuaire/place_list.html:46
+msgid "Rien à afficher pour l'instant"
+msgstr "Nothing to display yet"
+
+#: annuaire/templates/annuaire/calendar.html:48
+msgid "Les événements, présences et anniversaires à venir apparaîtront ici."
+msgstr "Upcoming events, stays and birthdays will appear here."
+
+#: annuaire/templates/annuaire/carte.html:18
+#, python-format
+msgid "Où habite la famille, et où sont les %(label)s."
+msgstr "Where the family lives, and where the %(label)s are."
+
+#: annuaire/templates/annuaire/carte.html:25
+#, python-format
+msgid ""
+"%(counter)s profil sans adresse géolocalisée n'apparaît pas sur la carte."
+msgid_plural ""
+"%(counter)s profils sans adresse géolocalisée n'apparaissent pas sur la "
+"carte."
+msgstr[0] ""
+"%(counter)s profile without a geolocated address does not appear on the map."
+msgstr[1] ""
+"%(counter)s profiles without a geolocated address do not appear on the map."
+
+#: annuaire/templates/annuaire/carte.html:28
+msgid "adresse non renseignée"
+msgstr "address not provided"
+
+#: annuaire/templates/annuaire/carte.html:40
+#, python-format
+msgid ""
+"%(counter)s %(label_plural)s sans adresse géolocalisée n'apparaît pas sur la "
+"carte."
+msgid_plural ""
+"%(counter)s %(label_plural)s sans adresse géolocalisée n'apparaissent pas "
+"sur la carte."
+msgstr[0] ""
+"%(counter)s %(label_plural)s without a geolocated address does not appear on "
+"the map."
+msgstr[1] ""
+"%(counter)s %(label_plural)s without a geolocated address do not appear on "
+"the map."
+
+#: annuaire/templates/annuaire/carte.html:47
+msgid "Rechercher un membre…"
+msgstr "Search for a member…"
+
+#: annuaire/templates/annuaire/carte.html:47
+msgid "Rechercher un membre sur la carte"
+msgstr "Search for a member on the map"
+
+#: annuaire/templates/annuaire/corbeille_list.html:10
+#, python-format
+msgid ""
+"Publications, documents, albums et photos supprimés, récupérables pendant "
+"%(days)s jours avant leur suppression définitive."
+msgstr ""
+"Deleted posts, documents, albums and photos, recoverable for %(days)s days "
+"before being permanently deleted."
+
+#: annuaire/templates/annuaire/corbeille_list.html:21 genealogy/models.py:87
+msgid "Type"
+msgstr "Type"
+
+#: annuaire/templates/annuaire/corbeille_list.html:21
+msgid "Élément"
+msgstr "Item"
+
+#: annuaire/templates/annuaire/corbeille_list.html:21
+msgid "Supprimé par"
+msgstr "Deleted by"
+
+#: annuaire/templates/annuaire/corbeille_list.html:21
+msgid "Supprimé le"
+msgstr "Deleted on"
+
+#: annuaire/templates/annuaire/corbeille_list.html:33
+msgid "Restaurer"
+msgstr "Restore"
+
+#: annuaire/templates/annuaire/corbeille_list.html:37
+#: annuaire/templates/annuaire/group_confirm_delete.html:58
+#: documents/templates/documents/category_confirm_delete.html:30
+#: events/templates/events/event_confirm_delete.html:20
+#: genealogy/templates/genealogy/story_confirm_delete.html:26
+#: publications/templates/publications/comment_confirm_delete.html:25
+msgid "Supprimer définitivement"
+msgstr "Delete permanently"
+
+#: annuaire/templates/annuaire/corbeille_list.html:45
+msgid "Corbeille vide"
+msgstr "Trash is empty"
+
+#: annuaire/templates/annuaire/corbeille_list.html:46
+msgid "Rien n'a été supprimé récemment."
+msgstr "Nothing has been deleted recently."
+
+#: annuaire/templates/annuaire/emails/account_setup.html:12
+#, python-format
+msgid "Choisissez votre mot de passe pour accéder à %(site_name)s."
+msgstr "Choose your password to access %(site_name)s."
+
+#: annuaire/templates/annuaire/emails/account_setup.html:26
+#: annuaire/templates/annuaire/emails/account_setup.txt:3
+#, python-format
+msgid "Le mot de passe de votre compte sur %(site_name)s a été réinitialisé."
+msgstr "The password for your %(site_name)s account has been reset."
+
+#: annuaire/templates/annuaire/emails/account_setup.html:28
+#: annuaire/templates/annuaire/emails/account_setup.txt:3
+#, python-format
+msgid "Un compte a été créé pour vous sur %(site_name)s."
+msgstr "An account has been created for you on %(site_name)s."
+
+#: annuaire/templates/annuaire/emails/account_setup.html:32
+#, python-format
+msgid "Adresse&nbsp;: %(email)s"
+msgstr "Address&nbsp;: %(email)s"
+
+#: annuaire/templates/annuaire/emails/account_setup.html:36
+msgid "Configurer mon compte"
+msgstr "Set up my account"
+
+#: annuaire/templates/annuaire/emails/account_setup.html:41
+msgid ""
+"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'attendiez "
+"pas ce message, vous pouvez l'ignorer."
+msgstr ""
+"This link is single-use and expires in 7&nbsp;days. If you weren't expecting "
+"this message, you can ignore it."
+
+#: annuaire/templates/annuaire/emails/account_setup.html:51
+#, python-format
+msgid ""
+"Cet email vous a été envoyé par le site privé %(site_name)s parce qu'un "
+"compte y a été créé ou réinitialisé pour votre adresse."
+msgstr ""
+"This email was sent to you by the private site %(site_name)s because an "
+"account was created or reset there for your address."
+
+#: annuaire/templates/annuaire/emails/account_setup.txt:1
+#: annuaire/templates/annuaire/magic_link_email.txt:1
+#: annuaire/templates/annuaire/password_reset_email.txt:1
+msgid "Bonjour,"
+msgstr "Hello,"
+
+#: annuaire/templates/annuaire/emails/account_setup.txt:7
+msgid "Choisissez votre mot de passe ici"
+msgstr "Choose your password here"
+
+#: annuaire/templates/annuaire/emails/account_setup.txt:8
+#: annuaire/templates/annuaire/password_reset_email.txt:10
+msgid "Ce lien est à usage unique et expire dans 7 jours."
+msgstr "This link is single-use and expires in 7 days."
+
+#: annuaire/templates/annuaire/emails/account_setup.txt:10
+msgid "Si vous n'attendiez pas ce message, vous pouvez l'ignorer."
+msgstr "If you weren't expecting this message, you can ignore it."
+
+#: annuaire/templates/annuaire/emails/account_setup.txt:12
+#: annuaire/templates/annuaire/magic_link_email.txt:14
+#: annuaire/templates/annuaire/password_reset_email.txt:14
+msgid "À bientôt !"
+msgstr "See you soon!"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:13
+#, python-format
+msgid ""
+"C'est aujourd'hui l'anniversaire de %(first_name)s &mdash; l'occasion de lui "
+"laisser un mot."
+msgstr ""
+"Today is %(first_name)s's birthday &mdash; a good time to leave them a note."
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:20
+#, python-format
+msgid "Photo de %(first_name)s"
+msgstr "Photo of %(first_name)s"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:43
+#, python-format
+msgid "C'est l'anniversaire de %(first_name)s aujourd'hui&nbsp;!"
+msgstr "It's %(first_name)s's birthday today&nbsp;!"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:50
+msgid ""
+"Un petit mot fait toujours plaisir&nbsp;: passez lui souhaiter un joyeux "
+"anniversaire."
+msgstr "A little note is always appreciated&nbsp;: wish them a happy birthday."
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:58
+msgid ""
+"Vous recevez ce rappel car vous êtes abonné&middot;e aux rappels "
+"d'anniversaire sur"
+msgstr ""
+"You are receiving this reminder because you are subscribed&middot; to "
+"birthday reminders on"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.html:60
+#: events/templates/events/emails/event_announcement.html:35
+#: events/templates/events/emails/event_reminder.html:34
+#: publications/templates/publications/emails/new_blog_post.html:51
+msgid "Gérer mes préférences"
+msgstr "Manage my preferences"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.txt:1
+#, python-format
+msgid "C'est aujourd'hui l'anniversaire de %(first_name)s %(last_name)s !"
+msgstr "Today is %(first_name)s %(last_name)s's birthday!"
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.txt:3
+msgid ""
+"Un petit mot fait toujours plaisir : passez lui souhaiter un joyeux "
+"anniversaire."
+msgstr "A little note is always appreciated: wish them a happy birthday."
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.txt:8
+#, python-format
+msgid ""
+"Vous recevez ce rappel car vous êtes abonné·e aux rappels d'anniversaire sur "
+"%(site_name)s (%(site_base_url)s)."
+msgstr ""
+"You are receiving this reminder because you are subscribed to birthday "
+"reminders on %(site_name)s (%(site_base_url)s)."
+
+#: annuaire/templates/annuaire/emails/birthday_reminder.txt:12
+#, python-format
+msgid "Pour vous désabonner, modifiez votre profil : %(settings_url)s"
+msgstr "To unsubscribe, edit your profile: %(settings_url)s"
+
+#: annuaire/templates/annuaire/emails/magic_link.html:11
+#: annuaire/templates/annuaire/emails/magic_link.html:18
+#: annuaire/templates/annuaire/magic_link_request.html:7
+#: annuaire/templates/annuaire/magic_link_subject.txt:1
+msgid "Votre lien de connexion"
+msgstr "Your login link"
+
+#: annuaire/templates/annuaire/emails/magic_link.html:12
+#, python-format
+msgid "Connectez-vous à %(site_name)s sans mot de passe."
+msgstr "Log in to %(site_name)s without a password."
+
+#: annuaire/templates/annuaire/emails/magic_link.html:25
+#: annuaire/templates/annuaire/magic_link_email.txt:3
+#, python-format
+msgid ""
+"Vous avez demandé un lien de connexion pour votre compte sur %(site_name)s "
+"(%(email)s)."
+msgstr ""
+"You requested a login link for your account on %(site_name)s (%(email)s)."
+
+#: annuaire/templates/annuaire/emails/magic_link.html:38
+#, python-format
+msgid ""
+"Ce lien est à usage unique et expire dans %(validity_minutes)s&nbsp;minutes. "
+"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email."
+msgstr ""
+"This link is single-use and expires in %(validity_minutes)s&nbsp;minutes. If "
+"you did not make this request, you can ignore this email."
+
+#: annuaire/templates/annuaire/emails/magic_link.html:48
+#, python-format
+msgid ""
+"Cet email vous a été envoyé par le site privé %(site_name)s à la suite d'une "
+"demande de connexion par lien."
+msgstr ""
+"This email was sent to you by the private site %(site_name)s following a "
+"login-link request."
+
+#: annuaire/templates/annuaire/emails/password_reset.html:11
+#: annuaire/templates/annuaire/emails/password_reset.html:18
+msgid "Réinitialisez votre mot de passe"
+msgstr "Reset your password"
+
+#: annuaire/templates/annuaire/emails/password_reset.html:12
+#, python-format
+msgid "Choisissez un nouveau mot de passe pour votre compte %(site_name)s."
+msgstr "Choose a new password for your %(site_name)s account."
+
+#: annuaire/templates/annuaire/emails/password_reset.html:25
+#: annuaire/templates/annuaire/password_reset_email.txt:3
+#, python-format
+msgid ""
+"Vous avez demandé la réinitialisation du mot de passe de votre compte sur "
+"%(site_name)s (%(email)s)."
+msgstr ""
+"You requested a password reset for your account on %(site_name)s (%(email)s)."
+
+#: annuaire/templates/annuaire/emails/password_reset.html:33
+#: annuaire/templates/annuaire/password_reset_confirm.html:7
+msgid "Choisir un nouveau mot de passe"
+msgstr "Choose a new password"
+
+#: annuaire/templates/annuaire/emails/password_reset.html:38
+msgid ""
+"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'êtes pas à "
+"l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre mot "
+"de passe restera inchangé."
+msgstr ""
+"This link is single-use and expires in 7&nbsp;days. If you did not make this "
+"request, you can ignore this email&nbsp;: your password will remain "
+"unchanged."
+
+#: annuaire/templates/annuaire/emails/password_reset.html:49
+#, python-format
+msgid ""
+"Cet email vous a été envoyé par le site privé %(site_name)s à la suite d'une "
+"demande de réinitialisation de mot de passe."
+msgstr ""
+"This email was sent to you by the private site %(site_name)s following a "
+"password reset request."
+
+#: annuaire/templates/annuaire/genealogie.html:24
+msgid "L'arbre complet, branche par branche."
+msgstr "The full tree, branch by branch."
+
+#: annuaire/templates/annuaire/genealogie.html:28
+msgid "Exporter le carnet d'adresses en Excel"
+msgstr "Export the address book to Excel"
+
+#: annuaire/templates/annuaire/genealogie.html:29
+msgid "Exporter en GEDCOM"
+msgstr "Export to GEDCOM"
+
+#: annuaire/templates/annuaire/genealogie.html:30
+msgid "Exporter en image"
+msgstr "Export as image"
+
+#: annuaire/templates/annuaire/genealogie.html:31
+#: documents/templates/documents/document_detail.html:55
+#: documents/templates/documents/document_detail.html:90
+#: photos/templates/photos/album_detail.html:76
+#: publications/templates/publications/blogpost_detail.html:54
+#: publications/templates/publications/blogpost_detail.html:90
+msgid "Plein écran"
+msgstr "Full screen"
+
+#: annuaire/templates/annuaire/genealogie.html:64
+msgid "Sélectionnez une personne dans l'arbre."
+msgstr "Select a person in the tree."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:9
+msgid "Supprimer un groupe ?"
+msgstr "Delete a group?"
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:14
+#, python-format
+msgid "Supprimer le groupe « %(name)s » ?"
+msgstr "Delete the group \"%(name)s\"?"
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:18
+#, python-format
+msgid "%(counter)s membre perdra l'accès associé à ce groupe."
+msgid_plural "%(counter)s membres perdront l'accès associé à ce groupe."
+msgstr[0] "%(counter)s member will lose the access associated with this group."
+msgstr[1] ""
+"%(counter)s members will lose the access associated with this group."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:21
+msgid "Ce groupe n'a aucun membre."
+msgstr "This group has no members."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:26
+#: annuaire/templates/annuaire/group_confirm_delete.html:36
+#: annuaire/templates/annuaire/group_confirm_delete.html:46
+msgid "Suppression impossible :"
+msgstr "Cannot delete:"
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:26
+#: annuaire/templates/annuaire/group_confirm_delete.html:36
+#: annuaire/templates/annuaire/group_confirm_delete.html:46
+msgid "ce groupe restreint l'accès à"
+msgstr "this group restricts access to"
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:28
+#, python-format
+msgid ""
+"la catégorie « %(name)s ». Retirez d'abord la restriction sur cette "
+"catégorie."
+msgstr ""
+"the category \"%(name)s\". Remove the restriction on this category first."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:30
+#, python-format
+msgid ""
+"aux catégories : %(names)s. Retirez d'abord la restriction sur ces "
+"catégories."
+msgstr ""
+"the categories: %(names)s. Remove the restriction on these categories first."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:38
+#, python-format
+msgid "l'album « %(name)s ». Retirez d'abord la restriction sur cet album."
+msgstr "the album \"%(name)s\". Remove the restriction on this album first."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:40
+#, python-format
+msgid "aux albums : %(names)s. Retirez d'abord la restriction sur ces albums."
+msgstr "the albums: %(names)s. Remove the restriction on these albums first."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:48
+#, python-format
+msgid ""
+"l'événement « %(name)s ». Retirez d'abord la restriction sur cet événement."
+msgstr "the event \"%(name)s\". Remove the restriction on this event first."
+
+#: annuaire/templates/annuaire/group_confirm_delete.html:50
+#, python-format
+msgid ""
+"aux événements : %(names)s. Retirez d'abord la restriction sur ces "
+"événements."
+msgstr "the events: %(names)s. Remove the restriction on these events first."
+
+#: annuaire/templates/annuaire/group_form.html:8
+#: documents/templates/documents/category_form.html:8
+#, python-format
+msgid "Modifier « %(name)s »"
+msgstr "Edit \"%(name)s\""
+
+#: annuaire/templates/annuaire/group_form.html:8
+msgid "Nouveau groupe"
+msgstr "New group"
+
+#: annuaire/templates/annuaire/group_form.html:15
+msgid "Le groupe"
+msgstr "The group"
+
+#: annuaire/templates/annuaire/group_list.html:10
+msgid ""
+"Les groupes réservent certaines catégories de documents à quelques membres."
+msgstr "Groups reserve certain document categories to a few members."
+
+#: annuaire/templates/annuaire/group_list.html:13
+msgid "Créer un groupe"
+msgstr "Create a group"
+
+#: annuaire/templates/annuaire/group_list.html:20 documents/models.py:28
+#: genealogy/models.py:220
+msgid "Nom"
+msgstr "Name"
+
+#: annuaire/templates/annuaire/group_list.html:20
+#: annuaire/templates/annuaire/group_list.html:28
+msgid "Membres"
+msgstr "Members"
+
+#: annuaire/templates/annuaire/group_list.html:29
+#: annuaire/templates/annuaire/personne_detail.html:210
+#: annuaire/templates/annuaire/place_detail.html:14
+#: annuaire/templates/annuaire/place_detail.html:63
+#: annuaire/templates/annuaire/place_detail.html:89
+#: annuaire/templates/annuaire/place_detail.html:122
+#: documents/templates/documents/category_detail.html:32
+#: documents/templates/documents/document_detail.html:29
+#: events/templates/events/event_detail.html:14
+#: photos/templates/photos/album_detail.html:22
+#: publications/templates/publications/blogpost_detail.html:33
+msgid "Modifier"
+msgstr "Edit"
+
+#: annuaire/templates/annuaire/group_list.html:30
+#: annuaire/templates/annuaire/person_relations_form.html:39
+#: annuaire/templates/annuaire/personne_detail.html:211
+#: annuaire/templates/annuaire/place_detail.html:67
+#: annuaire/templates/annuaire/place_detail.html:93
+#: annuaire/templates/annuaire/place_detail.html:126
+#: documents/templates/documents/category_detail.html:33
+#: documents/templates/documents/document_detail.html:30
+#: events/templates/events/event_detail.html:15
+#: photos/templates/photos/album_detail.html:23
+#: photos/templates/photos/photo_detail.html:21
+#: publications/templates/publications/blogpost_detail.html:34
+#: publications/templates/publications/blogpost_detail.html:152
+msgid "Supprimer"
+msgstr "Delete"
+
+#: annuaire/templates/annuaire/group_list.html:38
+msgid "Aucun groupe"
+msgstr "No groups"
+
+#: annuaire/templates/annuaire/group_list.html:39
+msgid ""
+"Les groupes servent à réserver certaines catégories de documents à quelques "
+"membres."
+msgstr ""
+"Groups are used to reserve certain document categories to a few members."
+
+#: annuaire/templates/annuaire/group_list.html:40
+msgid "Créer le premier groupe"
+msgstr "Create the first group"
+
+#: annuaire/templates/annuaire/group_members_form.html:8
+#, python-format
+msgid "Membres de « %(group_name)s »"
+msgstr "Members of \"%(group_name)s\""
+
+#: annuaire/templates/annuaire/group_members_form.html:15
+msgid "Membres actuels"
+msgstr "Current members"
+
+#: annuaire/templates/annuaire/group_members_form.html:16
+msgid "Chercher un membre"
+msgstr "Search for a member"
+
+#: annuaire/templates/annuaire/group_members_form.html:18
+msgid "Seules les personnes ayant un compte peuvent être membres d'un groupe."
+msgstr "Only people with an account can be group members."
+
+#: annuaire/templates/annuaire/help_magic_link.html:12
+msgid ""
+"La connexion par lien (« magic link ») permet de se connecter sans avoir à "
+"saisir de mot de passe."
+msgstr ""
+"Link login (\"magic link\") lets you log in without entering a password."
+
+#: annuaire/templates/annuaire/help_magic_link.html:19
+msgid ""
+"Sur la page de connexion, cliquez sur « Recevez un lien de connexion par "
+"email »."
+msgstr "On the login page, click \"Receive a login link by email\"."
+
+#: annuaire/templates/annuaire/help_magic_link.html:20
+msgid "Saisissez l'adresse email associée à votre compte, puis validez."
+msgstr "Enter the email address associated with your account, then submit."
+
+#: annuaire/templates/annuaire/help_magic_link.html:22
+msgid ""
+"Si un compte existe avec cette adresse, vous recevez un email contenant un "
+"lien de connexion. Ce lien est <strong>à usage unique</strong> et "
+"<strong>valable 15 minutes</strong>."
+msgstr ""
+"If an account exists with this address, you will receive an email with a "
+"login link. This link is <strong>single-use</strong> and <strong>valid for "
+"15 minutes</strong>."
+
+#: annuaire/templates/annuaire/help_magic_link.html:28
+msgid ""
+"Cliquez sur le lien reçu par email : une page de confirmation s'affiche."
+msgstr "Click the link received by email: a confirmation page appears."
+
+#: annuaire/templates/annuaire/help_magic_link.html:29
+msgid ""
+"Cliquez sur le bouton « Confirmez votre connexion » pour terminer la "
+"connexion."
+msgstr "Click the \"Confirm your login\" button to complete the login."
+
+#: annuaire/templates/annuaire/help_magic_link.html:32
+msgid "Pourquoi une étape de confirmation ?"
+msgstr "Why a confirmation step?"
+
+#: annuaire/templates/annuaire/help_magic_link.html:34
+msgid ""
+"Certaines messageries ouvrent automatiquement les liens reçus pour vérifier "
+"qu'ils sont sûrs. Sans cette étape supplémentaire, un tel lien pourrait être "
+"« utilisé » avant même que vous ne cliquiez dessus, et le lien ne "
+"fonctionnerait alors plus. Le bouton de confirmation garantit que c'est bien "
+"vous qui vous connectez."
+msgstr ""
+"Some email clients automatically open received links to check they are safe. "
+"Without this extra step, such a link could be \"used\" before you even click "
+"it, and the link would then no longer work. The confirmation button ensures "
+"it really is you logging in."
+
+#: annuaire/templates/annuaire/help_magic_link.html:43
+msgid "Le lien a expiré ou ne fonctionne plus"
+msgstr "The link has expired or no longer works"
+
+#: annuaire/templates/annuaire/help_magic_link.html:45
+msgid ""
+"Passé le délai de 15 minutes, ou si le lien a déjà été utilisé, il n'est "
+"plus valide. Il suffit d'en redemander un nouveau depuis la page de "
+"connexion."
+msgstr ""
+"After the 15-minute window, or if the link has already been used, it is no "
+"longer valid. Simply request a new one from the login page."
+
+#: annuaire/templates/annuaire/help_magic_link.html:54
+#: annuaire/templates/annuaire/magic_link_request.html:20
+msgid "Recevoir un lien de connexion"
+msgstr "Receive a login link"
+
+#: annuaire/templates/annuaire/help_magic_link.html:55
+#: annuaire/templates/annuaire/magic_link_confirm.html:17
+#: annuaire/templates/annuaire/magic_link_request.html:26
+#: annuaire/templates/annuaire/magic_link_sent.html:22
+#: annuaire/templates/annuaire/password_reset.html:24
+#: annuaire/templates/annuaire/password_reset_confirm.html:19
+#: annuaire/templates/annuaire/password_reset_done.html:16
+msgid "Retour à la connexion"
+msgstr "Back to login"
+
+#: annuaire/templates/annuaire/home.html:31
+msgid "aujourd'hui"
+msgstr "today"
+
+#: annuaire/templates/annuaire/home.html:42
+#, python-format
+msgid "Il y a %(counter)s an"
+msgid_plural "Il y a %(counter)s ans"
+msgstr[0] "%(counter)s year ago"
+msgstr[1] "%(counter)s years ago"
+
+#: annuaire/templates/annuaire/home.html:47
+#, python-format
+msgid "« %(title)s » — il y a %(counter)s an"
+msgid_plural "« %(title)s » — il y a %(counter)s ans"
+msgstr[0] "\"%(title)s\" — %(counter)s year ago"
+msgstr[1] "\"%(title)s\" — %(counter)s years ago"
+
+#: annuaire/templates/annuaire/home.html:61
+#: annuaire/templates/annuaire/home.html:84
+#: annuaire/templates/annuaire/home.html:125
+#: annuaire/templates/annuaire/home.html:149
+msgid "Voir tout →"
+msgstr "See all →"
+
+#: annuaire/templates/annuaire/home.html:74
+msgid "Aucun profil pour l'instant"
+msgstr "No profiles yet"
+
+#: annuaire/templates/annuaire/home.html:75
+msgid "Commencez par explorer qui fait partie de la famille."
+msgstr "Start by exploring who's part of the family."
+
+#: annuaire/templates/annuaire/home.html:76
+msgid "Voir l'annuaire"
+msgstr "View the directory"
+
+#: annuaire/templates/annuaire/home.html:101
+#, python-format
+msgid ""
+"%(label)s permettent de noter les lieux de séjour et de partager les "
+"présences."
+msgstr "%(label)s let you note stay locations and share stays."
+
+#: annuaire/templates/annuaire/home.html:102
+#: annuaire/templates/annuaire/place_form.html:9
+#: annuaire/templates/annuaire/place_list.html:17
+#: annuaire/templates/annuaire/place_list.html:48
+msgid "Créer"
+msgstr "Create"
+
+#: annuaire/templates/annuaire/home.html:107
+msgid "Prochaines présences"
+msgstr "Upcoming stays"
+
+#: annuaire/templates/annuaire/home.html:124
+msgid "Prochains événements"
+msgstr "Upcoming events"
+
+#: annuaire/templates/annuaire/home.html:139
+#: events/templates/events/event_list.html:36
+msgid "Aucun événement à venir"
+msgstr "No upcoming events"
+
+#: annuaire/templates/annuaire/home.html:140
+#: events/templates/events/event_list.html:37
+msgid ""
+"Réunions, fêtes, anniversaires : notez les prochains rendez-vous de la "
+"famille."
+msgstr "Get-togethers, parties, birthdays: note the family's upcoming dates."
+
+#: annuaire/templates/annuaire/home.html:141
+#: events/templates/events/event_form.html:10
+#: events/templates/events/event_list.html:12
+#: events/templates/events/event_list.html:38
+msgid "Créer un événement"
+msgstr "Create an event"
+
+#: annuaire/templates/annuaire/home.html:148
+msgid "Dernières publications"
+msgstr "Latest posts"
+
+#: annuaire/templates/annuaire/home.html:164
+#: annuaire/templates/annuaire/home.html:169
+msgid "Aucune publication"
+msgstr "No posts"
+
+#: annuaire/templates/annuaire/home.html:166
+#: publications/templates/publications/blogpost_list.html:41
+msgid "Écrire la première publication"
+msgstr "Write the first post"
+
+#: annuaire/templates/annuaire/home.html:170
+msgid "Les membres partagent ici les nouvelles, photos et souvenirs."
+msgstr "Members share news, photos and memories here."
+
+#: annuaire/templates/annuaire/home.html:171
+#: annuaire/templates/annuaire/home.html:202
+msgid "Voir les publications"
+msgstr "View posts"
+
+#: annuaire/templates/annuaire/home.html:179
+msgid "Derniers commentaires"
+msgstr "Latest comments"
+
+#: annuaire/templates/annuaire/home.html:182
+#: publications/templates/publications/blogpost_detail.html:148
+#: publications/templates/publications/comment_confirm_delete.html:17
+msgid "Anonyme"
+msgstr "Anonymous"
+
+#: annuaire/templates/annuaire/home.html:190
+msgid "sur"
+msgstr "on"
+
+#: annuaire/templates/annuaire/home.html:200
+msgid "Aucun commentaire"
+msgstr "No comments"
+
+#: annuaire/templates/annuaire/home.html:201
+msgid "Soyez le premier à réagir aux publications et messages de la famille."
+msgstr "Be the first to react to the family's posts and messages."
+
+#: annuaire/templates/annuaire/login.html:5
+#, python-format
+msgid "Connexion — %(site_name)s"
+msgstr "Login — %(site_name)s"
+
+#: annuaire/templates/annuaire/login.html:6
+msgid "Content de vous revoir"
+msgstr "Good to see you again"
+
+#: annuaire/templates/annuaire/login.html:9
+#, python-format
+msgid ""
+"Connectez-vous pour accéder à l'annuaire, aux %(label)s et aux publications."
+msgstr "Log in to access the directory, %(label)s and posts."
+
+#: annuaire/templates/annuaire/login.html:22
+msgid "Pas envie de saisir votre mot de passe ?"
+msgstr "Don't feel like entering your password?"
+
+#: annuaire/templates/annuaire/login.html:23
+msgid "Recevez un lien de connexion par email"
+msgstr "Receive a login link by email"
+
+#: annuaire/templates/annuaire/login.html:24
+msgid "comment ça marche ?"
+msgstr "how does it work?"
+
+#: annuaire/templates/annuaire/login.html:25
+msgid "Mot de passe oublié ?"
+msgstr "Forgot your password?"
+
+#: annuaire/templates/annuaire/login.html:25
+msgid "Réinitialisez-le ici"
+msgstr "Reset it here"
+
+#: annuaire/templates/annuaire/login.html:26
+msgid "Pas encore de compte ?"
+msgstr "Don't have an account yet?"
+
+#: annuaire/templates/annuaire/login.html:26
+msgid "C'est par ici"
+msgstr "It's this way"
+
+#: annuaire/templates/annuaire/magic_link_confirm.html:3
+#, python-format
+msgid "Connexion par lien — %(site_name)s"
+msgstr "Link login — %(site_name)s"
+
+#: annuaire/templates/annuaire/magic_link_confirm.html:5
+msgid "Connexion par lien"
+msgstr "Link login"
+
+#: annuaire/templates/annuaire/magic_link_confirm.html:8
+msgid "Cliquez ci-dessous pour terminer votre connexion."
+msgstr "Click below to complete your login."
+
+#: annuaire/templates/annuaire/magic_link_confirm.html:11
+msgid "Confirmez votre connexion"
+msgstr "Confirm your login"
+
+#: annuaire/templates/annuaire/magic_link_confirm.html:15
+msgid ""
+"Ce lien de connexion n'est plus valide, il a peut-être déjà été utilisé ou a "
+"expiré."
+msgstr ""
+"This login link is no longer valid, it may have already been used or expired."
+
+#: annuaire/templates/annuaire/magic_link_email.txt:9
+#, python-format
+msgid "Connectez-vous ici : %(protocol)s://%(domain)s%(path)s"
+msgstr "Log in here: %(protocol)s://%(domain)s%(path)s"
+
+#: annuaire/templates/annuaire/magic_link_email.txt:10
+#, python-format
+msgid "Ce lien est à usage unique et expire dans %(minutes)s minutes."
+msgstr "This link is single-use and expires in %(minutes)s minutes."
+
+#: annuaire/templates/annuaire/magic_link_email.txt:12
+#: annuaire/templates/annuaire/password_reset_email.txt:12
+msgid ""
+"Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email."
+msgstr "If you did not make this request, you can ignore this email."
+
+#: annuaire/templates/annuaire/magic_link_request.html:4
+#, python-format
+msgid "Lien de connexion — %(site_name)s"
+msgstr "Login link — %(site_name)s"
+
+#: annuaire/templates/annuaire/magic_link_request.html:10
+msgid ""
+"Indiquez l'adresse email associée à votre compte, nous vous enverrons un "
+"lien pour vous connecter sans mot de passe."
+msgstr ""
+"Enter the email address associated with your account, and we'll send you a "
+"link to log in without a password."
+
+#: annuaire/templates/annuaire/magic_link_request.html:25
+msgid "Comment ça marche ?"
+msgstr "How does it work?"
+
+#: annuaire/templates/annuaire/magic_link_sent.html:3
+#: annuaire/templates/annuaire/password_reset_done.html:3
+#, python-format
+msgid "Vérifiez vos emails — %(site_name)s"
+msgstr "Check your email — %(site_name)s"
+
+#: annuaire/templates/annuaire/magic_link_sent.html:5
+#: annuaire/templates/annuaire/password_reset_done.html:5
+msgid "Vérifiez vos emails"
+msgstr "Check your email"
+
+#: annuaire/templates/annuaire/magic_link_sent.html:8
+msgid ""
+"Si un compte existe avec cette adresse, vous allez recevoir un email avec un "
+"lien de connexion."
+msgstr ""
+"If an account exists with this address, you will receive an email with a "
+"login link."
+
+#: annuaire/templates/annuaire/magic_link_sent.html:14
+msgid ""
+"Rien reçu au bout de quelques minutes ? Regardez dans les indésirables, ou"
+msgstr "Received nothing after a few minutes? Check your spam folder, or"
+
+#: annuaire/templates/annuaire/magic_link_sent.html:17
+msgid "demandez un nouveau lien"
+msgstr "request a new link"
+
+#: annuaire/templates/annuaire/password_change_forced.html:5
+#, python-format
+msgid "Changer votre mot de passe — %(site_name)s"
+msgstr "Change your password — %(site_name)s"
+
+#: annuaire/templates/annuaire/password_change_forced.html:7
+msgid "Changer votre mot de passe"
+msgstr "Change your password"
+
+#: annuaire/templates/annuaire/password_change_forced.html:10
+msgid ""
+"Pour des raisons de sécurité, vous devez choisir un nouveau mot de passe "
+"avant de continuer."
+msgstr ""
+"For security reasons, you must choose a new password before continuing."
+
+#: annuaire/templates/annuaire/password_change_forced.html:15
+msgid "Exigences"
+msgstr "Requirements"
+
+#: annuaire/templates/annuaire/password_change_forced.html:27
+#: annuaire/templates/annuaire/password_reset_confirm.html:13
+msgid "Enregistrer le nouveau mot de passe"
+msgstr "Save the new password"
+
+#: annuaire/templates/annuaire/password_reset.html:4
+#, python-format
+msgid "Mot de passe oublié — %(site_name)s"
+msgstr "Forgot password — %(site_name)s"
+
+#: annuaire/templates/annuaire/password_reset.html:6
+msgid "Mot de passe oublié"
+msgstr "Forgot password"
+
+#: annuaire/templates/annuaire/password_reset.html:9
+msgid ""
+"Indiquez l'adresse email associée à votre compte, nous vous enverrons un "
+"lien pour choisir un nouveau mot de passe."
+msgstr ""
+"Enter the email address associated with your account, and we'll send you a "
+"link to choose a new password."
+
+#: annuaire/templates/annuaire/password_reset.html:19
+msgid "Envoyer le lien"
+msgstr "Send the link"
+
+#: annuaire/templates/annuaire/password_reset_confirm.html:5
+#, python-format
+msgid "Nouveau mot de passe — %(site_name)s"
+msgstr "New password — %(site_name)s"
+
+#: annuaire/templates/annuaire/password_reset_confirm.html:17
+msgid ""
+"Ce lien de réinitialisation n'est plus valide, il a peut-être déjà été "
+"utilisé ou a expiré."
+msgstr ""
+"This reset link is no longer valid, it may have already been used or expired."
+
+#: annuaire/templates/annuaire/password_reset_done.html:8
+msgid ""
+"Si cette adresse correspond à un compte, un email contenant un lien de "
+"réinitialisation vient de vous être envoyé."
+msgstr ""
+"If this address matches an account, an email with a reset link has just been "
+"sent to you."
+
+#: annuaire/templates/annuaire/password_reset_email.txt:9
+#, python-format
+msgid ""
+"Choisissez votre nouveau mot de passe ici : %(protocol)s://%(domain)s%(path)s"
+msgstr "Choose your new password here: %(protocol)s://%(domain)s%(path)s"
+
+#: annuaire/templates/annuaire/password_reset_subject.txt:1
+msgid "Réinitialiser votre mot de passe"
+msgstr "Reset your password"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:9
+#, python-format
+msgid "Anonymiser « %(person_name)s » ?"
+msgstr "Anonymise \"%(person_name)s\"?"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:15
+msgid "Cette action est irréversible."
+msgstr "This action is irreversible."
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:16
+msgid "Seront effacés :"
+msgstr "Will be erased:"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:18
+msgid ""
+"nom, prénom, coordonnées (email, téléphone, adresse), dates et lieux de "
+"naissance/décès, description, photo de profil ;"
+msgstr ""
+"last name, first name, contact details (email, phone, address), birth/death "
+"dates and places, description, profile photo;"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:19
+msgid ""
+"le compte lié sera désactivé, son mot de passe invalidé, son email remplacé ;"
+msgstr ""
+"the linked account will be deactivated, its password invalidated, its email "
+"replaced;"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:20
+msgid ""
+"les identifications de cette personne sur des photos (et celles qu'elle a "
+"faites) ;"
+msgstr "the tags identifying this person in photos (and the ones they made);"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:21
+msgid ""
+"tout élément déjà dans la corbeille lié à cette personne, purgé "
+"immédiatement."
+msgstr ""
+"any item already in the trash linked to this person, purged immediately."
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:23
+msgid "Seront conservés (sous un nom anonymisé) :"
+msgstr "Will be kept (under an anonymised name):"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:25
+msgid "ses publications, documents, albums et photos déposés ;"
+msgstr "their posts, documents, albums and uploaded photos;"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:26
+msgid "ses participations aux événements (le commentaire libre est effacé) ;"
+msgstr "their event participations (the free-text note is erased);"
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:27
+msgid "ses récits et citations généalogiques, et ses liens familiaux."
+msgstr "their genealogical stories and citations, and their family relations."
+
+#: annuaire/templates/annuaire/person_anonymise_confirm.html:33
+msgid "Anonymiser définitivement"
+msgstr "Anonymise permanently"
+
+#: annuaire/templates/annuaire/person_create.html:8
+msgid "Créer une fiche"
+msgstr "Create a profile"
+
+#: annuaire/templates/annuaire/person_create.html:9
+msgid "Pour un membre de la famille qui n'aura pas de compte."
+msgstr "For a family member who will not have an account."
+
+#: annuaire/templates/annuaire/person_create.html:15
+msgid ""
+"Cette page sert à créer une fiche pour une personne qui <strong>ne doit pas "
+"avoir accès au site</strong> (un enfant, un autre membre de la famille…). "
+"Vous en deviendrez le propriétaire et pourrez la modifier comme la vôtre. Si "
+"vous renseignez son adresse email, cette personne pourra ensuite créer elle-"
+"même un compte à partir de cette adresse — ne la renseignez que si c'est "
+"bien votre intention."
+msgstr ""
+"This page is used to create a profile for a person who <strong>must not have "
+"access to the site</strong> (a child, another family member…). You will "
+"become its owner and will be able to edit it like your own. If you enter "
+"their email address, this person will later be able to create their own "
+"account from that address — only enter it if that is really your intention."
+
+#: annuaire/templates/annuaire/person_create.html:27
+msgid "La fiche"
+msgstr "The profile"
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:11
+msgid ""
+"Détectés à chaque affichage de cette page (nom et prénom identiques, même "
+"nom et même date de naissance, ou adresse email identique) — cette liste "
+"n'est jamais mémorisée."
+msgstr ""
+"Detected every time this page is displayed (identical first and last name, "
+"same last name and date of birth, or identical email address) — this list is "
+"never stored."
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:22
+msgid "Personne 1"
+msgstr "Person 1"
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:22
+msgid "Personne 2"
+msgstr "Person 2"
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:22
+msgid "Raison"
+msgstr "Reason"
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:31
+msgid "Fusionner"
+msgstr "Merge"
+
+#: annuaire/templates/annuaire/person_duplicate_list.html:38
+msgid "Aucun doublon détecté"
+msgstr "No duplicates detected"
+
+#: annuaire/templates/annuaire/person_merge_form.html:9
+#, python-format
+msgid "Fusionner « %(loser_name)s » dans « %(winner_name)s »"
+msgstr "Merge \"%(loser_name)s\" into \"%(winner_name)s\""
+
+#: annuaire/templates/annuaire/person_merge_form.html:15
+#, python-format
+msgid ""
+"Cette action est irréversible. « %(loser_name)s » sera supprimé·e ; toutes "
+"ses relations, photos, documents, présences, récits et sources citées seront "
+"rattachés à « %(winner_name)s »."
+msgstr ""
+"This action is irreversible. \"%(loser_name)s\" will be deleted; all their "
+"relations, photos, documents, stays, stories and cited sources will be "
+"reattached to \"%(winner_name)s\"."
+
+#: annuaire/templates/annuaire/person_merge_form.html:25
+msgid "Champs différents — choisissez la valeur à conserver"
+msgstr "Different fields — choose the value to keep"
+
+#: annuaire/templates/annuaire/person_merge_form.html:26
+msgid "(vide)"
+msgstr "(empty)"
+
+#: annuaire/templates/annuaire/person_merge_form.html:44
+msgid "Fusionner définitivement"
+msgstr "Merge permanently"
+
+#: annuaire/templates/annuaire/person_owners_form.html:8
+#, python-format
+msgid "Propriétaires de %(first_name)s %(last_name)s"
+msgstr "Owners of %(first_name)s %(last_name)s"
+
+#: annuaire/templates/annuaire/person_owners_form.html:15
+#: annuaire/templates/annuaire/place_owners_form.html:15
+msgid "Propriétaires actuels"
+msgstr "Current owners"
+
+#: annuaire/templates/annuaire/person_owners_form.html:16
+#: annuaire/templates/annuaire/place_form.html:26
+msgid "Chercher un propriétaire"
+msgstr "Search for an owner"
+
+#: annuaire/templates/annuaire/person_owners_form.html:18
+msgid ""
+"Seules les personnes ayant un compte peuvent être propriétaires. Cliquez sur "
+"une suggestion pour ajouter un propriétaire, ou sur la croix d'un badge pour "
+"le retirer."
+msgstr ""
+"Only people with an account can be owners. Click a suggestion to add an "
+"owner, or the cross on a badge to remove one."
+
+#: annuaire/templates/annuaire/person_relations_form.html:9
+#, python-format
+msgid "Relations de %(person_name)s"
+msgstr "%(person_name)s's relations"
+
+#: annuaire/templates/annuaire/person_relations_form.html:12
+msgid "← Retour au profil"
+msgstr "← Back to profile"
+
+#: annuaire/templates/annuaire/person_relations_form.html:19
+msgid "Type, dates et lieu du mariage"
+msgstr "Type, dates and marriage place"
+
+#: annuaire/templates/annuaire/person_relations_form.html:39
+msgid "Supprimer cette relation ?"
+msgstr "Delete this relation?"
+
+#: annuaire/templates/annuaire/person_relations_form.html:47
+#: annuaire/templates/annuaire/personne_detail.html:271
+#: annuaire/templates/annuaire/personne_detail.html:275
+msgid "Aucune relation enregistrée"
+msgstr "No relations recorded"
+
+#: annuaire/templates/annuaire/person_relations_form.html:48
+msgid ""
+"Ajoutez ci-dessous les parents, enfants ou le conjoint de cette personne."
+msgstr "Add this person's parents, children or spouse below."
+
+#: annuaire/templates/annuaire/person_relations_form.html:52
+msgid "Ajouter une relation"
+msgstr "Add a relation"
+
+#: annuaire/templates/annuaire/person_relations_form.html:82
+#: annuaire/templates/annuaire/place_detail.html:182
+msgid "Ajouter"
+msgstr "Add"
+
+#: annuaire/templates/annuaire/personne_detail.html:24
+msgid "Voir dans l'arbre"
+msgstr "View in the tree"
+
+#: annuaire/templates/annuaire/personne_detail.html:28
+msgid "Modifier le profil"
+msgstr "Edit profile"
+
+#: annuaire/templates/annuaire/personne_detail.html:31
+msgid "Télécharger mes données"
+msgstr "Download my data"
+
+#: annuaire/templates/annuaire/personne_detail.html:36
+msgid "Anonymiser"
+msgstr "Anonymise"
+
+#: annuaire/templates/annuaire/personne_detail.html:56
+#, python-format
+msgid "Photo de profil de %(first_name)s %(last_name)s"
+msgstr "Profile photo of %(first_name)s %(last_name)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:61
+msgid "Photo par défaut"
+msgstr "Default photo"
+
+#: annuaire/templates/annuaire/personne_detail.html:79
+msgid "Informations"
+msgstr "Information"
+
+#: annuaire/templates/annuaire/personne_detail.html:106
+#: annuaire/templates/annuaire/personne_detail.html:113
+#: annuaire/templates/annuaire/personne_detail.html:232
+#, python-format
+msgid "à %(place)s"
+msgstr "in %(place)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:126
+#, python-format
+msgid "À propos de %(first_name)s"
+msgstr "About %(first_name)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:133
+#: annuaire/templates/annuaire/personne_detail.html:263
+msgid "Relations"
+msgstr "Relations"
+
+#: annuaire/templates/annuaire/personne_detail.html:142 genealogy/models.py:62
+#: genealogy/templates/genealogy/story_confirm_delete.html:8
+#: genealogy/templates/genealogy/story_form.html:9
+msgid "Récits"
+msgstr "Stories"
+
+#: annuaire/templates/annuaire/personne_detail.html:160
+#: annuaire/templates/annuaire/search_results.html:30
+#: documents/templates/documents/_document_results.html:14
+#: genealogy/templates/genealogy/gedcom_import_review.html:53
+#: photos/templates/photos/album_detail.html:89
+#: publications/templates/publications/blogpost_list.html:53
+msgid "Précédent"
+msgstr "Previous"
+
+#: annuaire/templates/annuaire/personne_detail.html:164
+#: annuaire/templates/annuaire/search_results.html:34
+#: documents/templates/documents/_document_results.html:18
+#: genealogy/templates/genealogy/gedcom_import_review.html:57
+#: photos/templates/photos/album_detail.html:93
+#: publications/templates/publications/blogpost_list.html:57
+msgid "Suivant"
+msgstr "Next"
+
+#: annuaire/templates/annuaire/personne_detail.html:169
+msgid "Aucune photo"
+msgstr "No photos"
+
+#: annuaire/templates/annuaire/personne_detail.html:170
+msgid "Aucune photo n'a encore été identifiée pour cette personne."
+msgstr "No photos have been tagged for this person yet."
+
+#: annuaire/templates/annuaire/personne_detail.html:178
+msgid "Ajouter un récit"
+msgstr "Add a story"
+
+#: annuaire/templates/annuaire/personne_detail.html:186
+msgid "Date inconnue"
+msgstr "Unknown date"
+
+#: annuaire/templates/annuaire/personne_detail.html:201
+msgid "Sources :"
+msgstr "Sources:"
+
+#: annuaire/templates/annuaire/personne_detail.html:206
+#, python-format
+msgid "Ajouté par %(author)s"
+msgstr "Added by %(author)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:218
+msgid "Aucun récit"
+msgstr "No stories"
+
+#: annuaire/templates/annuaire/personne_detail.html:219
+msgid "Aucun récit n'a encore été ajouté pour cette personne."
+msgstr "No stories have been added for this person yet."
+
+#: annuaire/templates/annuaire/personne_detail.html:231
+#, python-format
+msgid "Marié·e le %(start_date)s"
+msgstr "Married on %(start_date)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:233
+#, python-format
+msgid "jusqu'au %(end_date)s"
+msgstr "until %(end_date)s"
+
+#: annuaire/templates/annuaire/personne_detail.html:243
+msgid "Parents"
+msgstr "Parents"
+
+#: annuaire/templates/annuaire/personne_detail.html:253
+msgid "Enfants"
+msgstr "Children"
+
+#: annuaire/templates/annuaire/personne_detail.html:272
+msgid "Ajoutez les parents, enfants ou le conjoint de cette personne."
+msgstr "Add this person's parents, children or spouse."
+
+#: annuaire/templates/annuaire/personne_detail.html:287
+msgid "Gérer les propriétaires"
+msgstr "Manage owners"
+
+#: annuaire/templates/annuaire/place_detail.html:15
+msgid "Modifier les propriétaires"
+msgstr "Edit owners"
+
+#: annuaire/templates/annuaire/place_detail.html:44
+msgid "Vue des présences"
+msgstr "Stays view"
+
+#: annuaire/templates/annuaire/place_detail.html:45
+msgid "Liste"
+msgstr "List"
+
+#: annuaire/templates/annuaire/place_detail.html:51
+msgid "En ce moment"
+msgstr "Right now"
+
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113
+msgid "Du"
+msgstr "From"
+
+#: annuaire/templates/annuaire/place_detail.html:54
+#: annuaire/templates/annuaire/place_detail.html:80
+#: annuaire/templates/annuaire/place_detail.html:113
+msgid "Au"
+msgstr "To"
+
+#: annuaire/templates/annuaire/place_detail.html:67
+#: annuaire/templates/annuaire/place_detail.html:93
+#: annuaire/templates/annuaire/place_detail.html:126
+msgid "Supprimer cette présence ?"
+msgstr "Delete this stay?"
+
+#: annuaire/templates/annuaire/place_detail.html:77
+#: events/templates/events/event_list.html:17
+msgid "À venir"
+msgstr "Upcoming"
+
+#: annuaire/templates/annuaire/place_detail.html:103
+msgid "Aucune présence en cours ou à venir"
+msgstr "No ongoing or upcoming stays"
+
+#: annuaire/templates/annuaire/place_detail.html:104
+msgid "Personne n'est annoncé ici pour le moment."
+msgstr "No one is expected at this chalet at the moment."
+
+#: annuaire/templates/annuaire/place_detail.html:110
+#, python-format
+msgid "%(counter)s présence passée"
+msgid_plural "%(counter)s présences passées"
+msgstr[0] "%(counter)s past stay"
+msgstr[1] "%(counter)s past stays"
+
+#: annuaire/templates/annuaire/place_detail.html:160
+msgid "Ajouter une présence"
+msgstr "Add a stay"
+
+#: annuaire/templates/annuaire/place_form.html:9
+#, python-format
+msgid "Modifier %(name)s"
+msgstr "Edit %(name)s"
+
+#: annuaire/templates/annuaire/place_form.html:25
+msgid "Propriétaire(s)"
+msgstr "Owner(s)"
+
+#: annuaire/templates/annuaire/place_list.html:14
+#, python-format
+msgid "Les %(label)s de la famille et le calendrier des présences."
+msgstr "The family's %(label)s and the stays calendar."
+
+#: annuaire/templates/annuaire/place_list.html:22
+msgid "Calendrier global des présences"
+msgstr "Overall stays calendar"
+
+#: annuaire/templates/annuaire/place_list.html:47
+#, python-format
+msgid "%(label)s et présences apparaîtront ici une fois créés."
+msgstr "%(label)s and stays will appear here once created."
+
+#: annuaire/templates/annuaire/place_owners_form.html:8
+#, python-format
+msgid "Propriétaires de %(name)s"
+msgstr "Owners of %(name)s"
+
+#: annuaire/templates/annuaire/place_owners_form.html:17
+msgid ""
+"Cliquez sur une suggestion pour ajouter un propriétaire, ou sur la croix "
+"d'un badge pour le retirer."
+msgstr ""
+"Click a suggestion to add an owner, or the cross on a badge to remove one."
+
+#: annuaire/templates/annuaire/privacy_notice.html:11
+msgid "Qui est responsable de ce site"
+msgstr "Who is responsible for this site"
+
+#: annuaire/templates/annuaire/privacy_notice.html:13
+#: annuaire/templates/annuaire/privacy_notice.html:22
+#: annuaire/templates/annuaire/privacy_notice.html:44
+msgid "À compléter par l'administrateur du site."
+msgstr "To be completed by the site administrator."
+
+#: annuaire/templates/annuaire/privacy_notice.html:14
+#, python-format
+msgid "contact : %(contact)s"
+msgstr "contact: %(contact)s"
+
+#: annuaire/templates/annuaire/privacy_notice.html:17
+msgid "Hébergement"
+msgstr "Hosting"
+
+#: annuaire/templates/annuaire/privacy_notice.html:20
+#, python-format
+msgid "Les données sont hébergées par %(provider)s, en %(country)s."
+msgstr "The data is hosted by %(provider)s, in %(country)s."
+
+#: annuaire/templates/annuaire/privacy_notice.html:20
+#, python-format
+msgid "Les données sont hébergées par %(provider)s."
+msgstr "The data is hosted by %(provider)s."
+
+#: annuaire/templates/annuaire/privacy_notice.html:26
+msgid "Ce que le site collecte, et pourquoi"
+msgstr "What the site collects, and why"
+
+#: annuaire/templates/annuaire/privacy_notice.html:27
+msgid ""
+"Le tableau ci-dessous liste chaque catégorie de données personnelles "
+"conservées."
+msgstr "The table below lists each category of personal data retained."
+
+#: annuaire/templates/annuaire/privacy_notice.html:30 documents/models.py:48
+#: documents/models.py:78 documents/models.py:139
+msgid "Catégorie"
+msgstr "Category"
+
+#: annuaire/templates/annuaire/privacy_notice.html:30 documents/models.py:37
+#: documents/models.py:142 events/models.py:46 photos/models.py:33
+msgid "Description"
+msgstr "Description"
+
+#: annuaire/templates/annuaire/privacy_notice.html:42
+msgid "Durée de conservation"
+msgstr "Retention period"
+
+#: annuaire/templates/annuaire/privacy_notice.html:47
+msgid "Vos droits"
+msgstr "Your rights"
+
+#: annuaire/templates/annuaire/privacy_notice.html:49
+msgid ""
+"Vous pouvez demander une copie de vos données personnelles depuis votre "
+"profil (« Télécharger mes données »), ou contacter le responsable du site ci-"
+"dessus pour toute autre demande (rectification, effacement)."
+msgstr ""
+"You can request a copy of your personal data from your profile (\"Download "
+"my data\"), or contact the site administrator above for any other request "
+"(correction, erasure)."
+
+#: annuaire/templates/annuaire/profile_claim.html:8
+msgid "Rattacher mon compte à une fiche existante"
+msgstr "Link my account to an existing profile"
+
+#: annuaire/templates/annuaire/profile_claim.html:13
+msgid ""
+"Cette action est <strong>définitive</strong> : une fois votre compte "
+"rattaché à une fiche, seul un administrateur pourra le dérattacher. Ne "
+"choisissez que votre propre fiche."
+msgstr ""
+"This action is <strong>final</strong>: once your account is linked to a "
+"profile, only an administrator will be able to unlink it. Only choose your "
+"own profile."
+
+#: annuaire/templates/annuaire/profile_claim.html:38
+#, python-format
+msgid "Né(e) en %(year)s"
+msgstr "Born in %(year)s"
+
+#: annuaire/templates/annuaire/profile_claim.html:39
+msgid "C'est moi"
+msgstr "This is me"
+
+#: annuaire/templates/annuaire/profile_claim.html:42
+msgid "Aucune fiche sans compte trouvée"
+msgstr "No accountless profile found"
+
+#: annuaire/templates/annuaire/profile_claim.html:43
+msgid ""
+"Toutes les fiches sont déjà rattachées à un compte, ou votre recherche ne "
+"renvoie rien."
+msgstr ""
+"All profiles are already linked to an account, or your search returned "
+"nothing."
+
+#: annuaire/templates/annuaire/profile_create.html:8
+msgid "Créer mon profil"
+msgstr "Create my profile"
+
+#: annuaire/templates/annuaire/profile_create.html:14
+msgid "Vous êtes déjà dans l'annuaire ?"
+msgstr "Already in the directory?"
+
+#: annuaire/templates/annuaire/profile_create.html:17
+msgid "Rattachez votre compte à votre fiche existante"
+msgstr "Link your account to your existing profile"
+
+#: annuaire/templates/annuaire/profile_create.html:18
+msgid "plutôt que d'en créer une nouvelle."
+msgstr "rather than creating a new one."
+
+#: annuaire/templates/annuaire/profile_create.html:28
+#: annuaire/templates/annuaire/update_form.html:29
+msgid "Notifications"
+msgstr "Notifications"
+
+#: annuaire/templates/annuaire/search_results.html:7
+msgid "Recherche"
+msgstr "Search"
+
+#: annuaire/templates/annuaire/search_results.html:9
+#, python-format
+msgid "Résultats pour « %(query_text)s »"
+msgstr "Results for \"%(query_text)s\""
+
+#: annuaire/templates/annuaire/search_results.html:17
+msgid "Retour aux résultats"
+msgstr "Back to results"
+
+#: annuaire/templates/annuaire/search_results.html:23
+#: annuaire/templates/annuaire/search_results.html:43
+msgid "Aucun résultat"
+msgstr "No results"
+
+#: annuaire/templates/annuaire/search_results.html:39
+msgid "Entrez un terme pour lancer la recherche."
+msgstr "Enter a term to start the search."
+
+#: annuaire/templates/annuaire/search_results.html:41
+msgid "Continuez à taper — au moins 2 caractères."
+msgstr "Keep typing — at least 2 characters."
+
+#: annuaire/templates/annuaire/search_results.html:44
+msgid "Essayez avec une autre orthographe, ou un terme différent."
+msgstr "Try a different spelling, or a different term."
+
+#: annuaire/templates/annuaire/search_results.html:52
+#, python-format
+msgid "Voir tout (%(count)s) →"
+msgstr "See all (%(count)s) →"
+
+#: annuaire/templates/annuaire/signup.html:5
+#, python-format
+msgid "Inscription — %(site_name)s"
+msgstr "Sign up — %(site_name)s"
+
+#: annuaire/templates/annuaire/signup.html:6
+msgid "Créer votre compte"
+msgstr "Create your account"
+
+#: annuaire/templates/annuaire/signup.html:9
+msgid ""
+"Votre adresse email doit déjà être connue de la famille pour que le compte "
+"soit rattaché à votre fiche."
+msgstr ""
+"Your email address must already be known to the family for the account to be "
+"linked to your profile."
+
+#: annuaire/templates/annuaire/signup.html:17
+msgid "S'inscrire"
+msgstr "Sign up"
+
+#: annuaire/templates/annuaire/signup.html:22
+msgid "Vous avez déjà un compte ?"
+msgstr "Already have an account?"
+
+#: annuaire/templates/annuaire/signup.html:22
+msgid "Connectez-vous ici"
+msgstr "Log in here"
+
+#: annuaire/templates/annuaire/site_config_form.html:15
+msgid "Identité"
+msgstr "Identity"
+
+#: annuaire/templates/annuaire/site_config_form.html:21
+msgid "Vocabulaire"
+msgstr "Vocabulary"
+
+#: annuaire/templates/annuaire/site_config_form.html:26
+msgid "Emails et retours"
+msgstr "Emails and feedback"
+
+#: annuaire/templates/annuaire/site_config_form.html:31
+msgid "Localisation"
+msgstr "Location"
+
+#: annuaire/templates/annuaire/site_config_form.html:36
+msgid "Marque"
+msgstr "Branding"
+
+#: annuaire/templates/annuaire/stay_form.html:7
+msgid "Modifier la présence"
+msgstr "Edit the stay"
+
+#: annuaire/templates/annuaire/update_form.html:10
+#, python-format
+msgid "Modification de %(instance)s"
+msgstr "Editing %(instance)s"
+
+#: annuaire/templates/annuaire/update_form.html:24
+msgid "Le profil"
+msgstr "The profile"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:6
+msgid "Écrire"
+msgstr "Write"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:9
+msgid "Aperçu"
+msgstr "Preview"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:12
+msgid "Mise en forme Markdown"
+msgstr "Markdown formatting"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:13
+#: documents/models.py:137 events/models.py:45 genealogy/models.py:43
+#: genealogy/models.py:86 photos/models.py:32 publications/models.py:34
+msgid "Titre"
+msgstr "Title"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:14
+msgid "Gras"
+msgstr "Bold"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:15
+msgid "Italique"
+msgstr "Italic"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:16
+#: genealogy/models.py:140
+msgid "Citation"
+msgstr "Quote"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:17
+msgid "Code"
+msgstr "Code"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:19
+msgid "Liste à puces"
+msgstr "Bulleted list"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:20
+msgid "Liste numérotée"
+msgstr "Numbered list"
+
+#: annuaire/templates/annuaire/widgets/markdown_editor.html:26
+msgid "Rien à prévisualiser."
+msgstr "Nothing to preview."
+
+#: annuaire/views.py:189
+msgid "Adresse email non reconnue, vous ne pouvez pas créer de compte."
+msgstr "Email address not recognised, you cannot create an account."
+
+#: annuaire/views.py:284
+#, python-format
+msgid "Échec de l'envoi de l'email pour : %(emails)s"
+msgstr "Failed to send email for: %(emails)s"
+
+#: annuaire/views.py:289
+#, python-format
+msgid "Lien d'invitation renvoyé pour %(count)s compte(s)."
+msgstr "Invitation link resent for %(count)s account(s)."
+
+#: annuaire/views.py:356
+#, python-format
+msgid "Mot de passe réinitialisé pour : %(emails)s"
+msgstr "Password reset for: %(emails)s"
+
+#: annuaire/views.py:362
+#, python-format
+msgid ""
+"Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
+"temporaire manuellement."
+msgstr ""
+"Failed to send email for: %(emails)s — communicate the temporary password "
+"manually."
+
+#: annuaire/views.py:370
+#, python-format
+msgid "Échec de la création du compte pour : %(emails)s"
+msgstr "Failed to create account for: %(emails)s"
+
+#: annuaire/views.py:433
+#, python-format
+msgid "les catégories %(names)s"
+msgstr "the categories %(names)s"
+
+#: annuaire/views.py:436
+#, python-format
+msgid "les albums %(names)s"
+msgstr "the albums %(names)s"
+
+#: annuaire/views.py:439
+#, python-format
+msgid "les événements %(names)s"
+msgstr "the events %(names)s"
+
+#: annuaire/views.py:442
+#, python-format
+msgid "Impossible de supprimer ce groupe : il est utilisé par %(parts)s."
+msgstr "Cannot delete this group: it is used by %(parts)s."
+
+#: annuaire/views.py:556
+msgid "Votre mot de passe a été mis à jour."
+msgstr "Your password has been updated."
+
+#: annuaire/views.py:739
+msgid "Merci, votre acceptation a été enregistrée."
+msgstr "Thank you, your acceptance has been recorded."
+
+#: annuaire/views.py:800
+msgid ""
+"Vous devez compléter votre profil avant d'ajouter un membre de la famille."
+msgstr "You must complete your profile before adding a family member."
+
+#: annuaire/views.py:847
+msgid ""
+"Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà "
+"revendiqué."
+msgstr ""
+"This profile is no longer available — someone else may have already claimed "
+"it."
+
+#: annuaire/views.py:1046
+msgid "Élément restauré."
+msgstr "Item restored."
+
+#: annuaire/views.py:1055
+msgid "Élément supprimé définitivement."
+msgstr "Item permanently deleted."
+
+#: annuaire/views.py:1077
+msgid "Cette personne a été anonymisée."
+msgstr "This person has been anonymised."
+
+#: annuaire/views.py:1179
+msgid "Vous ne pouvez pas éditer ce profil."
+msgstr "You cannot edit this profile."
+
+#: annuaire/views.py:1218
+msgid "Vous ne pouvez pas modifier ces relations."
+msgstr "You cannot edit these relations."
+
+#: annuaire/views.py:1249
+msgid "Formulaire invalide. Vérifiez la personne et le type de relation."
+msgstr "Invalid form. Check the person and the relationship type."
+
+#: annuaire/views.py:1253
+msgid "Une personne ne peut pas être en relation avec elle-même."
+msgstr "A person cannot be related to themselves."
+
+#: annuaire/views.py:1256
+msgid "Une relation avec cette personne existe déjà."
+msgstr "A relation with this person already exists."
+
+#: annuaire/views.py:1271
+msgid "Modification invalide."
+msgstr "Invalid change."
+
+#: annuaire/views.py:1354
+#, python-format
+msgid "Fusion effectuée : %(summary)s."
+msgstr "Merge completed: %(summary)s."
+
+#: annuaire/views.py:1354
+msgid "aucune donnée liée à déplacer"
+msgstr "no linked data to move"
+
+#: annuaire/views.py:1371
+msgid ""
+"Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."
+msgstr ""
+"This profile is linked to an account: its owners can no longer be changed."
+
+#: annuaire/views.py:1373
+msgid "Vous n'êtes pas propriétaire de ce profil."
+msgstr "You are not an owner of this profile."
+
+#: annuaire/views.py:1433
+msgid "Vous devez compléter votre profil avant de créer une résidence."
+msgstr "You must complete your profile before creating a residence."
+
+#: annuaire/views.py:1465
+msgid "Vous n'êtes pas propriétaire de cette résidence."
+msgstr "You are not an owner of this residence."
+
+#: annuaire/views.py:1549
+msgid "Erreur dans le formulaire de présence."
+msgstr "Error in the stay form."
+
+#: annuaire/views.py:1761
+msgid "Le lien de votre calendrier a été régénéré."
+msgstr "Your calendar link has been regenerated."
+
+#: documents/forms.py:69 documents/models.py:123
+msgid ""
+"Impossible de restreindre cette catégorie : une catégorie parente restreint "
+"déjà l'accès, et cette restriction s'applique à toute sa descendance."
+msgstr ""
+"Cannot restrict this category: a parent category already restricts access, "
+"and that restriction applies to all its descendants."
+
+#: documents/forms.py:79
+msgid ""
+"Impossible de restreindre cette catégorie : une catégorie parente ou une "
+"sous-catégorie restreint déjà l'accès."
+msgstr ""
+"Cannot restrict this category: a parent category or a subcategory already "
+"restricts access."
+
+#: documents/forms.py:123
+msgid "Un document doit contenir au moins un fichier."
+msgstr "A document must contain at least one file."
+
+#: documents/models.py:18 photos/models.py:16
+msgid "En attente"
+msgstr "Pending"
+
+#: documents/models.py:19 photos/models.py:17
+msgid "Terminé"
+msgstr "Done"
+
+#: documents/models.py:20
+msgid "Non pris en charge"
+msgstr "Unsupported"
+
+#: documents/models.py:21 photos/models.py:18
+msgid "Erreur"
+msgstr "Error"
+
+#: documents/models.py:35
+msgid "Catégorie parente"
+msgstr "Parent category"
+
+#: documents/models.py:43 events/models.py:70 photos/models.py:49
+msgid "Groupes autorisés"
+msgstr "Allowed groups"
+
+#: documents/models.py:58
+msgid "Une catégorie ne peut pas être sa propre catégorie parente."
+msgstr "A category cannot be its own parent category."
+
+#: documents/models.py:64
+msgid "Cette hiérarchie de catégories contient une boucle."
+msgstr "This category hierarchy contains a loop."
+
+#: documents/models.py:70
+#, python-format
+msgid ""
+"La hiérarchie des catégories ne peut pas dépasser %(max_depth)s niveaux."
+msgstr "The category hierarchy cannot exceed %(max_depth)s levels."
+
+#: documents/models.py:79 events/models.py:114 photos/models.py:85
+msgid "Groupe"
+msgstr "Group"
+
+#: documents/models.py:82
+msgid "Accès groupe à catégorie"
+msgstr "Group access to category"
+
+#: documents/models.py:83
+msgid "Accès groupes à catégories"
+msgstr "Group access to categories"
+
+#: documents/models.py:130
+msgid ""
+"Impossible de restreindre cette catégorie : une sous-catégorie restreint "
+"déjà l'accès de façon indépendante."
+msgstr ""
+"Cannot restrict this category: a subcategory already restricts access "
+"independently."
+
+#: documents/models.py:141
+msgid "Date du document"
+msgstr "Document date"
+
+#: documents/models.py:149 genealogy/models.py:194 photos/models.py:114
+msgid "Déposé par"
+msgstr "Uploaded by"
+
+#: documents/models.py:157 documents/templates/documents/document_form.html:25
+msgid "Rédigé par"
+msgstr "Written by"
+
+#: documents/models.py:166 documents/models.py:175
+msgid "Document"
+msgstr "Document"
+
+#: documents/models.py:180 documents/models.py:205 photos/models.py:104
+#: publications/models.py:89
+msgid "Fichier"
+msgstr "File"
+
+#: documents/models.py:182 photos/models.py:106 publications/models.py:90
+msgid "Légende"
+msgstr "Caption"
+
+#: documents/models.py:183 photos/models.py:116 publications/models.py:92
+msgid "Date de téléversement"
+msgstr "Upload date"
+
+#: documents/models.py:184
+msgid "Texte extrait"
+msgstr "Extracted text"
+
+#: documents/models.py:190
+msgid "Statut d'extraction"
+msgstr "Extraction status"
+
+#: documents/models.py:192
+msgid "Erreur d'extraction"
+msgstr "Extraction error"
+
+#: documents/models.py:193
+msgid "Date d'extraction"
+msgstr "Extraction date"
+
+#: documents/models.py:194
+msgid "OCR utilisé"
+msgstr "OCR used"
+
+#: documents/models.py:200 photos/models.py:124
+msgid "Vignette"
+msgstr "Thumbnail"
+
+#: documents/models.py:206
+#: documents/templates/documents/document_detail.html:41
+#: documents/templates/documents/document_form.html:33
+msgid "Fichiers"
+msgstr "Files"
+
+#: documents/templates/documents/_category_tree_node.html:30
+#: photos/templates/photos/_album_card.html:26
+msgid "Réservé au groupe"
+msgstr "Reserved for the group"
+
+#: documents/templates/documents/_document_card.html:18
+msgid "Trouvé dans le contenu"
+msgstr "Found in content"
+
+#: documents/templates/documents/_document_results.html:6
+msgid "Aucun document trouvé"
+msgstr "No documents found"
+
+#: documents/templates/documents/_document_results.html:7
+msgid "Essayez un autre terme, ou changez de catégorie."
+msgstr "Try a different term, or change category."
+
+#: documents/templates/documents/_document_results.html:16
+#: photos/templates/photos/album_detail.html:91
+#: publications/templates/publications/blogpost_list.html:55
+#, python-format
+msgid "Page %(number)s / %(pages)s"
+msgstr "Page %(number)s / %(pages)s"
+
+#: documents/templates/documents/category_confirm_delete.html:9
+msgid "Supprimer une catégorie ?"
+msgstr "Delete a category?"
+
+#: documents/templates/documents/category_confirm_delete.html:14
+#, python-format
+msgid "Supprimer la catégorie « %(name)s » ?"
+msgstr "Delete the category \"%(name)s\"?"
+
+#: documents/templates/documents/category_confirm_delete.html:18
+#, python-format
+msgid ""
+"Cette catégorie contient %(docs)s document%(docsfx)s et %(subs)s sous-"
+"catégorie%(childsfx)s. Supprimez-les d'abord."
+msgstr ""
+"This category contains %(docs)s document%(docsfx)s and %(subs)s sub-"
+"section%(childsfx)s. Delete them first."
+
+#: documents/templates/documents/category_confirm_delete.html:23
+msgid "Cette catégorie est vide : rien d'autre ne sera supprimé."
+msgstr "This category is empty: nothing else will be deleted."
+
+#: documents/templates/documents/category_detail.html:10
+#: documents/templates/documents/document_detail.html:10
+#: photos/templates/photos/photo_detail.html:7
+msgid "Fil d'ariane"
+msgstr "Breadcrumb"
+
+#: documents/templates/documents/category_detail.html:21
+#: photos/templates/photos/album_detail.html:16
+msgid "Visible par :"
+msgstr "Visible to:"
+
+#: documents/templates/documents/category_detail.html:22
+#: photos/templates/photos/album_detail.html:17
+msgid "Tous"
+msgstr "Everyone"
+
+#: documents/templates/documents/category_detail.html:28
+#: documents/templates/documents/document_list.html:14
+msgid "Ajouter un document"
+msgstr "Add a document"
+
+#: documents/templates/documents/category_detail.html:40
+msgid "Sous-catégories"
+msgstr "Subcategories"
+
+#: documents/templates/documents/category_detail.html:63
+msgid "Cette catégorie est réservée."
+msgstr "This category is restricted."
+
+#: documents/templates/documents/category_detail.html:75
+msgid "Aucun document dans cette catégorie"
+msgstr "No documents in this category"
+
+#: documents/templates/documents/category_detail.html:76
+msgid "Déposez-en un pour commencer à la remplir."
+msgstr "Upload one to start filling it."
+
+#: documents/templates/documents/category_form.html:8
+#: documents/templates/documents/category_list.html:13
+msgid "Nouvelle catégorie"
+msgstr "New category"
+
+#: documents/templates/documents/category_form.html:15
+msgid "La catégorie"
+msgstr "The category"
+
+#: documents/templates/documents/category_list.html:8
+msgid "Catégories de documents"
+msgstr "Document categories"
+
+#: documents/templates/documents/category_list.html:9
+msgid "Comment les documents sont classés."
+msgstr "How documents are organised."
+
+#: documents/templates/documents/category_list.html:29
+#: documents/templates/documents/category_list.html:34
+msgid "Aucune catégorie"
+msgstr "No categories"
+
+#: documents/templates/documents/category_list.html:30
+msgid ""
+"Les catégories servent à ranger les documents, et à en réserver certains à "
+"un groupe."
+msgstr ""
+"Categories are used to organise documents, and to reserve some for a group."
+
+#: documents/templates/documents/category_list.html:31
+msgid "Créer une catégorie"
+msgstr "Create a category"
+
+#: documents/templates/documents/document_confirm_delete.html:9
+msgid "Supprimer ce document ?"
+msgstr "Delete this document?"
+
+#: documents/templates/documents/document_confirm_delete.html:14
+#: events/templates/events/event_confirm_delete.html:14
+#: genealogy/templates/genealogy/story_confirm_delete.html:14
+#: publications/templates/publications/blogpost_confirm_delete.html:14
+#, python-format
+msgid "Supprimer « %(title)s » ?"
+msgstr "Delete \"%(title)s\"?"
+
+#: documents/templates/documents/document_confirm_delete.html:15
+#, python-format
+msgid "Dans %(category)s."
+msgstr "In %(category)s."
+
+#: documents/templates/documents/document_confirm_delete.html:18
+#, python-format
+msgid ""
+"Le document sera envoyé à la corbeille, récupérable pendant %(days)s jours. "
+"Passé ce délai, il sera supprimé définitivement, avec :"
+msgstr ""
+"The document will be sent to the trash, recoverable for %(days)s days. After "
+"that, it will be permanently deleted, along with:"
+
+#: documents/templates/documents/document_confirm_delete.html:21
+msgid "sa description ;"
+msgstr "its description;"
+
+#: documents/templates/documents/document_confirm_delete.html:22
+msgid "tous ses fichiers, y compris les originaux déposés."
+msgstr "all its files, including the originals uploaded."
+
+#: documents/templates/documents/document_confirm_delete.html:28
+#: photos/templates/photos/album_confirm_delete.html:41
+#: photos/templates/photos/photo_confirm_delete.html:29
+#: publications/templates/publications/blogpost_confirm_delete.html:29
+msgid "Envoyer à la corbeille"
+msgstr "Send to trash"
+
+#: documents/templates/documents/document_detail.html:23
+#, python-format
+msgid "rédigé par %(redactor)s"
+msgstr "written by %(redactor)s"
+
+#: documents/templates/documents/document_detail.html:24
+#, python-format
+msgid "déposé par %(uploader)s"
+msgstr "uploaded by %(uploader)s"
+
+#: documents/templates/documents/document_detail.html:47
+#: publications/templates/publications/blogpost_detail.html:46
+#, python-format
+msgid "%(counter)s image"
+msgid_plural "%(counter)s images"
+msgstr[0] "%(counter)s image"
+msgstr[1] "%(counter)s images"
+
+#: documents/templates/documents/document_detail.html:51
+#: publications/templates/publications/blogpost_detail.html:50
+msgid "Image précédente"
+msgstr "Previous image"
+
+#: documents/templates/documents/document_detail.html:53
+#: publications/templates/publications/blogpost_detail.html:52
+msgid "Image suivante"
+msgstr "Next image"
+
+#: documents/templates/documents/document_detail.html:84
+#: publications/templates/publications/blogpost_detail.html:84
+msgid "Zoom"
+msgstr "Zoom"
+
+#: documents/templates/documents/document_detail.html:85
+#: publications/templates/publications/blogpost_detail.html:85
+msgid "Réduire"
+msgstr "Zoom out"
+
+#: documents/templates/documents/document_detail.html:87
+#: publications/templates/publications/blogpost_detail.html:87
+msgid "Agrandir"
+msgstr "Zoom in"
+
+#: documents/templates/documents/document_detail.html:89
+#: publications/templates/publications/blogpost_detail.html:89
+msgid "Télécharger"
+msgstr "Download"
+
+#: documents/templates/documents/document_detail.html:98
+#: publications/templates/publications/blogpost_detail.html:99
+msgid "Chargement du PDF…"
+msgstr "Loading the PDF…"
+
+#: documents/templates/documents/document_detail.html:107
+#, python-format
+msgid "Télécharger %(filename)s"
+msgstr "Download %(filename)s"
+
+#: documents/templates/documents/document_detail.html:112
+msgid "Aucun fichier"
+msgstr "No files"
+
+#: documents/templates/documents/document_detail.html:113
+msgid "Ce document n'a pas encore de pièce attachée."
+msgstr "This document has no attached file yet."
+
+#: documents/templates/documents/document_detail.html:119
+msgid "Publications liées"
+msgstr "Linked posts"
+
+#: documents/templates/documents/document_form.html:12
+#: genealogy/templates/genealogy/story_form.html:10
+#: photos/templates/photos/album_form.html:8
+#: publications/templates/publications/blogpost_form.html:11
+#, python-format
+msgid "Modifier « %(title)s »"
+msgstr "Edit \"%(title)s\""
+
+#: documents/templates/documents/document_form.html:12
+msgid "Nouveau document"
+msgstr "New document"
+
+#: documents/templates/documents/document_form.html:19
+msgid "Le document"
+msgstr "The document"
+
+#: documents/templates/documents/document_form.html:58
+msgid "Ajouter un fichier"
+msgstr "Add a file"
+
+#: documents/templates/documents/document_list.html:10
+msgid "Actes, plans et archives de la famille."
+msgstr "The family's records, plans and archives."
+
+#: documents/templates/documents/document_list.html:21
+msgid "Rechercher un document"
+msgstr "Search for a document"
+
+#: documents/templates/documents/document_list.html:22
+msgid "Filtrer par catégorie"
+msgstr "Filter by category"
+
+#: documents/templates/documents/document_list.html:23
+msgid "Toutes les catégories"
+msgstr "All categories"
+
+#: documents/templates/documents/document_list.html:28
+msgid "Filtrer par rédacteur"
+msgstr "Filter by writer"
+
+#: documents/templates/documents/document_list.html:29
+msgid "Tous les rédacteurs"
+msgstr "All writers"
+
+#: documents/templates/documents/document_list.html:34
+msgid "Filtrer par année de rédaction"
+msgstr "Filter by year written"
+
+#: documents/templates/documents/document_list.html:35
+msgid "Toutes les années"
+msgstr "All years"
+
+#: documents/templates/documents/document_list.html:41
+msgid "Date de dépôt (récent → ancien)"
+msgstr "Upload date (newest → oldest)"
+
+#: documents/templates/documents/document_list.html:42
+msgid "Date de dépôt (ancien → récent)"
+msgstr "Upload date (oldest → newest)"
+
+#: documents/templates/documents/document_list.html:43
+msgid "Titre (A → Z)"
+msgstr "Title (A → Z)"
+
+#: documents/templates/documents/document_list.html:44
+msgid "Titre (Z → A)"
+msgstr "Title (Z → A)"
+
+#: documents/templates/documents/document_list.html:45
+msgid "Rédacteur (A → Z)"
+msgstr "Writer (A → Z)"
+
+#: documents/templates/documents/document_list.html:46
+msgid "Rédacteur (Z → A)"
+msgstr "Writer (Z → A)"
+
+#: documents/templates/documents/document_list.html:47
+msgid "Date de rédaction (ancien → récent)"
+msgstr "Date written (oldest → newest)"
+
+#: documents/templates/documents/document_list.html:48
+msgid "Date de rédaction (récent → ancien)"
+msgstr "Date written (newest → oldest)"
+
+#: documents/validators.py:33 photos/validators.py:16
+#, python-format
+msgid "Type de fichier non autorisé : « %(extension)s »."
+msgstr "File type not allowed: \"%(extension)s\"."
+
+#: documents/validators.py:33 photos/validators.py:16
+msgid "sans extension"
+msgstr "no extension"
+
+#: documents/views.py:218
+msgid ""
+"Impossible de supprimer cette catégorie : elle contient des documents ou des "
+"sous-catégories. Supprimez-les d'abord."
+msgstr ""
+"Cannot delete this category: it contains documents or subcategories. Delete "
+"them first."
+
+#: documents/views.py:238
+msgid "Vous n'avez pas accès à ce document."
+msgstr "You do not have access to this document."
+
+#: documents/views.py:267
+msgid "Vous n'êtes pas le déposant de ce document."
+msgstr "You are not the uploader of this document."
+
+#: documents/views.py:304
+msgid "Vous devez compléter votre profil avant de déposer un document."
+msgstr "You must complete your profile before uploading a document."
+
+#: events/forms.py:54 events/templates/events/_rsvp_form.html:21
+msgid "Accompagnants supplémentaires"
+msgstr "Additional guests"
+
+#: events/models.py:47
+msgid "Début"
+msgstr "Start"
+
+#: events/models.py:50
+msgid "Fin"
+msgstr "End"
+
+#: events/models.py:51 events/templates/events/event_detail.html:22
+msgid "Journée entière"
+msgstr "All day"
+
+#: events/models.py:63
+msgid "Organisateurs·rices"
+msgstr "Organisers"
+
+#: events/models.py:78 genealogy/models.py:51 genealogy/models.py:105
+#: photos/models.py:57
+msgid "Créé par"
+msgstr "Created by"
+
+#: events/models.py:85
+msgid "Rappel envoyé le"
+msgstr "Reminder sent on"
+
+#: events/models.py:91 events/models.py:113 events/models.py:135
+msgid "Événement"
+msgstr "Event"
+
+#: events/models.py:109
+msgid "La date de fin doit être postérieure à la date de début."
+msgstr "The end date must be after the start date."
+
+#: events/models.py:117
+msgid "Accès groupe à événement"
+msgstr "Group access to event"
+
+#: events/models.py:118
+msgid "Accès groupes à événements"
+msgstr "Group access to events"
+
+#: events/models.py:128 events/templates/events/_rsvp_form.html:16
+msgid "Oui"
+msgstr "Yes"
+
+#: events/models.py:129 events/templates/events/_rsvp_form.html:18
+msgid "Non"
+msgstr "No"
+
+#: events/models.py:130 events/templates/events/_rsvp_form.html:17
+msgid "Peut-être"
+msgstr "Maybe"
+
+#: events/models.py:137
+msgid "Réponse"
+msgstr "Response"
+
+#: events/models.py:139
+msgid "Accompagnants"
+msgstr "Guests"
+
+#: events/models.py:140 events/templates/events/_rsvp_form.html:25
+#: genealogy/models.py:137
+msgid "Note"
+msgstr "Note"
+
+#: events/models.py:145
+msgid "Participation"
+msgstr "RSVP"
+
+#: events/models.py:146
+msgid "Participations"
+msgstr "RSVPs"
+
+#: events/templates/events/_attendee_list.html:7
+#, python-format
+msgid "Participants (%(count)s)"
+msgstr "Attendees (%(count)s)"
+
+#: events/templates/events/_attendee_list.html:19
+msgid "Personne n'a encore confirmé sa présence."
+msgstr "No one has confirmed their attendance yet."
+
+#: events/templates/events/_rsvp_form.html:9
+msgid "Votre présence"
+msgstr "Your attendance"
+
+#: events/templates/events/emails/event_announcement.html:14
+msgid "Nouvel événement"
+msgstr "New event"
+
+#: events/templates/events/emails/event_announcement.html:28
+#: events/templates/events/emails/event_reminder.html:27
+msgid "Voir l'événement"
+msgstr "View the event"
+
+#: events/templates/events/emails/event_announcement.html:33
+msgid ""
+"Vous recevez cette notification car vous êtes abonné&middot;e aux annonces "
+"d'événements sur"
+msgstr ""
+"You are receiving this notification because you are subscribed&middot; to "
+"event announcements on"
+
+#: events/templates/events/emails/event_announcement.txt:1
+#, python-format
+msgid "Un nouvel événement a été créé sur %(site_name)s :"
+msgstr "A new event has been created on %(site_name)s:"
+
+#: events/templates/events/emails/event_announcement.txt:9
+#, python-format
+msgid ""
+"Vous recevez cette notification car vous êtes abonné·e aux annonces "
+"d'événements sur %(site_name)s (%(site_base_url)s). Pour vous désabonner, "
+"modifiez votre profil : %(settings_url)s"
+msgstr ""
+"You are receiving this notification because you are subscribed to event "
+"announcements on %(site_name)s (%(site_base_url)s). To unsubscribe, edit "
+"your profile: %(settings_url)s"
+
+#: events/templates/events/emails/event_reminder.html:13
+msgid "Rappel"
+msgstr "Reminder"
+
+#: events/templates/events/emails/event_reminder.html:32
+msgid ""
+"Vous recevez ce rappel car vous êtes abonné&middot;e aux annonces "
+"d'événements sur"
+msgstr ""
+"You are receiving this reminder because you are subscribed&middot; to event "
+"announcements on"
+
+#: events/templates/events/emails/event_reminder.txt:1
+#, python-format
+msgid "Rappel : un événement approche sur %(site_name)s :"
+msgstr "Reminder: an event is coming up on %(site_name)s:"
+
+#: events/templates/events/emails/event_reminder.txt:9
+#, python-format
+msgid ""
+"Vous recevez ce rappel car vous êtes abonné·e aux annonces d'événements sur "
+"%(site_name)s (%(site_base_url)s). Pour vous désabonner, modifiez votre "
+"profil : %(settings_url)s"
+msgstr ""
+"You are receiving this reminder because you are subscribed to event "
+"announcements on %(site_name)s (%(site_base_url)s). To unsubscribe, edit "
+"your profile: %(settings_url)s"
+
+#: events/templates/events/event_confirm_delete.html:9
+msgid "Supprimer un événement ?"
+msgstr "Delete an event?"
+
+#: events/templates/events/event_confirm_delete.html:15
+msgid "Cette action est définitive."
+msgstr "This action is final."
+
+#: events/templates/events/event_detail.html:37
+#, python-format
+msgid "Organisé par %(organisers)s"
+msgstr "Organised by %(organisers)s"
+
+#: events/templates/events/event_form.html:10
+#, python-format
+msgid "Modifier %(title)s"
+msgstr "Edit %(title)s"
+
+#: events/templates/events/event_form.html:17
+msgid "L'événement"
+msgstr "The event"
+
+#: events/templates/events/event_form.html:29
+msgid "Organisateur·rices"
+msgstr "Organisers"
+
+#: events/templates/events/event_form.html:30
+msgid "Chercher un organisateur"
+msgstr "Search for an organiser"
+
+#: events/templates/events/event_list.html:9
+msgid "Les réunions, fêtes et rendez-vous de la famille."
+msgstr "The family's get-togethers, parties and dates."
+
+#: events/templates/events/event_list.html:17
+msgid "Événements passés"
+msgstr "Past events"
+
+#: events/templates/events/event_list.html:19
+msgid "Voir les événements à venir"
+msgstr "View upcoming events"
+
+#: events/templates/events/event_list.html:21
+msgid "Voir les événements passés"
+msgstr "View past events"
+
+#: events/templates/events/event_list.html:33
+msgid "Aucun événement passé"
+msgstr "No past events"
+
+#: events/views.py:104
+msgid "Vous devez compléter votre profil avant de créer un événement."
+msgstr "You must complete your profile before creating an event."
+
+#: events/views.py:139
+msgid "Vous n'êtes pas organisateur·rice de cet événement."
+msgstr "You are not an organiser of this event."
+
+#: events/views.py:176
+msgid "Vous ne pouvez pas répondre pour cette personne."
+msgstr "You cannot respond on behalf of this person."
+
+#: genealogy/forms.py:22
+msgid "Fichier GEDCOM (.ged)"
+msgstr "GEDCOM file (.ged)"
+
+#: genealogy/forms.py:28
+#, python-format
+msgid "Fichier trop volumineux (max %(max_mb)s Mo)."
+msgstr "File too large (max %(max_mb)s MB)."
+
+#: genealogy/models.py:19 genealogy/models.py:260
+msgid "Date de mariage"
+msgstr "Marriage date"
+
+#: genealogy/models.py:20
+msgid "Date de fin (relation)"
+msgstr "End date (relation)"
+
+#: genealogy/models.py:25
+msgid "Acte d'état civil"
+msgstr "Civil record"
+
+#: genealogy/models.py:26
+msgid "Article de presse"
+msgstr "Press article"
+
+#: genealogy/models.py:27
+msgid "Témoignage oral"
+msgstr "Oral testimony"
+
+#: genealogy/models.py:28
+msgid "Registre ou archive"
+msgstr "Register or archive"
+
+#: genealogy/models.py:29
+msgid "Autre"
+msgstr "Other"
+
+#: genealogy/models.py:44 genealogy/models.py:61 genealogy/models.py:69
+#: genealogy/models.py:121
+msgid "Récit"
+msgstr "Story"
+
+#: genealogy/models.py:71
+msgid "Ordre"
+msgstr "Order"
+
+#: genealogy/models.py:75
+msgid "Photo d'un récit"
+msgstr "Story photo"
+
+#: genealogy/models.py:76
+msgid "Photos d'un récit"
+msgstr "Story photos"
+
+#: genealogy/models.py:88
+msgid "Référence"
+msgstr "Reference"
+
+#: genealogy/models.py:89
+msgid "Lieu de conservation"
+msgstr "Repository"
+
+#: genealogy/models.py:92
+msgid "Notes"
+msgstr "Notes"
+
+#: genealogy/models.py:102
+msgid "Document associé"
+msgstr "Linked document"
+
+#: genealogy/models.py:111 genealogy/models.py:119
+msgid "Source"
+msgstr "Source"
+
+#: genealogy/models.py:112
+msgid "Sources"
+msgstr "Sources"
+
+#: genealogy/models.py:132
+msgid "Relation"
+msgstr "Relation"
+
+#: genealogy/models.py:135
+msgid "Donnée citée"
+msgstr "Cited data"
+
+#: genealogy/models.py:141
+msgid "Citations"
+msgstr "Citations"
+
+#: genealogy/models.py:166
+msgid ""
+"Une citation doit cibler exactement un récit, une personne ou une relation."
+msgstr "A citation must target exactly one story, person or relation."
+
+#: genealogy/models.py:169
+msgid ""
+"La donnée citée est obligatoire pour une citation sur une personne ou une "
+"relation."
+msgstr ""
+"The cited data is required for a citation about a person or a relation."
+
+#: genealogy/models.py:172
+msgid "Un récit ne cible pas une donnée précise ; laissez ce champ vide."
+msgstr "A story does not target specific data; leave this field blank."
+
+#: genealogy/models.py:176
+msgid "En attente de révision"
+msgstr "Pending review"
+
+#: genealogy/models.py:177
+msgid "Appliqué"
+msgstr "Applied"
+
+#: genealogy/models.py:178
+msgid "Abandonné"
+msgstr "Discarded"
+
+#: genealogy/models.py:182
+#: genealogy/templates/genealogy/gedcom_import_review.html:34
+msgid "Créer un nouveau profil"
+msgstr "Create a new profile"
+
+#: genealogy/models.py:183
+msgid "Fusionner avec un profil existant"
+msgstr "Merge with an existing profile"
+
+#: genealogy/models.py:184
+#: genealogy/templates/genealogy/gedcom_import_review.html:38
+msgid "Ignorer"
+msgstr "Skip"
+
+#: genealogy/models.py:196
+msgid "Date de dépôt"
+msgstr "Upload date"
+
+#: genealogy/models.py:197
+msgid "Nom du fichier"
+msgstr "File name"
+
+#: genealogy/models.py:204
+msgid "Contenu brut"
+msgstr "Raw content"
+
+#: genealogy/models.py:207
+msgid "Import GEDCOM"
+msgstr "GEDCOM import"
+
+#: genealogy/models.py:208
+msgid "Imports GEDCOM"
+msgstr "GEDCOM imports"
+
+#: genealogy/models.py:216 genealogy/models.py:254
+msgid "Import"
+msgstr "Import"
+
+#: genealogy/models.py:218 genealogy/models.py:256
+msgid "Référence GEDCOM"
+msgstr "GEDCOM reference"
+
+#: genealogy/models.py:232
+msgid "Profil correspondant"
+msgstr "Matching profile"
+
+#: genealogy/models.py:235
+#: genealogy/templates/genealogy/gedcom_import_review.html:24
+msgid "Décision"
+msgstr "Decision"
+
+#: genealogy/models.py:241
+msgid "Profil résultant"
+msgstr "Resulting profile"
+
+#: genealogy/models.py:245
+#: genealogy/templates/genealogy/gedcom_import_review.html:24
+msgid "Individu importé"
+msgstr "Imported individual"
+
+#: genealogy/models.py:246
+msgid "Individus importés"
+msgstr "Imported individuals"
+
+#: genealogy/models.py:257
+msgid "Référence de l'époux"
+msgstr "Husband's reference"
+
+#: genealogy/models.py:258
+msgid "Référence de l'épouse"
+msgstr "Wife's reference"
+
+#: genealogy/models.py:259
+msgid "Références des enfants"
+msgstr "Children's references"
+
+#: genealogy/models.py:262
+msgid "Date de divorce"
+msgstr "Divorce date"
+
+#: genealogy/models.py:265
+msgid "Famille importée"
+msgstr "Imported family"
+
+#: genealogy/models.py:266
+msgid "Familles importées"
+msgstr "Imported families"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:9
+#, python-format
+msgid "Révision de l'import « %(filename)s »"
+msgstr "Reviewing import \"%(filename)s\""
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:11
+msgid ""
+"Aucune personne n'est ajoutée à l'annuaire tant que vous n'avez pas cliqué "
+"sur « Appliquer l'import » ci-dessous."
+msgstr ""
+"No one is added to the directory until you click \"Apply the import\" below."
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:24
+msgid "Naissance"
+msgstr "Birth"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:24
+msgid "Décès"
+msgstr "Death"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:36
+#, python-format
+msgid "Fusionner avec %(candidate)s"
+msgstr "Merge with %(candidate)s"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:46
+msgid "Enregistrer les décisions de cette page"
+msgstr "Save this page's decisions"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:55
+#, python-format
+msgid "Page %(num)s / %(total)s"
+msgstr "Page %(num)s / %(total)s"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:62
+msgid "Aucun individu trouvé dans ce fichier"
+msgstr "No individuals found in this file"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:69
+msgid "Appliquer cet import à l'annuaire ? Cette action est irréversible."
+msgstr "Apply this import to the directory? This action is irreversible."
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:72
+msgid "Appliquer l'import"
+msgstr "Apply the import"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:77
+msgid "Abandonner cet import ?"
+msgstr "Discard this import?"
+
+#: genealogy/templates/genealogy/gedcom_import_review.html:80
+msgid "Abandonner l'import"
+msgstr "Discard the import"
+
+#: genealogy/templates/genealogy/gedcom_import_upload.html:9
+msgid "Importer un fichier GEDCOM"
+msgstr "Import a GEDCOM file"
+
+#: genealogy/templates/genealogy/gedcom_import_upload.html:11
+msgid ""
+"Formats acceptés : UTF-8 ou CP1252 (Latin-1). L'ANSEL n'est pas pris en "
+"charge ; ré-exportez le fichier en UTF-8 depuis votre logiciel de généalogie "
+"si besoin. Rien n'est ajouté à l'annuaire avant une validation explicite, à "
+"l'étape suivante."
+msgstr ""
+"Accepted formats: UTF-8 or CP1252 (Latin-1). ANSEL is not supported; re-"
+"export the file as UTF-8 from your genealogy software if needed. Nothing is "
+"added to the directory before explicit validation, at the next step."
+
+#: genealogy/templates/genealogy/gedcom_import_upload.html:25
+msgid "Analyser le fichier"
+msgstr "Analyse the file"
+
+#: genealogy/templates/genealogy/story_confirm_delete.html:9
+msgid "Supprimer ce récit ?"
+msgstr "Delete this story?"
+
+#: genealogy/templates/genealogy/story_confirm_delete.html:15
+#, python-format
+msgid "Récit de %(person)s."
+msgstr "Story of %(person)s."
+
+#: genealogy/templates/genealogy/story_confirm_delete.html:17
+msgid "Cette action est irréversible. Seront supprimés :"
+msgstr "This action is irreversible. The following will be deleted:"
+
+#: genealogy/templates/genealogy/story_confirm_delete.html:19
+msgid "le récit et son texte ;"
+msgstr "the story and its text;"
+
+#: genealogy/templates/genealogy/story_confirm_delete.html:20
+msgid ""
+"ses liens vers les photos illustratives (les photos elles-mêmes ne sont pas "
+"supprimées)."
+msgstr ""
+"its links to illustrative photos (the photos themselves are not deleted)."
+
+#: genealogy/templates/genealogy/story_form.html:10
+#, python-format
+msgid "Nouveau récit pour %(person)s"
+msgstr "New story for %(person)s"
+
+#: genealogy/templates/genealogy/story_form.html:17
+msgid "Le récit"
+msgstr "The story"
+
+#: genealogy/templates/genealogy/story_form.html:31
+msgid "Chercher une photo"
+msgstr "Search for a photo"
+
+#: genealogy/views.py:54
+msgid "Vous n'êtes pas l'auteur de ce récit."
+msgstr "You are not the author of this story."
+
+#: genealogy/views.py:230
+msgid "Décisions enregistrées pour cette page."
+msgstr "Decisions saved for this page."
+
+#: genealogy/views.py:239
+msgid "Cet import a déjà été traité."
+msgstr "This import has already been processed."
+
+#: genealogy/views.py:244
+#, python-format
+msgid ""
+"Import appliqué : %(created)s créé(s), %(merged)s fusionné(s), %(skipped)s "
+"ignoré(s)."
+msgstr ""
+"Import applied: %(created)s created, %(merged)s merged, %(skipped)s skipped."
+
+#: genealogy/views.py:254
+msgid "Import abandonné."
+msgstr "Import discarded."
+
+#: photos/models.py:42
+msgid "Photo de couverture"
+msgstr "Cover photo"
+
+#: photos/models.py:66 photos/models.py:84 photos/models.py:99
+msgid "Album"
+msgstr "Album"
+
+#: photos/models.py:67 photos/templates/photos/album_list.html:13
+msgid "Albums"
+msgstr "Albums"
+
+#: photos/models.py:80
+msgid "La photo de couverture doit appartenir à cet album."
+msgstr "The cover photo must belong to this album."
+
+#: photos/models.py:88
+msgid "Accès groupe à album"
+msgstr "Group access to album"
+
+#: photos/models.py:89
+msgid "Accès groupes à albums"
+msgstr "Group access to albums"
+
+#: photos/models.py:107
+msgid "Pris le"
+msgstr "Taken on"
+
+#: photos/models.py:117
+msgid "Largeur"
+msgstr "Width"
+
+#: photos/models.py:118
+msgid "Hauteur"
+msgstr "Height"
+
+#: photos/models.py:127
+msgid "Rendu web"
+msgstr "Web rendition"
+
+#: photos/models.py:134
+msgid "Statut des dérivés"
+msgstr "Derivatives status"
+
+#: photos/models.py:136
+msgid "Erreur de dérivés"
+msgstr "Derivatives error"
+
+#: photos/models.py:137
+msgid "Dérivés générés le"
+msgstr "Derivatives generated on"
+
+#: photos/models.py:168
+msgid "Position X"
+msgstr "Position X"
+
+#: photos/models.py:169
+msgid "Position Y"
+msgstr "Position Y"
+
+#: photos/models.py:170
+msgid "Largeur de la zone"
+msgstr "Region width"
+
+#: photos/models.py:171
+msgid "Hauteur de la zone"
+msgstr "Region height"
+
+#: photos/models.py:178
+msgid "Identifié par"
+msgstr "Tagged by"
+
+#: photos/models.py:180
+msgid "Date d'identification"
+msgstr "Tag date"
+
+#: photos/models.py:183
+msgid "Personne identifiée sur une photo"
+msgstr "Person tagged in a photo"
+
+#: photos/models.py:184
+msgid "Personnes identifiées sur une photo"
+msgstr "People tagged in a photo"
+
+#: photos/models.py:196
+msgid ""
+"La zone de la photo doit être définie entièrement (les quatre valeurs) ou "
+"pas du tout."
+msgstr ""
+"The photo region must be fully defined (all four values) or not at all."
+
+#: photos/templates/photos/_photo_card.html:18
+#: photos/templates/photos/photo_detail.html:38
+#: photos/templates/photos/photo_tag_form.html:20
+msgid "Identifier des personnes"
+msgstr "Tag people"
+
+#: photos/templates/photos/album_confirm_delete.html:8
+#: photos/templates/photos/album_detail.html:10
+#: photos/templates/photos/album_form.html:7
+#: photos/templates/photos/album_list.html:12
+#: photos/templates/photos/photo_confirm_delete.html:8
+#: photos/templates/photos/photo_detail.html:8
+#: photos/templates/photos/photo_form.html:7
+#: photos/templates/photos/photo_tag_form.html:7
+msgid "Photothèque"
+msgstr "Photo library"
+
+#: photos/templates/photos/album_confirm_delete.html:9
+msgid "Supprimer un album ?"
+msgstr "Delete an album?"
+
+#: photos/templates/photos/album_confirm_delete.html:14
+#, python-format
+msgid "Supprimer l'album « %(title)s » ?"
+msgstr "Delete the album \"%(title)s\"?"
+
+#: photos/templates/photos/album_confirm_delete.html:17
+#, python-format
+msgid "L'album sera envoyé à la corbeille, récupérable pendant %(days)s jours."
+msgstr "The album will be sent to the trash, recoverable for %(days)s days."
+
+#: photos/templates/photos/album_confirm_delete.html:34
+msgid "Cet album ne contient aucune photo."
+msgstr "This album contains no photos."
+
+#: photos/templates/photos/album_detail.html:30
+msgid "Cet album est réservé."
+msgstr "This album is restricted."
+
+#: photos/templates/photos/album_detail.html:50
+msgid "Ajouter des photos"
+msgstr "Add photos"
+
+#: photos/templates/photos/album_detail.html:54
+#, python-format
+msgid "%(size)s Mo max par photo, %(count_max)s à la fois."
+msgstr "%(size)s MB max per photo, %(count_max)s at a time."
+
+#: photos/templates/photos/album_detail.html:72
+msgid "Photo précédente"
+msgstr "Previous photo"
+
+#: photos/templates/photos/album_detail.html:74
+msgid "Photo suivante"
+msgstr "Next photo"
+
+#: photos/templates/photos/album_detail.html:98
+msgid "Aucune photo dans cet album"
+msgstr "No photos in this album"
+
+#: photos/templates/photos/album_detail.html:99
+msgid "Les photos apparaîtront ici une fois déposées."
+msgstr "Photos will appear here once uploaded."
+
+#: photos/templates/photos/album_form.html:8
+#: photos/templates/photos/album_list.html:16
+msgid "Nouvel album"
+msgstr "New album"
+
+#: photos/templates/photos/album_form.html:15
+msgid "L'album"
+msgstr "The album"
+
+#: photos/templates/photos/album_list.html:28
+msgid "Aucun album"
+msgstr "No albums"
+
+#: photos/templates/photos/album_list.html:29
+msgid ""
+"Les albums rassemblent les photos de la famille par événement ou par période."
+msgstr "Albums gather the family's photos by event or by period."
+
+#: photos/templates/photos/album_list.html:30
+msgid "Créer un album"
+msgstr "Create an album"
+
+#: photos/templates/photos/photo_confirm_delete.html:9
+msgid "Supprimer cette photo ?"
+msgstr "Delete this photo?"
+
+#: photos/templates/photos/photo_confirm_delete.html:14
+msgid "cette photo"
+msgstr "this photo"
+
+#: photos/templates/photos/photo_confirm_delete.html:15
+#, python-format
+msgid "Supprimer « %(caption)s » ?"
+msgstr "Delete \"%(caption)s\"?"
+
+#: photos/templates/photos/photo_confirm_delete.html:16
+#, python-format
+msgid "Dans l'album « %(title)s »."
+msgstr "In the album \"%(title)s\"."
+
+#: photos/templates/photos/photo_confirm_delete.html:19
+#, python-format
+msgid ""
+"La photo sera envoyée à la corbeille, récupérable pendant %(days)s jours. "
+"Passé ce délai, elle sera supprimée définitivement, avec :"
+msgstr ""
+"The photo will be sent to the trash, recoverable for %(days)s days. After "
+"that, it will be permanently deleted, along with:"
+
+#: photos/templates/photos/photo_confirm_delete.html:22
+msgid "sa légende ;"
+msgstr "its caption;"
+
+#: photos/templates/photos/photo_confirm_delete.html:23
+msgid "le fichier original et ses vignettes."
+msgstr "the original file and its thumbnails."
+
+#: photos/templates/photos/photo_detail.html:15
+#, python-format
+msgid "déposée par <a href=\"%(url)s\">%(name)s</a>"
+msgstr "uploaded by <a href=\"%(url)s\">%(name)s</a>"
+
+#: photos/templates/photos/photo_detail.html:20
+#: photos/templates/photos/photo_form.html:8
+msgid "Modifier la légende"
+msgstr "Edit caption"
+
+#: photos/templates/photos/photo_detail.html:32
+msgid "Précédente"
+msgstr "Previous"
+
+#: photos/templates/photos/photo_detail.html:35
+msgid "Suivante"
+msgstr "Next"
+
+#: photos/templates/photos/photo_detail.html:37
+msgid "Télécharger l'original"
+msgstr "Download the original"
+
+#: photos/templates/photos/photo_detail.html:41
+#: photos/templates/photos/photo_tag_form.html:8
+msgid "Personnes sur cette photo"
+msgstr "People in this photo"
+
+#: photos/templates/photos/photo_detail.html:49
+msgid "Personne n'est identifié sur cette photo"
+msgstr "No one is tagged in this photo"
+
+#: photos/templates/photos/photo_form.html:15
+msgid "La photo"
+msgstr "The photo"
+
+#: photos/templates/photos/photo_tag_form.html:22
+msgid ""
+"Cliquez sur une suggestion pour identifier une personne, ou sur la croix "
+"d'un badge pour la retirer."
+msgstr ""
+"Click a suggestion to tag a person, or the cross on a badge to remove one."
+
+#: photos/templates/photos/photo_tag_form.html:26
+msgid "Retour à l'album"
+msgstr "Back to the album"
+
+#: photos/views.py:132
+msgid "Vous n'avez pas accès à cet album."
+msgstr "You do not have access to this album."
+
+#: photos/views.py:136
+msgid "Fichier invalide."
+msgstr "Invalid file."
+
+#: photos/views.py:165 photos/views.py:331
+msgid "Vous n'avez pas accès à cette photo."
+msgstr "You do not have access to this photo."
+
+#: photos/views.py:227
+msgid "Vous n'êtes pas le déposant de cette photo."
+msgstr "You are not the uploader of this photo."
+
+#: photos/views.py:263
+msgid "Vous devez compléter votre profil avant de créer un album."
+msgstr "You must complete your profile before creating an album."
+
+#: photos/views.py:280
+msgid "Vous n'êtes pas le créateur de cet album."
+msgstr "You are not the creator of this album."
+
+#: publications/forms.py:16 publications/models.py:27 publications/models.py:40
+msgid "Étiquettes"
+msgstr "Tags"
+
+#: publications/forms.py:17
+msgid "Séparez les étiquettes par des virgules."
+msgstr "Separate tags with commas."
+
+#: publications/forms.py:18
+msgid "photos, réunion, annonce"
+msgstr "photos, gathering, announcement"
+
+#: publications/models.py:16
+msgid "Aucun"
+msgstr "None"
+
+#: publications/models.py:17
+msgid "Doré"
+msgstr "Gold"
+
+#: publications/models.py:18
+msgid "Alpenglow"
+msgstr "Alpenglow"
+
+#: publications/models.py:21 publications/models.py:26
+msgid "Étiquette"
+msgstr "Tag"
+
+#: publications/models.py:22
+msgid "Accent"
+msgstr "Accent"
+
+#: publications/models.py:35
+msgid "Contenu"
+msgstr "Content"
+
+#: publications/models.py:45
+#: publications/templates/publications/blogpost_form.html:29
+msgid "Auteur(s)"
+msgstr "Author(s)"
+
+#: publications/models.py:51
+#: publications/templates/publications/blogpost_detail.html:116
+#: publications/templates/publications/blogpost_form.html:35
+msgid "Documents liés"
+msgstr "Linked documents"
+
+#: publications/models.py:57
+#: publications/templates/publications/blogpost_detail.html:129
+#: publications/templates/publications/blogpost_form.html:51
+msgid "Albums liés"
+msgstr "Linked albums"
+
+#: publications/models.py:66 publications/models.py:87
+#: publications/models.py:121
+msgid "Publication"
+msgstr "Post"
+
+#: publications/models.py:91
+msgid "Est une image"
+msgstr "Is an image"
+
+#: publications/models.py:96
+msgid "Pièce jointe"
+msgstr "Attachment"
+
+#: publications/models.py:97
+#: publications/templates/publications/blogpost_detail.html:41
+#: publications/templates/publications/blogpost_form.html:69
+msgid "Pièces jointes"
+msgstr "Attachments"
+
+#: publications/models.py:131 publications/models.py:136
+msgid "Commentaire"
+msgstr "Comment"
+
+#: publications/templates/publications/_blogpost_card.html:14
+#: publications/templates/publications/blogpost_detail.html:13
+msgid "Par"
+msgstr "By"
+
+#: publications/templates/publications/_blogpost_card.html:18
+#: publications/templates/publications/blogpost_detail.html:17
+msgid "anonyme"
+msgstr "anonymous"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:9
+msgid "Supprimer cette publication ?"
+msgstr "Delete this post?"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:15
+#, python-format
+msgid "Publiée le %(date)s."
+msgstr "Posted on %(date)s."
+
+#: publications/templates/publications/blogpost_confirm_delete.html:18
+#, python-format
+msgid ""
+"La publication sera envoyée à la corbeille, récupérable pendant %(days)s "
+"jours. Passé ce délai, elle sera supprimée définitivement, avec :"
+msgstr ""
+"The post will be sent to the trash, recoverable for %(days)s days. After "
+"that, it will be permanently deleted, along with:"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:21
+msgid "son contenu ;"
+msgstr "its content;"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:22
+msgid "son commentaire"
+msgstr "its comment"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:22
+#, python-format
+msgid "ses %(n)s commentaires"
+msgstr "its %(n)s comments"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:23
+msgid "sa pièce jointe"
+msgstr "its attachment"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:23
+#, python-format
+msgid "ses %(n)s pièces jointes"
+msgstr "its %(n)s attachments"
+
+#: publications/templates/publications/blogpost_confirm_delete.html:23
+msgid ", fichiers compris."
+msgstr ", files included."
+
+#: publications/templates/publications/blogpost_detail.html:19
+#, python-format
+msgid "publié le %(date)s"
+msgstr "posted on %(date)s"
+
+#: publications/templates/publications/blogpost_detail.html:21
+#, python-format
+msgid "modifié le %(date)s"
+msgstr "updated on %(date)s"
+
+#: publications/templates/publications/blogpost_detail.html:159
+msgid "Aucun commentaire pour l'instant"
+msgstr "No comments yet"
+
+#: publications/templates/publications/blogpost_detail.html:160
+msgid "Soyez le premier à réagir."
+msgstr "Be the first to react."
+
+#: publications/templates/publications/blogpost_detail.html:166
+msgid "Votre commentaire"
+msgstr "Your comment"
+
+#: publications/templates/publications/blogpost_detail.html:169
+msgid "Commenter"
+msgstr "Comment"
+
+#: publications/templates/publications/blogpost_form.html:11
+#: publications/templates/publications/blogpost_list.html:13
+#: publications/templates/publications/emails/new_blog_post.html:19
+msgid "Nouvelle publication"
+msgstr "New post"
+
+#: publications/templates/publications/blogpost_form.html:18
+msgid "Le billet"
+msgstr "The post"
+
+#: publications/templates/publications/blogpost_form.html:30
+msgid "Chercher un auteur"
+msgstr "Search for an author"
+
+#: publications/templates/publications/blogpost_form.html:43
+msgid "Chercher un document"
+msgstr "Search for a document"
+
+#: publications/templates/publications/blogpost_form.html:47
+msgid "Déposer un nouveau document"
+msgstr "Upload a new document"
+
+#: publications/templates/publications/blogpost_form.html:58
+msgid "Chercher un album"
+msgstr "Search for an album"
+
+#: publications/templates/publications/blogpost_form.html:62
+msgid "Créer un nouvel album"
+msgstr "Create a new album"
+
+#: publications/templates/publications/blogpost_form.html:86
+msgid "Ajouter une pièce jointe"
+msgstr "Add an attachment"
+
+#: publications/templates/publications/blogpost_list.html:9
+msgid "Nouvelles, souvenirs et annonces de la famille."
+msgstr "The family's news, memories and announcements."
+
+#: publications/templates/publications/blogpost_list.html:19
+msgid "Filtrer par étiquette"
+msgstr "Filter by tag"
+
+#: publications/templates/publications/blogpost_list.html:20
+msgid "Toutes les étiquettes"
+msgstr "All tags"
+
+#: publications/templates/publications/blogpost_list.html:35
+msgid "Aucune publication avec cette étiquette"
+msgstr "No posts with this tag"
+
+#: publications/templates/publications/blogpost_list.html:39
+#: publications/templates/publications/blogpost_list.html:44
+msgid "Aucune publication pour l'instant"
+msgstr "No posts yet"
+
+#: publications/templates/publications/comment_confirm_delete.html:10
+msgid "Supprimer ce commentaire ?"
+msgstr "Delete this comment?"
+
+#: publications/templates/publications/comment_confirm_delete.html:15
+#, python-format
+msgid "Sur « %(title)s »."
+msgstr "On \"%(title)s\"."
+
+#: publications/templates/publications/emails/new_blog_post.html:13
+#, python-format
+msgid "Un nouvel article vient d'être publié sur %(site_name)s."
+msgstr "A new post has just been published on %(site_name)s."
+
+#: publications/templates/publications/emails/new_blog_post.html:30
+#: publications/templates/publications/emails/new_blog_post.txt:4
+#, python-format
+msgid "Par %(authors)s"
+msgstr "By %(authors)s"
+
+#: publications/templates/publications/emails/new_blog_post.html:44
+msgid "Lire l'article"
+msgstr "Read the post"
+
+#: publications/templates/publications/emails/new_blog_post.html:49
+msgid ""
+"Vous recevez cette notification car vous êtes abonné&middot;e aux nouvelles "
+"publications sur"
+msgstr ""
+"You are receiving this notification because you are subscribed&middot; to "
+"new posts on"
+
+#: publications/templates/publications/emails/new_blog_post.txt:1
+#, python-format
+msgid "Un nouvel article a été publié sur %(site_name)s :"
+msgstr "A new post has been published on %(site_name)s:"
+
+#: publications/templates/publications/emails/new_blog_post.txt:11
+#, python-format
+msgid ""
+"Vous recevez cette notification car vous êtes abonné·e aux nouvelles "
+"publications sur %(site_name)s (%(site_base_url)s). Pour vous désabonner, "
+"modifiez votre profil : %(settings_url)s"
+msgstr ""
+"You are receiving this notification because you are subscribed to new posts "
+"on %(site_name)s (%(site_base_url)s). To unsubscribe, edit your profile: "
+"%(settings_url)s"
+
+#: publications/views.py:86
+msgid "Vous n'êtes pas auteur de cette publication."
+msgstr "You are not an author of this post."
+
+#: publications/views.py:157
+msgid "Vous devez compléter votre profil avant de commenter."
+msgstr "You must complete your profile before commenting."
+
+#: publications/views.py:178
+msgid "Vous devez compléter votre profil avant de publier."
+msgstr "You must complete your profile before posting."

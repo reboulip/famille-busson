@@ -39,7 +39,6 @@ def restricted_document(db, restricted_category):
 def _post_data(**overrides):
     data = {
         "title": "Un billet",
-        "post_type": "NORMAL",
         "body": "Contenu.",
         "authors": [],
         "attachments-TOTAL_FORMS": "0",

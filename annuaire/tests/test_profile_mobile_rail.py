@@ -86,7 +86,7 @@ def test_the_rail_does_not_generate_its_own_box_on_mobile():
 
 
 def test_the_shared_record_component_is_not_restyled_for_the_profile_page():
-    # .fb-record is also the chalet detail page's layout -- the profile's rules
+    # .fb-record is also the place detail page's layout -- the profile's rules
     # hang off .profile-record so that page is untouched.
     assert "profile-record" not in COMPONENTS_CSS.read_text(encoding="utf-8")
 

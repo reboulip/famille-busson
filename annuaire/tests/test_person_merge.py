@@ -281,13 +281,13 @@ def test_merge_moves_blog_post_authorship(person, accountless_person):
 
 
 @pytest.mark.django_db
-def test_merge_moves_chalet_ownership(person, accountless_person):
-    from annuaire.models import Chalet
+def test_merge_moves_place_ownership(person, accountless_person):
+    from annuaire.models import Place
 
-    chalet = Chalet.objects.create(name="Chalet", address="1 rue des Alpes")
-    chalet.owners.add(accountless_person)
+    place = Place.objects.create(name="Place", address="1 rue des Alpes")
+    place.owners.add(accountless_person)
     merge_persons(person, accountless_person)
-    assert person in chalet.owners.all()
+    assert person in place.owners.all()
 
 
 @pytest.mark.django_db

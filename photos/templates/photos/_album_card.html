@@ -1,5 +1,6 @@
 {% load photos_extras %}
 {% load icons %}
+{% load i18n %}
 {% if album|can_access:request.user %}
     <a href="{% url 'album-detail' album.pk %}" class="fb-card fb-card--link fb-place-card">
         {% if album.cover %}
@@ -22,7 +23,7 @@
         <span class="fb-place-card__body">
             <span class="fb-place-card__name">{% icon "lock" size=16 %} {{ album.title }}</span>
             <span class="fb-chip fb-chip--lock">
-                Réservé au groupe{{ album|effective_groups|length|pluralize }} :
+                {% translate "Réservé au groupe" %}{{ album|effective_groups|length|pluralize }} :
                 {% for g in album|effective_groups %}{{ g.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
             </span>
         </span>

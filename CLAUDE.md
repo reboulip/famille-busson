@@ -32,7 +32,7 @@
 > Access the profile from a user instance via `user.profile`.*
 
 ## 3. Project Structure
-- **Root / settings app:** `famille_busson`
+- **Root / settings app:** `config`
 - **Functional Apps:**
     - `annuaire`: users (`Account`), profiles (`Person`), family relations (`Relation`),
       chalets (`Chalet`), and presences (`PresencePSV`)

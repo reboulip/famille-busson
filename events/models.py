@@ -3,6 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models.functions import Coalesce
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from annuaire.models import Person
 
@@ -41,32 +42,32 @@ class EventManager(models.Manager):
 
 
 class Event(models.Model):
-    title = models.CharField(max_length=200, verbose_name="Titre")
-    description = models.TextField(blank=True, default="", verbose_name="Description")
-    start = models.DateTimeField(verbose_name="Début")
+    title = models.CharField(max_length=200, verbose_name=_("Titre"))
+    description = models.TextField(blank=True, default="", verbose_name=_("Description"))
+    start = models.DateTimeField(verbose_name=_("Début"))
     # Inclusive -- the last moment the event is happening. Defaults to `start`
     # on save() (see below), so every consumer can rely on it never being NULL.
-    end = models.DateTimeField(null=True, blank=True, verbose_name="Fin")
-    all_day = models.BooleanField(default=False, verbose_name="Journée entière")
-    # Free-text only -- reuses the address picker/geocoding, same as Chalet.
-    # No optional Chalet FK (resolved decision, see sprint-brief.md).
-    location = models.CharField(max_length=255, blank=True, default="", verbose_name="Lieu")
+    end = models.DateTimeField(null=True, blank=True, verbose_name=_("Fin"))
+    all_day = models.BooleanField(default=False, verbose_name=_("Journée entière"))
+    # Free-text only -- reuses the address picker/geocoding, same as Place.
+    # No optional Place FK (resolved decision, see sprint-brief.md).
+    location = models.CharField(max_length=255, blank=True, default="", verbose_name=_("Lieu"))
     # Field names are load-bearing: AddressAutocompleteInput hardcodes
     # data-lat-target="id_latitude" / data-lon-target="id_longitude".
-    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name="Latitude")
-    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name="Longitude")
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_("Latitude"))
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True, verbose_name=_("Longitude"))
     organisers = models.ManyToManyField(
         Person,
         blank=True,
         related_name="organised_events",
-        verbose_name="Organisateurs·rices",
+        verbose_name=_("Organisateurs·rices"),
     )
     groups = models.ManyToManyField(
         Group,
         through="EventGroupAccess",
         blank=True,
         related_name="events",
-        verbose_name="Groupes autorisés",
+        verbose_name=_("Groupes autorisés"),
     )
     created_by = models.ForeignKey(
         Person,
@@ -74,21 +75,21 @@ class Event(models.Model):
         null=True,
         blank=True,
         related_name="created_events",
-        verbose_name="Créé par",
+        verbose_name=_("Créé par"),
     )
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Date de création"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Dernière modification"))
     # Reserved for 12.3 (event reminders) -- declared here so that item needs no
     # `events` migration of its own and can never collide with 12.2's Rsvp
     # migration. Never exposed on a form (editable=False).
-    reminder_sent_at = models.DateTimeField(null=True, blank=True, editable=False, verbose_name="Rappel envoyé le")
+    reminder_sent_at = models.DateTimeField(null=True, blank=True, editable=False, verbose_name=_("Rappel envoyé le"))
 
     objects = EventManager()
 
     class Meta:
         ordering = ["start", "pk"]
-        verbose_name = "Événement"
-        verbose_name_plural = "Événements"
+        verbose_name = _("Événement")
+        verbose_name_plural = _("Événements")
 
     def __str__(self):
         return self.title
@@ -105,16 +106,16 @@ class Event(models.Model):
 
     def clean(self):
         if self.end is not None and self.start is not None and self.end < self.start:
-            raise ValidationError({"end": "La date de fin doit être postérieure à la date de début."})
+            raise ValidationError({"end": _("La date de fin doit être postérieure à la date de début.")})
 
 
 class EventGroupAccess(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name="Événement")
-    group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name="Groupe")
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, verbose_name=_("Événement"))
+    group = models.ForeignKey(Group, on_delete=models.PROTECT, verbose_name=_("Groupe"))
 
     class Meta:
-        verbose_name = "Accès groupe à événement"
-        verbose_name_plural = "Accès groupes à événements"
+        verbose_name = _("Accès groupe à événement")
+        verbose_name_plural = _("Accès groupes à événements")
         constraints = [
             models.UniqueConstraint(fields=["event", "group"], name="unique_event_group_access"),
         ]
@@ -124,25 +125,25 @@ class EventGroupAccess(models.Model):
 
 
 RSVP_CHOICES = [
-    ("yes", "Oui"),
-    ("no", "Non"),
-    ("maybe", "Peut-être"),
+    ("yes", _("Oui")),
+    ("no", _("Non")),
+    ("maybe", _("Peut-être")),
 ]
 
 
 class Rsvp(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="rsvps", verbose_name="Événement")
-    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="rsvps", verbose_name="Personne")
-    response = models.CharField(max_length=10, choices=RSVP_CHOICES, verbose_name="Réponse")
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name="rsvps", verbose_name=_("Événement"))
+    person = models.ForeignKey(Person, on_delete=models.CASCADE, related_name="rsvps", verbose_name=_("Personne"))
+    response = models.CharField(max_length=10, choices=RSVP_CHOICES, verbose_name=_("Réponse"))
     # Additional guests beyond the person themself -- not the total headcount.
-    guest_count = models.PositiveSmallIntegerField(default=0, verbose_name="Accompagnants")
-    note = models.CharField(max_length=255, blank=True, default="", verbose_name="Note")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Dernière modification")
+    guest_count = models.PositiveSmallIntegerField(default=0, verbose_name=_("Accompagnants"))
+    note = models.CharField(max_length=255, blank=True, default="", verbose_name=_("Note"))
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name=_("Date de création"))
+    updated_at = models.DateTimeField(auto_now=True, verbose_name=_("Dernière modification"))
 
     class Meta:
-        verbose_name = "Participation"
-        verbose_name_plural = "Participations"
+        verbose_name = _("Participation")
+        verbose_name_plural = _("Participations")
         constraints = [
             models.UniqueConstraint(fields=["event", "person"], name="unique_event_person_rsvp"),
         ]

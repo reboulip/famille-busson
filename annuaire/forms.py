@@ -1,3 +1,5 @@
+import re
+
 from django import forms
 from django.contrib.auth import authenticate, password_validation
 from django.contrib.auth.forms import AuthenticationForm
@@ -6,30 +8,36 @@ from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import UploadedFile
 from django.core.validators import validate_email
 from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
-from .models import Account, Chalet, Person, PresencePSV, Relation, Settings
+from .contrast import AA_NON_TEXT, AA_TEXT, contrast_ratio
+from .models import Account, Person, Place, Relation, Settings, SiteConfig, Stay
+from .theming import DEFAULT_THEME, THEMES
 from .widgets import MarkdownEditorWidget
 
 # Keep in sync with the client-side check in annuaire/_profile_photo_size_check.html.
 PROFILE_PHOTO_MAX_SIZE_MB = 5
+BRANDING_IMAGE_MAX_SIZE_MB = 2
+
+HEX_COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 
 # Base Adresse Nationale is authoritative for France; Photon (OpenStreetMap) is
 # queried server-side as a fallback for addresses BAN can't resolve -- see
 # annuaire/geocoding.py. Same OSM/ODbL attribution the carte already gives its
 # tiles (see annuaire/static/js/map_init.js).
-ADDRESS_HELP_TEXT = (
+ADDRESS_HELP_TEXT = _(
     "Suggestions : Base Adresse Nationale (data.gouv.fr) et, pour l'étranger, Photon (OpenStreetMap/ODbL)"
 )
 
 # Technical-necessity framing, per the project's standing precedent for
 # sensitive personal fields: explain why a place is collected, not just label
 # the input. Free text on purpose -- see the model field's comment.
-GENEALOGY_PLACE_HELP_TEXT = (
+GENEALOGY_PLACE_HELP_TEXT = _(
     "Utilisé pour les documents généalogiques (arbre, futur export vers d'autres logiciels de "
     "généalogie) ; laissez vide si ce lieu n'est pas connu."
 )
 
-EXPORT_PRIVACY_HELP_TEXT = (
+EXPORT_PRIVACY_HELP_TEXT = _(
     "Un export GEDCOM (pour Geneanet, MyHeritage, Gramps...) est destiné à quitter le site, "
     "potentiellement vers un service public. Par défaut, vos informations y sont masquées tant "
     "que vous êtes en vie. « Toujours masquer » s'applique aussi au carnet d'adresses Excel et "
@@ -117,8 +125,8 @@ class ProfileEditForm(forms.ModelForm):
         # FieldFile (untouched on this edit) or the "clear" checkbox's False both skip.
         if isinstance(photo, UploadedFile) and photo.size > max_bytes:
             raise ValidationError(
-                f"La photo est trop volumineuse ({photo.size / (1024 * 1024):.1f} Mo). "
-                f"Taille maximale : {PROFILE_PHOTO_MAX_SIZE_MB} Mo."
+                _("La photo est trop volumineuse (%(size)s Mo). Taille maximale : %(max)s Mo.")
+                % {"size": f"{photo.size / (1024 * 1024):.1f}", "max": PROFILE_PHOTO_MAX_SIZE_MB}
             )
         return photo
 
@@ -127,6 +135,101 @@ class FormSettings(forms.ModelForm):
     class Meta:
         model = Settings
         fields = ["notify_on_birthday", "notify_on_new_blog_post", "notify_on_event"]
+
+
+class FormSiteConfig(forms.ModelForm):
+    class Meta:
+        model = SiteConfig
+        fields = [
+            "site_name",
+            "wordmark",
+            "tagline",
+            "sender_address",
+            "feedback_url",
+            "place_label_singular",
+            "place_label_plural",
+            "timezone",
+            "default_language",
+            "theme",
+            "brand_primary_light",
+            "brand_primary_dark",
+            "brand_accent_light",
+            "brand_accent_dark",
+            "logo",
+            "favicon",
+        ]
+
+    def _clean_hex(self, field_name: str) -> str:
+        value = self.cleaned_data.get(field_name, "")
+        if not value:
+            return value
+        if not HEX_COLOR_RE.match(value):
+            raise ValidationError(_("Couleur invalide -- attendu un code hexadécimal, par exemple #9C4A22."))
+        return value.upper()
+
+    def _validate_contrast(self, field_name: str, *, role: str, surface: str, minimum: float):
+        """Reject a submitted colour that fails to clear `minimum` against the
+        named surface, unless it's blank (use the theme default) or matches the
+        theme's own default for this role -- the shipped palette is already
+        accepted design, not something a staff edit should be able to trip on."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return value
+        theme = THEMES.get(self.cleaned_data.get("theme") or DEFAULT_THEME, THEMES[DEFAULT_THEME])
+        default = getattr(theme, f"{role}_{'dark' if field_name.endswith('_dark') else 'light'}")
+        if value == default:
+            return value
+        surface_hex = getattr(theme, f"{surface}_{'dark' if field_name.endswith('_dark') else 'light'}")
+        ratio = contrast_ratio(value, surface_hex)
+        if ratio < minimum:
+            measured = f"{ratio:.1f}".replace(".", ",")
+            required = f"{minimum:g}".replace(".", ",")
+            usage = _("pour du texte") if minimum == AA_TEXT else _("pour un élément non textuel")
+            raise ValidationError(
+                _("Contraste %(measured)s:1 sur le fond %(surface)s -- il en faut %(required)s:1 %(usage)s.")
+                % {"measured": measured, "surface": surface, "required": required, "usage": usage}
+            )
+        return value
+
+    def clean_brand_primary_light(self):
+        value = self._clean_hex("brand_primary_light")
+        self.cleaned_data["brand_primary_light"] = value
+        self._validate_contrast("brand_primary_light", role="primary", surface="card", minimum=AA_TEXT)
+        return self._validate_contrast("brand_primary_light", role="primary", surface="parchment", minimum=AA_TEXT)
+
+    def clean_brand_primary_dark(self):
+        value = self._clean_hex("brand_primary_dark")
+        self.cleaned_data["brand_primary_dark"] = value
+        self._validate_contrast("brand_primary_dark", role="primary", surface="card", minimum=AA_TEXT)
+        return self._validate_contrast("brand_primary_dark", role="primary", surface="parchment", minimum=AA_TEXT)
+
+    def clean_brand_accent_light(self):
+        value = self._clean_hex("brand_accent_light")
+        self.cleaned_data["brand_accent_light"] = value
+        self._validate_contrast("brand_accent_light", role="accent", surface="card", minimum=AA_NON_TEXT)
+        return self._validate_contrast("brand_accent_light", role="accent", surface="parchment", minimum=AA_NON_TEXT)
+
+    def clean_brand_accent_dark(self):
+        value = self._clean_hex("brand_accent_dark")
+        self.cleaned_data["brand_accent_dark"] = value
+        self._validate_contrast("brand_accent_dark", role="accent", surface="card", minimum=AA_NON_TEXT)
+        return self._validate_contrast("brand_accent_dark", role="accent", surface="parchment", minimum=AA_NON_TEXT)
+
+    def _clean_branding_image(self, field_name: str):
+        image = self.cleaned_data.get(field_name)
+        max_bytes = BRANDING_IMAGE_MAX_SIZE_MB * 1024 * 1024
+        if isinstance(image, UploadedFile) and image.size > max_bytes:
+            raise ValidationError(
+                _("Le fichier est trop volumineux (%(size)s Mo). Taille maximale : %(max)s Mo.")
+                % {"size": f"{image.size / (1024 * 1024):.1f}", "max": BRANDING_IMAGE_MAX_SIZE_MB}
+            )
+        return image
+
+    def clean_logo(self):
+        return self._clean_branding_image("logo")
+
+    def clean_favicon(self):
+        return self._clean_branding_image("favicon")
 
 
 RelationEditFormSet = forms.inlineformset_factory(
@@ -138,8 +241,8 @@ class AddRelationForm(forms.ModelForm):
     person2 = forms.ModelChoiceField(
         queryset=Person.objects.all(),
         widget=forms.HiddenInput,
-        label="Personne",
-        error_messages={"required": "Choisissez une personne dans la recherche."},
+        label=_("Personne"),
+        error_messages={"required": _("Choisissez une personne dans la recherche.")},
     )
 
     class Meta:
@@ -162,7 +265,7 @@ class UpdateRelationForm(forms.ModelForm):
 
 
 class CustomAuthenticationForm(AuthenticationForm):
-    password = forms.CharField(label="Mot de passe", strip=False, widget=forms.PasswordInput)
+    password = forms.CharField(label=_("Mot de passe"), strip=False, widget=forms.PasswordInput)
 
     def clean(self):
         email = self.cleaned_data.get("username")
@@ -171,7 +274,7 @@ class CustomAuthenticationForm(AuthenticationForm):
         if email and password:
             self.user_cache = authenticate(self.request, email=email, password=password)
             if self.user_cache is None:
-                raise forms.ValidationError("Email ou mot de passe incorrect.")
+                raise forms.ValidationError(_("Email ou mot de passe incorrect."))
             else:
                 self.confirm_login_allowed(self.user_cache)
 
@@ -184,22 +287,25 @@ class CustomAuthenticationForm(AuthenticationForm):
 
 
 class SignupForm(forms.Form):
-    email = forms.EmailField(label="Email")
+    email = forms.EmailField(label=_("Email"))
     password = forms.CharField(
-        label="Mot de passe",
-        widget=forms.PasswordInput(attrs={"placeholder": "Ton mot de passe"}),
+        label=_("Mot de passe"),
+        widget=forms.PasswordInput(attrs={"placeholder": _("Ton mot de passe")}),
         strip=False,
     )
     password_confirm = forms.CharField(
-        label="Confirmez le mot de passe",
-        widget=forms.PasswordInput(attrs={"placeholder": "Confirme ton mot de passe"}),
+        label=_("Confirmez le mot de passe"),
+        widget=forms.PasswordInput(attrs={"placeholder": _("Confirme ton mot de passe")}),
         strip=False,
+    )
+    accept_privacy_notice = forms.BooleanField(
+        required=True, label=_("J'ai lu et j'accepte la politique de confidentialité")
     )
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if Account.objects.filter(email=email).exists():
-            raise forms.ValidationError("Un compte avec cet email existe déjà.")
+            raise forms.ValidationError(_("Un compte avec cet email existe déjà."))
         return email
 
     def clean_password(self):
@@ -215,29 +321,29 @@ class SignupForm(forms.Form):
 
         if password and password_confirm:
             if password != password_confirm:
-                raise forms.ValidationError("Les mots de passe ne correspondent pas.")
+                raise forms.ValidationError(_("Les mots de passe ne correspondent pas."))
         return cleaned_data
 
 
-class AddPresenceForm(forms.Form):
+class AddStayForm(forms.Form):
     persons = forms.ModelMultipleChoiceField(
         queryset=Person.objects.all().order_by("last_name", "first_name"),
-        label="Personnes",
+        label=_("Personnes"),
         widget=forms.MultipleHiddenInput,
     )
     start_date = forms.DateField(
-        label="Date d'arrivée",
+        label=_("Date d'arrivée"),
         widget=forms.DateInput(attrs={"type": "date"}),
     )
     end_date = forms.DateField(
-        label="Date de départ",
+        label=_("Date de départ"),
         widget=forms.DateInput(attrs={"type": "date"}),
     )
 
 
-class PresenceForm(forms.ModelForm):
+class StayForm(forms.ModelForm):
     class Meta:
-        model = PresencePSV
+        model = Stay
         fields = ["person", "start_date", "end_date"]
         widgets = {
             "start_date": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
@@ -245,9 +351,9 @@ class PresenceForm(forms.ModelForm):
         }
 
 
-class ChaletForm(forms.ModelForm):
+class PlaceForm(forms.ModelForm):
     class Meta:
-        model = Chalet
+        model = Place
         fields = ["name", "address", "latitude", "longitude", "photo", "owners"]
         widgets = {
             "address": AddressAutocompleteInput,
@@ -266,9 +372,9 @@ class ChaletForm(forms.ModelForm):
             self.fields["owners"].initial = [current_person.pk]
 
 
-class ChaletUpdateForm(forms.ModelForm):
+class PlaceUpdateForm(forms.ModelForm):
     class Meta:
-        model = Chalet
+        model = Place
         fields = ["name", "address", "latitude", "longitude", "photo"]
         widgets = {
             "address": AddressAutocompleteInput,
@@ -288,16 +394,16 @@ class GroupForm(forms.ModelForm):
 
 class BulkAccountCreateForm(forms.Form):
     emails = forms.CharField(
-        label="Adresses email",
-        widget=forms.Textarea(attrs={"rows": 8, "placeholder": "Une adresse email par ligne"}),
-        help_text="Entrez une adresse email par ligne.",
+        label=_("Adresses email"),
+        widget=forms.Textarea(attrs={"rows": 8, "placeholder": _("Une adresse email par ligne")}),
+        help_text=_("Entrez une adresse email par ligne."),
     )
 
     def clean_emails(self):
         raw = self.cleaned_data.get("emails", "")
         lines = [line.strip() for line in raw.splitlines() if line.strip()]
         if not lines:
-            raise forms.ValidationError("Veuillez saisir au moins une adresse email.")
+            raise forms.ValidationError(_("Veuillez saisir au moins une adresse email."))
         errors = []
         valid = []
         for line in lines:
@@ -305,7 +411,7 @@ class BulkAccountCreateForm(forms.Form):
                 validate_email(line)
                 valid.append(line)
             except ValidationError:
-                errors.append(f"« {line} » n'est pas une adresse email valide.")
+                errors.append(_("« %(email)s » n'est pas une adresse email valide.") % {"email": line})
         if errors:
             raise forms.ValidationError(errors)
         return valid
@@ -313,12 +419,12 @@ class BulkAccountCreateForm(forms.Form):
 
 class ForcedPasswordChangeForm(forms.Form):
     new_password = forms.CharField(
-        label="Nouveau mot de passe",
+        label=_("Nouveau mot de passe"),
         strip=False,
         widget=forms.PasswordInput,
     )
     new_password_confirm = forms.CharField(
-        label="Confirmez le nouveau mot de passe",
+        label=_("Confirmez le nouveau mot de passe"),
         strip=False,
         widget=forms.PasswordInput,
     )
@@ -337,5 +443,5 @@ class ForcedPasswordChangeForm(forms.Form):
         p1 = cleaned_data.get("new_password")
         p2 = cleaned_data.get("new_password_confirm")
         if p1 and p2 and p1 != p2:
-            raise forms.ValidationError("Les mots de passe ne correspondent pas.")
+            raise forms.ValidationError(_("Les mots de passe ne correspondent pas."))
         return cleaned_data

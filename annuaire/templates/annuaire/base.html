@@ -1,11 +1,13 @@
 {% load static %}
 {% load icons %}
+{% load i18n %}
 <!DOCTYPE html>
-<html lang="fr">
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Famille Busson{% endblock title %}</title>
+    <title>{% block title %}{{ site_config.site_name }}{% endblock title %}</title>
     <meta name="color-scheme" content="light dark">
     {% comment %}
         Applied before the stylesheets paint, or the page flashes Alpenglow on
@@ -20,7 +22,7 @@
             }
         } catch (e) { /* private mode / storage blocked — fall back to the OS preference */ }
     </script>
-    <link rel="icon" type="image/svg+xml" href="{% static 'favicon.svg' %}">
+    <link rel="icon" href="{% if site_config.favicon %}{{ site_config.favicon.url }}?v={{ site_config.updated_at|date:'U' }}{% else %}{% static 'favicon.svg' %}{% endif %}">
     {% comment %}
         Load order matters: bootstrap first so tokens.css can re-point its
         --bs-* variables, then our components, then any per-page vendor CSS,
@@ -29,6 +31,7 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
     <link rel="stylesheet" href="{% static 'css/tokens.css' %}">
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    {% if brand_css_overrides %}<style>{{ brand_css_overrides|safe }}</style>{% endif %}
     {% block vendor_css %}{% endblock vendor_css %}
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     {% block extra_css %}{% endblock extra_css %}
@@ -37,10 +40,10 @@
     <header class="fb-topbar">
         <button class="fb-btn fb-btn--ghost" type="button"
                 data-bs-toggle="offcanvas" data-bs-target="#sidebarNav"
-                aria-controls="sidebarNav" aria-label="Ouvrir le menu">
+                aria-controls="sidebarNav" aria-label="{% translate 'Ouvrir le menu' %}">
             {% icon "menu" size=22 %}
         </button>
-        <span class="fb-wordmark">Famille Busson</span>
+        <span class="fb-wordmark">{{ site_config.wordmark|default:site_config.site_name }}</span>
         {% if user.is_authenticated %}
             {% include "annuaire/_search_form.html" with input_id="global-search-input-topbar" %}
         {% endif %}
@@ -49,17 +52,17 @@
     <div class="fb-layout">
         <div class="offcanvas-lg offcanvas-start fb-sidebar-host" tabindex="-1" id="sidebarNav">
             <div class="offcanvas-header">
-                <h5 class="offcanvas-title">Menu</h5>
+                <h5 class="offcanvas-title">{% translate "Menu" %}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
-                        data-bs-target="#sidebarNav" aria-label="Fermer"></button>
+                        data-bs-target="#sidebarNav" aria-label="{% translate 'Fermer' %}"></button>
             </div>
             <div class="offcanvas-body">
                 {% with un=request.resolver_match.url_name %}
                 <aside class="fb-sidebar">
 
                     {# Brand block — the email header, transplanted. #}
-                    <a class="fb-brand" href="{% url 'home' %}" aria-label="Accueil — Famille Busson">
-                        <span class="fb-brand__name"><span class="fb-wordmark">Famille Busson</span></span>
+                    <a class="fb-brand" href="{% url 'home' %}" aria-label="{% blocktranslate trimmed with site_name=site_config.site_name %}Accueil — {{ site_name }}{% endblocktranslate %}">
+                        <span class="fb-brand__name"><span class="fb-wordmark">{{ site_config.wordmark|default:site_config.site_name }}</span></span>
                         <span class="fb-brand__spacer"></span>
                         {% include "annuaire/_ridge.html" %}
                     </a>
@@ -71,12 +74,12 @@
                                  alt="">
                             <span class="fb-identity__text">
                                 <span class="fb-identity__name">{{ user.profile|default:user.email }}</span>
-                                <span class="fb-identity__role">Mon profil</span>
+                                <span class="fb-identity__role">{% translate "Mon profil" %}</span>
                             </span>
                         </a>
                     {% endif %}
 
-                    <nav class="fb-nav" aria-label="Navigation principale">
+                    <nav class="fb-nav" aria-label="{% translate 'Navigation principale' %}">
                         {% comment %}
                             Everything below Aide is login-required. Showing it to a
                             logged-out visitor (the help page is public and linked from
@@ -88,66 +91,51 @@
 
                         <div class="fb-nav__group">
                             <ul>
-                                <li><a href="{% url 'home' %}" {% if un == 'home' %}aria-current="page"{% endif %}>Accueil</a></li>
-                                <li><a href="{% url 'activity-feed' %}" {% if un == 'activity-feed' %}aria-current="page"{% endif %}>Quoi de neuf</a></li>
-                                <li><a href="{% url 'calendrier' %}" {% if un == 'calendrier' %}aria-current="page"{% endif %}>Calendrier</a></li>
+                                <li><a href="{% url 'home' %}" {% if un == 'home' %}aria-current="page"{% endif %}>{% translate "Accueil" %}</a></li>
+                                <li><a href="{% url 'activity-feed' %}" {% if un == 'activity-feed' %}aria-current="page"{% endif %}>{% translate "Quoi de neuf" %}</a></li>
+                                <li><a href="{% url 'calendrier' %}" {% if un == 'calendrier' %}aria-current="page"{% endif %}>{% translate "Calendrier" %}</a></li>
+                                <li><a href="{% url 'event-list' %}" {% if un == 'event-list' or un == 'event-detail' %}aria-current="page"{% endif %}>{% translate "Tous les événements" %}</a></li>
                             </ul>
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Les Busson</p>
+                            <p class="fb-eyebrow fb-nav__label">{{ site_config.site_name }}</p>
                             <ul>
-                                <li><a href="{% url 'directory' %}" {% if un == 'directory' or un == 'personne-detail' or un == 'person-create' %}aria-current="page"{% endif %}>Annuaire</a></li>
-                                <li><a href="{% url 'genealogie' %}" {% if un == 'genealogie' or un == 'genealogie-person' %}aria-current="page"{% endif %}>Généalogie</a></li>
-                                <li><a href="{% url 'carte' %}" {% if un == 'carte' %}aria-current="page"{% endif %}>Carte</a></li>
-                                <li><a href="{% url 'chalet-list' %}" {% if un == 'chalet-list' or un == 'chalet-detail' %}aria-current="page"{% endif %}>Chalets et Présences</a></li>
+                                <li><a href="{% url 'directory' %}" {% if un == 'directory' or un == 'personne-detail' or un == 'person-create' %}aria-current="page"{% endif %}>{% translate "Annuaire" %}</a></li>
+                                <li><a href="{% url 'genealogie' %}" {% if un == 'genealogie' or un == 'genealogie-person' %}aria-current="page"{% endif %}>{% translate "Généalogie" %}</a></li>
+                                <li><a href="{% url 'carte' %}" {% if un == 'carte' %}aria-current="page"{% endif %}>{% translate "Carte" %}</a></li>
+                                <li><a href="{% url 'place-list' %}" {% if un == 'place-list' or un == 'place-detail' %}aria-current="page"{% endif %}>{% blocktranslate with label=site_config.place_label_plural_display %}{{ label }} et Présences{% endblocktranslate %}</a></li>
                             </ul>
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Événements</p>
+                            <p class="fb-eyebrow fb-nav__label">{% translate "Publications" %}</p>
                             <ul>
-                                <li><a href="{% url 'event-list' %}" {% if un == 'event-list' or un == 'event-detail' %}aria-current="page"{% endif %}>Tous les événements</a></li>
+                                <li><a href="{% url 'blogpost-list' %}" {% if un == 'blogpost-list' or un == 'blogpost-detail' %}aria-current="page"{% endif %}>{% translate "Toutes les publications" %}</a></li>
                             </ul>
                         </div>
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Photothèque</p>
+                            <p class="fb-eyebrow fb-nav__label">{% translate "Documents et photos" %}</p>
                             <ul>
-                                <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>Tous les albums</a></li>
-                            </ul>
-                        </div>
-
-                        <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Publications</p>
-                            <ul>
-                                <li><a href="{% url 'blogpost-list' %}" {% if un == 'blogpost-list' or un == 'blogpost-detail' %}aria-current="page"{% endif %}>Toutes les publications</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="{% url 'blogpost-create' %}" {% if un == 'blogpost-create' %}aria-current="page"{% endif %}>Nouvelle publication</a></li>
-                                {% endif %}
-                            </ul>
-                        </div>
-
-                        <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Documents</p>
-                            <ul>
-                                <li><a href="{% url 'document-list' %}" {% if un == 'document-list' or un == 'document-detail' %}aria-current="page"{% endif %}>Tous les documents</a></li>
-                                <li><a href="{% url 'category-list' %}" {% if un == 'category-list' or un == 'category-detail' %}aria-current="page"{% endif %}>Catégories</a></li>
-                                {% if user.is_authenticated %}
-                                    <li><a href="{% url 'document-create' %}" {% if un == 'document-create' %}aria-current="page"{% endif %}>Nouveau document</a></li>
-                                {% endif %}
+                                <li><a href="{% url 'document-list' %}" {% if un == 'document-list' or un == 'document-detail' %}aria-current="page"{% endif %}>{% translate "Tous les documents" %}</a></li>
+                                <li><a href="{% url 'category-list' %}" {% if un == 'category-list' or un == 'category-detail' %}aria-current="page"{% endif %}>{% translate "Catégories" %}</a></li>
+                                <li><a href="{% url 'album-list' %}" {% if un == 'album-list' or un == 'album-detail' %}aria-current="page"{% endif %}>{% translate "Tous les albums" %}</a></li>
                             </ul>
                         </div>
 
                         {% if user.is_staff %}
                             <div class="fb-nav__group">
-                                <p class="fb-eyebrow fb-nav__label">Administration</p>
+                                <p class="fb-eyebrow fb-nav__label">{% translate "Administration" %}</p>
                                 <ul>
-                                    <li><a href="{% url 'bulk-account-create' %}" {% if un == 'bulk-account-create' %}aria-current="page"{% endif %}>Créer des comptes</a></li>
-                                    <li><a href="{% url 'group-list' %}" {% if un == 'group-list' %}aria-current="page"{% endif %}>Groupes</a></li>
-                                    <li><a href="{% url 'person-duplicate-list' %}" {% if un == 'person-duplicate-list' %}aria-current="page"{% endif %}>Doublons potentiels</a></li>
-                                    <li><a href="{% url 'gedcom-import-upload' %}" {% if un == 'gedcom-import-upload' %}aria-current="page"{% endif %}>Importer un GEDCOM</a></li>
-                                    <li><a href="{% url 'admin:index' %}">Console d'admin</a></li>
+                                    <li><a href="{% url 'bulk-account-create' %}" {% if un == 'bulk-account-create' %}aria-current="page"{% endif %}>{% translate "Créer des comptes" %}</a></li>
+                                    <li><a href="{% url 'group-list' %}" {% if un == 'group-list' %}aria-current="page"{% endif %}>{% translate "Groupes" %}</a></li>
+                                    <li><a href="{% url 'person-duplicate-list' %}" {% if un == 'person-duplicate-list' %}aria-current="page"{% endif %}>{% translate "Doublons potentiels" %}</a></li>
+                                    <li><a href="{% url 'gedcom-import-upload' %}" {% if un == 'gedcom-import-upload' %}aria-current="page"{% endif %}>{% translate "Importer un GEDCOM" %}</a></li>
+                                    <li><a href="{% url 'audit-log-list' %}" {% if un == 'audit-log-list' %}aria-current="page"{% endif %}>{% translate "Journal d'audit" %}</a></li>
+                                    <li><a href="{% url 'corbeille-list' %}" {% if un == 'corbeille-list' %}aria-current="page"{% endif %}>{% translate "Corbeille" %}</a></li>
+                                    <li><a href="{% url 'site-config' %}" {% if un == 'site-config' %}aria-current="page"{% endif %}>{% translate "Configuration" %}</a></li>
+                                    <li><a href="{% url 'admin:index' %}">{% translate "Console d'admin" %}</a></li>
                                 </ul>
                             </div>
                         {% endif %}
@@ -155,17 +143,30 @@
                         {% endif %}
 
                         <div class="fb-nav__group">
-                            <p class="fb-eyebrow fb-nav__label">Aide</p>
+                            <p class="fb-eyebrow fb-nav__label">{% translate "Aide" %}</p>
                             <ul>
-                                <li><a href="{% url 'magic-link-help' %}" {% if un == 'magic-link-help' %}aria-current="page"{% endif %}>Comment fonctionne la connexion par lien ?</a></li>
-                                <li><a href="https://github.com/reboulip/famille-busson/issues/new" target="_blank" rel="noopener">Signaler un bug ou proposer une évolution</a></li>
+                                <li><a href="{% url 'magic-link-help' %}" {% if un == 'magic-link-help' %}aria-current="page"{% endif %}>{% translate "Comment fonctionne la connexion par lien ?" %}</a></li>
+                                <li><a href="{% url 'privacy-notice' %}" {% if un == 'privacy-notice' %}aria-current="page"{% endif %}>{% translate "Politique de confidentialité" %}</a></li>
+                                {% if site_config.feedback_url %}
+                                    <li><a href="{{ site_config.feedback_url }}" target="_blank" rel="noopener">{% translate "Signaler un bug ou proposer une évolution" %}</a></li>
+                                {% endif %}
                             </ul>
                         </div>
 
                     </nav>
                     <div class="fb-nav__foot">
+                        {% get_current_language as LANGUAGE_CODE %}
+                        <form method="post" action="{% url 'set-language' %}" class="fb-nav__lang-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                            <input type="hidden" name="language" value="{% if LANGUAGE_CODE == 'fr' %}en{% else %}fr{% endif %}">
+                            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm"
+                                    aria-label="{% translate 'Changer de langue' %}">
+                                {% if LANGUAGE_CODE == 'fr' %}EN{% else %}FR{% endif %}
+                            </button>
+                        </form>
                         <button type="button" class="fb-btn fb-btn--ghost fb-btn--sm" data-theme-toggle
-                                aria-label="Changer de thème">
+                                aria-label="{% translate 'Changer de thème' %}">
                             <span data-theme-icon>{% icon "moon" size=16 %}</span>
                             <span data-theme-label>Nightfall</span>
                         </button>
@@ -173,11 +174,11 @@
                             <form method="post" action="{% url 'logout' %}" class="fb-nav__logout-form">
                                 {% csrf_token %}
                                 <button type="submit" class="fb-btn fb-btn--ghost fb-btn--sm">
-                                    {% icon "logout" size=16 %} Déconnexion
+                                    {% icon "logout" size=16 %} {% translate "Déconnexion" %}
                                 </button>
                             </form>
                         {% else %}
-                            <a class="fb-btn fb-btn--ghost fb-btn--sm" href="{% url 'login' %}">Se connecter</a>
+                            <a class="fb-btn fb-btn--ghost fb-btn--sm" href="{% url 'login' %}">{% translate "Se connecter" %}</a>
                         {% endif %}
                     </div>
                 </aside>
@@ -194,12 +195,27 @@
                         {% endfor %}
                     </div>
                 {% endif %}
+                {% if show_privacy_notice_banner %}
+                    <div class="fb-alert fb-alert--info">
+                        <span>
+                            {% blocktranslate trimmed %}
+                            La politique de confidentialité a été mise à jour.
+                            {% endblocktranslate %}
+                            <a href="{% url 'privacy-notice' %}">{% translate "Consultez-la" %}</a>.
+                        </span>
+                        <form method="post" action="{% url 'privacy-notice-accept' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "J'ai lu et j'accepte" %}</button>
+                        </form>
+                    </div>
+                {% endif %}
                 {% block content %}{% endblock content %}
                 {% if site_version %}<footer class="fb-footer">v{{ site_version }}</footer>{% endif %}
             </div>
         </main>
     </div>
 
+    <script src="{% url 'javascript-catalog' %}"></script>
     <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'js/theme_toggle.js' %}"></script>
     {% block extra_js %}{% endblock extra_js %}

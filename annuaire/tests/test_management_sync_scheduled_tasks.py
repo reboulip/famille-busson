@@ -37,6 +37,15 @@ def test_schedules_point_at_the_right_callables():
 
 
 @pytest.mark.django_db
+def test_creates_purge_expired_trash_schedule():
+    call_command("sync_scheduled_tasks")
+
+    purge = Schedule.objects.get(name="purge_expired_trash")
+    assert purge.func == "annuaire.tasks.purge_expired_trash"
+    assert purge.schedule_type == Schedule.DAILY
+
+
+@pytest.mark.django_db
 def test_running_it_twice_does_not_duplicate_schedules():
     call_command("sync_scheduled_tasks")
     call_command("sync_scheduled_tasks")

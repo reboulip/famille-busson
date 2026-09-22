@@ -71,7 +71,13 @@ looks_like_production() {
     case "$PROJECT" in
         *prod*) return 0 ;;
     esac
-    if [ -f "$COMPOSE_FILE" ] && grep -q '/srv/bubu/data' "$COMPOSE_FILE"; then
+    # Deliberately broad: catches any /srv/-rooted host bind mount, not just the
+    # literal /srv/bubu/data -- 16.6 parameterizes docker-compose.prod.yml's bind
+    # mounts as ${DATA_ROOT:-/srv/bubu/data}, and a renamed DATA_ROOT default (or a
+    # hand-edited compose file for another deployment) must still trip this. A false
+    # positive here just costs an extra --yes-i-mean-production; a false negative
+    # could overwrite a live database.
+    if [ -f "$COMPOSE_FILE" ] && grep -q '/srv/' "$COMPOSE_FILE"; then
         return 0
     fi
     return 1

@@ -1,0 +1,20 @@
+{% extends "annuaire/base.html" %}
+{% load i18n %}
+{% block content %}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{{ site_config.place_label_plural_display }}</p>
+            <h1>{% translate "Modifier la présence" %}</h1>
+            <p class="fb-page-head__lede">{{ object.person }} — {{ object.place }}</p>
+        </div>
+    </div>
+
+    <form method="post" class="fb-form fb-card presence-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Enregistrer" %}</button>
+            <a href="{% url 'place-detail' view.kwargs.pk %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
+        </div>
+    </form>
+{% endblock content %}

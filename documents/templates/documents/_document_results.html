@@ -1,18 +1,21 @@
+{% load i18n %}
 <div>
     {% for document in documents %}
         {% include "documents/_document_card.html" %}
     {% empty %}
-        {% include "annuaire/_empty.html" with title="Aucun document trouvé" body="Essayez un autre terme, ou changez de catégorie." %}
+        {% translate "Aucun document trouvé" as no_documents_title %}
+        {% translate "Essayez un autre terme, ou changez de catégorie." as no_documents_body %}
+        {% include "annuaire/_empty.html" with title=no_documents_title body=no_documents_body %}
     {% endfor %}
 </div>
 {% if is_paginated %}
     <nav class="fb-pagination pagination">
         {% if page_obj.has_previous %}
-            <a href="{% querystring page=page_obj.previous_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+            <a href="{% querystring page=page_obj.previous_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; {% translate "Précédent" %}</a>
         {% endif %}
-        <span>Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        <span>{% blocktranslate trimmed with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} / {{ pages }}{% endblocktranslate %}</span>
         {% if page_obj.has_next %}
-            <a href="{% querystring page=page_obj.next_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+            <a href="{% querystring page=page_obj.next_page_number %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivant" %} &rarr;</a>
         {% endif %}
     </nav>
 {% endif %}

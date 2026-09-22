@@ -1,7 +1,7 @@
-"""Serialize Person/Chalet records into map marker groups for carte.html.
+"""Serialize Person/Place records into map marker groups for carte.html.
 
 Records sharing (near-)identical coordinates are grouped into a single marker so
-the map shows one pin per address instead of one per person/chalet. See
+the map shows one pin per address instead of one per person/place. See
 docs/data_model.md for the underlying models.
 """
 
@@ -13,20 +13,20 @@ from decimal import Decimal
 from django.templatetags.static import static
 from django.urls import reverse
 
-from .models import Chalet, Person
+from .models import Person, Place
 
 # ~1.1m precision -- distinguishes separate buildings while absorbing geocoder
 # jitter (different providers can return the same address with coordinates that
 # differ in the 5th/6th decimal).
 _QUANTIZE = Decimal("0.00001")
 
-# Chalets without a photo carry this sentinel instead of an image URL (there's no
-# default chalet photo asset the way there is a default person avatar) -- map_init.js
+# Places without a photo carry this sentinel instead of an image URL (there's no
+# default place photo asset the way there is a default person avatar) -- map_init.js
 # draws the ridge mark for it, the same placeholder used everywhere else in the app.
 # Was "emoji::🏔️" until the Alpenglow design pass: an emoji renders as a tofu box on
 # any system without an emoji font, and cannot follow the theme's colours.
 PLACEHOLDER_PREFIX = "placeholder::"
-CHALET_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}chalet"
+PLACE_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}place"
 # Keep this suffix in sync with map_init.js's own PLACEHOLDER_PREFIX branch --
 # both files carry a comment saying so.
 EVENT_PLACEHOLDER = f"{PLACEHOLDER_PREFIX}event"
@@ -72,21 +72,21 @@ def build_person_map_groups() -> list[dict]:
     )
 
 
-def build_chalet_map_groups() -> list[dict]:
-    chalets = Chalet.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("name", "pk")
+def build_place_map_groups() -> list[dict]:
+    places = Place.objects.exclude(latitude__isnull=True).exclude(longitude__isnull=True).order_by("name", "pk")
     return _group_by_coordinates(
-        chalets,
-        key_func=lambda chalet: (_quantize(chalet.latitude), _quantize(chalet.longitude)),
-        entry_func=lambda chalet: {
-            "name": chalet.name,
-            "url": reverse("chalet-detail", kwargs={"pk": chalet.pk}),
-            "avatar": chalet.photo.url if chalet.photo else CHALET_PLACEHOLDER,
+        places,
+        key_func=lambda place: (_quantize(place.latitude), _quantize(place.longitude)),
+        entry_func=lambda place: {
+            "name": place.name,
+            "url": reverse("place-detail", kwargs={"pk": place.pk}),
+            "avatar": place.photo.url if place.photo else PLACE_PLACEHOLDER,
         },
     )
 
 
 def build_event_map_groups(user) -> list[dict]:
-    """Unlike persons/chalets, events are access-restricted -- takes `user` and
+    """Unlike persons/places, events are access-restricted -- takes `user` and
     scopes through events.access.accessible_events(), lazy-imported so
     `annuaire` gains no hard top-level dependency on `events`. Events with no
     geocoded coordinates (a free-text-only location the address picker never

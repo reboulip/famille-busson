@@ -18,43 +18,50 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, ProtectedError, Q
 from django.db.models.functions import Lower
-from django.http import HttpResponse, JsonResponse
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.cache import patch_vary_headers
 from django.utils.decorators import method_decorator
 from django.utils.encoding import force_bytes, force_str
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.http import url_has_allowed_host_and_scheme, urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.translation import get_supported_language_variant
+from django.utils.translation import gettext as _
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import CreateView, DeleteView, DetailView, FormView, ListView, TemplateView, UpdateView, View
 from django.views.static import serve as static_serve
 
 from . import emails
+from .anonymisation import anonymise_person
 from .email_utils import build_message, send_bulk_emails
 from .exports import build_export_rows, build_persons_workbook
 from .family_tree import build_family_chart_data, find_components
 from .forms import (
-    AddPresenceForm,
     AddRelationForm,
+    AddStayForm,
     BulkAccountCreateForm,
-    ChaletForm,
-    ChaletUpdateForm,
     CustomAuthenticationForm,
     ForcedPasswordChangeForm,
     FormSettings,
+    FormSiteConfig,
     GroupForm,
-    PresenceForm,
+    PlaceForm,
+    PlaceUpdateForm,
     ProfileEditForm,
     SignupForm,
+    StayForm,
     UpdateRelationForm,
 )
 from .geocoding import search_addresses
-from .map_data import build_chalet_map_groups, build_event_map_groups, build_person_map_groups
+from .map_data import build_event_map_groups, build_person_map_groups, build_place_map_groups
 from .markdown_utils import MAX_MARKDOWN_LENGTH, render_markdown
-from .models import Account, Chalet, Person, PresencePSV, Relation
+from .models import Account, AuditEvent, Person, Place, Relation, SiteConfig, Stay
 from .models import Settings as NotificationSettings
 from .person_merge import MERGE_SCALAR_FIELDS, find_duplicate_candidates, merge_persons
+from .personal_data import PERSONAL_DATA_CATEGORIES, build_personal_data_archive
+from .privacy_notice import record_acceptance
+from .site_config import get_site_config
 from .throttling import EmailRateLimitMixin
 from .tokens import magic_link_token_generator
 
@@ -62,6 +69,20 @@ from .tokens import magic_link_token_generator
 @login_required
 def media_serve(request, path):
     return static_serve(request, path, document_root=settings.MEDIA_ROOT)
+
+
+@login_not_required
+def branding_asset(request, kind):
+    """Public counterpart to media_serve: an anonymous visitor on the login
+    page must be able to see the configured logo/favicon, which /media/ (behind
+    LoginRequiredMiddleware) can't serve. Enumerates the public surface to
+    exactly these two SiteConfig fields -- no path-traversal window into the
+    rest of MEDIA_ROOT."""
+    config = get_site_config()
+    field_file = {"logo": config.logo, "favicon": config.favicon}.get(kind)
+    if not field_file:
+        raise Http404
+    return FileResponse(field_file.open("rb"))
 
 
 @login_required
@@ -78,10 +99,10 @@ def home(request):
     recent_persons = Person.objects.all().order_by("-pk")[:6]
     recent_posts = BlogPost.objects.prefetch_related("authors").order_by("-created_at")[:5]
     recent_comments = Comment.objects.select_related("post", "author").order_by("-created_at")[:5]
-    chalets = Chalet.objects.all().order_by("name")[:6]
+    places = Place.objects.all().order_by("name")[:6]
     today = datetime.date.today()
     upcoming_presences = (
-        PresencePSV.objects.filter(end_date__gte=today).select_related("person", "chalet").order_by("start_date")[:5]
+        Stay.objects.filter(end_date__gte=today).select_related("person", "place").order_by("start_date")[:5]
     )
     upcoming_events = accessible_events(request.user).upcoming(timezone.now()).order_by("start")[:5]
     return render(
@@ -91,7 +112,7 @@ def home(request):
             "recent_persons": recent_persons,
             "recent_posts": recent_posts,
             "recent_comments": recent_comments,
-            "chalets": chalets,
+            "places": places,
             "upcoming_presences": upcoming_presences,
             "upcoming_events": upcoming_events,
             "upcoming_birthdays": upcoming_birthdays(today),
@@ -165,15 +186,16 @@ class SignupView(EmailRateLimitMixin, FormView):
         password = form.cleaned_data.get("password")
 
         if not Person.objects.filter(email=email).exists():
-            messages.error(self.request, "Adresse email non reconnue, vous ne pouvez pas créer de compte.")
+            messages.error(self.request, _("Adresse email non reconnue, vous ne pouvez pas créer de compte."))
             return self.form_invalid(form)
         elif Account.objects.filter(email=email).exists():
-            messages.error(self.request, "Un compte avec cet email existe déjà.")
+            messages.error(self.request, _("Un compte avec cet email existe déjà."))
             return redirect("login")
         else:
             user = Account.objects.create_user(email=email)
             user.set_password(password)
             user.save()
+            record_acceptance(user)
             login(self.request, user)
             return super().form_valid(form)
 
@@ -184,20 +206,20 @@ def _build_password_reset_url(request, account):
     return request.build_absolute_uri(reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token}))
 
 
-def _account_setup_email_content(email, reset_url, is_reset):
+def _account_setup_email_content(email, reset_url, is_reset, language=None):
     """Kept as a thin wrapper over annuaire.emails.account_setup so callers (and the
     tests that assert on the copy) keep a (subject, text_body) pair to look at, while
     the message itself is built in one place with its HTML half."""
-    message = emails.account_setup(email, reset_url, is_reset)
+    message = emails.account_setup(email, reset_url, is_reset, language=language)
     return message.subject, message.text_body
 
 
-def _send_account_setup_email(request, email, reset_url, is_reset, connection=None):
+def _send_account_setup_email(request, email, reset_url, is_reset, connection=None, language=None):
     """Best-effort: one recipient's SMTP failure must not lose the others'
     accounts (already created) or hide their reset link (still shown on screen
     regardless -- see bulk_account_create.html)."""
     try:
-        build_message(emails.account_setup(email, reset_url, is_reset), connection=connection).send(
+        build_message(emails.account_setup(email, reset_url, is_reset, language=language), connection=connection).send(
             fail_silently=False
         )
         return True
@@ -241,7 +263,7 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         for acc in accounts:
             reset_url = _build_password_reset_url(request, acc)
             reset_urls[acc.email] = reset_url
-            subject, body = _account_setup_email_content(acc.email, reset_url, is_reset=False)
+            subject, body = _account_setup_email_content(acc.email, reset_url, is_reset=False, language=acc.language)
             messages_to_send.append((acc.email, subject, body))
 
         sent, failed = send_bulk_emails(messages_to_send)
@@ -259,12 +281,12 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         if failed:
             messages.error(
                 self.request,
-                "Échec de l'envoi de l'email pour : " + ", ".join(failed),
+                _("Échec de l'envoi de l'email pour : %(emails)s") % {"emails": ", ".join(failed)},
             )
         if accounts:
             messages.success(
                 self.request,
-                f"Lien d'invitation renvoyé pour {len(sent)} compte(s).",
+                _("Lien d'invitation renvoyé pour %(count)s compte(s).") % {"count": len(sent)},
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
@@ -304,7 +326,9 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
                     sent_since_reconnect = 0
 
                 reset_url = _build_password_reset_url(self.request, account)
-                email_sent = _send_account_setup_email(self.request, email, reset_url, is_reset, connection=connection)
+                email_sent = _send_account_setup_email(
+                    self.request, email, reset_url, is_reset, connection=connection, language=account.language
+                )
                 sent_since_reconnect += 1
                 if not email_sent:
                     failed_emails.append(email)
@@ -329,19 +353,21 @@ class BulkAccountCreateView(StaffRequiredMixin, FormView):
         if reset_emails:
             messages.warning(
                 self.request,
-                "Mot de passe réinitialisé pour : " + ", ".join(reset_emails),
+                _("Mot de passe réinitialisé pour : %(emails)s") % {"emails": ", ".join(reset_emails)},
             )
         if failed_emails:
             messages.error(
                 self.request,
-                "Échec de l'envoi de l'email pour : "
-                + ", ".join(failed_emails)
-                + " — communiquez le mot de passe temporaire manuellement.",
+                _(
+                    "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
+                    "temporaire manuellement."
+                )
+                % {"emails": ", ".join(failed_emails)},
             )
         if errored_emails:
             messages.error(
                 self.request,
-                "Échec de la création du compte pour : " + ", ".join(errored_emails),
+                _("Échec de la création du compte pour : %(emails)s") % {"emails": ", ".join(errored_emails)},
             )
 
         return self.render_to_response(self.get_context_data(form=BulkAccountCreateForm(), results=results))
@@ -370,6 +396,16 @@ class GroupUpdateView(StaffRequiredMixin, UpdateView):
     success_url = reverse_lazy("group-list")
 
 
+class SiteConfigUpdateView(StaffRequiredMixin, UpdateView):
+    model = SiteConfig
+    form_class = FormSiteConfig
+    template_name = "annuaire/site_config_form.html"
+    success_url = reverse_lazy("site-config")
+
+    def get_object(self, queryset=None):
+        return get_site_config()
+
+
 class GroupDeleteView(StaffRequiredMixin, DeleteView):
     model = Group
     template_name = "annuaire/group_confirm_delete.html"
@@ -394,16 +430,16 @@ class GroupDeleteView(StaffRequiredMixin, DeleteView):
             parts = []
             if blocked_by:
                 category_names = ", ".join(f"« {name} »" for name in blocked_by)
-                parts.append(f"les catégories {category_names}")
+                parts.append(_("les catégories %(names)s") % {"names": category_names})
             if blocked_by_albums:
                 album_names = ", ".join(f"« {name} »" for name in blocked_by_albums)
-                parts.append(f"les albums {album_names}")
+                parts.append(_("les albums %(names)s") % {"names": album_names})
             if blocked_by_events:
                 event_names = ", ".join(f"« {name} »" for name in blocked_by_events)
-                parts.append(f"les événements {event_names}")
+                parts.append(_("les événements %(names)s") % {"names": event_names})
             messages.error(
                 request,
-                f"Impossible de supprimer ce groupe : il est utilisé par {' et '.join(parts)}.",
+                _("Impossible de supprimer ce groupe : il est utilisé par %(parts)s.") % {"parts": " et ".join(parts)},
             )
             return self.get(request, *args, **kwargs)
 
@@ -517,7 +553,7 @@ class ForcedPasswordChangeView(LoginRequiredMixin, FormView):
         user.must_change_password = False
         user.save()
         update_session_auth_hash(self.request, user)
-        messages.success(self.request, "Votre mot de passe a été mis à jour.")
+        messages.success(self.request, _("Votre mot de passe a été mis à jour."))
         return _first_login_redirect(user)
 
     def form_invalid(self, form):
@@ -562,8 +598,16 @@ class AccountPasswordResetView(EmailRateLimitMixin, PasswordResetView):
     html_email_template_name = "annuaire/emails/password_reset.html"
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
-    extra_email_context = {"site_base_url": settings.SITE_BASE_URL.rstrip("/")}
     throttle_scope = "password-reset"
+
+    @property
+    def extra_email_context(self):
+        config = get_site_config()
+        return {
+            "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+            "site_name": config.site_name,
+            "wordmark": config.wordmark or config.site_name,
+        }
 
 
 class AccountPasswordResetDoneView(PasswordResetDoneView):
@@ -583,12 +627,16 @@ class MagicLinkRequestView(EmailRateLimitMixin, PasswordResetView):
     token_generator = magic_link_token_generator
     success_url = reverse_lazy("magic-link-sent")
     throttle_scope = "magic-link-request"
-    # settings.MAGIC_LINK_TIMEOUT is available at class-body eval time (Django's
-    # lazy settings object is already configured by the time views.py imports).
-    extra_email_context = {
-        "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
-        "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
-    }
+
+    @property
+    def extra_email_context(self):
+        config = get_site_config()
+        return {
+            "validity_minutes": settings.MAGIC_LINK_TIMEOUT // 60,
+            "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
+            "site_name": config.site_name,
+            "wordmark": config.wordmark or config.site_name,
+        }
 
 
 class MagicLinkSentView(PasswordResetDoneView):
@@ -665,6 +713,33 @@ class MagicLinkHelpView(TemplateView):
     template_name = "annuaire/help_magic_link.html"
 
 
+@method_decorator(login_not_required, name="dispatch")
+class PrivacyNoticeView(TemplateView):
+    """Public privacy notice (14.3) -- must be readable before signing up, so
+    it's linked from the sidebar's Aide section (unconditionally, like
+    MagicLinkHelpView above) rather than gated behind login."""
+
+    template_name = "annuaire/privacy_notice.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["categories"] = PERSONAL_DATA_CATEGORIES
+        context["controller_name"] = settings.PRIVACY_CONTROLLER_NAME
+        context["controller_contact"] = settings.PRIVACY_CONTROLLER_CONTACT
+        context["hosting_provider"] = settings.PRIVACY_HOSTING_PROVIDER
+        context["hosting_country"] = settings.PRIVACY_HOSTING_COUNTRY
+        context["retention_summary"] = settings.PRIVACY_RETENTION_SUMMARY
+        return context
+
+
+@login_required
+@require_POST
+def accept_privacy_notice(request):
+    record_acceptance(request.user)
+    messages.success(request, _("Merci, votre acceptation a été enregistrée."))
+    return redirect("home")
+
+
 class ProfileCreateView(LoginRequiredMixin, CreateView):
     model = Person
     form_class = ProfileEditForm
@@ -722,7 +797,7 @@ class PersonCreateView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant d'ajouter un membre de la famille.")
+            messages.error(request, _("Vous devez compléter votre profil avant d'ajouter un membre de la famille."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -768,7 +843,8 @@ class ProfileClaimView(LoginRequiredMixin, View):
             updated = Person.objects.filter(pk=person_pk, account__isnull=True).update(account=request.user)
             if not updated:
                 messages.error(
-                    request, "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà revendiqué."
+                    request,
+                    _("Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà revendiqué."),
                 )
                 return redirect("profile-claim")
             person = Person.objects.get(pk=person_pk)
@@ -843,10 +919,10 @@ class MapListView(LoginRequiredMixin, ListView):
         context["unresolved_persons"] = unresolved_persons
         context["unresolved_count"] = unresolved_persons.count()
         context["persons_json"] = json.dumps(build_person_map_groups())
-        context["unresolved_chalet_count"] = Chalet.objects.filter(
+        context["unresolved_place_count"] = Place.objects.filter(
             Q(latitude__isnull=True) | Q(longitude__isnull=True)
         ).count()
-        context["chalets_json"] = json.dumps(build_chalet_map_groups())
+        context["places_json"] = json.dumps(build_place_map_groups())
         context["events_json"] = json.dumps(build_event_map_groups(self.request.user))
         return context
 
@@ -908,6 +984,113 @@ def can_edit_person(user, person: Person) -> bool:
     if profile == person:
         return True
     return person.account_id is None and person.owners.filter(pk=profile.pk).exists()
+
+
+class AuditLogListView(StaffRequiredMixin, ListView):
+    model = AuditEvent
+    template_name = "annuaire/audit_event_list.html"
+    context_object_name = "events"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return AuditEvent.objects.select_related("content_type", "actor").order_by("-timestamp")
+
+
+# The corbeille's scope (14.5): publications, documents and photos only --
+# "personnes" is deliberately excluded, see sprint-brief.md. Restore/purge
+# dispatch is validated against this exact allowlist, never an arbitrary
+# app_label/model_name from the URL.
+CORBEILLE_MODELS: list[tuple[str, str]] = [
+    ("publications", "blogpost"),
+    ("documents", "document"),
+    ("photos", "album"),
+    ("photos", "photo"),
+]
+
+
+def _get_corbeille_model(app_label: str, model_name: str):
+    from django.apps import apps
+
+    if (app_label, model_name) not in CORBEILLE_MODELS:
+        raise Http404
+    return apps.get_model(app_label, model_name)
+
+
+class CorbeilleListView(StaffRequiredMixin, TemplateView):
+    template_name = "annuaire/corbeille_list.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        rows = []
+        for app_label, model_name in CORBEILLE_MODELS:
+            model = _get_corbeille_model(app_label, model_name)
+            for obj in model.all_objects.filter(deleted_at__isnull=False):
+                rows.append(
+                    {
+                        "app_label": app_label,
+                        "model_name": model_name,
+                        "object": obj,
+                        "label": model._meta.verbose_name,
+                    }
+                )
+        rows.sort(key=lambda row: row["object"].deleted_at, reverse=True)
+        context["rows"] = rows
+        return context
+
+
+class CorbeilleRestoreView(StaffRequiredMixin, View):
+    def post(self, request, app_label, model_name, pk):
+        model = _get_corbeille_model(app_label, model_name)
+        instance = get_object_or_404(model.all_objects, pk=pk)
+        instance.restore()
+        messages.success(request, _("Élément restauré."))
+        return redirect("corbeille-list")
+
+
+class CorbeillePurgeView(StaffRequiredMixin, View):
+    def post(self, request, app_label, model_name, pk):
+        model = _get_corbeille_model(app_label, model_name)
+        instance = get_object_or_404(model.all_objects, pk=pk)
+        instance.purge()
+        messages.success(request, _("Élément supprimé définitivement."))
+        return redirect("corbeille-list")
+
+
+class PersonAnonymiseView(StaffRequiredMixin, View):
+    """Staff-only erasure confirmation. See annuaire/anonymisation.py for the
+    operation itself -- this view only confirms and calls it, mirroring
+    PersonMergeView's confirm+POST+messages shape."""
+
+    template_name = "annuaire/person_anonymise_confirm.html"
+
+    def get(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        return render(request, self.template_name, {"person": person})
+
+    def post(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        try:
+            anonymise_person(person, actor=request.user)
+        except ValidationError as exc:
+            messages.error(request, "; ".join(exc.messages))
+            return redirect("person-anonymise", pk=person.pk)
+        messages.success(request, _("Cette personne a été anonymisée."))
+        return redirect("personne-detail", pk=person.pk)
+
+
+class PersonalDataExportView(LoginRequiredMixin, View):
+    """Personal data export (14.1) -- metadata + in-app links, plus the
+    profile photo, as a single .zip. Gated by the same rule as editing the
+    profile: exporting someone's data is at least as sensitive as editing it."""
+
+    def get(self, request, *args, **kwargs):
+        person = get_object_or_404(Person, pk=kwargs["pk"])
+        if not can_edit_person(request.user, person):
+            raise PermissionDenied
+        archive = build_personal_data_archive(person, request.user)
+        response = HttpResponse(archive, content_type="application/zip")
+        response["Content-Disposition"] = f'attachment; filename="mes-donnees-{person.pk}-{date.today():%Y-%m-%d}.zip"'
+        return response
 
 
 class ProfileDetailView(LoginRequiredMixin, DetailView):
@@ -993,7 +1176,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         if not can_edit_person(self.request.user, obj):
-            raise PermissionDenied("Vous ne pouvez pas éditer ce profil.")
+            raise PermissionDenied(_("Vous ne pouvez pas éditer ce profil."))
         return obj
 
     def get_form_kwargs(self):
@@ -1032,7 +1215,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
 def _get_person_for_relations_edit(request, pk):
     person = get_object_or_404(Person, pk=pk)
     if not can_edit_person(request.user, person):
-        raise PermissionDenied("Vous ne pouvez pas modifier ces relations.")
+        raise PermissionDenied(_("Vous ne pouvez pas modifier ces relations."))
     return person
 
 
@@ -1063,14 +1246,14 @@ class AddRelationView(LoginRequiredMixin, View):
         person = _get_person_for_relations_edit(request, kwargs["pk"])
         form = AddRelationForm(request.POST)
         if not form.is_valid():
-            messages.error(request, "Formulaire invalide. Vérifiez la personne et le type de relation.")
+            messages.error(request, _("Formulaire invalide. Vérifiez la personne et le type de relation."))
             return redirect("person-relations-edit", pk=person.pk)
         relation = form.save(commit=False)
         if relation.person2 == person:
-            messages.error(request, "Une personne ne peut pas être en relation avec elle-même.")
+            messages.error(request, _("Une personne ne peut pas être en relation avec elle-même."))
             return redirect("person-relations-edit", pk=person.pk)
         if Relation.objects.filter(person1=person, person2=relation.person2).exists():
-            messages.error(request, "Une relation avec cette personne existe déjà.")
+            messages.error(request, _("Une relation avec cette personne existe déjà."))
             return redirect("person-relations-edit", pk=person.pk)
         relation.person1 = person
         relation.save()
@@ -1085,7 +1268,7 @@ class UpdateRelationView(LoginRequiredMixin, View):
         if form.is_valid():
             form.save()
         else:
-            messages.error(request, "Modification invalide.")
+            messages.error(request, _("Modification invalide."))
         return redirect("person-relations-edit", pk=person.pk)
 
 
@@ -1166,7 +1349,10 @@ class PersonMergeView(StaffRequiredMixin, View):
             messages.error(request, "; ".join(exc.messages))
             return redirect("person-merge", pk=winner.pk, loser_pk=loser.pk)
         moved_summary = ", ".join(f"{k} ({v})" for k, v in report.moved_counts.items())
-        messages.success(request, f"Fusion effectuée : {moved_summary or 'aucune donnée liée à déplacer'}.")
+        messages.success(
+            request,
+            _("Fusion effectuée : %(summary)s.") % {"summary": moved_summary or _("aucune donnée liée à déplacer")},
+        )
         return redirect("personne-detail", pk=winner.pk)
 
 
@@ -1182,9 +1368,9 @@ class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         if obj.account_id is not None:
-            raise PermissionDenied("Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables.")
+            raise PermissionDenied(_("Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."))
         if not can_edit_person(self.request.user, obj):
-            raise PermissionDenied("Vous n'êtes pas propriétaire de ce profil.")
+            raise PermissionDenied(_("Vous n'êtes pas propriétaire de ce profil."))
         return obj
 
     def get_context_data(self, **kwargs):
@@ -1203,19 +1389,19 @@ class PersonOwnersUpdateView(LoginRequiredMixin, DetailView):
         return redirect("personne-detail", pk=self.object.pk)
 
 
-class ChaletListView(LoginRequiredMixin, ListView):
-    model = Chalet
-    template_name = "annuaire/chalet_list.html"
-    context_object_name = "chalets"
+class PlaceListView(LoginRequiredMixin, ListView):
+    model = Place
+    template_name = "annuaire/place_list.html"
+    context_object_name = "places"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        presences = PresencePSV.objects.select_related("person", "chalet").order_by("start_date")
+        presences = Stay.objects.select_related("person", "place").order_by("start_date")
         context["presences_json"] = json.dumps(
             [
                 {
                     "person": str(p.person),
-                    "chalet": p.chalet.name,
+                    "place": p.place.name,
                     "start": p.start_date.isoformat(),
                     "end": p.end_date.isoformat(),
                 }
@@ -1237,14 +1423,14 @@ def _owners_initial_json(view):
     return json.dumps([{"id": p.pk, "name": str(p)} for p in persons])
 
 
-class ChaletCreateView(LoginRequiredMixin, CreateView):
-    model = Chalet
-    form_class = ChaletForm
-    template_name = "annuaire/chalet_form.html"
+class PlaceCreateView(LoginRequiredMixin, CreateView):
+    model = Place
+    form_class = PlaceForm
+    template_name = "annuaire/place_form.html"
 
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated and not hasattr(request.user, "profile"):
-            messages.error(request, "Vous devez compléter votre profil avant de créer un chalet.")
+            messages.error(request, _("Vous devez compléter votre profil avant de créer une résidence."))
             return redirect("profile-create")
         return super().dispatch(request, *args, **kwargs)
 
@@ -1265,10 +1451,10 @@ class ChaletCreateView(LoginRequiredMixin, CreateView):
             profile = getattr(self.request.user, "profile", None)
             if profile is not None and not self.object.owners.filter(pk=profile.pk).exists():
                 self.object.owners.add(profile)
-        return redirect("chalet-detail", pk=self.object.pk)
+        return redirect("place-detail", pk=self.object.pk)
 
 
-class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
+class PlaceOwnerOrStaffMixin(LoginRequiredMixin):
     def get_object(self, queryset=None):
         obj = super().get_object(queryset=queryset)
         user = self.request.user
@@ -1276,31 +1462,31 @@ class ChaletOwnerOrStaffMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or not obj.owners.filter(pk=profile.pk).exists():
-            raise PermissionDenied("Vous n'êtes pas propriétaire de ce chalet.")
+            raise PermissionDenied(_("Vous n'êtes pas propriétaire de cette résidence."))
         return obj
 
 
-class ChaletDetailView(LoginRequiredMixin, DetailView):
-    model = Chalet
-    template_name = "annuaire/chalet_detail.html"
-    context_object_name = "chalet"
+class PlaceDetailView(LoginRequiredMixin, DetailView):
+    model = Place
+    template_name = "annuaire/place_detail.html"
+    context_object_name = "place"
 
     def get_context_data(self, **kwargs):
         import datetime
 
         context = super().get_context_data(**kwargs)
         today = datetime.date.today()
-        all_presences = PresencePSV.objects.filter(chalet=self.object).select_related("person").order_by("start_date")
+        all_presences = Stay.objects.filter(place=self.object).select_related("person").order_by("start_date")
         all_presences = list(all_presences)
         context["past_presences"] = [p for p in all_presences if p.end_date < today]
         context["current_presences"] = [p for p in all_presences if p.start_date <= today <= p.end_date]
         context["future_presences"] = [p for p in all_presences if p.start_date > today]
-        context["presence_form"] = AddPresenceForm()
+        context["presence_form"] = AddStayForm()
         context["presences_json"] = json.dumps(
             [
                 {
                     "person": str(p.person),
-                    "chalet": self.object.name,
+                    "place": self.object.name,
                     "start": p.start_date.isoformat(),
                     "end": p.end_date.isoformat(),
                 }
@@ -1309,7 +1495,7 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
         )
         user = self.request.user
         profile = getattr(user, "profile", None)
-        context["can_edit_chalet"] = (
+        context["can_edit_place"] = (
             user.is_staff
             or user.is_superuser
             or (profile is not None and self.object.owners.filter(pk=profile.pk).exists())
@@ -1317,19 +1503,19 @@ class ChaletDetailView(LoginRequiredMixin, DetailView):
         return context
 
 
-class ChaletUpdateView(ChaletOwnerOrStaffMixin, UpdateView):
-    model = Chalet
-    form_class = ChaletUpdateForm
-    template_name = "annuaire/chalet_form.html"
+class PlaceUpdateView(PlaceOwnerOrStaffMixin, UpdateView):
+    model = Place
+    form_class = PlaceUpdateForm
+    template_name = "annuaire/place_form.html"
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.object.pk})
+        return reverse_lazy("place-detail", kwargs={"pk": self.object.pk})
 
 
-class ChaletOwnersUpdateView(ChaletOwnerOrStaffMixin, DetailView):
-    model = Chalet
-    template_name = "annuaire/chalet_owners_form.html"
-    context_object_name = "chalet"
+class PlaceOwnersUpdateView(PlaceOwnerOrStaffMixin, DetailView):
+    model = Place
+    template_name = "annuaire/place_owners_form.html"
+    context_object_name = "place"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1342,47 +1528,47 @@ class ChaletOwnersUpdateView(ChaletOwnerOrStaffMixin, DetailView):
         self.object = self.get_object()
         owner_ids = [int(pk) for pk in request.POST.getlist("owners") if pk.isdigit()]
         self.object.owners.set(Person.objects.filter(pk__in=owner_ids))
-        return redirect("chalet-detail", pk=self.object.pk)
+        return redirect("place-detail", pk=self.object.pk)
 
 
-class AddPresenceView(LoginRequiredMixin, FormView):
-    form_class = AddPresenceForm
+class AddStayView(LoginRequiredMixin, FormView):
+    form_class = AddStayForm
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
     def form_valid(self, form):
-        chalet_id = self.kwargs["pk"]
+        place_id = self.kwargs["pk"]
         start_date = form.cleaned_data["start_date"]
         end_date = form.cleaned_data["end_date"]
         for person in form.cleaned_data["persons"]:
-            PresencePSV.objects.create(chalet_id=chalet_id, person=person, start_date=start_date, end_date=end_date)
+            Stay.objects.create(place_id=place_id, person=person, start_date=start_date, end_date=end_date)
         return super().form_valid(form)
 
     def form_invalid(self, form):
-        messages.error(self.request, "Erreur dans le formulaire de présence.")
-        return redirect("chalet-detail", pk=self.kwargs["pk"])
+        messages.error(self.request, _("Erreur dans le formulaire de présence."))
+        return redirect("place-detail", pk=self.kwargs["pk"])
 
 
-class UpdatePresenceView(LoginRequiredMixin, UpdateView):
-    model = PresencePSV
-    form_class = PresenceForm
-    template_name = "annuaire/presence_form.html"
-    pk_url_kwarg = "presence_pk"
+class UpdateStayView(LoginRequiredMixin, UpdateView):
+    model = Stay
+    form_class = StayForm
+    template_name = "annuaire/stay_form.html"
+    pk_url_kwarg = "stay_pk"
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
-class DeletePresenceView(LoginRequiredMixin, DeleteView):
-    model = PresencePSV
-    pk_url_kwarg = "presence_pk"
+class DeleteStayView(LoginRequiredMixin, DeleteView):
+    model = Stay
+    pk_url_kwarg = "stay_pk"
 
     def get(self, request, *args, **kwargs):
-        return redirect("chalet-detail", pk=self.kwargs["pk"])
+        return redirect("place-detail", pk=self.kwargs["pk"])
 
     def get_success_url(self):
-        return reverse_lazy("chalet-detail", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("place-detail", kwargs={"pk": self.kwargs["pk"]})
 
 
 MIN_SEARCH_QUERY_LENGTH = 2
@@ -1469,7 +1655,7 @@ def _first_of_month(day, months_offset):
 
 
 class CalendarView(LoginRequiredMixin, TemplateView):
-    """One calendar -- events, chalet présences and anniversaires in a single
+    """One calendar -- events, résidence présences and anniversaires in a single
     month/agenda view with per-type filters. Ships a bounded window; the JS
     (unified_calendar.js) refetches via calendar_feed_ajax on navigation past
     either edge, never the whole corpus."""
@@ -1572,5 +1758,47 @@ class ICalFeedView(View):
 @require_POST
 def regenerate_calendar_token(request):
     request.user.regenerate_calendar_token()
-    messages.success(request, "Le lien de votre calendrier a été régénéré.")
+    messages.success(request, _("Le lien de votre calendrier a été régénéré."))
     return redirect("calendrier")
+
+
+@login_not_required
+@require_POST
+def set_language(request):
+    """POST-only language switcher (base.html/base_threshold.html's chrome).
+
+    Not django.conf.urls.i18n's stock `set_language` view: that one isn't
+    `@login_not_required`-compatible with this project's global
+    LoginRequiredMiddleware. Always sets the `django_language` cookie (works
+    anonymously, e.g. from the login page); also saves Account.language when
+    the requester is authenticated, so resolve_language() (annuaire/i18n.py)
+    picks it up on every future request regardless of device/cookie state.
+    """
+    language_code = request.POST.get("language", "")
+    try:
+        language_code = get_supported_language_variant(language_code)
+    except LookupError:
+        return HttpResponseBadRequest("Unknown language code.")
+
+    next_url = request.POST.get("next") or "/"
+    if not url_has_allowed_host_and_scheme(
+        url=next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = "/"
+
+    if request.user.is_authenticated:
+        request.user.language = language_code
+        request.user.save(update_fields=["language"])
+
+    response = redirect(next_url)
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        language_code,
+        max_age=settings.LANGUAGE_COOKIE_AGE,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
+        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+    return response

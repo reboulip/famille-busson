@@ -13,7 +13,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from annuaire import emails
 from annuaire.email_utils import InlineImage, OutgoingEmail, build_message, send_bulk_emails
-from annuaire.models import Person
+from annuaire.models import Person, SiteConfig
 
 
 def _png_bytes(size: int = 64) -> bytes:
@@ -116,6 +116,19 @@ def test_birthday_reminder_settings_link_targets_the_recipient_directly(person, 
     assert "/annuaire/profile/edit" not in message.html_body
 
 
+def test_birthday_reminder_renders_in_the_recipients_saved_language(person, other_person):
+    other_person.account.language = "en"
+    other_person.account.save(update_fields=["language"])
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert "birthday" in message.subject.lower()
+    assert "anniversaire" not in message.subject.lower()
+
+
+def test_birthday_reminder_falls_back_to_default_language_without_a_saved_preference(person, other_person):
+    message = emails.birthday_reminder(person, "dest@example.com", photo=None, recipient=other_person)
+    assert "anniversaire" in message.subject.lower()
+
+
 def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
     """A row whose upload was cleaned up, or a media volume that isn't mounted, must
     fall back to initials rather than break the whole batch."""
@@ -134,7 +147,7 @@ def test_birthday_photo_reader_degrades_when_the_file_is_missing(person):
 def post(db):
     from publications.models import BlogPost
 
-    return BlogPost.objects.create(title="Rénovation du chalet", body="# Titre\n\nLes travaux **commencent** lundi.")
+    return BlogPost.objects.create(title="Rénovation du place", body="# Titre\n\nLes travaux **commencent** lundi.")
 
 
 def test_new_post_email_includes_a_stripped_excerpt(post):
@@ -196,9 +209,10 @@ def test_new_post_settings_link_targets_the_recipient_directly(post, person):
 
 @pytest.mark.parametrize(
     ("is_reset", "expected_subject"),
-    [(False, "Votre compte Famille Busson"), (True, "Votre mot de passe a été réinitialisé")],
+    [(False, "Votre compte Ma Famille"), (True, "Votre mot de passe a été réinitialisé")],
 )
 def test_account_setup_subject_and_copy(db, is_reset, expected_subject):
+    SiteConfig.objects.create(site_name="Ma Famille")
     message = emails.account_setup("nouveau@example.com", "https://example.com/reset/", is_reset=is_reset)
     assert message.subject == expected_subject
     assert "https://example.com/reset/" in message.text_body

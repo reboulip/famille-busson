@@ -1,16 +1,17 @@
 {% load static %}
+{% load i18n %}
 <div class="presence-calendar"
      data-presences='{{ presences_json|escape }}'
      data-window="short">
     <div class="presence-calendar-toolbar">
-        <div class="fb-btn-group" role="group" aria-label="Navigation">
-            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="Mois précédent">← Mois</button>
-            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">Aujourd'hui</button>
-            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="Mois suivant">Mois →</button>
+        <div class="fb-btn-group" role="group" aria-label="{% translate 'Navigation' %}">
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="{% translate 'Mois précédent' %}">{% translate '← Mois' %}</button>
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">{% translate "Aujourd'hui" %}</button>
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="{% translate 'Mois suivant' %}">{% translate 'Mois →' %}</button>
         </div>
-        <div class="fb-btn-group" role="group" aria-label="Échelle">
-            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-window-toggle" data-target="short">Semaines</button>
-            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-window-toggle" data-target="long">Mois</button>
+        <div class="fb-btn-group" role="group" aria-label="{% translate 'Échelle' %}">
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-window-toggle" data-target="short">{% translate 'Semaines' %}</button>
+            <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-window-toggle" data-target="long">{% translate 'Mois' %}</button>
         </div>
         <span class="presence-calendar-range fb-meta"></span>
     </div>
@@ -18,9 +19,9 @@
         <div class="presence-calendar-grid"></div>
     </div>
     <div class="presence-calendar-legend mt-2">
-        <span class="presence-calendar-bar bar-past">passé</span>
-        <span class="presence-calendar-bar bar-current">en cours</span>
-        <span class="presence-calendar-bar bar-future">à venir</span>
+        <span class="presence-calendar-bar bar-past">{% translate 'passé' %}</span>
+        <span class="presence-calendar-bar bar-current">{% translate 'en cours' %}</span>
+        <span class="presence-calendar-bar bar-future">{% translate 'à venir' %}</span>
     </div>
 </div>
 <script src="{% static 'js/calendar_core.js' %}"></script>

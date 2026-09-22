@@ -29,10 +29,10 @@ def test_home_context_has_recent_persons(auth_client, person):
 
 
 @pytest.mark.django_db
-def test_home_context_has_chalets(auth_client, chalet):
+def test_home_context_has_places(auth_client, place):
     response = auth_client.get(reverse("home"))
-    assert "chalets" in response.context
-    assert chalet in response.context["chalets"]
+    assert "places" in response.context
+    assert place in response.context["places"]
 
 
 @pytest.mark.django_db
@@ -118,7 +118,12 @@ def test_signup_unknown_email_shows_error(client, db):
     # Email not in Person table — cannot create account
     response = client.post(
         reverse("signup"),
-        {"email": "unknown@example.com", "password": "StrongP@ss1!", "password_confirm": "StrongP@ss1!"},
+        {
+            "email": "unknown@example.com",
+            "password": "StrongP@ss1!",
+            "password_confirm": "StrongP@ss1!",
+            "accept_privacy_notice": "on",
+        },
         follow=True,
     )
     assert response.status_code == 200
@@ -131,7 +136,12 @@ def test_signup_existing_account_shows_form_error(client, account, person):
     # Person exists and already has an Account — clean_email raises ValidationError → 200 with form error
     response = client.post(
         reverse("signup"),
-        {"email": "alice@example.com", "password": "StrongP@ss1!", "password_confirm": "StrongP@ss1!"},
+        {
+            "email": "alice@example.com",
+            "password": "StrongP@ss1!",
+            "password_confirm": "StrongP@ss1!",
+            "accept_privacy_notice": "on",
+        },
     )
     assert response.status_code == 200
     assert response.context["form"].errors
@@ -151,7 +161,12 @@ def test_signup_valid_creates_account_and_logs_in(client, db):
     Person.objects.create(first_name="Carol", last_name="Busson", email="carol@example.com")
     response = client.post(
         reverse("signup"),
-        {"email": "carol@example.com", "password": "StrongP@ss1!", "password_confirm": "StrongP@ss1!"},
+        {
+            "email": "carol@example.com",
+            "password": "StrongP@ss1!",
+            "password_confirm": "StrongP@ss1!",
+            "accept_privacy_notice": "on",
+        },
     )
     assert Account.objects.filter(email="carol@example.com").exists()
     assert response.status_code == 302

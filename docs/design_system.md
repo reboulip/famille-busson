@@ -54,6 +54,14 @@ tinted ground**, so every alert is AA by construction in both palettes.
 
 Full contrast table: `design/web/SPEC.md` §3.2.
 
+**`--fb-ember`/`--fb-alpenglow` are per-deployment overridable (Phase 15.3),
+via `SiteConfig`'s brand colour fields** — the token values and roles
+described above are still the shipped defaults for both palettes; staff can
+only override them from `/annuaire/configuration/`, contrast-validated
+against these same thresholds. See
+[`site_config.md`](site_config.md#theme-and-brand-colours-phase-153) for the
+override mechanism and the theme registry it reads from.
+
 ## 3. Theme switching
 
 `data-bs-theme` on `<html>` drives both Bootstrap's dark theme and the `--fb-*`
@@ -145,8 +153,8 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
    touching the publications feed's `.fb-post-card`.
 9. **Page-specific rules on a component shared by more than one page go in `main.css`
    under a page-scoped class, never in `components.css`.** `.fb-record` is shared by
-   the profile and chalet detail pages; the profile's mobile sticky-identity condensing
-   hangs off a `.profile-record` class added only in `personne_detail.html`, so chalet
+   the profile and place detail pages; the profile's mobile sticky-identity condensing
+   hangs off a `.profile-record` class added only in `personne_detail.html`, so place
    detail's layout is untouched. A test (`test_the_shared_record_component_is_not_
    restyled_for_the_profile_page`) asserts `components.css` never mentions the
    page-scoped class at all.
@@ -167,7 +175,7 @@ empty-state watermark).
 
 It appears in exactly **three** places: the sidebar brand block, the threshold card
 header, and empty states. A ridge on every page would be wallpaper. `map_init.js`
-carries its own inline copy for photoless chalet markers — keep the two silhouettes in
+carries its own inline copy for photoless place markers — keep the two silhouettes in
 sync if either changes.
 
 ## 7. Things that will bite you
@@ -186,9 +194,10 @@ sync if either changes.
   string), `markdown-editor-toolbar-btn` (exact attribute order), `category-tree__row`,
   `fb-post-card--doc`, `fb-post-card__body`, `fb-post-card__meta`, `profile-record`,
   `profile-record__actions`, `profile-identity`, `profile-identity--pinned`,
-  `profile-identity-sentinel`, `genealogie-toolbar__label`. `.fb-post-card` and
-  `.fb-post-card .fb-meta a` (components.css), `.f3 div.card` (main.css), and the
-  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`
+  `profile-identity-sentinel`, `genealogie-toolbar__label`, `fb-longform--full`.
+  `.fb-post-card` and `.fb-post-card .fb-meta a` (components.css), `.f3 div.card`
+  (main.css), and the
+  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`/`.fb-longform.fb-longform--full`
   rules also carry source-text-tested declarations, not just names — see below.
 - **`{# … #}` comments are single-line only.** A multi-line one renders as visible text
   on the page. Use `{% comment %}…{% endcomment %}`.

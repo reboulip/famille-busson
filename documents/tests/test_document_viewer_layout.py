@@ -230,6 +230,53 @@ def test_pdf_pages_start_with_a_collapsed_backing_store():
 
 
 # ---------------------------------------------------------------------------
+# PDF link annotations (#146)
+# ---------------------------------------------------------------------------
+
+
+def test_pdf_viewer_fetches_link_annotations():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "getAnnotations()" in content
+    assert "subtype === 'Link'" in content
+
+
+def test_pdf_link_overlay_is_positioned_from_a_css_space_viewport():
+    """Correctness-critical: the render viewport can be clamped smaller than the CSS
+    box at high zoom (clampScale()), so link geometry must come from a separate,
+    unclamped viewport or links drift on exactly the pages users zoom into."""
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "cssViewport" in content
+    assert "convertToViewportRectangle" in content
+
+
+def test_pdf_link_overlay_degrades_gracefully_on_failure():
+    # document_viewer.js is shared with publications attachments and the photos
+    # lightbox -- a broken annotation set must not break either of those.
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "async function buildLinkOverlay(entry) {" in content
+
+
+def test_pdf_links_open_in_a_new_tab_safely():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "rel = 'noopener noreferrer'" in content
+
+
+def test_pdf_link_urls_are_scheme_whitelisted():
+    content = DOCUMENT_VIEWER_JS.read_text(encoding="utf-8")
+    assert "function isSafeLinkUrl(" in content
+
+
+def test_pdf_link_css_rule_is_an_absolutely_positioned_overlay():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-pdf-link")
+    assert _declared_value(body, "position") == "absolute"
+
+
+def test_pdf_page_wrap_establishes_the_positioning_context():
+    body = _rule_body(MAIN_CSS.read_text(encoding="utf-8"), ".document-viewer-pdf-page-wrap")
+    assert _declared_value(body, "position") == "relative"
+
+
+# ---------------------------------------------------------------------------
 # Carousel / zoom layout (#111)
 # ---------------------------------------------------------------------------
 

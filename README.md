@@ -1,8 +1,10 @@
 # famille-busson
 
-Private family website for the Busson family: a member directory (`annuaire`) with
-family relations, an interactive family tree, chalet listings, PSV presence scheduling,
-a map of member and chalet locations, site-wide search and an activity feed ("Quoi de
+Private family website, configurable per-deployment (see
+[`docs/installation.md`](docs/installation.md)): a member directory (`annuaire`) with
+family relations, an interactive family tree, résidence listings with stay scheduling
+(the "place" entity's label is configurable per-deployment), a map of member and
+résidence locations, site-wide search and an activity feed ("Quoi de
 neuf"), a small blog (`publications`) for tagged posts, comments and attachments, a
 group-restricted document library (`documents`) for categorized file uploads, a
 group-restricted photo library (`photos`) of albums and photos, and life-story
@@ -24,6 +26,8 @@ credentials included).
 
 ## Documentation
 
+- [`docs/installation.md`](docs/installation.md) — start here: deploying a fresh
+  instance from a clean checkout.
 - [`docs/data_model.md`](docs/data_model.md) — data model (ER diagram + field tables),
   auto-generated from `models.py`.
 - [`docs/deployment.md`](docs/deployment.md) — how this ships to production.

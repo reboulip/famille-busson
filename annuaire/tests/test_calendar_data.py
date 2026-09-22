@@ -16,7 +16,7 @@ def _aware(*args):
 def group(db):
     from django.contrib.auth.models import Group
 
-    return Group.objects.create(name="SCI grand chalet")
+    return Group.objects.create(name="SCI grand place")
 
 
 # ---------------------------------------------------------------------------

@@ -64,3 +64,30 @@ def reindex_all_search_indexes() -> None:
 
     count = backfill_search_indexes()
     logger.info("reindex_all_search_indexes: reindexed %d row(s)", count)
+
+
+def purge_expired_trash() -> None:
+    """Permanently delete every soft-deleted (corbeille, 14.5) row past its
+    retention window. One object per transaction -- deliberately NOT one
+    atomic() block around the whole batch, so a mid-batch failure never rolls
+    back an already-committed purge, and each object's post_delete file
+    cleanup (deferred via transaction.on_commit) fires at the right moment."""
+    from django.conf import settings
+    from django.db import transaction
+
+    from documents.models import Document
+    from photos.models import Album, Photo
+    from publications.models import BlogPost
+
+    cutoff = timezone.now() - timezone.timedelta(days=settings.TRASH_RETENTION_DAYS)
+    purged = 0
+    for model in (BlogPost, Document, Album, Photo):
+        for pk in list(model.all_objects.filter(deleted_at__lt=cutoff).values_list("pk", flat=True)):
+            with transaction.atomic():
+                try:
+                    instance = model.all_objects.get(pk=pk)
+                except model.DoesNotExist:
+                    continue
+                instance.purge()
+            purged += 1
+    logger.info("purge_expired_trash: permanently deleted %d row(s)", purged)

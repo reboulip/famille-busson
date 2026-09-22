@@ -9,6 +9,7 @@ from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.translation import gettext as _
 from django.views import View
 from django.views.generic import CreateView, DeleteView, TemplateView, UpdateView
 
@@ -50,7 +51,7 @@ class StoryOwnerOrStaffRequiredMixin(LoginRequiredMixin):
             return obj
         profile = getattr(user, "profile", None)
         if profile is None or obj.created_by_id != profile.pk:
-            raise PermissionDenied("Vous n'êtes pas l'auteur de ce récit.")
+            raise PermissionDenied(_("Vous n'êtes pas l'auteur de ce récit."))
         return obj
 
 
@@ -226,7 +227,7 @@ class GedcomImportReviewView(StaffRequiredMixin, TemplateView):
                 staged.decision = "create"
                 staged.match_person = None
             staged.save(update_fields=["decision", "match_person"])
-        messages.success(request, "Décisions enregistrées pour cette page.")
+        messages.success(request, _("Décisions enregistrées pour cette page."))
         page_number = request.GET.get("page") or 1
         return redirect(f"{reverse('gedcom-import-review', kwargs={'pk': gedcom_import.pk})}?page={page_number}")
 
@@ -235,13 +236,13 @@ class GedcomImportApplyView(StaffRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
         if gedcom_import.status != "pending_review":
-            messages.error(request, "Cet import a déjà été traité.")
+            messages.error(request, _("Cet import a déjà été traité."))
             return redirect("gedcom-import-review", pk=gedcom_import.pk)
         summary = apply_gedcom_import(gedcom_import)
         messages.success(
             request,
-            f"Import appliqué : {summary['created']} créé(s), {summary['merged']} fusionné(s), "
-            f"{summary['skipped']} ignoré(s).",
+            _("Import appliqué : %(created)s créé(s), %(merged)s fusionné(s), %(skipped)s ignoré(s).")
+            % {"created": summary["created"], "merged": summary["merged"], "skipped": summary["skipped"]},
         )
         return redirect("gedcom-import-upload")
 
@@ -250,5 +251,5 @@ class GedcomImportDiscardView(StaffRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         gedcom_import = get_object_or_404(GedcomImport, pk=kwargs["pk"])
         gedcom_import.delete()
-        messages.success(request, "Import abandonné.")
+        messages.success(request, _("Import abandonné."))
         return redirect("gedcom-import-upload")

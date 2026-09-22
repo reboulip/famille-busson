@@ -13,6 +13,10 @@ concurrency:
   group: deploy
   cancel-in-progress: false
 
+env:
+  DEPLOY_DIR: /srv/bubu
+  IMAGE_NAME: ghcr.io/reboulip/famille-busson
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -48,9 +52,9 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/reboulip/famille-busson:latest
-            ghcr.io/reboulip/famille-busson:${{ steps.version.outputs.version }}
-            ghcr.io/reboulip/famille-busson:${{ github.sha }}
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
+            ${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -72,16 +76,16 @@ jobs:
         run: |
           scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" \
             docker-compose.prod.yml \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/bubu/docker-compose.yml"
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_DIR }}/docker-compose.yml"
 
       - name: Copy scripts/ to the VPS
         run: |
           scp -i ~/.ssh/deploy_key -P "${{ secrets.SSH_PORT }}" -r \
             scripts \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/srv/bubu/"
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ env.DEPLOY_DIR }}/"
 
       - name: Pull and restart containers on the VPS
         run: |
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            'cd /srv/bubu && docker compose pull && docker compose up -d && docker image prune -f'
+            'cd ${{ env.DEPLOY_DIR }} && docker compose pull && docker compose up -d && docker image prune -f'

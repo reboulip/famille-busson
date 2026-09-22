@@ -1,5 +1,24 @@
+import re
+from pathlib import Path
+
 import pytest
 from django.urls import reverse
+
+from annuaire.models import SiteConfig
+
+COMPONENTS_CSS = Path(__file__).resolve().parent.parent / "static" / "css" / "components.css"
+
+
+def _rule_body(css_text: str, selector: str) -> str:
+    stripped = re.sub(r"/\*.*?\*/", "", css_text, flags=re.DOTALL)
+    match = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", stripped)
+    assert match, f"No {selector!r} rule found in {COMPONENTS_CSS}"
+    return match.group(1)
+
+
+def _declared_value(body: str, prop: str) -> str | None:
+    match = re.search(rf"{prop}\s*:\s*([^;]+);", body)
+    return match.group(1).strip() if match else None
 
 
 @pytest.mark.django_db
@@ -97,7 +116,7 @@ def test_anonymous_sidebar_hides_the_login_required_sections(client):
         "directory",
         "genealogie",
         "carte",
-        "chalet-list",
+        "place-list",
         "blogpost-list",
         "document-list",
         "activity-feed",
@@ -116,6 +135,7 @@ def test_authenticated_sidebar_shows_the_app_sections(auth_client):
 
 @pytest.mark.django_db
 def test_base_includes_feedback_link(auth_client):
+    SiteConfig.objects.create(feedback_url="https://github.com/reboulip/famille-busson/issues/new")
     response = auth_client.get(reverse("directory"))
     content = response.content.decode()
     assert "https://github.com/reboulip/famille-busson/issues/new" in content
@@ -125,7 +145,15 @@ def test_base_includes_feedback_link(auth_client):
 
 
 @pytest.mark.django_db
+def test_base_hides_feedback_link_when_unset(auth_client):
+    response = auth_client.get(reverse("directory"))
+    content = response.content.decode()
+    assert "Signaler un bug ou proposer une évolution" not in content
+
+
+@pytest.mark.django_db
 def test_base_includes_feedback_link_for_anonymous_user(client):
+    SiteConfig.objects.create(feedback_url="https://github.com/reboulip/famille-busson/issues/new")
     response = client.get(reverse("login"))
     content = response.content.decode()
     assert "https://github.com/reboulip/famille-busson/issues/new" in content
@@ -145,7 +173,7 @@ def test_base_includes_feedback_link_for_anonymous_user(client):
 def test_threshold_pages_have_no_sidebar(client, url_name):
     """Pages a visitor sees *before* they are in render base_threshold.html, which has
     no nav at all. Extending base.html here meant a logged-out visitor stared at a menu
-    -- Annuaire, Généalogie, Carte, Chalets -- whose every link bounced back to login."""
+    -- Annuaire, Généalogie, Carte, Résidences -- whose every link bounced back to login."""
     content = client.get(reverse(url_name)).content.decode()
     assert 'data-bs-toggle="offcanvas"' not in content
     assert 'class="fb-sidebar"' not in content
@@ -153,9 +181,10 @@ def test_threshold_pages_have_no_sidebar(client, url_name):
 
 @pytest.mark.django_db
 def test_threshold_pages_still_carry_the_brand_and_favicon(client):
+    SiteConfig.objects.create(site_name="Ma Famille")
     content = client.get(reverse("login")).content.decode()
     assert 'rel="icon"' in content
-    assert "Famille Busson" in content
+    assert "Ma Famille" in content
     assert "fb-wordmark" in content
 
 
@@ -209,7 +238,70 @@ def test_stylesheets_load_tokens_and_components_after_bootstrap_and_main_last(au
 
 
 @pytest.mark.django_db
-def test_sidebar_chalet_entry_names_presences_too(auth_client):
-    # #127: the section covers the presence calendar as well as the chalets.
+def test_unconfigured_brand_emits_no_inline_style_override(auth_client):
+    """An unconfigured SiteConfig must render byte-identically to the shipped
+    palette -- no brand override <style> block at all."""
     content = auth_client.get(reverse("directory")).content.decode()
-    assert "Chalets et Présences" in content
+    assert "--fb-ember" not in content
+    assert "--fb-alpenglow" not in content
+
+
+@pytest.mark.django_db
+def test_configured_brand_emits_inline_style_override_between_components_and_main(auth_client):
+    SiteConfig.objects.create(brand_primary_light="#101010")
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert "--fb-ember:#101010;" in content
+    components_index = content.index("css/components.css")
+    main_index = content.index("css/main.css")
+    style_index = content.index("--fb-ember:#101010;")
+    assert components_index < style_index < main_index
+
+
+@pytest.mark.django_db
+def test_sidebar_place_entry_names_presences_too(auth_client):
+    # #127: the section covers the presence calendar as well as the places.
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert "Résidences et Présences" in content
+
+
+# ---------------------------------------------------------------------------
+# Sidebar overhaul (17.4, #145/#141)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.django_db
+def test_sidebar_drops_the_redundant_create_shortcuts(auth_client):
+    # Every list page already has its own primary create action -- these nav
+    # entries were pure duplication.
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert f'href="{reverse("document-create")}"' not in content
+    assert f'href="{reverse("blogpost-create")}"' not in content
+
+
+@pytest.mark.django_db
+def test_sidebar_publications_precede_documents_et_photos(auth_client):
+    content = auth_client.get(reverse("directory")).content.decode()
+    assert content.index(f'href="{reverse("blogpost-list")}"') < content.index(f'href="{reverse("document-list")}"')
+
+
+@pytest.mark.django_db
+def test_sidebar_groups_documents_and_albums_under_one_label(auth_client):
+    content = auth_client.get(reverse("directory")).content.decode()
+    between = content[
+        content.index(f'href="{reverse("document-list")}"') : content.index(f'href="{reverse("album-list")}"')
+    ]
+    assert "fb-nav__label" not in between
+
+
+@pytest.mark.django_db
+def test_sidebar_events_link_has_no_group_heading_of_its_own(auth_client):
+    # Folded into the unlabelled top group -- a heading for a single link was the
+    # most expensive vertical space in the menu.
+    content = auth_client.get(reverse("directory")).content.decode()
+    before = content[: content.index(f'href="{reverse("event-list")}"')]
+    assert "fb-nav__label" not in before[before.rindex("<nav") :]
+
+
+def test_sidebar_nav_links_are_denser_than_before():
+    body = _rule_body(COMPONENTS_CSS.read_text(encoding="utf-8"), ".fb-nav a,\n.fb-nav__logout")
+    assert _declared_value(body, "font-size") == "0.875rem"

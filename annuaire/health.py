@@ -1,7 +1,7 @@
 """Deepened /healthz (9.10) -- checks the database, cache, queue and storage
 writability, not just "the process is up."
 
-Lives here rather than in famille_busson/urls.py because famille_busson/ is outside
+Lives here rather than in config/urls.py because config/ is outside
 [tool.coverage.run].source (pyproject.toml), so health code there would be invisible
 to the 80% coverage gate -- annuaire is already where project-wide non-model code
 lives (checks.py, middleware.py, throttling.py, email_utils.py).

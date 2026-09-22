@@ -1,16 +1,19 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 {% block content %}
     {# Archetype G — form. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Administration</p>
-            <h1>Importer un fichier GEDCOM</h1>
+            <p class="fb-eyebrow">{% translate "Administration" %}</p>
+            <h1>{% translate "Importer un fichier GEDCOM" %}</h1>
             <p class="fb-page-head__lede">
+                {% blocktranslate trimmed %}
                 Formats acceptés : UTF-8 ou CP1252 (Latin-1). L'ANSEL n'est pas pris en
                 charge ; ré-exportez le fichier en UTF-8 depuis votre logiciel de
                 généalogie si besoin. Rien n'est ajouté à l'annuaire avant une validation
                 explicite, à l'étape suivante.
+                {% endblocktranslate %}
             </p>
         </div>
     </div>
@@ -19,7 +22,7 @@
         {% csrf_token %}
         {{ form|crispy }}
         <div class="fb-form__actions">
-            <button type="submit" class="fb-btn fb-btn--primary">Analyser le fichier</button>
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Analyser le fichier" %}</button>
         </div>
     </form>
 {% endblock content %}

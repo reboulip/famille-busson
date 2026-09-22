@@ -1,24 +1,25 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
 {% load markdown_extras %}
+{% load i18n %}
 {% block content %}
     {# Archetype D — record detail. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Événements</p>
+            <p class="fb-eyebrow">{% translate "Événements" %}</p>
             <h1>{{ event.title }}</h1>
         </div>
         {% if can_edit %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'event-edit' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
-                <a href="{% url 'event-delete' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "trash" size=16 %} Supprimer</a>
+                <a href="{% url 'event-edit' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                <a href="{% url 'event-delete' event.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "trash" size=16 %} {% translate "Supprimer" %}</a>
             </div>
         {% endif %}
     </div>
 
     <div class="fb-card">
         <p class="fb-meta">
-            {% if event.all_day %}Journée entière{% endif %}
+            {% if event.all_day %}{% translate "Journée entière" %}{% endif %}
             {{ event.start }}{% if event.end and event.end != event.start %} → {{ event.end }}{% endif %}
         </p>
         {% if event.location %}
@@ -33,7 +34,7 @@
             <div class="markdown-body">{{ event.description|markdown }}</div>
         {% endif %}
         {% if event.organisers.all %}
-            <p class="fb-meta">Organisé par {% for p in event.organisers.all %}{{ p }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+            <p class="fb-meta">{% blocktranslate trimmed with organisers=event.organisers.all|join:", " %}Organisé par {{ organisers }}{% endblocktranslate %}</p>
         {% endif %}
     </div>
 

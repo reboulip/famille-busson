@@ -1,12 +1,13 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 {% block content %}
     {# Archetype G — form. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
             <h1>
-                {% if form_title %}{{ form_title }}{% else %}Modification de {{ form.instance }}{% endif %}
+                {% if form_title %}{{ form_title }}{% else %}{% blocktranslate trimmed with instance=form.instance %}Modification de {{ instance }}{% endblocktranslate %}{% endif %}
             </h1>
         </div>
     </div>
@@ -19,12 +20,12 @@
         {% endcomment %}
         {% include "annuaire/_profile_edit_actions.html" %}
         <fieldset class="fb-fieldset">
-            <legend>Le profil</legend>
+            <legend>{% translate "Le profil" %}</legend>
             {{ form.media }}
             {{ form|crispy }}
         </fieldset>
         <fieldset class="fb-fieldset" id="notifications">
-            <legend>Notifications</legend>
+            <legend>{% translate "Notifications" %}</legend>
             {{ settings_form|crispy }}
         </fieldset>
         {% include "annuaire/_profile_edit_actions.html" %}

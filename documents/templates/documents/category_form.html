@@ -1,17 +1,18 @@
 {% extends "annuaire/base.html" %}
 {% load crispy_forms_filters %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Documents</p>
-            <h1>{% if object %}Modifier « {{ object.name }} »{% else %}Nouvelle catégorie{% endif %}</h1>
+            <p class="fb-eyebrow">{% translate "Documents" %}</p>
+            <h1>{% if object %}{% blocktranslate trimmed with name=object.name %}Modifier « {{ name }} »{% endblocktranslate %}{% else %}{% translate "Nouvelle catégorie" %}{% endif %}</h1>
         </div>
     </div>
 
     <form method="post" class="fb-form">
         {% csrf_token %}
         <fieldset class="fb-fieldset">
-            <legend>La catégorie</legend>
+            <legend>{% translate "La catégorie" %}</legend>
             {{ form.media }}
             {{ form.name|as_crispy_field }}
             {{ form.description|as_crispy_field }}
@@ -19,8 +20,8 @@
             {{ form.groups|as_crispy_field }}
         </fieldset>
         <div class="fb-form__actions">
-            <button class="fb-btn fb-btn--primary" type="submit">Enregistrer</button>
-            <a href="{% url 'category-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+            <button class="fb-btn fb-btn--primary" type="submit">{% translate "Enregistrer" %}</button>
+            <a href="{% url 'category-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
         </div>
     </form>
 {% endblock content %}

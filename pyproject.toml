@@ -1,6 +1,6 @@
 [project]
-name = "famille-busson"
-version = "1.4.0"
+name = "config"
+version = "1.5.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -41,9 +41,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "keyring>=25.7.0",
+    "keyrings-alt>=5.0.2",
     "pre-commit>=4.6.2",
     "ruff>=0.16.3",
     "ty>=0.0.72",
+    "typesafe-sdk>=0.7.0",
 ]
 docs = [
     "mkdocs>=1.6.1",
@@ -58,7 +61,7 @@ test = [
 ]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "famille_busson.settings"
+DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["."]
 testpaths = ["annuaire/tests", "publications/tests", "documents/tests", "photos/tests", "events/tests", "genealogy/tests"]
 addopts = "-v --tb=short --cov=annuaire --cov=publications --cov=documents --cov=photos --cov=events --cov=genealogy --cov-report=term-missing --cov-fail-under=80 --html=test-report.html --self-contained-html"

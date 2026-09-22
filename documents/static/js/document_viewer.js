@@ -196,6 +196,19 @@ function initPdfViewer(viewer) {
     let layoutToken = 0;
     let lastFitWidth = 0;
 
+    // page.getAnnotations() results, keyed by page number -- survives relayout
+    // (zoom/fullscreen/resize rebuilds every canvas/wrap from scratch, but the PDF
+    // itself and its annotations don't change) so a relayout only repositions the
+    // existing links instead of re-querying pdf.js for them.
+    const annotationsCache = new Map();
+
+    // Belt-and-braces on top of pdf.js's own URL sanitisation (createValidAbsoluteUrl):
+    // a family-uploaded PDF is untrusted content, so only ever render a link whose
+    // scheme we recognise.
+    function isSafeLinkUrl(url) {
+        return /^(https?:|mailto:)/i.test(url);
+    }
+
     // Canvas pixels per CSS pixel. Rendering at 1:1 was what made scanned pages
     // unreadable on any HiDPI screen: a phone at devicePixelRatio 3 was showing an
     // A4 page through 324 physical-pixel-wide artwork (#109).
@@ -237,6 +250,46 @@ function initPdfViewer(viewer) {
             entry.rendered = false;
         } finally {
             entry.task = null;
+        }
+        if (entry.rendered && !entry.linksBuilt) {
+            buildLinkOverlay(entry);
+        }
+    }
+
+    // Hyperlinks embedded in the PDF (#146). Positioned as percentages of a
+    // CSS-space viewport (scale: cssScale), never the render viewport -- clampScale()
+    // can shrink the render viewport below the CSS box at high zoom, which would
+    // otherwise misplace links on exactly the pages users zoom into -- and never raw
+    // pixel offsets, which would drift from the canvas's own Math.round()ed CSS box.
+    // Internal (jump-to-page) destinations are left unrendered; only external
+    // link annotations are in scope.
+    async function buildLinkOverlay(entry) {
+        entry.linksBuilt = true;
+        try {
+            let annotations = annotationsCache.get(entry.pageNumber);
+            if (!annotations) {
+                const raw = await entry.page.getAnnotations();
+                annotations = raw.filter((a) => a.subtype === 'Link' && a.url && isSafeLinkUrl(a.url));
+                annotationsCache.set(entry.pageNumber, annotations);
+            }
+            const vp = entry.cssViewport;
+            annotations.forEach((annotation) => {
+                const [x1, y1, x2, y2] = vp.convertToViewportRectangle(annotation.rect);
+                const link = document.createElement('a');
+                link.className = 'document-viewer-pdf-link';
+                link.href = annotation.url;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.style.left = `${(Math.min(x1, x2) / vp.width) * 100}%`;
+                link.style.top = `${(Math.min(y1, y2) / vp.height) * 100}%`;
+                link.style.width = `${(Math.abs(x2 - x1) / vp.width) * 100}%`;
+                link.style.height = `${(Math.abs(y2 - y1) / vp.height) * 100}%`;
+                entry.wrap.appendChild(link);
+            });
+        } catch {
+            // A missing/unusual annotation set degrades to "no links" rather than
+            // breaking the shared viewer (also used by publications attachments and
+            // the photos lightbox).
         }
     }
 
@@ -290,6 +343,9 @@ function initPdfViewer(viewer) {
             const baseViewport = page.getViewport({ scale: 1 });
             const cssScale = cssWidth / baseViewport.width;
             const viewport = page.getViewport({ scale: Math.max(clampScale(cssScale * dpr, baseViewport), 0.01) });
+            // A separate CSS-space viewport (no dpr, no clamping) for positioning the
+            // link overlay -- see buildLinkOverlay().
+            const cssViewport = page.getViewport({ scale: cssScale });
             const canvas = document.createElement('canvas');
             canvas.className = 'document-viewer-pdf-page';
             // Start collapsed rather than at the 300x150 default: 60 not-yet-rendered
@@ -301,8 +357,25 @@ function initPdfViewer(viewer) {
             // holds its place and a clamped one still fills the requested width.
             canvas.style.width = `${Math.round(cssWidth)}px`;
             canvas.style.height = `${Math.round(baseViewport.height * cssScale)}px`;
-            fragment.appendChild(canvas);
-            built.push({ canvas, page, viewport, rendered: false, task: null });
+            const pageWrap = document.createElement('div');
+            pageWrap.className = 'document-viewer-pdf-page-wrap';
+            // Mirrors the canvas's own CSS box exactly, so the link overlay's
+            // percentage-based positions land on the right pixels.
+            pageWrap.style.width = canvas.style.width;
+            pageWrap.style.height = canvas.style.height;
+            pageWrap.appendChild(canvas);
+            fragment.appendChild(pageWrap);
+            built.push({
+                canvas,
+                wrap: pageWrap,
+                page,
+                pageNumber,
+                viewport,
+                cssViewport,
+                rendered: false,
+                task: null,
+                linksBuilt: false,
+            });
         }
 
         if (token !== layoutToken) return;
@@ -377,10 +450,10 @@ function initPdfViewer(viewer) {
             await layout(false);
         } catch (error) {
             console.error('Échec du rendu PDF :', error);
-            container.textContent = "Impossible d'afficher ce PDF ici. ";
+            container.textContent = gettext("Impossible d'afficher ce PDF ici. ");
             const link = document.createElement('a');
             link.href = `${pdfUrl}?download=1`;
-            link.textContent = 'Télécharger le fichier';
+            link.textContent = gettext('Télécharger le fichier');
             container.appendChild(link);
         }
     })();

@@ -1,33 +1,45 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {# Archetype J — destructive confirm. #}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Photothèque</p>
-            <h1>Supprimer un album ?</h1>
+            <p class="fb-eyebrow">{% translate "Photothèque" %}</p>
+            <h1>{% translate "Supprimer un album ?" %}</h1>
         </div>
     </div>
 
     <div class="fb-card fb-confirm">
-        <h1>Supprimer l'album « {{ object.title }} » ?</h1>
+        <h1>{% blocktranslate trimmed with title=object.title %}Supprimer l'album « {{ title }} » ?{% endblocktranslate %}</h1>
         <div class="fb-confirm__consequences">
+            <p class="fb-confirm__lead">
+                {% blocktranslate trimmed with days=trash_retention_days %}L'album sera envoyé à la corbeille, récupérable pendant {{ days }} jours.{% endblocktranslate %}
+            </p>
             {% if photo_count %}
+                {% comment %}
+                    Not wrapped in a translation tag: this sentence's agreement (singular/plural verb
+                    and adjective endings) is carried by several independent |pluralize calls with
+                    different suffix pairs, which blocktranslate's count/plural can't reproduce without
+                    rewriting the sentence -- left as-is per the "don't force a rewrite" guidance.
+                {% endcomment %}
                 <p class="fb-confirm__lead fb-alert fb-alert--warning">
-                    {{ photo_count }} photo{{ photo_count|pluralize }} de cet album ser{{ photo_count|pluralize:"a,ont" }}
-                    définitivement supprimée{{ photo_count|pluralize }} en même temps.
+                    {{ photo_count }} photo{{ photo_count|pluralize }} de cet album deviendra{{ photo_count|pluralize:",ont" }}
+                    inaccessible{{ photo_count|pluralize }} tant que l'album est dans la corbeille, et
+                    ser{{ photo_count|pluralize:"a,ont" }} supprimée{{ photo_count|pluralize }} définitivement avec lui
+                    si l'album n'est pas restauré à temps.
                 </p>
             {% else %}
-                <p class="fb-confirm__lead">Cet album ne contient aucune photo.</p>
+                <p class="fb-confirm__lead">{% translate "Cet album ne contient aucune photo." %}</p>
             {% endif %}
         </div>
         <form method="POST">
             {% csrf_token %}
             <div class="fb-form__actions">
                 <button class="fb-btn fb-btn--danger" type="submit">
-                    {% icon "trash" size=16 %} Supprimer définitivement
+                    {% icon "trash" size=16 %} {% translate "Envoyer à la corbeille" %}
                 </button>
-                <a href="{% url 'album-list' %}" class="fb-btn fb-btn--ghost">Annuler</a>
+                <a href="{% url 'album-list' %}" class="fb-btn fb-btn--ghost">{% translate "Annuler" %}</a>
             </div>
         </form>
     </div>

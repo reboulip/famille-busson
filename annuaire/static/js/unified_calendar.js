@@ -1,7 +1,11 @@
 (function () {
     const { parseISODate, midnight, sameDay, formatDate, initNavigation } = window.FBCalendar;
 
-    const TYPE_LABELS = { event: 'Événement', presence: 'Présence', birthday: 'Anniversaire' };
+    const TYPE_LABELS = {
+        event: gettext('Événement'),
+        presence: gettext('Présence'),
+        birthday: gettext('Anniversaire'),
+    };
 
     const roots = document.querySelectorAll('.unified-calendar');
     roots.forEach(initUnifiedCalendar);
@@ -145,7 +149,7 @@
             if (sorted.length === 0) {
                 const empty = document.createElement('p');
                 empty.className = 'fb-meta';
-                empty.textContent = 'Rien de prévu ce mois-ci.';
+                empty.textContent = gettext('Rien de prévu ce mois-ci.');
                 agenda.appendChild(empty);
                 return;
             }

@@ -1,6 +1,7 @@
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
+from annuaire.audit import register_audit
 from annuaire.file_cleanup import register_file_cleanup
 from annuaire.markdown_utils import markdown_to_text
 from annuaire.search.indexing import register_search_index
@@ -58,3 +59,8 @@ def reset_extraction_on_file_change(sender, instance, **kwargs):
 
 
 register_file_cleanup(DocumentFile, "file", "thumbnail")
+
+# Audit log (14.4) -- registered last, after the receivers above.
+register_audit(
+    Document, fields=["title", "category_id", "document_date", "description", "uploaded_by_id", "redactor_id"]
+)

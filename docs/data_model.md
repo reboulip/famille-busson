@@ -14,9 +14,12 @@ erDiagram
     Person ||--o| Settings : "person"
     Person ||--o{ Relation : "person1"
     Person ||--o{ Relation : "person2"
-    Chalet }o--o{ Person : "owners"
-    Person ||--o{ PresencePSV : "person"
-    Chalet ||--o{ PresencePSV : "chalet"
+    Place }o--o{ Person : "owners"
+    Person ||--o{ Stay : "person"
+    Place ||--o{ Stay : "place"
+    ContentType ||--o{ AuditEvent : "content_type"
+    Account ||--o{ AuditEvent : "actor"
+    Account ||--o{ BlogPost : "deleted_by"
     BlogPost }o--o{ Tag : "tags"
     BlogPost }o--o{ Person : "authors"
     BlogPost }o--o{ Document : "documents"
@@ -28,15 +31,18 @@ erDiagram
     Category }o--o{ Group : "groups"
     Category ||--o{ CategoryGroupAccess : "category"
     Group ||--o{ CategoryGroupAccess : "group"
+    Account ||--o{ Document : "deleted_by"
     Category ||--o{ Document : "category"
     Person ||--o{ Document : "uploaded_by"
     Person ||--o{ Document : "redactor"
     Document ||--o{ DocumentFile : "document"
+    Account ||--o{ Album : "deleted_by"
     Photo ||--o{ Album : "cover"
     Person ||--o{ Album : "created_by"
     Album }o--o{ Group : "groups"
     Album ||--o{ AlbumGroupAccess : "album"
     Group ||--o{ AlbumGroupAccess : "group"
+    Account ||--o{ Photo : "deleted_by"
     Album ||--o{ Photo : "album"
     Person ||--o{ Photo : "uploaded_by"
     Photo ||--o{ PersonTag : "photo"
@@ -85,6 +91,9 @@ erDiagram
 | `must_change_password` | BooleanField | Doit changer le mot de passe | default=False, required |
 | `last_feed_seen_at` | DateTimeField | Dernière consultation du fil | optional |
 | `calendar_token` | CharField | Jeton calendrier | max_length=64, unique, optional |
+| `privacy_notice_accepted_at` | DateTimeField | Date d'acceptation de la politique de confidentialité | optional |
+| `privacy_notice_version` | CharField | Version acceptée de la politique de confidentialité | max_length=20, default='', optional |
+| `language` | CharField | Langue | max_length=10, choices: fr=Français, en=English, default='', optional |
 | `groups` | ManyToManyField | groups | → Group (M2M), related_name='account_set' |
 | `user_permissions` | ManyToManyField | user permissions | → Permission (M2M), related_name='account_set' |
 
@@ -111,6 +120,7 @@ erDiagram
 | `death_place` | CharField | Lieu de décès | max_length=255, default='', optional |
 | `description` | TextField | Infos utiles | optional |
 | `export_privacy` | CharField | Confidentialité dans les exports | max_length=6, choices: auto=Automatique (masqué·e tant que vivant·e), share=Toujours partager, redact=Toujours masquer, default=Person.ExportPrivacy.AUTO, optional |
+| `anonymised_at` | DateTimeField | Anonymisé·e le | optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
 | `search_text` | TextField | Texte de recherche | default='', optional |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
@@ -142,9 +152,9 @@ erDiagram
 | `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
 | `end_date` | DateField | Date de fin | optional |
 
-### `Chalet`
+### `Place`
 
-*App:* `annuaire` · *verbose name:* chalet / chalets · *table:* `annuaire_chalet`
+*App:* `annuaire` · *verbose name:* place / places · *table:* `annuaire_place`
 
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
@@ -154,19 +164,60 @@ erDiagram
 | `latitude` | DecimalField | Latitude | optional |
 | `longitude` | DecimalField | Longitude | optional |
 | `photo` | FileField | Photo | max_length=100, optional |
-| `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_chalets' |
+| `owners` | ManyToManyField | Propriétaires | → Person (M2M), related_name='owned_places' |
 
-### `PresencePSV`
+### `Stay`
 
-*App:* `annuaire` · *verbose name:* presence psv / presence psvs · *table:* `annuaire_presencepsv`
+*App:* `annuaire` · *verbose name:* stay / stays · *table:* `annuaire_stay`
 
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
-| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), required |
-| `chalet` | ForeignKey | Chalet | → Chalet (on_delete=CASCADE), required |
+| `person` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='stays', required |
+| `place` | ForeignKey | Lieu | → Place (on_delete=CASCADE), required |
 | `start_date` | DateField | Date d'arrivée | required |
 | `end_date` | DateField | Date de départ | required |
+
+### `AuditEvent`
+
+*App:* `annuaire` · *verbose name:* Événement d'audit / Événements d'audit · *table:* `annuaire_auditevent`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `content_type` | ForeignKey | Type d'objet | → ContentType (on_delete=CASCADE), required |
+| `object_id` | CharField | Identifiant de l'objet | max_length=64, required |
+| `object_repr` | CharField | Objet | max_length=200, required |
+| `action` | CharField | Action | max_length=20, choices: create=Création, update=Modification, delete=Suppression, restore=Restauration, purge=Purge définitive, membership_add=Ajout à un groupe, membership_remove=Retrait d'un groupe, anonymise=Anonymisation, required |
+| `changes` | JSONField | Modifications | default=dict, optional |
+| `actor` | ForeignKey | Auteur | → Account (on_delete=SET_NULL), related_name='+', optional |
+| `actor_label` | CharField | Auteur (archivé) | max_length=255, default='', optional |
+| `timestamp` | DateTimeField | Date | auto_now_add, optional |
+
+### `SiteConfig`
+
+*App:* `annuaire` · *verbose name:* Configuration du site / Configuration du site · *table:* `annuaire_siteconfig`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `site_name` | CharField | Nom du site | max_length=100, default='', optional |
+| `wordmark` | CharField | Wordmark | max_length=100, default='', optional |
+| `tagline` | CharField | Accroche | max_length=255, default='', optional |
+| `sender_address` | CharField | Adresse d'expédition des emails | max_length=254, default='', optional |
+| `feedback_url` | CharField | Lien de retour/signalement | max_length=200, default='', optional |
+| `timezone` | CharField | Fuseau horaire | max_length=64, default='Europe/Paris', required |
+| `place_label_singular` | CharField | Libellé (singulier) des lieux | max_length=50, default='', optional |
+| `place_label_plural` | CharField | Libellé (pluriel) des lieux | max_length=50, default='', optional |
+| `default_language` | CharField | Langue par défaut | max_length=10, choices: fr=Français, en=English, default='', optional |
+| `theme` | CharField | Thème | max_length=20, choices: alpenglow=Alpenglow, default='alpenglow', required |
+| `brand_primary_light` | CharField | Couleur principale (clair) | max_length=7, default='', optional |
+| `brand_primary_dark` | CharField | Couleur principale (sombre) | max_length=7, default='', optional |
+| `brand_accent_light` | CharField | Couleur d'accent (clair) | max_length=7, default='', optional |
+| `brand_accent_dark` | CharField | Couleur d'accent (sombre) | max_length=7, default='', optional |
+| `logo` | FileField | Logo | max_length=100, optional |
+| `favicon` | FileField | Favicon | max_length=100, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 
 ## `publications`
 
@@ -187,9 +238,10 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `body` | TextField | Contenu | required |
-| `post_type` | CharField | Type de publication | max_length=10, choices: BC=Busson connection, NORMAL=Publication normale, default='NORMAL', required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
 | `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
 | `search_vector` | SearchVectorField | Vecteur de recherche | required |
@@ -255,6 +307,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `category` | ForeignKey | Catégorie | → Category (on_delete=PROTECT), related_name='documents', required |
 | `document_date` | DateField | Date du document | optional |
@@ -293,6 +347,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `title` | CharField | Titre | max_length=200, required |
 | `description` | TextField | Description | default='', optional |
 | `date_start` | DateField | Date de début | optional |
@@ -322,6 +378,8 @@ erDiagram
 | Field | Type | Verbose name | Notes |
 |---|---|---|---|
 | `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
 | `album` | ForeignKey | Album | → Album (on_delete=CASCADE), related_name='photos', required |
 | `file` | FileField | Fichier | max_length=100, required |
 | `caption` | CharField | Légende | max_length=255, default='', optional |

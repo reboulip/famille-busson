@@ -43,7 +43,7 @@
                    swapping only the path data keeps the box identical. */
                 icon.innerHTML = theme === 'dark' ? SUN_PATHS : MOON_PATHS;
             }
-            btn.setAttribute('title', 'Passer au thème ' + goingTo);
+            btn.setAttribute('title', interpolate(gettext('Passer au thème %s'), [goingTo]));
         });
     }
 

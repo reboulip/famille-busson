@@ -2,8 +2,9 @@
 {% load static %}
 {% load markdown_extras %}
 {% load icons %}
+{% load i18n %}
 {% url 'directory' as directory_url %}
-{% url 'chalet-create' as chalet_create_url %}
+{% url 'place-create' as place_create_url %}
 {% url 'blogpost-list' as blogpost_list_url %}
 {% url 'blogpost-create' as blogpost_create_url %}
 {% url 'event-create' as event_create_url %}
@@ -18,7 +19,7 @@
             {% include "annuaire/_ridge.html" %}
         </div>
         <div class="fb-hub-banner__body">
-            <h1 class="fb-display">Famille Busson</h1>
+            <h1 class="fb-display">{{ site_config.site_name }}</h1>
             <p class="fb-meta">{% now "l j F Y" %}</p>
             {% if upcoming_birthdays %}
                 <div class="d-flex flex-wrap gap-2 mt-2">
@@ -26,7 +27,7 @@
                         <a class="fb-chip fb-chip--gold" href="{% url 'personne-detail' item.person.pk %}">
                             {% icon "cake" size=14 %}
                             {{ item.person }} ·
-                            {% if item.days_until == 0 %}aujourd'hui{% else %}{{ item.date|date:"j M" }}{% endif %}
+                            {% if item.days_until == 0 %}{% translate "aujourd'hui" %}{% else %}{{ item.date|date:"j M" }}{% endif %}
                         </a>
                     {% endfor %}
                 </div>
@@ -36,11 +37,13 @@
                     {% for memory in memories %}
                         {% if memory.kind == "photo" %}
                             <a class="fb-chip" href="{% url 'photo-detail' memory.item.pk %}">
-                                {% icon "image" size=14 %} Il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                                {% icon "image" size=14 %}
+                                {% blocktranslate trimmed count counter=memory.years_ago %}Il y a {{ counter }} an{% plural %}Il y a {{ counter }} ans{% endblocktranslate %}
                             </a>
                         {% else %}
                             <a class="fb-chip" href="{% url 'blogpost-detail' memory.item.pk %}">
-                                {% icon "clip" size=14 %} « {{ memory.item.title }} » — il y a {{ memory.years_ago }} an{{ memory.years_ago|pluralize }}
+                                {% icon "clip" size=14 %}
+                                {% blocktranslate trimmed count counter=memory.years_ago with title=memory.item.title %}« {{ title }} » — il y a {{ counter }} an{% plural %}« {{ title }} » — il y a {{ counter }} ans{% endblocktranslate %}
                             </a>
                         {% endif %}
                     {% endfor %}
@@ -53,8 +56,8 @@
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>Annuaire</h2>
-                <a href="{% url 'directory' %}" class="fb-tile__link">Voir tout →</a>
+                <h2>{% translate "Annuaire" %}</h2>
+                <a href="{% url 'directory' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
             </div>
             {% if recent_persons %}
                 <div class="fb-mini-grid">
@@ -67,40 +70,46 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
+                {% translate "Aucun profil pour l'instant" as empty_title %}
+                {% translate "Commencez par explorer qui fait partie de la famille." as empty_hint_text %}
+                {% translate "Voir l'annuaire" as empty_secondary_label_text %}
+                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=directory_url empty_secondary_label=empty_secondary_label_text %}
             {% endif %}
         </section>
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>Chalets PSV</h2>
-                <a href="{% url 'chalet-list' %}" class="fb-tile__link">Voir tout →</a>
+                <h2>{{ site_config.place_label_plural_display }}</h2>
+                <a href="{% url 'place-list' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
             </div>
-            {% if chalets %}
+            {% if places %}
                 <div class="fb-mini-grid fb-mini-grid--places">
-                    {% for chalet in chalets %}
-                        <a href="{% url 'chalet-detail' chalet.pk %}" class="fb-mini" title="{{ chalet.name }}">
-                            {% if chalet.photo %}
-                                <img src="{{ chalet.photo.url }}" alt="" class="fb-mini__photo fb-mini__photo--place">
+                    {% for place in places %}
+                        <a href="{% url 'place-detail' place.pk %}" class="fb-mini" title="{{ place.name }}">
+                            {% if place.photo %}
+                                <img src="{{ place.photo.url }}" alt="" class="fb-mini__photo fb-mini__photo--place">
                             {% else %}
-                                <span class="chalet-photo-placeholder mini">{% include "annuaire/_ridge.html" with variant="plain" %}</span>
+                                <span class="place-photo-placeholder mini">{% include "annuaire/_ridge.html" with variant="plain" %}</span>
                             {% endif %}
-                            <span class="fb-mini__name">{{ chalet.name }}</span>
+                            <span class="fb-mini__name">{{ place.name }}</span>
                         </a>
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun chalet pour l'instant" empty_hint="Les chalets permettent de noter les lieux de séjour et de partager les présences." empty_secondary_url=chalet_create_url empty_secondary_label="Créer un chalet" %}
+                {% translate "Rien à afficher pour l'instant" as empty_title %}
+                {% blocktranslate with label=site_config.place_label_plural_display asvar empty_hint_text %}{{ label }} permettent de noter les lieux de séjour et de partager les présences.{% endblocktranslate %}
+                {% translate "Créer" as empty_secondary_label_text %}
+                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=place_create_url empty_secondary_label=empty_secondary_label_text %}
             {% endif %}
 
             {% if upcoming_presences %}
-                <p class="fb-eyebrow fb-tile__subhead">Prochaines présences</p>
+                <p class="fb-eyebrow fb-tile__subhead">{% translate "Prochaines présences" %}</p>
                 <div class="fb-feed">
                     {% for presence in upcoming_presences %}
                         <div class="fb-feed__item fb-stay">
                             <span class="fb-stay__who">
-                                <a href="{% url 'chalet-detail' presence.chalet.pk %}">{{ presence.person }}</a>
-                                <span class="fb-meta">{{ presence.chalet.name }}</span>
+                                <a href="{% url 'place-detail' presence.place.pk %}">{{ presence.person }}</a>
+                                <span class="fb-meta">{{ presence.place.name }}</span>
                             </span>
                             <span class="fb-meta fb-stay__dates">{{ presence.start_date|date:"j M" }} → {{ presence.end_date|date:"j M" }}</span>
                         </div>
@@ -111,8 +120,8 @@
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>Prochains événements</h2>
-                <a href="{% url 'event-list' %}" class="fb-tile__link">Voir tout →</a>
+                <h2>{% translate "Prochains événements" %}</h2>
+                <a href="{% url 'event-list' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
             </div>
             {% if upcoming_events %}
                 <div class="fb-feed">
@@ -126,14 +135,17 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun événement à venir" empty_hint="Réunions, fêtes, anniversaires : notez les prochains rendez-vous de la famille." empty_secondary_url=event_create_url empty_secondary_label="Créer un événement" %}
+                {% translate "Aucun événement à venir" as empty_title %}
+                {% translate "Réunions, fêtes, anniversaires : notez les prochains rendez-vous de la famille." as empty_hint_text %}
+                {% translate "Créer un événement" as empty_secondary_label_text %}
+                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=event_create_url empty_secondary_label=empty_secondary_label_text %}
             {% endif %}
         </section>
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>Dernières publications</h2>
-                <a href="{% url 'blogpost-list' %}" class="fb-tile__link">Voir tout →</a>
+                <h2>{% translate "Dernières publications" %}</h2>
+                <a href="{% url 'blogpost-list' %}" class="fb-tile__link">{% translate "Voir tout →" %}</a>
             </div>
             {% if recent_posts %}
                 <div class="fb-feed">
@@ -142,33 +154,39 @@
                             <a href="{% url 'blogpost-detail' post.pk %}">{{ post.title }}</a>
                             <p class="fb-meta">
                                 {{ post.created_at|date:"j F" }}
-                                {% if post.post_type == "BC" %}<span class="fb-chip fb-chip--gold">Busson connection</span>{% endif %}
                             </p>
                         </div>
                     {% endfor %}
                 </div>
             {% else %}
                 {% if user.is_authenticated %}
-                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Racontez une nouvelle, partagez des photos, ouvrez le bal." empty_secondary_url=blogpost_create_url empty_secondary_label="Écrire la première publication" %}
+                    {% translate "Aucune publication" as empty_title %}
+                    {% translate "Racontez une nouvelle, partagez des photos, ouvrez le bal." as empty_hint_text %}
+                    {% translate "Écrire la première publication" as empty_secondary_label_text %}
+                    {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=blogpost_create_url empty_secondary_label=empty_secondary_label_text %}
                 {% else %}
-                    {% include "annuaire/_empty.html" with title="Aucune publication" empty_hint="Les membres partagent ici les nouvelles, photos et souvenirs." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
+                    {% translate "Aucune publication" as empty_title %}
+                    {% translate "Les membres partagent ici les nouvelles, photos et souvenirs." as empty_hint_text %}
+                    {% translate "Voir les publications" as empty_secondary_label_text %}
+                    {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=blogpost_list_url empty_secondary_label=empty_secondary_label_text %}
                 {% endif %}
             {% endif %}
         </section>
 
         <section class="fb-card">
             <div class="fb-tile__head">
-                <h2>Derniers commentaires</h2>
+                <h2>{% translate "Derniers commentaires" %}</h2>
             </div>
             {% if recent_comments %}
+                {% translate "Anonyme" as anonymous_author_label %}
                 <div class="fb-feed">
                     {% for comment in recent_comments %}
                         <article class="fb-comment">
                             <span class="fb-comment__disc">{{ comment.author|default:"?"|stringformat:"s"|slice:":1"|upper }}</span>
                             <div>
                                 <div class="fb-comment__head">
-                                    <span class="fb-comment__author">{{ comment.author|default:"Anonyme" }}</span>
-                                    <span class="fb-meta">sur
+                                    <span class="fb-comment__author">{{ comment.author|default:anonymous_author_label }}</span>
+                                    <span class="fb-meta">{% translate "sur" %}
                                         <a href="{% url 'blogpost-detail' comment.post.pk %}">« {{ comment.post.title }} »</a>
                                     </span>
                                 </div>
@@ -178,7 +196,10 @@
                     {% endfor %}
                 </div>
             {% else %}
-                {% include "annuaire/_empty.html" with title="Aucun commentaire" empty_hint="Soyez le premier à réagir aux publications et messages de la famille." empty_secondary_url=blogpost_list_url empty_secondary_label="Voir les publications" %}
+                {% translate "Aucun commentaire" as empty_title %}
+                {% translate "Soyez le premier à réagir aux publications et messages de la famille." as empty_hint_text %}
+                {% translate "Voir les publications" as empty_secondary_label_text %}
+                {% include "annuaire/_empty.html" with title=empty_title empty_hint=empty_hint_text empty_secondary_url=blogpost_list_url empty_secondary_label=empty_secondary_label_text %}
             {% endif %}
         </section>
 

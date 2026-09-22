@@ -1,5 +1,9 @@
+from pathlib import Path
+
 from django.conf import settings
 from django.core.checks import Warning, register
+
+from .site_config import get_site_config
 
 
 @register()
@@ -57,6 +61,74 @@ def sentry_dsn_check(app_configs, **kwargs):
                 "SENTRY_DSN is unset outside of DEBUG -- errors are not being reported.",
                 hint="Set SENTRY_DSN in the environment to enable error monitoring.",
                 id="annuaire.W003",
+            )
+        ]
+    return []
+
+
+@register()
+def compiled_locale_check(app_configs, **kwargs):
+    """Warn (never error) when a configured language has a .po but no compiled .mo.
+
+    Warning, not error: same rationale as W001-W003 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. A missing .mo falls
+    back to source-language (French) rendering, not a crash, so this can't be fatal --
+    but it's worth surfacing since it means a language silently isn't working.
+    """
+    if settings.DEBUG:
+        return []
+    errors = []
+    for code, name in settings.LANGUAGES:
+        for locale_path in settings.LOCALE_PATHS:
+            po_path = Path(locale_path) / code / "LC_MESSAGES" / "django.po"
+            mo_path = po_path.with_suffix(".mo")
+            if po_path.exists() and not mo_path.exists():
+                errors.append(
+                    Warning(
+                        f"Locale '{code}' ({name}) has a .po file but no compiled .mo file.",
+                        hint="Run `manage.py compilemessages` (done automatically at "
+                        "image build time in the Dockerfile).",
+                        id="annuaire.W004",
+                    )
+                )
+    return errors
+
+
+@register()
+def site_name_check(app_configs, **kwargs):
+    """Warn (never error) when SiteConfig.site_name is still blank outside DEBUG.
+
+    Warning, not error: same rationale as W001-W004 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. A blank site_name
+    means `bootstrap_site` was never run on this instance.
+    """
+    if not settings.DEBUG and not get_site_config().site_name:
+        return [
+            Warning(
+                "SiteConfig.site_name is blank outside of DEBUG -- bootstrap_site was never run on this instance.",
+                hint="Run `manage.py bootstrap_site` to configure this instance.",
+                id="annuaire.W005",
+            )
+        ]
+    return []
+
+
+@register()
+def default_from_email_check(app_configs, **kwargs):
+    """Warn (never error) when DEFAULT_FROM_EMAIL is unset outside DEBUG and
+    SiteConfig has no sender_address either.
+
+    Warning, not error: same rationale as W001-W005 -- checks run before
+    `collectstatic` at container boot under `set -euo pipefail`. Without either
+    value, outgoing mail (annuaire/email_utils.py) has no From address.
+    """
+    if not settings.DEBUG and not settings.DEFAULT_FROM_EMAIL and not get_site_config().sender_address:
+        return [
+            Warning(
+                "DEFAULT_FROM_EMAIL is unset outside of DEBUG and SiteConfig has no "
+                "sender_address either -- outgoing mail has no From address.",
+                hint="Set DEFAULT_FROM_EMAIL in the environment, or sender_address via bootstrap_site.",
+                id="annuaire.W006",
             )
         ]
     return []

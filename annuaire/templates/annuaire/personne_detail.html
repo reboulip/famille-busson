@@ -2,6 +2,7 @@
 {% load static %}
 {% load markdown_extras %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     {% comment %}
         Archetype D — record detail. A sticky identity rail (portrait, aligned
@@ -14,16 +15,24 @@
     {% endcomment %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <p class="fb-eyebrow">Annuaire</p>
+            <p class="fb-eyebrow">{% translate "Annuaire" %}</p>
             <h1>{{ person.first_name }} {{ person.last_name }}</h1>
         </div>
         <div class="fb-page-head__actions">
             <a href="{% url 'genealogie-person' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
-                {% icon "tree" size=16 %} Voir dans l'arbre
+                {% icon "tree" size=16 %} {% translate "Voir dans l'arbre" %}
             </a>
             {% if can_edit %}
                 <a href="{% url 'person-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
-                    {% icon "edit" size=16 %} Modifier le profil
+                    {% icon "edit" size=16 %} {% translate "Modifier le profil" %}
+                </a>
+                <a href="{% url 'person-data-export' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
+                    {% icon "download" size=16 %} {% translate "Télécharger mes données" %}
+                </a>
+            {% endif %}
+            {% if user.is_staff and not person.anonymised_at %}
+                <a href="{% url 'person-anonymise' person.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">
+                    {% icon "trash" size=16 %} {% translate "Anonymiser" %}
                 </a>
             {% endif %}
         </div>
@@ -42,13 +51,13 @@
                     <a href="{{ person.profile_photo.url }}">
                         <img class="profile-portrait{% if person.deceased %} person-photo--deceased{% endif %}"
                              src="{{ person.profile_photo.url }}"
-                             alt="Photo de profil de {{ person.first_name }} {{ person.last_name }}"
-                             {% if person.deceased %}title="Décédé·e"{% endif %}>
+                             alt="{% blocktranslate trimmed with first_name=person.first_name last_name=person.last_name %}Photo de profil de {{ first_name }} {{ last_name }}{% endblocktranslate %}"
+                             {% if person.deceased %}title="{% translate 'Décédé·e' %}"{% endif %}>
                     </a>
                 {% else %}
                     <img class="profile-portrait{% if person.deceased %} person-photo--deceased{% endif %}"
-                         src="{% static 'default_profile_picture.png' %}" alt="Photo par défaut"
-                         {% if person.deceased %}title="Décédé·e"{% endif %}>
+                         src="{% static 'default_profile_picture.png' %}" alt="{% translate 'Photo par défaut' %}"
+                         {% if person.deceased %}title="{% translate 'Décédé·e' %}"{% endif %}>
                 {% endif %}
                 <div>
                     <h2 class="fb-record__name">{{ person.first_name }} {{ person.last_name }}</h2>
@@ -56,7 +65,7 @@
                         <p class="fb-meta">
                             <span class="fb-chip">
                                 {% if person.birth_date %}{{ person.birth_date|date:"Y" }}{% endif %} –
-                                {% if person.death_date %}{{ person.death_date|date:"Y" }}{% else %}décédé·e{% endif %}
+                                {% if person.death_date %}{{ person.death_date|date:"Y" }}{% else %}{% translate "décédé·e" %}{% endif %}
                             </span>
                         </p>
                     {% endif %}
@@ -65,7 +74,7 @@
 
             {% if person.email or person.phone_number or person.postal_address or person.birth_date or person.deceased %}
                 <div class="fb-card">
-                    <p class="fb-eyebrow fb-card__label">Informations</p>
+                    <p class="fb-eyebrow fb-card__label">{% translate "Informations" %}</p>
                     <div class="fb-contact">
                         {% if person.email %}
                             <p class="contact-line fb-contact__row">
@@ -92,14 +101,14 @@
                         {% if person.birth_date %}
                             <p class="contact-line fb-contact__row">
                                 <span class="fb-contact__icon">{% icon "cake" size=16 %}</span>
-                                <span class="fb-contact__value">{{ person.birth_date|date:"j F Y" }}{% if person.birth_place %} à {{ person.birth_place }}{% endif %}</span>
+                                <span class="fb-contact__value">{{ person.birth_date|date:"j F Y" }}{% if person.birth_place %} {% blocktranslate trimmed with place=person.birth_place %}à {{ place }}{% endblocktranslate %}{% endif %}</span>
                             </p>
                         {% endif %}
                         {% if person.deceased %}
                             <p class="contact-line fb-contact__row">
                                 <span class="fb-contact__icon">{% icon "cross" size=16 %}</span>
                                 <span class="fb-contact__value">
-                                    {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% if person.death_place %} à {{ person.death_place }}{% endif %}{% else %}Décédé·e{% if person.death_place %} à {{ person.death_place }}{% endif %}{% endif %}
+                                    {% if person.death_date %}{{ person.death_date|date:"j F Y" }}{% if person.death_place %} {% blocktranslate trimmed with place=person.death_place %}à {{ place }}{% endblocktranslate %}{% endif %}{% else %}{% translate "Décédé·e" %}{% if person.death_place %} {% blocktranslate trimmed with place=person.death_place %}à {{ place }}{% endblocktranslate %}{% endif %}{% endif %}
                                 </span>
                             </p>
                         {% endif %}
@@ -112,23 +121,23 @@
         <div>
             {% if person.description %}
                 <section class="fb-card" style="margin-bottom: var(--fb-sp-5)">
-                    <h2>À propos de {{ person.first_name }}</h2>
+                    <h2>{% blocktranslate trimmed with first_name=person.first_name %}À propos de {{ first_name }}{% endblocktranslate %}</h2>
                     <div class="markdown-body">{{ person.description|markdown }}</div>
                 </section>
             {% endif %}
 
             <ul class="nav nav-tabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link{% if tab != "photos" and tab != "histoire" %} active{% endif %}" href="{% url 'personne-detail' person.pk %}">Relations</a>
+                    <a class="nav-link{% if tab != "photos" and tab != "histoire" %} active{% endif %}" href="{% url 'personne-detail' person.pk %}">{% translate "Relations" %}</a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link{% if tab == "photos" %} active{% endif %}" href="?tab=photos">
-                        Photos{% if photo_count %} ({{ photo_count }}){% endif %}
+                        {% translate "Photos" %}{% if photo_count %} ({{ photo_count }}){% endif %}
                     </a>
                 </li>
                 <li class="nav-item" role="presentation">
                     <a class="nav-link{% if tab == "histoire" %} active{% endif %}" href="?tab=histoire">
-                        Récits{% if story_count %} ({{ story_count }}){% endif %}
+                        {% translate "Récits" %}{% if story_count %} ({{ story_count }}){% endif %}
                     </a>
                 </li>
             </ul>
@@ -146,23 +155,25 @@
                         {% if photos_page.has_other_pages %}
                             <nav class="fb-pagination pagination">
                                 {% if photos_page.has_previous %}
-                                    <a href="?tab=photos&page={{ photos_page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; Précédent</a>
+                                    <a href="?tab=photos&page={{ photos_page.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; {% translate "Précédent" %}</a>
                                 {% endif %}
-                                <span>Page {{ photos_page.number }} / {{ photos_page.paginator.num_pages }}</span>
+                                <span>{% blocktranslate trimmed with current=photos_page.number total=photos_page.paginator.num_pages %}Page {{ current }} / {{ total }}{% endblocktranslate %}</span>
                                 {% if photos_page.has_next %}
-                                    <a href="?tab=photos&page={{ photos_page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivant &rarr;</a>
+                                    <a href="?tab=photos&page={{ photos_page.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivant" %} &rarr;</a>
                                 {% endif %}
                             </nav>
                         {% endif %}
                     {% else %}
-                        {% include "annuaire/_empty.html" with title="Aucune photo" body="Aucune photo n'a encore été identifiée pour cette personne." %}
+                        {% translate "Aucune photo" as empty_title %}
+                        {% translate "Aucune photo n'a encore été identifiée pour cette personne." as empty_body %}
+                        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
                     {% endif %}
                 </section>
             {% elif tab == "histoire" %}
                 <section class="fb-stories-tab">
                     <div class="fb-record__actions" style="margin-bottom: var(--fb-sp-4)">
                         <a href="{% url 'story-create' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">
-                            {% icon "plus" size=16 %} Ajouter un récit
+                            {% icon "plus" size=16 %} {% translate "Ajouter un récit" %}
                         </a>
                     </div>
                     {% if stories %}
@@ -170,7 +181,7 @@
                             {% for story in stories %}
                                 <article class="fb-card fb-timeline__item">
                                     <p class="fb-eyebrow">
-                                        {% if story.date %}{{ story.date|date:"j F Y" }}{% if story.end_date %} – {{ story.end_date|date:"j F Y" }}{% endif %}{% else %}Date inconnue{% endif %}
+                                        {% if story.date %}{{ story.date|date:"j F Y" }}{% if story.end_date %} – {{ story.end_date|date:"j F Y" }}{% endif %}{% else %}{% translate "Date inconnue" %}{% endif %}
                                     </p>
                                     <h3>{{ story.title }}</h3>
                                     <div class="markdown-body">{{ story.body|markdown }}</div>
@@ -185,24 +196,26 @@
                                     {% endif %}
                                     {% if story.citations.all %}
                                         <p class="fb-meta">
-                                            Sources :
+                                            {% translate "Sources :" %}
                                             {% for citation in story.citations.all %}{{ citation.source.title }}{% if not forloop.last %}, {% endif %}{% endfor %}
                                         </p>
                                     {% endif %}
                                     <p class="fb-meta">
-                                        {% if story.created_by %}Ajouté par {{ story.created_by }}{% endif %}
+                                        {% if story.created_by %}{% blocktranslate trimmed with author=story.created_by %}Ajouté par {{ author }}{% endblocktranslate %}{% endif %}
                                     </p>
                                     {% if story.can_edit %}
                                         <div class="fb-record__actions">
-                                            <a href="{% url 'story-update' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier</a>
-                                            <a href="{% url 'story-delete' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Supprimer</a>
+                                            <a href="{% url 'story-update' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier" %}</a>
+                                            <a href="{% url 'story-delete' story.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Supprimer" %}</a>
                                         </div>
                                     {% endif %}
                                 </article>
                             {% endfor %}
                         </div>
                     {% else %}
-                        {% include "annuaire/_empty.html" with title="Aucun récit" body="Aucun récit n'a encore été ajouté pour cette personne." %}
+                        {% translate "Aucun récit" as empty_title %}
+                        {% translate "Aucun récit n'a encore été ajouté pour cette personne." as empty_body %}
+                        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
                     {% endif %}
                 </section>
             {% else %}
@@ -213,9 +226,9 @@
                             <p class="fb-eyebrow fb-relation-group__label">{{ partner_type|title }}</p>
                             {% if partner_relation.start_date or partner_relation.marriage_place or partner_relation.end_date %}
                                 <p class="fb-meta">
-                                    {% if partner_relation.start_date %}Marié·e le {{ partner_relation.start_date|date:"j F Y" }}{% endif %}
-                                    {% if partner_relation.marriage_place %}à {{ partner_relation.marriage_place }}{% endif %}
-                                    {% if partner_relation.end_date %}· jusqu'au {{ partner_relation.end_date|date:"j F Y" }}{% endif %}
+                                    {% if partner_relation.start_date %}{% blocktranslate trimmed with start_date=partner_relation.start_date|date:"j F Y" %}Marié·e le {{ start_date }}{% endblocktranslate %}{% endif %}
+                                    {% if partner_relation.marriage_place %}{% blocktranslate trimmed with place=partner_relation.marriage_place %}à {{ place }}{% endblocktranslate %}{% endif %}
+                                    {% if partner_relation.end_date %}· {% blocktranslate trimmed with end_date=partner_relation.end_date|date:"j F Y" %}jusqu'au {{ end_date }}{% endblocktranslate %}{% endif %}
                                 </p>
                             {% endif %}
                             <div class="fb-relation-grid">
@@ -225,7 +238,7 @@
                     {% endif %}
                     {% if parents %}
                         <div>
-                            <p class="fb-eyebrow fb-relation-group__label">Parents</p>
+                            <p class="fb-eyebrow fb-relation-group__label">{% translate "Parents" %}</p>
                             <div class="fb-relation-grid">
                                 {% for parent in parents %}
                                     {% include "annuaire/_relation.html" with related=parent %}
@@ -235,7 +248,7 @@
                     {% endif %}
                     {% if children %}
                         <div>
-                            <p class="fb-eyebrow fb-relation-group__label">Enfants</p>
+                            <p class="fb-eyebrow fb-relation-group__label">{% translate "Enfants" %}</p>
                             <div class="fb-relation-grid">
                                 {% for child in children %}
                                     {% include "annuaire/_relation.html" with related=child %}
@@ -245,16 +258,19 @@
                     {% endif %}
                 {% else %}
                     <div>
-                        <h2>Relations</h2>
+                        <h2>{% translate "Relations" %}</h2>
                         {% if can_edit %}
                             {% comment %}
                                 No call to action here: the actions block below the
                                 section already offers it in both states, and two
                                 would render the same button twice.
                             {% endcomment %}
-                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" body="Ajoutez les parents, enfants ou le conjoint de cette personne." %}
+                            {% translate "Aucune relation enregistrée" as empty_title %}
+                            {% translate "Ajoutez les parents, enfants ou le conjoint de cette personne." as empty_body %}
+                            {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
                         {% else %}
-                            {% include "annuaire/_empty.html" with title="Aucune relation enregistrée" %}
+                            {% translate "Aucune relation enregistrée" as empty_title %}
+                            {% include "annuaire/_empty.html" with title=empty_title %}
                         {% endif %}
                     </div>
                 {% endif %}
@@ -263,9 +279,9 @@
 
             {% if can_edit %}
                 <div class="fb-record__actions profile-record__actions">
-                    <a href="{% url 'person-relations-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Modifier les relations</a>
+                    <a href="{% url 'person-relations-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Modifier les relations" %}</a>
                     {% if not person.account_id %}
-                        <a href="{% url 'person-owners-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Gérer les propriétaires</a>
+                        <a href="{% url 'person-owners-edit' person.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Gérer les propriétaires" %}</a>
                     {% endif %}
                 </div>
             {% endif %}

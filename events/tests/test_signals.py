@@ -5,6 +5,7 @@ from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
 
+from annuaire.models import SiteConfig
 from events.models import Event, Rsvp
 from events.tasks import EVENT_REMINDER_LEAD_DAYS, send_event_reminders
 
@@ -55,6 +56,42 @@ def test_announcement_enqueued_on_creation(person, django_capture_on_commit_call
 
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == [person.email]
+
+
+@pytest.mark.django_db
+def test_announcement_uses_the_configured_site_name(person, django_capture_on_commit_callbacks):
+    # Phase 16: the announcement must name the configured site, not a hardcoded
+    # family name.
+    SiteConfig.objects.create(site_name="Les Dupont")
+    person.settings.notify_on_event = True
+    person.settings.save()
+
+    with django_capture_on_commit_callbacks(execute=True):
+        Event.objects.create(title="Barbecue", start=_aware(2026, 7, 1, 12, 0))
+
+    assert len(mail.outbox) == 1
+    sent = mail.outbox[0]
+    assert "Les Dupont" in sent.body
+    assert "la famille Busson" not in sent.body
+    assert "Les Dupont" in sent.alternatives[0][0]
+    assert "la famille Busson" not in sent.alternatives[0][0]
+
+
+@pytest.mark.django_db
+def test_reminder_uses_the_configured_site_name(person):
+    SiteConfig.objects.create(site_name="Les Dupont")
+    person.settings.notify_on_event = True
+    person.settings.save()
+    Event.objects.create(title="Bientôt", start=timezone.now() + datetime.timedelta(hours=12))
+
+    send_event_reminders()
+
+    assert len(mail.outbox) == 1
+    sent = mail.outbox[0]
+    assert "Les Dupont" in sent.body
+    assert "la famille Busson" not in sent.body
+    assert "Les Dupont" in sent.alternatives[0][0]
+    assert "la famille Busson" not in sent.alternatives[0][0]
 
 
 @pytest.mark.django_db

@@ -1,23 +1,24 @@
 {% extends "annuaire/base.html" %}
 {% load icons %}
+{% load i18n %}
 {% block content %}
     <div class="fb-page-head">
         <div class="fb-page-head__titles">
-            <nav class="category-breadcrumb" aria-label="Fil d'ariane">
-                <a href="{% url 'album-list' %}">Photothèque</a> /
+            <nav class="category-breadcrumb" aria-label="{% translate "Fil d'ariane" %}">
+                <a href="{% url 'album-list' %}">{% translate "Photothèque" %}</a> /
                 <a href="{% url 'album-detail' photo.album_id %}">{{ photo.album.title }}</a>
             </nav>
-            <h1>{{ photo.caption|default:"Photo" }}</h1>
+            {% translate "Photo" as default_photo_caption %}
+            <h1>{{ photo.caption|default:default_photo_caption }}</h1>
             <p class="fb-page-head__lede">
                 {% if photo.taken_at %}{{ photo.taken_at|date:"j F Y" }}{% endif %}
-                {% if photo.uploaded_by %}{% if photo.taken_at %} — {% endif %}déposée par
-                    <a href="{% url 'personne-detail' photo.uploaded_by.pk %}">{{ photo.uploaded_by }}</a>{% endif %}
+                {% if photo.uploaded_by %}{% if photo.taken_at %} — {% endif %}{% url 'personne-detail' photo.uploaded_by.pk as uploaded_by_url %}{% blocktranslate trimmed with url=uploaded_by_url name=photo.uploaded_by %}déposée par <a href="{{ url }}">{{ name }}</a>{% endblocktranslate %}{% endif %}
             </p>
         </div>
         {% if can_edit %}
             <div class="fb-page-head__actions">
-                <a href="{% url 'photo-edit' photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} Modifier la légende</a>
-                <a href="{% url 'photo-delete' photo.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} Supprimer</a>
+                <a href="{% url 'photo-edit' photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "edit" size=16 %} {% translate "Modifier la légende" %}</a>
+                <a href="{% url 'photo-delete' photo.pk %}" class="fb-btn fb-btn--ghost fb-btn--sm fb-btn--danger-text">{% icon "trash" size=16 %} {% translate "Supprimer" %}</a>
             </div>
         {% endif %}
     </div>
@@ -28,16 +29,16 @@
 
     <div class="fb-form__actions" style="margin-bottom: var(--fb-sp-5)">
         {% if previous_photo %}
-            <a href="{% url 'photo-detail' previous_photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "chevron-left" size=16 %} Précédente</a>
+            <a href="{% url 'photo-detail' previous_photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "chevron-left" size=16 %} {% translate "Précédente" %}</a>
         {% endif %}
         {% if next_photo %}
-            <a href="{% url 'photo-detail' next_photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Suivante {% icon "chevron-right" size=16 %}</a>
+            <a href="{% url 'photo-detail' next_photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivante" %} {% icon "chevron-right" size=16 %}</a>
         {% endif %}
-        <a href="{% url 'photo-file' photo.pk %}?download=1" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "download" size=16 %} Télécharger l'original</a>
-        <a href="{% url 'photo-tag' photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">Identifier des personnes</a>
+        <a href="{% url 'photo-file' photo.pk %}?download=1" class="fb-btn fb-btn--quiet fb-btn--sm">{% icon "download" size=16 %} {% translate "Télécharger l'original" %}</a>
+        <a href="{% url 'photo-tag' photo.pk %}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Identifier des personnes" %}</a>
     </div>
 
-    <div class="fb-section-head"><h2>Personnes sur cette photo</h2></div>
+    <div class="fb-section-head"><h2>{% translate "Personnes sur cette photo" %}</h2></div>
     {% if tagged_persons %}
         <p>
             {% for person in tagged_persons %}
@@ -45,6 +46,7 @@
             {% endfor %}
         </p>
     {% else %}
-        {% include "annuaire/_empty.html" with title="Personne n'est identifié sur cette photo" %}
+        {% translate "Personne n'est identifié sur cette photo" as no_tagged_persons_title %}
+        {% include "annuaire/_empty.html" with title=no_tagged_persons_title %}
     {% endif %}
 {% endblock content %}
