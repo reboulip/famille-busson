@@ -1,81 +1,72 @@
 # Background task queue
 
-famille-busson runs both recurring (scheduled) and on-demand background work through
-[django-q2](https://django-q2.readthedocs.io/), backed by the same Valkey instance the
-shared cache uses (see [`deployment.md`'s "Shared cache"
-section](deployment.md#shared-cache)) — cache on db 0, this queue's broker on db 1.
-On-demand work enqueues a task directly (e.g. `publications/signals.py`, on every new
-blog post) rather than waiting for a `Schedule` row's next tick — see "On-demand tasks"
-below.
+Some work runs in the background, outside web requests. There are two kinds:
+
+- **scheduled jobs**, which run at fixed times (for example, every day at 07:00);
+- **on-demand tasks**, which run right after something happens (for example, a new
+  blog post).
+
+Both use [django-q2](https://django-q2.readthedocs.io/). The queue is stored in the
+same Valkey server as the cache (see [Shared cache](deployment.md#shared-cache)).
 
 ## Why
 
-Before this, `send_birthday_reminders` and `extract_document_content` ran on the VPS's
-crontab, set up by hand outside CI/CD, with cron's own output going nowhere on failure.
-A job runner gives them: schedules and recent run history visible in the Django admin,
-retries on transient failure, and one place (`docker logs` on the `worker` container)
-to check instead of a crontab nobody remembers configuring.
+These jobs used to run from a crontab on the server. The crontab was set up by hand,
+and failures were invisible. With a job queue:
+
+- you can see the schedules and recent runs in the Django admin;
+- a job that fails is tried again;
+- all logs are in one place: `docker logs` on the `worker` container.
 
 ## Architecture
 
-- **`cache` container** (Valkey) — broker for both the Django cache and this queue.
-- **`worker` container** — runs `python manage.py qcluster`, the same image as `web`,
-  same `media`/`documents_data` volume mounts (a job that touches either of those must
-  see the same files `web` does). `RUN_STARTUP_TASKS=0` so it never runs
-  migrate/collectstatic/schedule-sync itself — only `web` does, once per deploy.
-- **`sync_scheduled_tasks`** management command — idempotently registers this
-  project's `Schedule` rows (`annuaire.management.commands.sync_scheduled_tasks`), run
-  automatically by `web` on every startup via `docker-entrypoint.sh`. Safe to run
-  repeatedly: existing schedules are matched by name and updated in place, never
-  duplicated, and a schedule's `next_run` is only set the first time it's created —
-  a routine deploy never pushes an already-ticking schedule's next occurrence back out.
-- **Task modules** — `annuaire/tasks.py` and `documents/tasks.py`, one per app. Each
-  function is plain and importable (django-q2 calls it by dotted path from a
-  `Schedule` row). Neither a task function nor its management command owns the actual
-  logic itself — both call the same extracted callable
-  (`annuaire.birthdays.send_birthday_reminders`,
-  `documents.tasks.process_pending_document_files`); the management commands are thin
-  wrappers around it too, kept hand-runnable for ad-hoc use (see `deployment.md`'s
-  "Scheduled tasks" section).
+- **`cache` container** (Valkey) — stores the queue.
+- **`worker` container** — runs the jobs (`manage.py qcluster`). It uses the same image
+  and the same file folders as `web`. It does not run migrations or other startup tasks.
+- **`sync_scheduled_tasks`** — a command that creates or updates the list of scheduled
+  jobs. The `web` container runs it at each start. You can run it again safely: it never
+  creates duplicates and never delays a job that is already scheduled.
+- **Task code** — in each app's `tasks.py`. Each scheduled job also has a management
+  command, so you can run it by hand (see [Scheduled tasks](deployment.md#scheduled-tasks)).
+  The job and the command call the same code.
 
 ## Current scheduled jobs
 
-| Job | Schedule | Task | Notes |
-|---|---|---|---|
-| Birthday reminders | Daily, 07:00 UTC | `annuaire.tasks.send_daily_birthday_reminders` | Guarded by a same-day cache lock, so a `catch_up` run or an overlap with the old crontab entry during a deploy can never send the same day's reminders twice. |
-| Document extraction | Every 15 minutes | `documents.tasks.process_pending_document_files` | Naturally idempotent — only ever processes rows still `extraction_status="pending"`. |
-| Photo derivative generation | Every 15 minutes | `photos.tasks.process_pending_photos` | Safety net for a lost enqueue (worker down at upload time) — the normal path is the on-demand enqueue below. Naturally idempotent, same shape as document extraction: only ever processes rows still `derivative_status="pending"`. |
-| Search index safety net | Daily, 03:00 UTC | `annuaire.tasks.reindex_all_search_indexes` | Safety net for a lost reindex enqueue (e.g. worker down at save time), not the primary freshness mechanism — that's the signal-driven on-demand reindex below. Rebuilds every registered model's index from scratch via `annuaire.search.indexing.backfill_search_indexes()`, the same function `manage.py reindex_search` and each app's migration data-backfill call, so all three can never drift apart. |
-| Event reminders | Daily, 08:00 UTC | `events.tasks.send_event_reminders` | Distinct hour from the birthday (07:00 UTC) and reindex (03:00 UTC) jobs so none of the three overlap. Selects events starting within `EVENT_REMINDER_LEAD_DAYS` (2 days) that haven't been reminded yet (`Event.reminder_sent_at__isnull=True`), stamps `reminder_sent_at` **before** fanning out per-recipient tasks — so a `catch_up` run after a missed tick can never double-send — then enqueues `events.tasks.send_event_reminder` for `events.tasks.notification_audience(event)` minus anyone who RSVP'd "non" on that event. |
-| Corbeille purge | Daily, 05:00 UTC | `annuaire.tasks.purge_expired_trash` | Distinct hour from the other daily jobs. Permanently deletes every soft-deleted `BlogPost`/`Document`/`Album`/`Photo` row whose `deleted_at` is older than `TRASH_RETENTION_DAYS` (default 30) via each row's `purge()` — one object per transaction, deliberately not one batch-wide `atomic()` block, so a mid-batch failure never rolls back an already-committed purge. See [`corbeille.md`](corbeille.md). |
+| Job | When | Notes |
+|---|---|---|
+| Birthday reminders | Every day, 07:00 UTC | A lock makes sure the reminders are never sent twice on the same day. |
+| Document text extraction | Every 15 minutes | Only processes documents not yet processed. |
+| Photo thumbnails | Every 15 minutes | Safety net for photos uploaded while the worker was down. Normally, thumbnails are made right after upload (see below). |
+| Search index rebuild | Every day, 03:00 UTC | Safety net. The index is normally updated on each save (see below). |
+| Event reminders | Every day, 08:00 UTC | Emails about events that start within 2 days. Each event is reminded only once. People who answered "non" to the event get no reminder. |
+| Trash purge | Every day, 05:00 UTC | Deletes for good the items that have been in the trash for more than 30 days (`TRASH_RETENTION_DAYS`). See [`corbeille.md`](corbeille.md). |
 
 ## On-demand tasks
 
-Enqueued directly from a signal or view, rather than a `Schedule`, whenever the work
-should happen as soon as possible after an event rather than on a fixed tick.
+These tasks start as soon as something happens, not at a fixed time.
 
-| Trigger | Task | Notes |
-|---|---|---|
-| A new `BlogPost` is saved | `publications.tasks.send_blog_post_notification(post_pk, recipient_email)` | Enqueued once per subscriber from `publications/signals.py`'s `post_save` receiver, inside `transaction.on_commit` so the enqueue waits for the post (and its M2M authors) to actually be committed. The task re-queries the post fresh and calls `annuaire.email_utils.send_one_email`, which raises on failure so django-q2 retries that one recipient — a provider hiccup no longer silently drops the whole batch, and one recipient's failure never affects another's. A deleted post is logged and skipped, not retried (retrying can't make it exist again). |
-| A new `Event` is saved | `events.tasks.send_event_announcement(event_pk, recipient_email)` | Enqueued once per subscriber from `events/signals.py`'s `post_save` receiver, inside `transaction.on_commit` — same reasoning as the blog-post row above, but the M2M in question is `Event.groups`, and the stakes are higher: computing the audience before the M2M commits would see zero groups and mail a restricted event's date/address to the whole family. Subscribers come from `events.tasks.notification_audience(event)` (opted into `Settings.notify_on_event`, has an email, not deceased, and a member of the event's groups if it's group-restricted). Same re-query-fresh/raises-on-failure/deleted-event-skipped shape as the blog-post task. |
-| A new `Photo` is saved | `photos.tasks.generate_photo_derivatives(photo_pk)` | Enqueued from `photos/signals.py`'s `post_save` receiver, inside `transaction.on_commit`, never from the upload view directly (`PhotoUploadView` stays fully decoupled from derivative generation). Builds a thumbnail and a web-size WebP rendition, and extracts EXIF capture date/orientation. A deleted photo is logged and skipped, not retried. |
-| A `Person`, `BlogPost`, `Document`, `Album` or `Photo` row is saved or deleted (also: `BlogPost.tags` M2M changes, or a child `DocumentFile` is saved/deleted) | `annuaire.tasks.reindex_search_object(app_label, model_name, pk)` | Enqueued via `annuaire.search.indexing.enqueue_reindex()` from each app's `register_search_index()` call (`annuaire/signals.py`, `publications/signals.py`, `documents/signals.py`, `photos/signals.py`), inside `transaction.on_commit`. A disjointness check skips re-enqueueing when the saved `update_fields` don't overlap the model's `SearchSpec.source_fields` (e.g. a `Photo`'s derivative-generation status changing doesn't reindex it). The task re-derives `search_text`/`search_vector` from the row's current state, same re-query-fresh shape as the other on-demand tasks above. |
+| Trigger | What the task does |
+|---|---|
+| A new blog post | Emails each subscriber. There is one task per subscriber, so if one email fails, only that one is tried again. |
+| A new event | Emails each subscriber who can see the event. For an event restricted to some groups, only members of those groups get an email. |
+| A new photo | Makes a thumbnail and a web-size version, and reads the photo's date and orientation. |
+| A person, post, document, album or photo is saved or deleted | Updates the search index for that item. |
 
-Enqueue by plain values (a PK, an email string), never a built message or model
-instance — the task re-queries current state itself, so nothing enqueued can go stale or
-fail to serialize between enqueue and execution.
+These tasks start only after the change is fully saved in the database. This is
+important: for example, an event's groups are saved just after the event itself. If the
+task started too early, it would see no groups and email everyone.
+
+A task receives only simple values (an id, an email address). It reads the rest from
+the database when it runs, so its data is always up to date.
 
 ## Local development
 
-`Q_CLUSTER["sync"]` defaults to `DEBUG`'s value, and `conftest.py` forces it to `True`
-for the whole test suite — a task enqueued via `django_q.tasks.async_task()` then runs
-inline, in the same process, instead of needing a real worker or broker. To run a real
-worker locally (e.g. to test `qcluster` itself): `uv run python manage.py qcluster`,
-with a Valkey instance reachable at `QUEUE_URL` (or `Q_SYNC=False` unset, which is the
-default outside `DEBUG`).
+In development and in tests, tasks run immediately, in the same process. You do not
+need a worker or Valkey. To test a real worker locally, run
+`uv run python manage.py qcluster`, with a Valkey server at `QUEUE_URL`.
 
 ## Monitoring
 
-There's no dedicated dashboard yet beyond the Django admin's `django_q` models
-(`Schedule`, `Task`, `Failure`) and `docker logs` on the `worker` container — structured
-error monitoring is a later item.
+- In the Django admin: the `django_q` section shows the schedules, the recent tasks and
+  the failures.
+- `docker logs` on the `worker` container.

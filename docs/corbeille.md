@@ -1,116 +1,78 @@
 # Corbeille
 
-Deleting a `BlogPost`, `Document`, `Album`, or `Photo` soft-deletes it instead
-of destroying it immediately: the row is marked trashed, hidden from every
-normal listing, and stays recoverable for `TRASH_RETENTION_DAYS` days (default
-30, env-configurable) before a daily background job purges it for good. A
-staff-only "Corbeille" page lists every trashed row across all four models,
-with per-row "Restaurer" / "Supprimer définitivement" actions.
+When a user deletes a blog post, a document, an album or a photo, it is not destroyed
+at once. It goes to the trash ("corbeille"):
+
+- it disappears from all normal pages;
+- staff can restore it for 30 days (`TRASH_RETENTION_DAYS`, set in the environment);
+- after that, a daily job deletes it for good.
+
+Staff see all items in the trash on the "Corbeille" page, with two buttons for each
+item: "Restaurer" and "Supprimer définitivement".
 
 ## Scope
 
-Publications (`BlogPost`), `documents.Document`, `photos.Album`, and
-`photos.Photo` only. **Not** `Person` — removing a person is a separate,
-not-yet-built item (14.2's planned anonymisation flow, see
-[`privacy.md`](privacy.md)), with different concerns (family-tree integrity,
-`person_merge.py`'s meta-guard) than a trashable content row. Nothing else in
-the project is soft-deletable; `Relation`, `Comment`, `Event`, `Place`,
-`Stay`, and the `genealogy` models still hard-delete exactly as before.
+Only these four types use the trash: blog posts, documents, albums and photos.
+Everything else (relations, comments, events, houses, stays, genealogy data) is still
+deleted at once.
+
+People do not use the trash either. To erase a person, staff use anonymisation (see
+[`privacy.md`](privacy.md#retention-and-erasure-policy)).
 
 ## How it works: `soft_delete()`, never an overridden `Model.delete()`
 
-`SoftDeleteModelMixin` (`annuaire/soft_delete.py`), an abstract model mixin
-applied to `BlogPost`, `Document`, `Album`, and `Photo` (each also sets
-`Meta.default_manager_name = "objects"` explicitly), adds:
+The four models use `SoftDeleteModelMixin` (in `annuaire/soft_delete.py`). It adds:
 
-- `deleted_at` (nullable timestamp) and `deleted_by` (FK to `Account`,
-  `SET_NULL`).
-- `objects` — the default manager, filtered to `deleted_at__isnull=True`
-  (`SoftDeleteManager`/`SoftDeleteQuerySet`). Every existing view, reverse
-  relation, and the admin changelist sees only live rows automatically,
-  with no code changes needed at each call site.
-- `all_objects` — a plain, unfiltered `Manager`, the escape hatch used by the
-  corbeille listing and the purge job to reach trashed rows.
-- `soft_delete(actor)`, `restore()`, `purge()` — see below.
+- `deleted_at` and `deleted_by`: when and by whom the item was put in the trash;
+- `objects`: the normal manager. It **hides** items in the trash. So every existing
+  page, and the Django admin, only sees live items, with no extra code;
+- `all_objects`: a manager that also returns items in the trash. The trash page and the
+  purge job use it;
+- three methods: `soft_delete(actor)`, `restore()` and `purge()`.
 
-The load-bearing design decision is that **this module never overrides
-`Model.delete()`** — `.delete()` keeps meaning "really, permanently delete"
-everywhere in the codebase: `person_merge.py`'s `loser.delete()`, the
-file-cleanup `post_delete` receivers (`annuaire/file_cleanup.py`,
-`documents/signals.py`, `photos/signals.py`), and `Relation`'s own
-inverse-delete signal (`annuaire/signals.py`) all still fire correctly, and
-only at the moment the bytes/rows actually need to go away. Soft-deleting is a
-separate, explicit method call instead:
+**Important:** `delete()` is not changed. It still means "delete for good", everywhere
+in the code. The code that removes files from disk after a delete still works as
+before. To move an item to the trash, call `soft_delete()` instead:
 
-- **`soft_delete(actor)`** — sets `deleted_at`/`deleted_by`, saves, and logs
-  an `AuditEvent` `DELETE` action (see [`audit.md`](audit.md)'s "Corbeille" section).
-  The four existing delete views (`BlogPostDeleteView`, `DocumentDeleteView`,
-  `AlbumDeleteView`, `PhotoDeleteView`) now call `self.object.soft_delete(request.user)`
-  from `form_valid()` instead of Django's default `.delete()`.
-- **`restore()`** — clears `deleted_at`/`deleted_by`, saves, logs `RESTORE`.
-- **`purge()`** — logs `PURGE`, then calls the real `Model.delete()`, firing
-  every normal `post_delete` receiver (file cleanup, etc.) exactly as a direct
-  hard delete always did.
+- **`soft_delete(actor)`** — moves the item to the trash and writes a `DELETE` entry in
+  the [audit log](audit.md). The four delete pages call it.
+- **`restore()`** — takes the item out of the trash and writes a `RESTORE` entry.
+- **`purge()`** — writes a `PURGE` entry, then really deletes the item (and its files).
 
 ### No cascade: trashing an album doesn't trash its photos
 
-Soft-deleting an `Album` does **not** soft-delete its `Photo`s. Every photo
-read path is already album-scoped (`photos.access.accessible_photos()`), so a
-trashed album's photos simply become unreachable through normal
-album-scoped browsing until the album is restored (or purged, at which point
-the photos' own rows are unaffected — only the album row and its own files go
-away). The album delete-confirmation template's copy reflects this: it warns
-that the photos become inaccessible while the album is trashed, not that they
-get deleted alongside it.
+When an album goes to the trash, its photos stay where they are. But photos are only
+reachable through their album, so they cannot be seen until the album is restored. The
+delete page says this: the photos become unreachable, not deleted.
 
 ### Confirm-delete copy
 
-The four confirm-delete templates (blog post, document, album, photo) were
-reworded from "Cette action est irréversible" / "Supprimer définitivement" to
-"récupérable pendant {{ trash_retention_days }} jours" / "Envoyer à la
-corbeille" — `trash_retention_days` comes from the new
-`annuaire.context_processors.trash_retention` context processor, exposed
-site-wide and also used on the corbeille page itself.
+The delete confirmation pages say "récupérable pendant 30 jours" and "Envoyer à la
+corbeille". The number of days comes from `TRASH_RETENTION_DAYS`.
 
 ## Viewing and managing the corbeille
 
-`CorbeilleListView` (`annuaire/views.py`, route `corbeille/`, name
-`corbeille-list`) is staff-only and lists every trashed row across
-`CORBEILLE_MODELS` — a hardcoded allowlist of `(app_label, model_name)` pairs
-(`publications.blogpost`, `documents.document`, `photos.album`,
-`photos.photo`) — most recently deleted first, via each model's `all_objects`
-manager. Linked from "Corbeille" in the staff-only Administration block of the
-main nav, right after "Journal d'audit".
+The trash page (`corbeille/`) is for staff only. It lists all items in the trash, most
+recently deleted first. It is linked from "Corbeille" in the Administration section of
+the menu, after "Journal d'audit".
 
-Each row's "Restaurer" and "Supprimer définitivement" actions are separate,
-POST-only, staff-only views: `CorbeilleRestoreView` (`corbeille/<app_label>/<model_name>/<pk>/restaurer/`,
-name `corbeille-restore`) and `CorbeillePurgeView` (`.../purger/`, name
-`corbeille-purge`). Both resolve the target model via `_get_corbeille_model()`,
-which 404s unless `(app_label, model_name)` is in `CORBEILLE_MODELS` — the
-model to act on is **never** taken from the URL as an arbitrary lookup, only
-validated against that fixed allowlist.
+The "Restaurer" and "Supprimer définitivement" buttons send a POST request (staff only).
+The URL contains the item's type. The site only accepts the four types listed above,
+and returns 404 for any other.
 
 ## Automatic purge
 
-`purge_expired_trash()` (`annuaire/tasks.py`) runs daily at **05:00 UTC** (see
-[`background_tasks.md`](background_tasks.md#current-scheduled-jobs) —
-registered by `annuaire/management/commands/sync_scheduled_tasks.py`, a
-distinct hour from the existing 03:00/07:00/08:00 UTC jobs). It finds every
-row across `BlogPost`, `Document`, `Album`, `Photo` whose `deleted_at` is older
-than `TRASH_RETENTION_DAYS` days ago, and calls `purge()` on each — **one
-object per transaction**, deliberately not one `atomic()` block around the
-whole batch, so a mid-batch failure never rolls back an already-committed
-purge, and each object's deferred `post_delete` file cleanup fires at the
-right moment for that object alone.
+A job runs every day at **05:00 UTC** (see
+[`background_tasks.md`](background_tasks.md#current-scheduled-jobs)). It deletes for
+good every item that has been in the trash longer than `TRASH_RETENTION_DAYS`. It
+handles items one by one, so an error on one item does not cancel the others.
 
-`TRASH_RETENTION_DAYS` (`config/settings.py`, env-backed, default
-`30`) is the single source of truth for the retention window, read by both the
-purge job and the confirm-delete/corbeille templates' copy.
+`TRASH_RETENTION_DAYS` (default `30`) is the only setting for this delay. The job and
+the pages all use it.
 
 ## Interaction with person erasure
 
-Anonymising a `Person` (see [`privacy.md`](privacy.md#retention-and-erasure-policy))
-purges that person's own trashed `BlogPost`/`Document`/`Album`/`Photo` rows
-immediately, ahead of their normal `TRASH_RETENTION_DAYS` window — leaving them
-sitting recoverable in the corbeille for up to 30 more days after the person
-has supposedly been erased would defeat the erasure guarantee.
+When staff anonymise a person (see
+[`privacy.md`](privacy.md#retention-and-erasure-policy)), that person's items in the
+trash are deleted for good at once. Otherwise, the data of an "erased" person could
+still be restored for up to 30 days.

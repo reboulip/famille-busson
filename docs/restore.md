@@ -1,81 +1,67 @@
 # Restore procedure
 
-"A backup nobody has restored is not a backup." This page is the runbook for
-restoring a backup produced by `scripts/backup.sh` (see
-[`deployment.md`'s "Sauvegardes" section](deployment.md#sauvegardes)), and
-`scripts/restore.sh` is the tool it walks through.
+A backup is only useful if you can restore it. This page explains how to restore a
+backup made by `scripts/backup.sh` (see [Sauvegardes](deployment.md#sauvegardes)),
+using `scripts/restore.sh`.
 
-**Status:** the tooling below is written and its logic reviewed, but has never
-been executed — this dev environment has no Docker/Postgres to run it against.
-The [drill log](#drill-log) at the bottom is empty until someone actually runs
-a drill on the VPS; until then, treat this as documented but unverified.
+**Status:** the restore script is written and reviewed, but it has never been run. The
+[drill log](#drill-log) below stays empty until someone runs a test restore on the
+server. Until then, treat this procedure as unverified.
 
 ## Prerequisites
 
-- `docker compose` (same as everywhere else this project uses it).
-- `python3` on the host running the script — `restore.sh` uses it to parse and
-  checksum-verify `manifest.json` before touching anything. Present on
-  essentially every Debian/Ubuntu VPS by default; if it's ever missing,
-  `apt install python3` is enough (no packages beyond the standard library are
-  used).
-- [`age`](https://github.com/FiloSottile/age) — to decrypt `env.age`, if the
-  backup includes one. You need the **private** key matching the
-  `BACKUP_AGE_RECIPIENT` public key the backup was encrypted with (see
-  `deployment.md` — this key is deliberately never stored on the VPS itself).
-- A backup run directory to restore from — either a local one under
-  `$BACKUP_DIR` on the VPS, or one pulled down from the off-site `rclone`
-  remote (`rclone copy <remote>/<timestamp> ./restore-input`).
+- `docker compose`.
+- `python3` on the server. The script uses it to check `manifest.json`. It is installed
+  on almost every Debian or Ubuntu server. If not, run `apt install python3`.
+- [`age`](https://github.com/FiloSottile/age), to decrypt `env.age`. You need the
+  **private** key that matches `BACKUP_AGE_RECIPIENT`. This key is never stored on the
+  server.
+- The backup folder to restore. It can be on the server (in `$BACKUP_DIR`), or you can
+  download it from off-site storage:
+  `rclone copy <remote>/<timestamp> ./restore-input`.
 
 ## The drill vs. a real restore
 
-`scripts/restore.sh` defaults to a **scratch, throwaway target**
-(`docker-compose.restore.yml`, project name `bubu-restore-drill`) — this is
-the safe, ergonomic default path, meant to be run any time to rehearse the
-procedure and prove a given backup is actually restorable, without touching
-anything real.
+By default, `scripts/restore.sh` restores into a **separate, temporary copy** of the
+site (`docker-compose.restore.yml`). This is a "drill". It does not touch the real site.
+You can run it at any time to check that a backup works.
 
-Restoring into the **real** production stack (`docker-compose.prod.yml`) is a
-separate, deliberately awkward path: it requires `--yes-i-mean-production`
-and will refuse to run without it. Never pass that flag as a matter of habit —
-it exists so restoring over the live database is a decision, not an accident.
+To restore into the **real** site, you must add `--yes-i-mean-production`. Without this
+option, the script refuses. Never add it out of habit: restoring over the live database
+must be a conscious choice.
 
 ## Step-by-step (drill)
 
-1. Identify the backup to restore: a directory containing `manifest.json`,
-   `db.dump`, `media.tar.gz`, `documents.tar.gz`, and optionally `env.age`.
-2. Run the script against the scratch target (the default):
+1. Choose the backup. It is a folder with `manifest.json`, `db.dump`, `media.tar.gz`,
+   `documents.tar.gz`, and maybe `env.age`.
+2. Run the script:
    ```
    bash scripts/restore.sh --backup-path /path/to/backups/20260906T030000Z
    ```
-   This verifies every artifact's checksum against `manifest.json` before
-   touching anything, then brings up `docker-compose.restore.yml`'s scratch
-   `db`/`web` containers, restores the dump, and extracts the archives.
-3. **Verify** (see below) before considering the drill successful.
-4. Tear the scratch stack down: `docker compose -f docker-compose.restore.yml -p bubu-restore-drill down -v`.
-5. Record the result in the [drill log](#drill-log) below.
+   It first checks every file against `manifest.json`. Then it starts the temporary
+   containers, restores the database and extracts the files.
+3. **Check** the result (see below).
+4. Remove the temporary copy:
+   `docker compose -f docker-compose.restore.yml -p bubu-restore-drill down -v`.
+5. Write the result in the [drill log](#drill-log) below.
 
 ## Verification checklist
 
-After `restore.sh` reports it has finished:
+When `restore.sh` has finished:
 
-1. **Schema matches the shipped code**:
+1. **The database matches the code:**
    ```
    docker compose -f docker-compose.restore.yml -p bubu-restore-drill exec -T web python manage.py migrate --check
    ```
-   A restored dump from an older app version failing this check is expected
-   and informative, not a bug in the restore — it means the app image running
-   against it also needs to match the backup's `app_version` (from
-   `manifest.json`) to test a truly historical state.
-2. **Postgres actually has data**:
+   If the backup comes from an older version of the app, this check can fail. That is
+   normal. To test an old backup fully, run the app version written in `manifest.json`
+   (`app_version`).
+2. **The database contains data:**
    ```
    docker compose -f docker-compose.restore.yml -p bubu-restore-drill exec -T db psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c '\dt'
    ```
-   should list the app's tables, non-empty.
-3. **Files referenced in the database exist on disk** — spot-check a handful
-   of `DocumentFile`/`Attachment`/`Person.profile_photo`/`Photo` rows against the
-   restored `media`/`documents_data` trees (`Photo` lives under
-   `documents_data/photos`, nested inside the same archive — see
-   `settings.PHOTOS_ROOT`):
+   You should see the app's tables, with data in them.
+3. **The files exist on disk.** Check a few documents and photos:
    ```
    docker compose -f docker-compose.restore.yml -p bubu-restore-drill exec -T web python manage.py shell -c "
    from documents.models import DocumentFile
@@ -86,23 +72,21 @@ After `restore.sh` reports it has finished:
        print(p.file.name, p.file.storage.exists(p.file.name))
    "
    ```
-4. **The app actually serves**:
+   Every line should end with `True`.
+4. **The app responds:**
    ```
    docker compose -f docker-compose.restore.yml -p bubu-restore-drill exec -T web curl -sf http://localhost:8000/healthz
    ```
 
 ## Manifest contract
 
-`restore.sh` reads `manifest.json` from the backup directory before doing
-anything else, and refuses to proceed if a listed artifact's sha256 doesn't
-match. See `scripts/backup.sh` for the authoritative field list
-(`manifest_version`, `app_version`, `postgres_version`, `backup_start`,
-`backup_end`, `backup_exit_status`, `artifacts`). A restore against a
-`manifest_version` newer than what `restore.sh` understands aborts with an
-explicit error rather than guessing.
+`restore.sh` reads `manifest.json` first. If a file's checksum does not match, it
+stops. The list of fields is in `scripts/backup.sh`. If the manifest's
+`manifest_version` is newer than the script knows, the script stops with an error
+instead of guessing.
 
 ## Drill log
 
 | Date | Version | Taille | Durée | Résultat | Opérateur |
 |------|---------|--------|-------|----------|-----------|
-| _(none yet — the first drill has not been run)_ | | | | | |
+| _(none yet — no drill has been run)_ | | | | | |

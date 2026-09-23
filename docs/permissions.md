@@ -1,227 +1,152 @@
 # Permissions — who can do what
 
-Authorization is spread across a handful of mixins/helpers in `annuaire/views.py` and
-`publications/views.py` rather than one central place. This page collects them.
+Access rules are spread across several helpers in the apps' `views.py` files. This
+page collects them in one place.
 
-**Every view is login-required by default.** `django.contrib.auth.middleware.LoginRequiredMiddleware`
-(`config/settings.py`'s `MIDDLEWARE`, after `AuthenticationMiddleware`)
-redirects any anonymous request to a view that hasn't explicitly opted out. A view
-must carry `@login_not_required` (function views) or
-`@method_decorator(login_not_required, name="dispatch")` (class-based views) to
-stay public — see the "Public (unauthenticated) surface" section below for the
-full, deliberate list. This inverts the old implicit default: a new view that
-forgets both `@login_required`/`LoginRequiredMixin` **and** `@login_not_required`
-now fails closed (login-required) instead of silently becoming public, which is
-what let SEC-B's bug (`home` unauthenticated) happen in the first place.
+**Every page requires login by default.** Django's `LoginRequiredMiddleware` sends
+anonymous visitors to the login page. To make a page public, you must mark it
+explicitly with `@login_not_required` (or
+`@method_decorator(login_not_required, name="dispatch")` for class-based views). So if
+you forget to protect a new page, it stays protected. The list of public pages is in
+"Public (unauthenticated) surface" below.
 
 ## The guards
 
 | Guard | Where | Rule |
 |---|---|---|
-| `LoginRequiredMixin` | Django | Must be authenticated. Baseline on almost every view. |
-| `StaffRequiredMixin` | `annuaire/views.py` | Must be authenticated **and** `is_staff`. |
-| `can_edit_person()` | `annuaire/views.py` | Staff/superuser; the `Person`'s own linked `Account`; or an owner (`Person.owners`) of a `Person` that has **no** linked `Account` — owner rights evaporate the instant the profile gets one (`account_id is None` is checked live, not cached). Used by `ProfileDetailView` (its `can_edit` context flag), `ProfileUpdateView.get_object()`, `PersonOwnersUpdateView.get_object()`, and `_get_person_for_relations_edit()`. |
-| `_get_person_for_relations_edit()` | `annuaire/views.py` | Delegates to `can_edit_person()`. Shared by `PersonRelationsView`, `AddRelationView`, `UpdateRelationView`, `DeleteRelationView`. |
-| `PlaceOwnerOrStaffMixin` | `annuaire/views.py` | Staff/superuser, or the requesting user's `profile` is in the place's `owners`. |
-| `AuthorOrStaffRequiredMixin` | `publications/views.py` | `is_staff`, or the requesting user's `profile` is in the post's `authors`. |
-| `EventOrganiserOrStaffMixin` | `events/views.py` | Staff/superuser, or the requesting user's `profile` is in the event's `organisers`. |
-| `StoryOwnerOrStaffRequiredMixin` | `genealogy/views.py` | Staff/superuser, or the requesting user's `profile` is the story's `created_by`. |
+| `LoginRequiredMixin` | Django | Must be logged in. Used on almost every page. |
+| `StaffRequiredMixin` | `annuaire/views.py` | Must be logged in **and** staff. |
+| `can_edit_person()` | `annuaire/views.py` | Staff; the person themself; or an "owner" of a profile that has **no** account (for example, a parent for a child's profile). Owners lose their rights as soon as the profile gets its own account. |
+| `_get_person_for_relations_edit()` | `annuaire/views.py` | Same rule as `can_edit_person()`, for the family relations pages. |
+| `PlaceOwnerOrStaffMixin` | `annuaire/views.py` | Staff, or an owner of the place. |
+| `AuthorOrStaffRequiredMixin` | `publications/views.py` | Staff, or an author of the post. |
+| `EventOrganiserOrStaffMixin` | `events/views.py` | Staff, or an organiser of the event. |
+| `StoryOwnerOrStaffRequiredMixin` | `genealogy/views.py` | Staff, or the author of the story. |
 
-`ProfileUpdateView`, `PersonOwnersUpdateView` and `PlaceOwnerOrStaffMixin` raise
-`django.core.exceptions.PermissionDenied` directly from `get_object()` — see
-`CLAUDE.md` §4's "Ownership checks go in `get_object()`" convention.
-`_get_person_for_relations_edit()` doesn't follow that convention: it's a plain
-module-level function, called from `get()`/`post()` on `PersonRelationsView`,
-`AddRelationView`, `UpdateRelationView` and `DeleteRelationView` — none of which define
-a `get_object()` — but it raises the same `PermissionDenied` and gates the same way.
+Most ownership checks happen in the view's `get_object()`, which raises
+`PermissionDenied` (HTTP 403). The relations pages have no `get_object()`, so they call
+`_get_person_for_relations_edit()` from `get()` and `post()` instead. The result is the
+same.
 
 ## By view
 
+"Completed profile" means the user's account is linked to a profile (`Person`).
+
 | View | Route name(s) | Guard | Effective rule |
 |---|---|---|---|
-| `home` | `home` | `@login_required` | Any logged-in user. The "Il y a X ans" memories widget (`annuaire.memories.memories()`) is scoped through `photos.access.accessible_photos(user)` for the photo half — a photo in an album the viewer can't access never surfaces here either. The publication half has no equivalent restriction, matching `BlogPostDetailView`'s own posture: any logged-in member can already view any publication. The "Prochains événements" card's `upcoming_events` is scoped the same way, through `events.access.accessible_events(request.user)` — a restricted event never surfaces in a home feed for someone outside its group. |
-| `markdown_preview` | `markdown-preview` | `@login_required` + `@require_POST` | Any logged-in user. Sanitized-HTML preview endpoint for Markdown fields (`text` POST param, 400 above `MAX_MARKDOWN_LENGTH`). |
-| `GlobalSearchView` | `search` | `LoginRequiredMixin` | Any logged-in user. Every result type is scoped through its registered `SearchSpec.accessible(user)` (`annuaire.search.registry`) — never `Model.objects.all()` directly: `Person`/`BlogPost`/`Story` are unrestricted (same posture as `DirectoryListView`/`BlogPostDetailView` — a `Story` carries no group restriction of its own), `Document` through `documents.access.accessible_documents(user)`, `Album`/`Photo` through `photos.access.accessible_albums(user)`/`accessible_photos(user)`. A document in a locked category or a photo in a restricted album never surfaces, whether in the grouped preview or the paginated `?type=` expansion. No results below a 2-character query, mirroring `document_search_ajax`/`album_search_ajax`. |
-| `ActivityFeedView` | `activity-feed` | `LoginRequiredMixin` | Any logged-in user. `annuaire.activity.activity_since()` sources each feed entry through the same access rules as search: documents via `documents.access.accessible_documents(user)`, albums (for "N new photos") via `photos.access.accessible_albums(user)`; publications/comments/new members are unrestricted, same posture as `BlogPostDetailView`/`DirectoryListView`. A locked document or a restricted album's photos never appear, in either the "Depuis votre dernière visite" or "Plus tôt" section. A viewer never sees their own profile-join event in their own feed. |
-| `CalendarView` | `calendrier` | `LoginRequiredMixin` | Any logged-in user. Merges events, place stays and birthdays through `annuaire.calendar_data.build_calendar_entries()`, access-scoped per source: events via `events.access.accessible_events(user)` (a restricted event never surfaces), place stays unrestricted (same posture as `PlaceListView`), birthdays excluding deceased persons. Ships a bounded initial window (previous month through 3 months ahead) — never the whole corpus in one response. |
-| `calendar_feed_ajax` | `calendar-feed-ajax` | `@login_required` | Any logged-in user. Windowed refresh backing `CalendarView`'s month/agenda navigation past the initial window's edges, same access scoping and `build_calendar_entries()` source as above — each refetch is still bounded to the requested window, never the whole corpus. |
-| `regenerate_calendar_token` | `regenerate-calendar-token` | `@login_required` + `@require_POST` | Any logged-in user, regenerating their **own** `Account.calendar_token` — invalidates the old `.ics` feed link immediately, since `ICalFeedView` resolves the account strictly by token. |
-| `DirectoryListView`, `ProfileDetailView`, `PlaceListView`, `PlaceDetailView`, `AddStayView`, `UpdateStayView`, `DeleteStayView`, `FamilyTreeView`, `FamilyTreeExportView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. `ProfileDetailView`'s `?tab=photos` query-param tab (a plain GET param on this same URL, not a separate view/route) shows every photo the person is tagged in via `photos.access.accessible_photos(request.user)` — a photo in an album the viewer can't access never appears, and the tab's own photo-count label is derived from that same access-scoped queryset rather than a raw `person.tagged_photos.count()`, so the count itself can't leak how many photos exist in albums the viewer can't see. `FamilyTreeExportView`'s Excel export (`annuaire.exports.build_export_rows()`) only skips a person whose `export_privacy` is explicitly `"redact"` (`annuaire.privacy.always_redacted()`) — never a living person under the default `"auto"` state, since this export already showed that data to any logged-in member before privacy settings existed. The `?tab=histoire` tab lists every `genealogy.Story` for the person via `person.stories.chronological()`, oldest first (undated stories sorted last) — stories carry no group restriction, same posture as `Person`/`Relation`, but each story's linked photos are independently re-checked against `photos.access.accessible_photos(request.user)` at render time, so a photo from a restricted album never leaks onto the profile page through a story. Each story also lists the titles of any `genealogy.Source` it's cited against (`citations__source`, prefetched); no access check is applied to that listing since `Source`/`Citation` carry no group restriction either. |
-| `MapListView` | `carte` | `LoginRequiredMixin` | Any logged-in user. `persons_json`/`places_json` (`annuaire.map_data.build_person_map_groups()`/`build_place_map_groups()`) are unrestricted, same posture as `DirectoryListView`/`PlaceListView`. `events_json` is the one exception: built by `build_event_map_groups(user)`, access-scoped through `events.access.accessible_events(user)` — a restricted event never plots on the shared family map for someone outside its group. Events with no geocoded coordinates are excluded entirely from `events_json`, never plotted at a default/zero coordinate. |
-| `PlaceCreateView` | `place-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; the creator is auto-added as an owner. |
-| `ProfileCreateView` | `profile-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with **no** linked profile yet (redirects to `my-profile` otherwise). Passes `user` to `ProfileEditForm`, so its `deceased`/`death_date`/`death_place` fields are staff/superuser-only — popped from the form entirely for anyone else. `export_privacy` (the export-redaction consent choice) is **not** staff-gated — it's editable by anyone who can already edit the profile, since it's the subject's own choice. Same for `PersonCreateView`/`ProfileUpdateView` below. |
-| `PersonCreateView` | `person-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile; creates an accountless `Person` and auto-adds the creator as an owner. Same `ProfileEditForm` field-level gate as `ProfileCreateView` above: `deceased`/`death_date`/`death_place` are staff/superuser-only; `export_privacy` is not. |
-| `ProfileUpdateView` | `person-edit` | `get_object()` override (`can_edit_person()`) | Owner of the profile, or staff/superuser. Also renders and saves the profile's notification preferences (`FormSettings`) alongside the main form — no separate guard, so anyone who can edit the profile can edit its notification prefs too. Same `ProfileEditForm` field-level gate as `ProfileCreateView`/`PersonCreateView`: `deceased`/`death_date`/`death_place` are staff/superuser-only; `export_privacy` is not — anyone who can edit the profile (owner or staff) can also set its export-privacy choice. |
-| `PersonOwnersUpdateView` | `person-owners-edit` | `get_object()` override (`can_edit_person()` + `account_id is None`) | Owner of an **accountless** `Person`, or staff/superuser. 403 if the profile already has an `Account` — ownership stops being editable once someone can log in as that profile. |
-| `PersonAnonymiseView` | `person-anonymise` | `StaffRequiredMixin` | Staff only. GET confirms and lists what's erased/kept, POST calls `anonymise_person()` — irreversibly blanks the profile's identity while keeping every authorship/upload relation pointed at the same `Person` row. Refuses to run twice, or to deactivate the last active staff `Account`. See [`privacy.md`](privacy.md#retention-and-erasure-policy). |
-| `PersonalDataExportView` | `person-data-export` | `can_edit_person()` | Same gate as `person-edit`: owner of the profile, staff/superuser, or an owner of an accountless profile. Downloads a `.zip` of everything the site holds on that `Person`, each category scoped through the **requesting viewer's** own access (e.g. `documents.access.accessible_documents(viewer)`), never the export subject's — see [`privacy.md`](privacy.md). |
-| `ProfileClaimView` | `profile-claim` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with **no** linked profile; self-service, instant, no approval — links the account to any `Person` with `account__isnull=True`. Deliberately not reachable from the public signup form (see "Public (unauthenticated) surface" below). |
-| `PersonRelationsView` (read), `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | Owner of the `Person` (via `can_edit_person()`), or staff/superuser. `PersonRelationsView.get()` calls this helper too, so viewing the relations page is just as gated as editing it. |
+| `home` | `home` | `@login_required` | Any logged-in user. The "Il y a X ans" photos and the upcoming events only show what the user is allowed to see. |
+| `markdown_preview` | `markdown-preview` | `@login_required` + POST only | Any logged-in user. Shows a preview of Markdown text. |
+| `GlobalSearchView` | `search` | `LoginRequiredMixin` | Any logged-in user. Results only include what the user can see: no documents from locked categories, no photos from restricted albums. See [`search.md`](search.md). |
+| `ActivityFeedView` | `activity-feed` | `LoginRequiredMixin` | Any logged-in user. Same access rules as search. |
+| `CalendarView` | `calendrier` | `LoginRequiredMixin` | Any logged-in user. Shows events (only those the user can see), stays in houses, and birthdays (not for deceased people). |
+| `calendar_feed_ajax` | `calendar-feed-ajax` | `@login_required` | Any logged-in user. Loads more calendar data when the user changes month. Same rules as above. |
+| `regenerate_calendar_token` | `regenerate-calendar-token` | `@login_required` + POST only | Any logged-in user, for their **own** calendar link. The old `.ics` link stops working at once. |
+| `DirectoryListView`, `ProfileDetailView`, `PlaceListView`, `PlaceDetailView`, `AddStayView`, `UpdateStayView`, `DeleteStayView`, `FamilyTreeView`, `FamilyTreeExportView` | `annuaire` | `LoginRequiredMixin` | Any logged-in user. On a profile, the "Photos" tab only shows photos from albums the user can open, and the photo count only counts those. The "Histoire" tab shows the person's life stories, and hides photos from restricted albums. The Excel export of the family tree only hides people whose privacy choice is "redact". |
+| `MapListView` | `carte` | `LoginRequiredMixin` | Any logged-in user. All people and houses appear. Events only appear if the user can see them and they have an address with coordinates. |
+| `PlaceCreateView` | `place-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. The creator becomes an owner. |
+| `ProfileCreateView` | `profile-create` | `LoginRequiredMixin` + profile check | A logged-in user who has **no** profile yet. Only staff can fill in the death fields (`deceased`, `death_date`, `death_place`). Anyone who can edit the profile can set its export privacy choice. |
+| `PersonCreateView` | `person-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. Creates a profile with no account; the creator becomes an owner. Same field rules as `ProfileCreateView`. |
+| `ProfileUpdateView` | `person-edit` | `can_edit_person()` | See `can_edit_person()`. Also edits the person's email notification settings. Same field rules as `ProfileCreateView`. |
+| `PersonOwnersUpdateView` | `person-owners-edit` | `can_edit_person()` + no account | An owner or staff, only for a profile with **no** account. Returns 403 once the profile has an account. |
+| `PersonAnonymiseView` | `person-anonymise` | `StaffRequiredMixin` | Staff only. Erases a person's identity for good. See [`privacy.md`](privacy.md#retention-and-erasure-policy). |
+| `PersonalDataExportView` | `person-data-export` | `can_edit_person()` | Same as `person-edit`. Downloads a `.zip` of the person's data. It only includes what the **requesting user** can see. See [`privacy.md`](privacy.md). |
+| `ProfileClaimView` | `profile-claim` | `LoginRequiredMixin` + profile check | A logged-in user with no profile. Links their account to an existing profile that has no account. Instant, with no approval. Not available from the public signup form. |
+| `PersonRelationsView`, `AddRelationView`, `UpdateRelationView`, `DeleteRelationView` | `person-relations-edit`, `person-relation-*` | `_get_person_for_relations_edit()` | See `can_edit_person()`. Even viewing the relations page needs this right. |
 | `BulkAccountCreateView` | `bulk-account-create` | `StaffRequiredMixin` | Staff only. |
-| `PersonDuplicateListView` | `person-duplicate-list` | `StaffRequiredMixin` | Staff only. Lists likely-duplicate `Person` pairs from `person_merge.find_duplicate_candidates()` — computed live on every page load (identical normalized name, or same surname + birth date, or identical email), never persisted. Linked from the "Doublons potentiels" entry in the Administration nav group. |
-| `PersonMergeView` | `person-merge` | `StaffRequiredMixin` | Staff only. Confirmation screen for `person_merge.merge_persons()`: moves every relation, photo tag, document, présence, RSVP, blog-post authorship, place/event ownership, story, source, citation, and GEDCOM import reference (upload authorship, staged-individual match/created-person links) from the "loser" `Person` onto the "winner", reassigning the loser's own photo file before deleting the loser row. Differing scalar fields get a per-field radio choice rather than either profile blindly overwriting the other. Refuses the merge outright if both profiles already have their own linked `Account` — ambiguous which login should survive. |
-| `GedcomImportUploadView`, `GedcomImportReviewView`, `GedcomImportApplyView`, `GedcomImportDiscardView` | `gedcom-import-upload`, `gedcom-import-review`, `gedcom-import-apply`, `gedcom-import-discard` | `StaffRequiredMixin` | Staff only. Upload a GEDCOM file (`GedcomImport`, staged via `genealogy.gedcom.importer.stage_gedcom_import()`), review every `StagedIndividual`/`StagedFamily` it found (create / merge into an existing `Person` / skip, per row), then either apply (`apply_gedcom_import()` — nothing touches `Person`/`Relation` before this step) or discard the whole upload. UTF-8 (with or without BOM) and CP1252 are accepted; legacy ANSEL-encoded files are rejected with a French message asking for a UTF-8 re-export. |
-| `AuditLogListView` | `audit-log-list` | `StaffRequiredMixin` | Staff only. Lists every `AuditEvent` (create/update/delete on `Person`/`Relation`/`Document`/`Album`/`Photo`, plus group and `Person.owners` membership changes), most recent first, paginated 20 per page. See [`audit.md`](audit.md). |
-| `CorbeilleListView` | `corbeille-list` | `StaffRequiredMixin` | Staff only. Lists every trashed `BlogPost`/`Document`/`Album`/`Photo` row (`deleted_at` not null), most recently deleted first. See [`corbeille.md`](corbeille.md). |
-| `CorbeilleRestoreView`, `CorbeillePurgeView` | `corbeille-restore`, `corbeille-purge` | `StaffRequiredMixin` | Staff only, POST-only. Restore or permanently purge one trashed row. The target model is resolved from the URL's `app_label`/`model_name` but validated against a hardcoded `CORBEILLE_MODELS` allowlist (404 otherwise) — never an arbitrary model looked up directly from user input. |
-| `SiteConfigUpdateView` | `site-config` | `StaffRequiredMixin` | Staff only. Edits the singleton `SiteConfig` row (site name, wordmark, tagline, sender address, feedback URL, timezone, default language); `get_object()` returns `annuaire.site_config.get_site_config()` rather than a plain lookup, so the form works even before a row exists. See [`site_config.md`](site_config.md). |
-| `GroupListView`, `GroupCreateView`, `GroupUpdateView`, `GroupDeleteView`, `GroupMembersUpdateView` | `group-list`, `group-create`, `group-edit`, `group-delete`, `group-members-edit` | `StaffRequiredMixin` | Staff only. Membership is assigned by picking `Person`s who have an `Account` (`GroupMembersUpdateView` saves via `group.account_set.set(...)`). Deletion is guarded: `documents.CategoryGroupAccess.group`, `photos.AlbumGroupAccess.group`, **and** `events.EventGroupAccess.group` are all `on_delete=PROTECT`, so deleting a `Group` still restricting a `documents.Category`, a `photos.Album`, or an `events.Event` raises `ProtectedError`, caught by `GroupDeleteView.post()` and shown as a French error naming the blocking categories, albums, and/or events; the confirm page also proactively disables the delete button and shows the same warning when it already knows the group is blocked. |
-| `PlaceUpdateView`, `PlaceOwnersUpdateView` | `place-edit`, `place-owners-edit` | `PlaceOwnerOrStaffMixin` | Place owner, or staff/superuser. |
-| `BlogPostListView`, `BlogPostDetailView` (read + comment) | `publications` | `LoginRequiredMixin` | Any logged-in user with a completed profile can comment; posting requires a `Person` profile. `BlogPostDetailView`'s `linked_documents`/`linked_albums` context is `accessible_documents(request.user)`/`accessible_albums(request.user)` filtered to the post, re-checked at render time rather than a stored snapshot — a document later moved into a locked category, or an album later restricted, silently disappears from the publication page, consistent with `DocumentDetailView`'s "invisible, not locked" rule (unlike `CategoryListView`'s categories or `AlbumListView`'s albums, which are visible-but-locked in their own listings). `linked_albums` is annotated with `photo_count`/`select_related("cover")` the same way `AlbumListView` is, since it's rendered through the same `_album_card.html` partial. |
-| `BlogPostCreateView` | `blogpost-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile. `BlogPostForm`'s `documents`/`albums` field querysets are `accessible_documents(user)`/`accessible_albums(user)`; the view must pass `user` in `get_form_kwargs()` or either field silently falls back to an empty queryset (fail closed, never every document/album). |
-| `BlogPostUpdateView`, `BlogPostDeleteView` | `blogpost-edit`, `blogpost-delete` | `AuthorOrStaffRequiredMixin` | An author of that post, or staff. `BlogPostUpdateView` has its own `get_form_kwargs()` passing `user` for the same reason as `BlogPostCreateView` — without it, the `documents`/`albums` M2M fields would validate against an empty queryset and silently clear every document/album linked to the post on save. |
-| `CommentDeleteView` | `comment-delete` | `StaffRequiredMixin` | **Staff only — not the comment's own author.** Asymmetric with blog post deletion, where authors can delete their own posts. |
-| `CategoryListView` | `category-list` | `LoginRequiredMixin` | Any logged-in user. **"Visible but locked":** queries `Category.objects.all()` unfiltered — every category appears, including ones the viewer can't open, which render name-only with a lock badge naming the unlocking group(s) (`documents.access.user_can_access_category()`/`effective_groups()` per row via the `documents_extras` template filters). Never uses `accessible_categories()` — that would hide locked categories entirely, which is the opposite of this project's chosen model. |
-| `CategoryDetailView` | `category-detail` | `LoginRequiredMixin` | Any logged-in user; resolves via plain `get_object_or_404` (no `PermissionDenied` — the page itself isn't secret). Renders full description + document list only if `user_can_access_category()` is true; otherwise a locked placeholder naming the unlocking group(s), with no description/document leakage. |
-| `DocumentListView` | `document-list` | `LoginRequiredMixin` | Any logged-in user. Uses `documents.access.accessible_documents()` — a locked category's documents never appear here regardless of direct-link guesses; the category filter dropdown is likewise populated from `accessible_categories()` only, and the redactor/year filter options are likewise derived from the accessible queryset rather than every `Person`/`document_date` in the table. Sorting (`DOCUMENT_SORTS`, mirroring the annuaire directory's sort pattern) applies after that same scoping, so no sort option can surface a locked document. |
-| `document_search_ajax` | `document-search-ajax` | `@login_required` | Any logged-in user. Backs the document picker on the publication form (reuses `annuaire`'s `_person_picker.html`/`person_picker.js` unmodified, driven by `data-search-url`). Queryset is `accessible_documents(request.user)` — same access boundary as `DocumentListView`, never `Document.objects.all()`. No results below a 2-character query. The query is tokenized on whitespace (one `title__icontains` per token, ANDed), so word order doesn't matter; full-query prefix matches rank first, capped at 20 results — unlike `album_search_ajax`, which still does a single-phrase `icontains` capped at 10. |
-| `CategoryCreateView`, `CategoryUpdateView`, `CategoryDeleteView` | `category-create`, `category-edit`, `category-delete` | `StaffRequiredMixin` | Staff only. `CategoryForm.clean()` re-derives the group-restriction ancestor/descendant invariant (see `documents/models.py`'s `validate_category_group_restriction` `m2m_changed` receiver) so a violating submission surfaces as a normal form error, not a 500. Deletion follows the same `ProtectedError`-catching pattern as `GroupDeleteView` (`Category.parent`/`Document.category` are both `on_delete=PROTECT`), showing document/child-category counts and disabling the delete button when non-empty. |
-| `DocumentFileView` | `document-file`, `document-file-thumbnail` | `LoginRequiredMixin` + explicit `user_can_access_category()` check | Any logged-in user who can access the file's `Document.category` (re-checked on every request, independent of any list/detail filtering — the only way to reach a `DocumentFile`'s bytes, since `DocumentStorage.url()` raises). Keyed by `DocumentFile` pk only, never by path. `@xframe_options_sameorigin` (not the site's default `DENY`) — originally so a same-origin PDF `<embed>` could render; PDFs now render via `pdf.js` canvas instead (see `document_viewer.js`), which doesn't need it, but the decorator hasn't been removed. Inline `Content-Disposition` only for `.png/.jpg/.jpeg/.gif/.webp/.pdf`, `attachment` otherwise or when `?download=1`; `X-Content-Type-Options: nosniff` always. Thumbnail variant 404s if the `DocumentFile` has none. |
-| `DocumentDetailView` | `document-detail` | `LoginRequiredMixin` | Any logged-in user. Queryset scoped to `accessible_documents()` — a document in a locked category 404s directly (unlike categories, documents are never "visible but locked"). `can_edit` context flag (for the edit/delete buttons) is true for staff/superuser or the document's own `uploaded_by`. |
-| `DocumentCreateView` | `document-create` | `LoginRequiredMixin` + `dispatch()` profile check | Any logged-in user with a completed profile (redirects to `profile-create` otherwise, mirroring `BlogPostCreateView`). The category `<select>` is scoped to `accessible_categories(user)` for non-staff — a member can never even see a locked category as an upload target; staff/superuser get every category. Sets `Document.uploaded_by` to the requester's profile. |
-| `DocumentUpdateView`, `DocumentDeleteView` | `document-edit`, `document-delete` | `UploaderOrStaffRequiredMixin` | The document's own `uploaded_by`, or staff/superuser (`user.is_staff or user.is_superuser`, not `is_staff`-only — deliberately not copying `AuthorOrStaffRequiredMixin`'s documented bug). Ownership check in `get_object()`, raising `PermissionDenied`, per this project's standard convention. |
-| `AlbumListView` | `album-list` | `LoginRequiredMixin` | Any logged-in user. **"Visible but locked"**, like `CategoryListView`: queries `Album.objects.all()` unfiltered — every album appears, including ones the viewer can't open, which render name-only with a lock badge naming the unlocking group(s) (`photos.access.user_can_access_album()`/`effective_groups()` via the `photos_extras` template filters). Never uses `accessible_albums()` for the listing itself — that would hide locked albums entirely, the opposite of this project's chosen model. Albums are flat (no nesting like `documents.Category`), so there is no ancestor/descendant walk. |
-| `AlbumCreateView` | `album-create` | `LoginRequiredMixin` + `dispatch()` profile check | Any logged-in user with a completed profile (redirects to `profile-create` otherwise, mirroring `DocumentCreateView`). Sets `Album.created_by` to the requester's profile. |
-| `AlbumDetailView` | `album-detail` | `LoginRequiredMixin` | Any logged-in user; resolves via a plain `get_object_or_404` (the page itself isn't secret). Implemented as a `ListView` over the album's photos (paginated, 24/page) with the album added to context, rather than `DetailView` + a hand-rolled `Paginator`. Renders the description and photo grid only if `user_can_access_album()` is true; otherwise a locked placeholder naming the unlocking group(s), with no description/photo leakage — mirrors `CategoryDetailView`'s split exactly. The photo queryset itself returns `Photo.objects.none()` when locked, so a template bug can't leak photos even if the `can_access` check were skipped. `can_edit` (for the edit/delete buttons) is true for staff/superuser or the album's own `created_by`. |
-| `PhotoUploadView` | `photo-upload` | `LoginRequiredMixin` + explicit `user_can_access_album()` check | Any member who can access the album — not staff/uploader-restricted, the same collaborative posture as photo tagging. Per-file XHR JSON endpoint (`photo_upload.js`), one `Photo` per POST; sets `uploaded_by` to the requester's profile (`None` if they have none — uploading doesn't require a completed profile, unlike creating an album). |
-| `PhotoTagView` | `photo-tag` | `LoginRequiredMixin` + explicit `user_can_access_album()` check | Any member who can access the photo's album may add/remove a `PersonTag` — collaborative by design, not restricted to the photo's uploader (identifying faces in a family archive is a group effort, and the uploader is often the one person who doesn't know everyone in the shot). Reuses `annuaire`'s generic person-picker; `tagged_by` records who made each tag. Dedicated page for now, linked from every photo tile and from `PhotoDetailView`. |
-| `PhotoDetailView` | `photo-detail` | `LoginRequiredMixin` | Any logged-in user. Queryset scoped to `accessible_photos(user)` — a photo in a restricted album 404s directly, **never** "visible but locked" (unlike an album itself, which is visible-but-locked in its own listing). `can_edit` (edit/delete buttons) is true for staff/superuser or the photo's own `uploaded_by`. Shows tagged people (`photo.person_tags`) and prev/next navigation (`photos.queries.neighbours()`), and links to the original-file download (`photo-file?download=1`). |
-| `PhotoUpdateView`, `PhotoDeleteView` | `photo-edit`, `photo-delete` | `PhotoOwnerOrStaffRequiredMixin` | The photo's own `uploaded_by`, or staff/superuser. Ownership check in `get_object()`, raising `PermissionDenied`, per this project's standard convention. `PhotoUpdateView` only edits the caption. Deletion triggers the existing `register_file_cleanup()` signal (no new cleanup code needed) and redirects back to the album, not a photo list. |
-| `AlbumUpdateView`, `AlbumDeleteView` | `album-edit`, `album-delete` | `AlbumOwnerOrStaffRequiredMixin` | The album's own `created_by`, or staff/superuser. Ownership check in `get_object()`, raising `PermissionDenied`, per this project's standard convention. Deletion is `CASCADE` onto the album's photos — the confirm page states the photo count loudly, no `ProtectedError` involved (unlike `Category`/`Document`, an album is expected to be deleted as a unit; recoverability is left to a future *corbeille* feature, not a delete-time block). |
-| `PhotoFileView` | `photo-file`, `photo-file-web`, `photo-file-thumbnail` | `LoginRequiredMixin` + explicit `user_can_access_album()` check | Any logged-in user who can access the file's `Photo.album` (re-checked on every request, independent of any list/detail filtering — the only way to reach a `Photo`'s bytes, since `PhotoStorage.url()` raises). Keyed by `Photo` pk only, never by path. `@xframe_options_sameorigin`, mirroring `DocumentFileView`. Inline `Content-Disposition` only for `.png/.jpg/.jpeg/.gif/.webp`, `attachment` otherwise or when `?download=1`; `X-Content-Type-Options: nosniff` always; `Cache-Control: private, max-age=604800` (an album page can fire dozens of these per view, unlike a document page's handful — `private` is mandatory since the bytes are access-checked and must never sit in a shared proxy cache). Unlike `DocumentFileView`'s thumbnail variant, the `web`/`thumbnail` variants **fall back to the original** when the derivative hasn't been generated yet (derivatives are async — see a later roadmap item) rather than 404ing. |
-| `album_search_ajax` | `album-search-ajax` | `@login_required` | Any logged-in user. Backs the album picker on the publication form (reuses `annuaire`'s `_person_picker.html`/`person_picker.js` unmodified, driven by `data-search-url`). Queryset is `accessible_albums(request.user)` — same access boundary as `AlbumListView`'s underlying data, never `Album.objects.all()`. No results below a 2-character query. Matching is a single-phrase `title__icontains` capped at 10 results — simpler than `document_search_ajax`'s tokenized/ranked matching, not an exact mirror of it. |
-| `EventListView`, `EventDetailView` | `event-list`, `event-detail` | `LoginRequiredMixin` | Any logged-in user. Both are scoped through `events.access.accessible_events(user)` — unlike `CategoryListView`/`AlbumListView`, a locked event is **never** "visible but locked": a leaked date/address is a bigger deal than a leaked folder/album name, so a restricted event is simply absent from the list and 404s directly on detail. `EventListView` defaults to upcoming events (`EventQuerySet.upcoming()`); `?passes=1` switches to past events, most-recent-first. `EventDetailView`'s `can_edit` context flag is true for staff/superuser or a profile in the event's `organisers`. `accessible_events()` takes a `bypass_staff=True` keyword (default preserves the in-app staff/superuser "see everything" shortcut used here and everywhere else); the iCal feed (`ICalFeedView`, below) is the one caller that passes `bypass_staff=False` — a staff member's calendar subscription must reflect their own group membership, not their staff privileges, since it's data leaving the app into a third-party service. |
-| `EventCreateView` | `event-create` | `LoginRequiredMixin` + `dispatch()` check | Any logged-in user with a completed profile (redirects to `profile-create` otherwise, mirroring `DocumentCreateView`/`AlbumCreateView`). Auto-adds the creator to `organisers` inside a transaction even if the submitted form omitted them, mirroring `PlaceCreateView`'s owners guarantee — an event can never end up with zero organisers. |
-| `EventUpdateView`, `EventDeleteView` | `event-edit`, `event-delete` | `EventOrganiserOrStaffMixin` | An organiser of that event, or staff/superuser. Ownership check in `get_object()`, raising `PermissionDenied`, per this project's standard convention. |
-| `EventRsvpView` | `event-rsvp` | `LoginRequiredMixin` + explicit `can_edit_person()` check (`annuaire.views`) | Any member who can access the event (`accessible_events(user)`) may submit an `Rsvp` on behalf of anyone they `can_edit_person()` for — themself, or an accountless profile they own — the same collaborative posture as `PhotoTagView` (a parent answering for a child, mirroring a parent tagging a child in a photo). POST-only; resolves the event through `accessible_events(request.user)` (a restricted event 404s for non-members) and the target person from the POST body, 403 if `can_edit_person()` fails. Uses `Rsvp.objects.update_or_create()`, keyed on the `(event, person)` unique constraint, then redirects back to `event-detail`. |
-| `GedcomExportView` | `gedcom-export` | `LoginRequiredMixin` | Any logged-in user. GEDCOM interchange-format export of the family tree, or a client-selected subtree via the same `?ids=` pattern as `FamilyTreeExportView`'s Excel export — same unrestricted access posture, no group scoping. Unlike the Excel export, this one applies living-person privacy: `annuaire.privacy.is_redacted()` blanks out a person's name (`redacted_display_name()`) whenever their `export_privacy` is `"redact"`, or is the default `"auto"` **and** they're still considered living (`is_living()` — under 100 years old, or of unknown birth date, fail-safe). `export_privacy = "share"` opts a living person out of that default redaction. |
-| `StoryCreateView` | `story-create` | `LoginRequiredMixin` | Any logged-in member may add a story for any `Person` — collaborative posture, like tagging people in a photo or editing relations, not creator/staff-restricted (only editing/deleting is). Sets `Story.created_by` to the requester's own profile (`None` if they have none). |
-| `StoryUpdateView`, `StoryDeleteView` | `story-update`, `story-delete` | `StoryOwnerOrStaffRequiredMixin` | The story's own author (`created_by`), or staff/superuser. Ownership check in `get_object()`, raising `PermissionDenied`, per this project's standard convention. |
+| `PersonDuplicateListView` | `person-duplicate-list` | `StaffRequiredMixin` | Staff only. Lists profiles that may be duplicates (same name, same surname and birth date, or same email). |
+| `PersonMergeView` | `person-merge` | `StaffRequiredMixin` | Staff only. Merges two profiles: everything linked to one profile moves to the other. Staff choose which value to keep for each differing field. Refused if both profiles have an account. |
+| `GedcomImportUploadView`, `GedcomImportReviewView`, `GedcomImportApplyView`, `GedcomImportDiscardView` | `gedcom-import-*` | `StaffRequiredMixin` | Staff only. Import a GEDCOM family tree file: upload, review each person (create, merge or skip), then apply or discard. Nothing changes before "apply". Accepts UTF-8 and CP1252 files. |
+| `AuditLogListView` | `audit-log-list` | `StaffRequiredMixin` | Staff only. See [`audit.md`](audit.md). |
+| `CorbeilleListView` | `corbeille-list` | `StaffRequiredMixin` | Staff only. Lists items in the trash. See [`corbeille.md`](corbeille.md). |
+| `CorbeilleRestoreView`, `CorbeillePurgeView` | `corbeille-restore`, `corbeille-purge` | `StaffRequiredMixin` + POST only | Staff only. Restore an item, or delete it for good. Only the four trash-enabled models are accepted (404 otherwise). |
+| `SiteConfigUpdateView` | `site-config` | `StaffRequiredMixin` | Staff only. Edits the site settings. See [`site_config.md`](site_config.md). |
+| `GroupListView`, `GroupCreateView`, `GroupUpdateView`, `GroupDeleteView`, `GroupMembersUpdateView` | `group-*` | `StaffRequiredMixin` | Staff only. A group that still restricts a document category, an album or an event cannot be deleted. The page says which ones block it. |
+| `PlaceUpdateView`, `PlaceOwnersUpdateView` | `place-edit`, `place-owners-edit` | `PlaceOwnerOrStaffMixin` | An owner of the place, or staff. |
+| `BlogPostListView`, `BlogPostDetailView` | `publications` | `LoginRequiredMixin` | Any logged-in user can read. A completed profile is needed to comment. Documents and albums linked to a post only appear if the user can see them. |
+| `BlogPostCreateView` | `blogpost-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. The user can only link documents and albums they can see. |
+| `BlogPostUpdateView`, `BlogPostDeleteView` | `blogpost-edit`, `blogpost-delete` | `AuthorOrStaffRequiredMixin` | An author of the post, or staff. |
+| `CommentDeleteView` | `comment-delete` | `StaffRequiredMixin` | **Staff only. The author of a comment cannot delete it.** This is different from posts, which their authors can delete. |
+| `CategoryListView` | `category-list` | `LoginRequiredMixin` | Any logged-in user. **"Visible but locked":** all categories are listed. A category the user cannot open shows only its name, a lock, and the group(s) that can open it. |
+| `CategoryDetailView` | `category-detail` | `LoginRequiredMixin` | Any logged-in user. If the user cannot open the category, the page shows a lock and the group(s) that can open it, with no description or documents. |
+| `DocumentListView` | `document-list` | `LoginRequiredMixin` | Any logged-in user. Only lists documents the user can see. The filters and sorting only use those documents too. |
+| `document_search_ajax` | `document-search-ajax` | `@login_required` | Any logged-in user. Searches documents for the document picker (in the post form). Only returns documents the user can see. Needs at least 2 characters. Up to 20 results. |
+| `CategoryCreateView`, `CategoryUpdateView`, `CategoryDeleteView` | `category-*` | `StaffRequiredMixin` | Staff only. A category that still contains documents or sub-categories cannot be deleted. |
+| `DocumentFileView` | `document-file`, `document-file-thumbnail` | `LoginRequiredMixin` + category access check | A logged-in user who can open the document's category. This is the **only** way to download a document file. Access is checked on every request. Images and PDFs open in the browser. Other files are downloaded. |
+| `DocumentDetailView` | `document-detail` | `LoginRequiredMixin` | Any logged-in user who can see the document. Otherwise 404: unlike categories, documents are never "visible but locked". The uploader and staff can edit. |
+| `DocumentCreateView` | `document-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. Members can only upload into categories they can open. Staff can upload anywhere. |
+| `DocumentUpdateView`, `DocumentDeleteView` | `document-edit`, `document-delete` | `UploaderOrStaffRequiredMixin` | The uploader, or staff. |
+| `AlbumListView` | `album-list` | `LoginRequiredMixin` | Any logged-in user. **"Visible but locked"**, like categories: all albums are listed, and locked ones show only their name, a lock, and the group(s) that can open them. |
+| `AlbumCreateView` | `album-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. |
+| `AlbumDetailView` | `album-detail` | `LoginRequiredMixin` | Any logged-in user. If the user cannot open the album, the page shows a lock, with no description or photos. The creator and staff can edit. |
+| `PhotoUploadView` | `photo-upload` | `LoginRequiredMixin` + album access check | Any member who can open the album. |
+| `PhotoTagView` | `photo-tag` | `LoginRequiredMixin` + album access check | Any member who can open the album can say who is in a photo. This is open to everyone on purpose: recognising people in old photos is a group effort. |
+| `PhotoDetailView` | `photo-detail` | `LoginRequiredMixin` | Any logged-in user who can open the album. Otherwise 404: photos are never "visible but locked". The uploader and staff can edit. |
+| `PhotoUpdateView`, `PhotoDeleteView` | `photo-edit`, `photo-delete` | `PhotoOwnerOrStaffRequiredMixin` | The uploader, or staff. Only the caption can be edited. |
+| `AlbumUpdateView`, `AlbumDeleteView` | `album-edit`, `album-delete` | `AlbumOwnerOrStaffRequiredMixin` | The creator, or staff. Deleting an album moves it to the trash (see [`corbeille.md`](corbeille.md)). |
+| `PhotoFileView` | `photo-file`, `photo-file-web`, `photo-file-thumbnail` | `LoginRequiredMixin` + album access check | A logged-in user who can open the album. This is the **only** way to get a photo file. Access is checked on every request. Browsers may cache files, but shared proxies may not. If the thumbnail is not ready yet, the original photo is sent. |
+| `album_search_ajax` | `album-search-ajax` | `@login_required` | Any logged-in user. Searches albums for the album picker (in the post form). Only returns albums the user can see. Needs at least 2 characters. Up to 10 results. |
+| `EventListView`, `EventDetailView` | `event-list`, `event-detail` | `LoginRequiredMixin` | Any logged-in user. A restricted event is **invisible** to non-members (404), never "visible but locked": a date and an address are more sensitive than a folder name. By default the list shows upcoming events; `?passes=1` shows past events. Organisers and staff can edit. |
+| `EventCreateView` | `event-create` | `LoginRequiredMixin` + profile check | Any logged-in user with a completed profile. The creator always becomes an organiser. |
+| `EventUpdateView`, `EventDeleteView` | `event-edit`, `event-delete` | `EventOrganiserOrStaffMixin` | An organiser, or staff. |
+| `EventRsvpView` | `event-rsvp` | `LoginRequiredMixin` + `can_edit_person()` | A member who can see the event can answer for themself, or for a profile they own (for example, a parent for a child). |
+| `GedcomExportView` | `gedcom-export` | `LoginRequiredMixin` | Any logged-in user. Exports the family tree as a GEDCOM file. Living people's names are hidden, unless they chose to share them. A person counts as living if they are under 100, or if their birth date is unknown. |
+| `StoryCreateView` | `story-create` | `LoginRequiredMixin` | Any logged-in user can add a story to any profile. |
+| `StoryUpdateView`, `StoryDeleteView` | `story-update`, `story-delete` | `StoryOwnerOrStaffRequiredMixin` | The story's author, or staff. |
 
-`genealogy.Source` and `genealogy.Citation` have no dedicated in-app views —
-they're managed entirely through the Django admin (`SourceAdmin`, with a `CitationInline`),
-gated by Django's own staff-permission system rather than anything in the table above.
-There is no public create/edit UI for either model yet.
+Sources and citations (`genealogy.Source`, `genealogy.Citation`) have no pages in the
+site. Staff manage them in the Django admin.
 
 ## Public (unauthenticated) surface
 
-Every view is gated except: `login` (`CustomLoginView`), `signup` (`SignupView`),
-`logout`, `healthz` (`config/urls.py`), `password_reset_confirm`
-(`AccountPasswordResetConfirmView` — must be reachable by a signed-out user
-following an emailed link), `password-reset` (`AccountPasswordResetView`) and
-`password-reset-done` (`AccountPasswordResetDoneView`) — the self-service "mot de
-passe oublié" request form linked from the login page and its "check your email"
-confirmation, both of which follow Django's stock no-user-enumeration behavior:
-requesting a reset for an unregistered email still redirects to the confirmation
-page without sending anything or revealing whether the account exists. `healthz`
-and the root `/` redirect (`config/urls.py`) are also public, each
-decorated `@login_not_required`. `ical-feed` (`ICalFeedView`, `calendrier/<token>.ics`)
-is also `@login_not_required` — unauthenticated by design, since a third-party
-calendar client can't carry a session — but it is **not** a blanket-public view: the
-URL token resolves exactly one `Account` (404 on a missing/invalid token, never a
-500), and every entry in the feed is scoped through that specific account's own
-access via `annuaire.calendar_data.build_calendar_entries(..., strict=True)`. In `strict` mode, a person's birthday entry is also skipped when their `export_privacy` is explicitly `"redact"` (`annuaire.privacy.always_redacted()`) — never a living person under the default `"auto"` state, matching the Excel export's posture; in-app calendar browsing (non-`strict`) is unaffected either way. `home` was the last unauthenticated view in
-`annuaire`/`publications` until it was gated; nothing new should be added to this
-list without a deliberate decision — and since `LoginRequiredMiddleware` now fails
-closed, a new view that's meant to be public won't work at all until it's
-explicitly decorated and added here. `branding-asset` (`/branding/<kind>`) is
-one such deliberate later addition — see below.
+These pages work without login:
 
-Django's own auth views (`LoginView`, `PasswordResetView`,
-`PasswordResetDoneView`, `PasswordResetConfirmView`) already carry
-`login_not_required` in Django 5.1+, so `CustomLoginView` and this project's three
-`AccountPasswordReset*` subclasses inherit the exemption automatically — they are
-not separately decorated in `annuaire/views.py`. `SignupView` has no such
-built-in exemption and is decorated explicitly. Django's `LogoutView` is used
-directly (no project subclass) and is **not** decorated — an anonymous `GET` to
-`/logout/` bounces to login, which is harmless since only an authenticated user
-ever sees a logout control.
+- **Login and signup:** `login`, `signup`, `logout`.
+- **Forgotten password:** `password-reset`, `password-reset-done`,
+  `password_reset_confirm`. The confirmation page looks the same whether the email is
+  registered or not.
+- **Login by email link:** `magic-link-request`, `magic-link-sent`,
+  `magic-link-confirm-token`, `magic-link-confirm`. See
+  [`authentication.md`](authentication.md).
+- **`healthz`** and the root `/` redirect.
+- **`ical-feed`** (`calendrier/<token>.ics`): the personal calendar feed. Calendar apps
+  cannot log in, so the secret token in the URL identifies the account. An invalid
+  token returns 404. The feed only contains what that account can see. Staff do not get
+  extra events in their feed. Birthdays of people whose privacy choice is "redact" are
+  left out.
+- **`branding-asset`** (`/branding/logo`, `/branding/favicon`): the logo and icon must
+  show on the login page. Only these two files can be reached this way.
+- **`javascript-catalog`** (`/jsi18n/`): the translations used by JavaScript. The login
+  pages need it too. It contains no personal data. See [`i18n.md`](i18n.md).
+- **`set-language`** (`/annuaire/langue/`): the language switch. It works on the login
+  page too. For a logged-in user, it also saves the choice in their account.
+- **`privacy-notice`** (`confidentialite/`): the privacy page. Visitors must be able to
+  read it before they sign up. **Accepting** it (`privacy-notice-accept`) requires login.
 
-`/media/<path>` is now gated too, via `media_serve`
-(`annuaire/views.py`, wired in `config/urls.py`) — an `@login_required`
-wrapper around `django.views.static.serve` so uploaded files
-(`Person.profile_photo`, `Place.photo`, blog `Attachment.file`) are no longer
-readable by anyone who obtains the URL.
+Do not add a page to this list without a clear reason. Remember that a new public page
+will not work until you mark it with `login_not_required`.
 
-`/branding/<kind>` (`branding_asset`, `annuaire/views.py`, route name
-`branding-asset`) is the deliberate exception to that gate, and is
-`@login_not_required`: the configured logo/favicon (see
-[`site_config.md`](site_config.md)) must render on the login page itself, for
-a visitor who isn't authenticated yet. It is not a general public alias for
-`/media/`: `kind` is looked up against a fixed `{"logo": ..., "favicon":
-...}` mapping onto `SiteConfig.logo`/`SiteConfig.favicon` only, 404 on
-anything else — no path-traversal window into the rest of `MEDIA_ROOT`.
+Django's own login and password pages are already public in Django, so our versions
+inherit this. Our other public pages are marked explicitly.
 
-`/jsi18n/` (route name `javascript-catalog`, `config/urls.py`) is
-Django's stock `JavaScriptCatalog` view (`domain="djangojs"`), wrapped
-directly in `login_not_required` rather than a project subclass. It carries
-no per-user data — only the compiled JS message catalog for the active
-language — and must be public because it's loaded as the first `<script>` on
-`base_threshold.html` too, so the login/signup/magic-link/password-reset
-pages' own JS can call `gettext()`/`interpolate()` before a session exists.
-See [`i18n.md`](i18n.md).
+**Uploaded files** (`/media/...`: profile photos, place photos, blog attachments) require
+login.
 
-`/annuaire/langue/` (`set_language`, `annuaire/views.py`, route name
-`set-language`) is a project-written replacement for Django's stock
-`django.conf.urls.i18n.set_language` — the stock view isn't compatible with
-this project's global `LoginRequiredMiddleware` failing closed, so it's a
-custom `@require_POST` + `@login_not_required` view instead. It works
-anonymously (e.g. the language toggle on the login page itself) and only
-writes to `Account.language` when the requester happens to be authenticated;
-an anonymous switch only sets the `django_language` cookie. See
-[`i18n.md`](i18n.md).
+**Forced password change:** a user who must change their password is sent to the
+password change page on every page. The password reset link and the magic link are
+exceptions, so these users can still use them.
 
-The public privacy notice (`confidentialite/`, `PrivacyNoticeView`, route name
-`privacy-notice`) is also `@method_decorator(login_not_required, name="dispatch")` —
-it must be readable by a visitor who hasn't signed up yet, and is linked
-unconditionally from the sidebar's "Aide" section regardless of auth state, the
-same posture as `MagicLinkHelpView` above. Accepting it
-(`confidentialite/accepter/`, route name `privacy-notice-accept`,
-function view `accept_privacy_notice`) is the opposite: `@login_required` +
-`@require_POST`, since there's nothing to accept until you're logged in — see
-[`privacy.md`](privacy.md)'s "Consent" section for the full acceptance flow.
-
-`password_reset_confirm` is additionally listed in
-`ForcePasswordChangeMiddleware.EXEMPT_URL_PREFIXES`
-(`annuaire/middleware.py`) — an already-authenticated user flagged
-`must_change_password` must still be able to follow their own reset link instead
-of being bounced to `/password/change/`.
-
-The passwordless "magic link" login flow (reachable from the login page) adds four
-more public routes. `magic-link-request` (`MagicLinkRequestView`, a `PasswordResetView`
-subclass reusing Django's stock `PasswordResetForm` unmodified) and `magic-link-sent`
-(`MagicLinkSentView`, a `PasswordResetDoneView` subclass) inherit `login_not_required`
-automatically, the same as the `AccountPasswordReset*` views above. `magic-link-confirm-token`
-(the emailed link itself) and `magic-link-confirm` (the "confirm your login" button page)
-are both served by `MagicLinkConfirmView`, a plain `View` — not a Django auth-view
-subclass, so it has no built-in exemption to inherit and is decorated explicitly with
-`@method_decorator(login_not_required, name="dispatch")`. `ForcePasswordChangeMiddleware.
-EXEMPT_URL_PREFIXES` also lists `/annuaire/login/magic/`, for the same reason as
-`password_reset_confirm`: an already-authenticated user flagged `must_change_password`
-must still be able to complete the magic-link flow instead of being bounced to
-`/password/change/`.
-
-**Rate limiting** (`annuaire.throttling.EmailRateLimitMixin`) applies to the three
-public views above that send email on success: `signup`, `password-reset` and
-`magic-link-request`. 3 requests/hour + 10/day per submitted email, plus a 60/hour
-circuit breaker per endpoint shared across every email — the latter exists because a
-mail-bombing attempt spread across many distinct addresses would otherwise never trip
-the per-email limit at all. Keyed on the normalized submitted email, deliberately never
-on the client IP (the reverse proxy in front of this app is outside this repo, and its
-`X-Forwarded-For` trustworthiness is unconfirmed — trusting a spoofable header would
-make the throttle both bypassable and a way to lock out an innocent IP). A throttled
-request re-renders the form with the same French non-field error at HTTP 429 whether or
-not the submitted email exists — no enumeration signal either way, and no email sent.
+**Rate limiting.** Three public forms send emails: `signup`, `password-reset` and
+`magic-link-request`. Each email address can use them 3 times per hour and 10 times per
+day. Each form also accepts at most 60 requests per hour in total, to stop an attack
+that uses many different addresses. The limit is based on the email address, not on
+the IP address, because the app cannot trust the IP address it receives from the
+reverse proxy. When the limit is reached, the form shows an error (HTTP 429). The
+message is the same whether the account exists or not.
 
 ## Superuser vs staff
 
-The ownership checks in `annuaire` (`ProfileUpdateView.get_object()`,
-`PersonOwnersUpdateView.get_object()`, `_get_person_for_relations_edit()`,
-`PlaceOwnerOrStaffMixin.get_object()`) treat `is_staff` and `is_superuser` as equally
-privileged (`user.is_staff or user.is_superuser`).
-`StaffRequiredMixin` and `AuthorOrStaffRequiredMixin` only check `is_staff` — in
-practice this project always sets `is_superuser` alongside `is_staff` (see
-`AccountManager.create_superuser`), so the distinction hasn't bitten yet, but a
-staff-false/superuser-true account would be blocked from `BulkAccountCreateView`,
-`PersonDuplicateListView`/`PersonMergeView`, the `GedcomImport*` views, `CommentDeleteView`, and editing others'
-blog posts.
+Some checks accept staff **or** superuser. Others (`StaffRequiredMixin`,
+`AuthorOrStaffRequiredMixin`) only accept staff. In practice, every superuser is also
+staff, so this makes no difference today. But an account that is superuser and not
+staff could not use the staff-only pages: account creation, duplicates and merge,
+GEDCOM import, comment deletion, and editing other people's posts.

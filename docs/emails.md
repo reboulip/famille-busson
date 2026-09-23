@@ -1,160 +1,115 @@
 # Outgoing emails
 
-The messages the app sends, how they are built, and how to look at one without
-waiting for it to happen.
+The emails the site sends, how they are built, and how to preview them.
 
-The design pass behind them — palettes, the full vs. restrained treatment split, the
-per-email specs — is [`design/emails/SPEC.md`](https://github.com/reboulip/famille-busson/blob/main/design/emails/SPEC.md).
-That folder is a throwaway review artifact; this page is the reference for what shipped.
-The site uses the same palettes — see [`design_system.md`](design_system.md).
+The original design work is in
+[`design/emails/SPEC.md`](https://github.com/reboulip/famille-busson/blob/main/design/emails/SPEC.md).
+That folder was only used for review. This page describes what is actually in the
+site. The site uses the same colours as the emails (see
+[`design_system.md`](design_system.md)).
 
 ## The flows
 
-| Flow | Triggered by | Treatment | Builder |
+| Email | Sent when | Header style | Built by |
 |---|---|---|---|
-| Birthday reminder | background queue, daily 07:00 UTC (`annuaire.tasks.send_daily_birthday_reminders`) | full ridge | `annuaire.emails.birthday_reminder` |
-| New blog post | `post_save` on `BlogPost` (`publications/signals.py`) | full ridge | `annuaire.emails.new_blog_post` |
-| Event announcement | `post_save` on `Event` (`events/signals.py`) | full ridge | `annuaire.emails.event_announcement` |
-| Event reminder | background queue, daily 08:00 UTC (`events.tasks.send_event_reminders`) | full ridge | `annuaire.emails.event_reminder` |
-| Account setup / reset | staff bulk-create + resend (`BulkAccountCreateView`) | flat horizon | `annuaire.emails.account_setup` |
-| Password reset | `AccountPasswordResetView` | flat horizon | Django, `html_email_template_name` |
-| Magic link | `MagicLinkRequestView` | flat horizon | Django, `html_email_template_name` |
+| Birthday reminder | Every day at 07:00 UTC | full ridge | `annuaire.emails.birthday_reminder` |
+| New blog post | A post is published | full ridge | `annuaire.emails.new_blog_post` |
+| Event announcement | An event is created | full ridge | `annuaire.emails.event_announcement` |
+| Event reminder | Every day at 08:00 UTC, 2 days before an event | full ridge | `annuaire.emails.event_reminder` |
+| Account setup | Staff create accounts, or resend the link | flat line | `annuaire.emails.account_setup` |
+| Password reset | A user asks for a new password | flat line | Django |
+| Magic link | A user asks for a login link | flat line | Django |
 
-**Who receives what did not change** with the HTML rework: the opt-in checkboxes,
-deceased-profile exclusion and the connection-cycling bulk sender are all as they were.
-This was a rendering swap.
+Members choose which emails they receive in their profile settings. People marked as
+deceased never receive emails.
 
-**Event announcement and reminder share one opt-out:** `Settings.notify_on_event`
-covers both flows (a single preference, not two) — unlike birthday/new-post, which each
-have their own `notify_on_*` flag. `events.tasks.notification_audience(event)` is the
-shared audience computation for both: opted in (`notify_on_event=True`), a non-empty
-email, not deceased, and — if the event is group-restricted — a member of one of its
-groups. The reminder additionally excludes anyone who RSVP'd "non" on that event.
+**Event announcements and event reminders use one setting.** A member who turns off
+event emails gets neither. For an event restricted to some groups, only members of
+those groups get the emails. People who answered "non" to an event get no reminder.
 
 ## Where the code lives
 
 | File | What it holds |
 |---|---|
-| `annuaire/emails.py` | One builder per flow — decides the context, returns an `OutgoingEmail`. |
-| `annuaire/email_utils.py` | `OutgoingEmail`, `InlineImage`, `build_message`, `send_bulk_emails`, `send_one_email`. Transport and MIME. |
-| `annuaire/templates/annuaire/emails/_base.html` | The shared shell: ridge, wordmark, eaves line, card, footer. |
-| `annuaire/templates/annuaire/emails/_horizon.html` | The restrained ridge (credential flows). |
-| `annuaire/templates/annuaire/emails/_wordmark.html` | The `{{ wordmark }}` text (from `SiteConfig`, via `email_context()`/`extra_email_context` — see [`site_config.md`](site_config.md)), linked to `site_base_url` when given, plain text otherwise. Included by both `_base.html` and `_horizon.html`. |
-| `annuaire/templates/annuaire/emails/_button.html` | The single call to action. |
-| `annuaire/management/commands/preview_emails.py` | Renders or sends any flow on demand. |
+| `annuaire/emails.py` | One function per email. It prepares the content. |
+| `annuaire/email_utils.py` | Builds and sends the messages. |
+| `annuaire/templates/annuaire/emails/_base.html` | The shared layout: ridge, site name, card, footer. |
+| `annuaire/templates/annuaire/emails/_horizon.html` | The simpler header (for password and login emails). |
+| `annuaire/templates/annuaire/emails/_wordmark.html` | The site name at the top, with a link to the site. |
+| `annuaire/templates/annuaire/emails/_button.html` | The main button. |
+| `annuaire/management/commands/preview_emails.py` | Shows or sends any email on demand. |
 
-Builders are kept out of the views and commands that trigger them so the same code path
-feeds both the real sender and the preview command, and so each template's context is
-decided in exactly one place.
+The same function builds each email for real sending and for the preview command. So
+the preview always shows exactly what members receive.
 
 ## Rules that are easy to break
 
-- **Every message ships both halves.** A multipart with no text part is unreadable in a
-  text-only client and reads as a spam signal. `render_email()` returns the pair;
-  `test_every_flow_ships_a_plain_text_part` guards it.
-- **Nothing may rely on an external image.** Most clients block images until the reader
-  clicks "download images" — including on first open, which is when these are read. The
-  mountain is built from bordered-`<div>` triangles, and Outlook (whose Word engine
-  renders that unreliably) gets a flat sky band via an MSO conditional.
-- **A member photo cannot be linked.** `MEDIA_URL` is served by `media_serve` behind
-  `@login_required` on purpose; an email client is not logged in and would render the
-  login page. Photos are embedded — see below.
-- **Inline CSS on every element.** The `<style>` block carries only what must be a rule
-  rather than an inline style: the `prefers-color-scheme: dark` overrides (inline styles
-  otherwise win) and the mobile breakpoint.
-- **CTA fill is `#9C4A22` (ember), never `#D9793F` (alpenglow).** Card-tinted text on
-  alpenglow measures 2.98:1 and fails AA for the button label; on ember it is 5.90:1.
-- **Subjects are frozen.** Members may filter on them. Changing one is a product
-  decision, not a styling one.
-- **The "Gérer mes préférences" link is recipient-aware, when a recipient is known.**
-  `birthday_reminder()`/`new_blog_post()`/`event_announcement()`/`event_reminder()` take
-  an optional keyword-only `recipient: Person | None` and, when given, deep-link
-  `settings_url` to that person's
-  own `/personne/<pk>/update#notifications` instead of the generic `edit-my-profile`
-  redirect. Dropping the `recipient` argument silently falls back to the generic link —
-  easy to miss at a new call site. Absolute URLs (including this one) are built from
-  `SITE_BASE_URL`, which must resolve to the real domain outside a request context — see
-  [`deployment.md`](deployment.md#environment-variables).
-- **The wordmark and footer text link home, when a base URL is available.**
-  `_wordmark.html` renders an `<a href="{{ url }}">` when `url` is passed, or falls back
-  to a plain `<span>` otherwise — needed because the two Django stock flows (password
-  reset, magic link) render through `PasswordResetView`'s own machinery rather than
-  `annuaire.emails`' builders, so `AccountPasswordResetView`/`MagicLinkRequestView`'s
-  `extra_email_context` is now a `@property` that re-reads `get_site_config()` per
-  request and passes `site_base_url`, `site_name` and `wordmark` in directly, instead of
-  a class attribute fixed at import time. Forgetting one of these keys on a new
-  Django-stock email flow silently degrades that piece to plain text/a blank site name,
-  not an error.
-- **`site_name`/`wordmark` are resolved once per email via `email_context()` (or per
-  request via the two `extra_email_context` properties above), from `SiteConfig` — see
-  [`site_config.md`](site_config.md).** `wordmark` falls back to `site_name` when blank.
-  `account_setup()`'s non-reset subject interpolates `site_name` too (`"Votre compte
-  {site_name}"`), so it is no longer a frozen literal string — the "Subjects are frozen"
-  rule above still governs its wording/structure, just not the site name inside it.
-- **Recipient-taking emails render in the recipient's own saved language, not always
-  French.** `birthday_reminder()`/`new_blog_post()`/`event_announcement()`/
-  `event_reminder()` wrap their body in `with translation.override(_recipient_language(
-  recipient)):`, which reads `recipient.account.language` and falls back to
-  `settings.LANGUAGE_CODE` when the recipient has no `Person`/`Account` or no saved
-  preference. `account_setup()` has no `Person`/`Account` link guaranteed at its call
-  site (it's keyed on a bare email address before one may exist), so it instead takes
-  an optional `language: str | None = None` kwarg, passed in by `annuaire/views.py`'s
-  callers from the target `Account`'s own `.language` where one exists — see
-  [`i18n.md`](i18n.md).
-- **New-post notifications are enqueued from `transaction.on_commit`, not straight off
-  `post_save`.** `BlogPost`'s authors are a M2M, attached by the view *after* the row is
-  saved — a notification built directly in the `post_save` receiver saw an empty author
-  list and rendered "Par " with no names. `publications/tasks.py`'s
-  `send_blog_post_notification` re-queries the post (including its authors) from the
-  background queue, by which point the transaction that saved both the row and its M2M
-  has already committed — so the `on_commit` wrapper is what makes the *enqueue* wait
-  for that commit, not what builds the message. One task is enqueued per subscriber
-  (by post PK + plain recipient email, never a model instance), so a provider hiccup on
-  one recipient retries independently instead of the whole batch's message being lost
-  or, before this queue existed, silently dropped for everyone (see
+- **Every email has an HTML version and a plain-text version.** Without a text version,
+  some mail programs cannot show the email, and spam filters are more suspicious. A test
+  checks this.
+- **No external images.** Most mail programs block images until the reader allows
+  them. The mountain drawing is made with HTML and CSS only. Outlook gets a simpler
+  version.
+- **Member photos cannot be links.** Uploaded files are only visible to logged-in
+  users, and a mail program is not logged in. Photos are included inside the email
+  instead (see below).
+- **Put CSS inline, on each element.** The `<style>` block only holds the dark mode
+  and mobile rules, which cannot be inline.
+- **The button colour is `#9C4A22` (ember), never `#D9793F` (alpenglow).** Text on
+  alpenglow is too hard to read.
+- **Do not change email subjects.** Members may use them in mail filters. Changing a
+  subject is a product decision.
+- **The "Gérer mes préférences" link goes to the recipient's own settings,** if the
+  email function receives the `recipient`. If you forget it, the link goes to a generic
+  page. All links are built from `SITE_BASE_URL`, which must be the real domain in
+  production (see [`deployment.md`](deployment.md#environment-variables)).
+- **The site name and the link to the site come from the site settings** (see
+  [`site_config.md`](site_config.md)). The password reset and magic link emails are
+  built by Django, so they receive these values in a different way
+  (`extra_email_context`). If you add another email built by Django, pass
+  `site_base_url`, `site_name` and `wordmark` to it too.
+- **Each email uses the recipient's language** (French or English), from their account
+  settings. If there is no preference, it uses French. See [`i18n.md`](i18n.md).
+- **Notifications are sent only after the change is fully saved.** A blog post's
+  authors and an event's groups are saved just after the post or event itself. If the
+  email were built too early, a post would have no author ("Par " with no name), and a
+  restricted event would be emailed to everyone. There is one task per recipient, so if
+  one email fails, only that one is tried again (see
   [`background_tasks.md`](background_tasks.md)).
-- **Event announcements are enqueued from `transaction.on_commit` for the same reason,
-  with a higher stake.** `Event.groups` is a M2M populated by `form.save_m2m()` *after*
-  the row saves, so computing the announcement audience directly in `events/signals.py`'s
-  `post_save` receiver would see zero groups and mail a restricted event's date and
-  address to the whole family, not just its intended audience. `events.tasks.
-  notification_audience(event)` is only ever called from inside `transaction.on_commit`.
 
 ## The embedded birthday photo
 
-`annuaire.emails.birthday_photo()` reads the file and returns an `InlineImage`, which
-`build_message()` nests as:
+The birthday reminder shows the person's photo. The photo is included in the email
+itself, and the HTML refers to it. The message is built like this:
 
 ```
 multipart/alternative
-├── text/plain          ← text-only clients stop here and never see a loose attachment
+├── text/plain          ← text-only mail programs stop here, and see no attachment
 └── multipart/related
     ├── text/html
-    └── image/…         ← Content-ID, disposition inline, referenced as src="cid:…"
+    └── image/…         ← the photo, shown inside the HTML
 ```
 
-Django 6 cannot build that on its own (`mixed_subtype` was removed and `_add_attachments`
-hardcodes `make_mixed()`), so `_InlineImageEmail.message()` lets Django build the
-alternative pair and then converts the HTML leaf in place with the stdlib's
-`make_related()` / `add_related()`.
+Django cannot build this structure alone, so `email_utils.py` adjusts the message after
+Django builds it.
 
-It falls back to the initials disc when the person has no photo, the file cannot be read
-(a cleaned-up upload, an unmounted media volume) or it exceeds `MAX_INLINE_PHOTO_BYTES`
-(400 KB) — the photo travels in **every copy** of the message, one per subscriber.
+If the person has no photo, if the file cannot be read, or if it is larger than 400 KB,
+the email shows the person's initials instead. The size limit matters because the photo
+is sent in every copy of the email, one per subscriber.
 
 ## Looking at an email
 
 ```bash
-# render every flow to /tmp/email-preview/ as .html + .txt
+# save every email to /tmp/email-preview/ as .html and .txt files
 uv run python manage.py preview_emails
 
 # just one
 uv run python manage.py preview_emails --flow birthday
 
-# send it to a real address, through the configured EMAIL_BACKEND
+# send it to a real address
 uv run python manage.py preview_emails --flow magic-link --to moi@example.com
 ```
 
-It renders against real rows when the database has them and a stub otherwise. The two
-`PasswordResetView` flows are previewed with a fake uid/token, so their links will not
-authenticate — everything else about them is what a real send produces.
+The command uses real data from the database if there is any, and example data
+otherwise. In the password reset and magic link previews, the links do not work. The
+rest is the same as a real email.

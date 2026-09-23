@@ -1,67 +1,48 @@
 # Search
 
-One search field, reachable from anywhere on the site, searching across people,
-publications, documents, albums and photos at once. Built on the shared backend
-abstraction from `annuaire/search/` (see "Where the code lives" below) — this page
-covers the user-facing behaviour; the indexing/backend internals are covered in code
-comments in that package.
+One search field, on every page, searches people, publications, documents, albums,
+photos and life stories at the same time. This page describes how search behaves. The
+code is in `annuaire/search/`.
 
 ## The search field
 
-`annuaire/templates/annuaire/_search_form.html` is mounted **twice** in
-`base.html`: once in `.fb-topbar` (mobile) and once at the top of the desktop
-`.fb-sidebar`'s nav — the two are never visible at the same time, so both need their
-own mount rather than sharing one. Each mount gets its own `input_id` (no duplicate DOM
-ids). Only shown to authenticated users (`{% if user.is_authenticated %}`).
+The search field appears in the top bar on mobile, and at the top of the side menu on
+desktop. Only logged-in users see it.
 
-Submitting the form (`GET`, `?q=`) goes to `search` (`/annuaire/recherche/`),
-`GlobalSearchView`. The field itself carries `minlength="2"` as a client-side hint; the
-view enforces the same **2-character minimum** server-side
-(`MIN_SEARCH_QUERY_LENGTH` in `annuaire/views.py`) — below that, the results page
-renders a "keep typing" prompt rather than querying anything.
+A search needs **at least 2 characters**. With fewer, the results page asks the user
+to type more.
 
 ## Results page
 
-`annuaire/templates/annuaire/search_results.html`, rendered by `GlobalSearchView`:
+- **Default view:** results are grouped by type (people, publications, documents,
+  albums, photos, stories), with up to 5 results per type. If a type has more results,
+  a "Voir tout (N) →" link appears.
+- **"Voir tout" view** (`?type=...`): the results of one type only, 20 per page, with a
+  link back to the grouped view. If the type is unknown, the page shows "Aucun
+  résultat".
 
-- **No `?type=`** — a grouped preview: up to 5 results per registered type
-  (`Person`, `BlogPost`, `Document`, `Album`, `Photo`, `Story`), each type in its own
-  section with its own card partial. A type with more results than shown gets a
-  "Voir tout (N) →" link.
-- **`?type=<key>`** (e.g. `annuaire.person`, `documents.document`) — the "Voir tout"
-  target: that one type only, paginated 20 per page (`django.core.paginator.Paginator`),
-  with a link back to the grouped view. `key` is the `SearchSpec`'s registered model,
-  as `"<app_label>.<model_name>"` (`annuaire.search.service.model_key`); an
-  unrecognized or stale `key` (e.g. a hand-edited URL after a type was removed) renders
-  the "Aucun résultat" empty state rather than erroring — it doesn't fall back to the
-  grouped view.
-
-Every group/type is built from that model's own `SearchSpec.accessible(user)` queryset,
-never `Model.objects.all()` — a document in a locked category, or a photo in an
-album the viewer isn't in the group for, never appears, in either the preview or the
-expanded list. See [`permissions.md`](permissions.md)'s `GlobalSearchView` row for the
-exact access rule per type.
+Search respects access rights. A document in a locked category, or a photo in an album
+the user cannot open, never appears in the results. See
+[`permissions.md`](permissions.md) for the rules.
 
 ## Where the code lives
 
 | File | What it holds |
 |---|---|
-| `annuaire/search/text.py` | `normalize()` (accent-folding, casefold, whitespace collapse), `terms()` (splits a query into safe `\w+` word runs — what keeps the raw Postgres tsquery injection-safe). |
-| `annuaire/search/backends.py` | `PostgresSearchBackend` (ranked, prefix-matching full-text search, French config), `FallbackSearchBackend` (`icontains` AND, SQLite/dev — no ranking possible), `get_search_backend()` dispatching on `connection.vendor`. |
-| `annuaire/search/registry.py` | `SearchSpec` — one per searchable model: which fields feed the index (`weights`), the access-filter callable, the result label, and the card template. |
-| `annuaire/search/service.py` | `search_all(user, query, per_type_limit)` (the grouped preview) and `search_one(user, query, key)` (one type, for the `?type=` expansion). |
-| `annuaire/views.py` | `GlobalSearchView`. |
-| `annuaire/templates/annuaire/_search_form.html` | The shared search field partial. |
-| `annuaire/templates/annuaire/search_results.html` | The results page (grouped or expanded). |
+| `annuaire/search/text.py` | Text cleanup: removes accents, ignores case, splits the query into words. |
+| `annuaire/search/backends.py` | Two search engines: a full, ranked search for Postgres (production), and a simple one for SQLite (development). |
+| `annuaire/search/registry.py` | For each searchable model: which fields are indexed, who can see what, and how a result is displayed. |
+| `annuaire/search/service.py` | Runs a search across all types, or for one type. |
+| `annuaire/views.py` | `GlobalSearchView`, the results page. |
+| `annuaire/templates/annuaire/_search_form.html` | The search field. |
+| `annuaire/templates/annuaire/search_results.html` | The results page. |
 
 ## Manual verification: ranking is Postgres-only
 
-There is no Postgres CI leg this sprint, so ranked ordering can't be asserted by the
-automated test suite — tests exercise `FallbackSearchBackend` (SQLite) and assert
-result *membership*, never order (see `FallbackSearchBackend`'s docstring). In dev
-(SQLite), results within a type are returned in `SearchSpec.order` order (e.g. most
-recent first), not relevance order — a plain "does this text appear anywhere in the
-indexed fields" match. Verify ranked ordering by hand against a Postgres database
-(e.g. via `docker compose`) before relying on relevance order in production: search for
-a term that appears at different weights across several rows (e.g. once in a title,
-once only in a body) and confirm the title hit ranks first.
+Only Postgres sorts results by relevance. The tests run on SQLite, so they check
+*which* results come back, not their order. In development (SQLite), results are
+sorted by a fixed order, such as newest first.
+
+To check the ranking, test by hand on a Postgres database. Search for a word that
+appears in the title of one item and only in the body of another. The item with the
+word in its title should come first.

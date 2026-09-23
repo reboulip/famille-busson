@@ -1,83 +1,57 @@
 # Observability
 
-How to find out something is wrong without reading `docker logs` first, and how to
-read the logs once you do.
+How to find out that something is wrong, and how to read the logs.
 
 ## Structured logging
 
-`LOG_FORMAT` selects the output shape, independent of `DEBUG`:
+`LOG_FORMAT` chooses the log format:
 
-- `console` (default under `DEBUG`) — plain, human-readable lines, for a dev terminal.
-- `json` (default outside `DEBUG`) — one JSON object per line, for `docker logs` /
-  a log aggregator to parse.
+- `console` (default when `DEBUG` is on) — plain text, easy to read in a terminal.
+- `json` (default in production) — one JSON object per line, easy for tools to search.
 
-A root (`""`) logger was added in `config/settings.py`'s `LOGGING` — previously
-only `django`/`django.request` were configured, so any `logging.getLogger(__name__)`
-call elsewhere (e.g. `annuaire/file_cleanup.py`) fell through to Python's unformatted
-`lastResort` handler. Every logger now reaches a handler either way.
-
-**JSON record schema** (`annuaire/log_formatters.py`'s `JsonFormatter`), fixed keys:
+Each JSON line has these fields:
 
 | Key | Always present? | Meaning |
 |---|---|---|
-| `timestamp` | yes | ISO-8601 UTC, millisecond precision, `Z` suffix. |
+| `timestamp` | yes | Date and time, in UTC. |
 | `level` | yes | `INFO`, `WARNING`, `ERROR`, etc. |
-| `logger` | yes | The logger's name (`"django"`, or a module's `__name__`). |
-| `message` | yes | The formatted log message. |
-| `module` | yes | The Python module the log call came from. |
-| `line` | yes | Line number of the log call. |
-| `request_id` | if available | See below. |
-| `exception` | on `logger.exception(...)`/`exc_info=True` | Rendered traceback string. |
+| `logger` | yes | The logger name (usually the Python module). |
+| `message` | yes | The log message. |
+| `module` | yes | The Python module that wrote the log. |
+| `line` | yes | The line number in that module. |
+| `request_id` | when available | See below. |
+| `exception` | on errors | The error traceback. |
 
-Anything else passed via `logger.info(..., extra={...})` merges in at the top level,
-alongside these. A fixed key set (rather than free-form) is what keeps a log search
-over JSON output stable as the codebase grows.
+Extra values passed with `logger.info(..., extra={...})` are added as more fields.
 
 ## Request correlation
 
-`annuaire.middleware.RequestIdMiddleware` tags every request with an id (an inbound
-`X-Request-ID` header if the reverse proxy already sets one, otherwise a generated
-one), echoes it back in the response's `X-Request-ID` header, and makes it available
-to every log line emitted while handling that request via a `contextvars`-backed log
-filter — no call site needs to pass `request_id` by hand. This is what lets every log
-line emitted synchronously while handling one request (a view, a signal fired during
-it) be grepped together by `request_id` when something goes wrong.
+Each web request gets an id. If the reverse proxy sends an `X-Request-ID` header, the
+app uses it. Otherwise it creates one. The id is sent back in the response's
+`X-Request-ID` header, and added to every log line written during that request. To see
+everything that happened during one request, search the logs for its `request_id`.
 
-In production, the `contextvars` value doesn't cross into the [background
-queue](background_tasks.md): a task a signal enqueues runs in a separate `worker`
-process, which never shares the request's `contextvars` context, so its own log lines
-won't carry the enqueuing request's id unless it's explicitly passed along as a task
-argument — none of the current tasks do. (Under `Q_CLUSTER["sync"]`, dev/tests' mode,
-the task runs inline on the same call stack and happens to inherit the id there —
-don't rely on that holding in production.)
+Background tasks run in another process, so their log lines do **not** carry the id of
+the request that started them.
 
 ## Error monitoring (Sentry)
 
-Guarded entirely on `SENTRY_DSN` being set — empty (the default) means `sentry_sdk`
-is never initialized, so dev/CI/tests are completely unaffected regardless.
+Sentry is only active when `SENTRY_DSN` is set. By default it is empty, so development,
+CI and tests do not use Sentry.
 
-- **`send_default_pii=False`, always.** This site holds personal data on identifiable
-  EU residents (see Phase 14 in `ROADMAP.md`). A `before_send` hook additionally drops
-  `request.cookies` wholesale and any `extra`/`contexts` value filed under a key
-  literally named `email` (case-insensitive), from any source.
-- **Errors only** — `traces_sample_rate=0.0` and `profiles_sample_rate=0.0`.
-  Performance/profiling monitoring is explicitly out of scope; a family site has no
-  need for it and it would burn a free-tier event quota for no benefit.
-- **`release`** is `settings.APP_VERSION` (already read from `pyproject.toml`) and
-  **`environment`** is `SENTRY_ENVIRONMENT` (defaulting to `"development"` under
-  `DEBUG`, `"production"` otherwise) — both free, since they're already computed.
-- A warning-level system check (`annuaire.checks`, id `annuaire.W003`) flags a
-  missing `SENTRY_DSN` outside `DEBUG`, same rationale as `W001`/`W002`: it can't
-  safely be an error (checks run before `collectstatic` at container boot under
-  `set -euo pipefail`), but a silently-never-initialized tracker is worth surfacing.
+- **No personal data is sent.** The site holds personal data about real people. Sentry
+  never receives cookies or values named `email`.
+- **Errors only.** Performance monitoring is off. A family site does not need it, and
+  it would use up the free quota.
+- Each error is tagged with the app version and the environment (`SENTRY_ENVIRONMENT`,
+  default `production`, or `development` when `DEBUG` is on).
+- If `SENTRY_DSN` is missing in production, the app shows the warning `annuaire.W003`
+  at startup (see [`deployment.md`](deployment.md#environment-variables)).
 
-**Manual VPS setup, once:** create a Sentry project (SaaS free tier), copy its DSN
-into `/srv/bubu/.env`'s `SENTRY_DSN`. Nothing else needs configuring — the sampling
-rates and PII handling above are fixed in code, not left to the Sentry project's
-own defaults.
+**Set up once:** create a Sentry project (the free plan is enough), and copy its DSN
+into `SENTRY_DSN` in `/srv/bubu/.env`. There is nothing else to configure.
 
 ## `/healthz`
 
-Checks the database, cache, queue and storage backends, wired into the compose
-healthcheck and an external uptime monitor — see [`deployment.md`'s `/healthz`
-section](deployment.md#healthz) for the response contract and criticality rules.
+`/healthz` checks the database, cache, queue and file storage. Docker and an external
+uptime monitor use it. See [`/healthz`](deployment.md#healthz) for details.
