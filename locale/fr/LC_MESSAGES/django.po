@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 21:47+0200\n"
+"POT-Creation-Date: 2026-09-27 17:20+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -206,7 +206,7 @@ msgstr "Confirme ton mot de passe"
 msgid "J'ai lu et j'accepte la politique de confidentialité"
 msgstr "J'ai lu et j'accepte la politique de confidentialité"
 
-#: annuaire/forms.py:308 annuaire/views.py:192
+#: annuaire/forms.py:308 annuaire/views.py:193
 msgid "Un compte avec cet email existe déjà."
 msgstr "Un compte avec cet email existe déjà."
 
@@ -403,12 +403,12 @@ msgid "Paramètres de notification"
 msgstr "Paramètres de notification"
 
 #: annuaire/models.py:184
-msgid "mariage"
-msgstr "mariage"
+msgid "mariage ou Pacs"
+msgstr "mariage ou Pacs"
 
 #: annuaire/models.py:185
-msgid "conjoint"
-msgstr "conjoint"
+msgid "en couple"
+msgstr "en couple"
 
 #: annuaire/models.py:186
 msgid "parent"
@@ -1594,7 +1594,6 @@ msgid "Choisissez votre mot de passe ici"
 msgstr "Choisissez votre mot de passe ici"
 
 #: annuaire/templates/annuaire/emails/account_setup.txt:8
-#: annuaire/templates/annuaire/password_reset_email.txt:10
 msgid "Ce lien est à usage unique et expire dans 7 jours."
 msgstr "Ce lien est à usage unique et expire dans 7 jours."
 
@@ -1745,16 +1744,25 @@ msgid "Choisir un nouveau mot de passe"
 msgstr "Choisir un nouveau mot de passe"
 
 #: annuaire/templates/annuaire/emails/password_reset.html:38
+#, python-format
 msgid ""
-"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'êtes pas à "
-"l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre mot "
-"de passe restera inchangé."
-msgstr ""
-"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'êtes pas à "
-"l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre mot "
-"de passe restera inchangé."
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jour. Si vous n'êtes "
+"pas à l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre "
+"mot de passe restera inchangé."
+msgid_plural ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jours. Si vous "
+"n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email&nbsp;: votre mot de passe restera inchangé."
+msgstr[0] ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jour. Si vous n'êtes "
+"pas à l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre "
+"mot de passe restera inchangé."
+msgstr[1] ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jours. Si vous "
+"n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email&nbsp;: votre mot de passe restera inchangé."
 
-#: annuaire/templates/annuaire/emails/password_reset.html:49
+#: annuaire/templates/annuaire/emails/password_reset.html:53
 #, python-format
 msgid ""
 "Cet email vous a été envoyé par le site privé %(site_name)s à la suite d'une "
@@ -2047,11 +2055,11 @@ msgid "Recevoir un lien de connexion"
 msgstr "Recevoir un lien de connexion"
 
 #: annuaire/templates/annuaire/help_magic_link.html:55
-#: annuaire/templates/annuaire/magic_link_confirm.html:17
+#: annuaire/templates/annuaire/magic_link_confirm.html:18
 #: annuaire/templates/annuaire/magic_link_request.html:26
 #: annuaire/templates/annuaire/magic_link_sent.html:22
 #: annuaire/templates/annuaire/password_reset.html:24
-#: annuaire/templates/annuaire/password_reset_confirm.html:19
+#: annuaire/templates/annuaire/password_reset_confirm.html:25
 #: annuaire/templates/annuaire/password_reset_done.html:16
 msgid "Retour à la connexion"
 msgstr "Retour à la connexion"
@@ -2252,6 +2260,10 @@ msgstr ""
 "Ce lien de connexion n'est plus valide, il a peut-être déjà été utilisé ou a "
 "expiré."
 
+#: annuaire/templates/annuaire/magic_link_confirm.html:17
+msgid "Recevoir un nouveau lien de connexion"
+msgstr "Recevoir un nouveau lien de connexion"
+
 #: annuaire/templates/annuaire/magic_link_email.txt:9
 #, python-format
 msgid "Connectez-vous ici : %(protocol)s://%(domain)s%(path)s"
@@ -2377,6 +2389,14 @@ msgstr ""
 "Ce lien de réinitialisation n'est plus valide, il a peut-être déjà été "
 "utilisé ou a expiré."
 
+#: annuaire/templates/annuaire/password_reset_confirm.html:19
+msgid "Indiquez votre adresse email pour recevoir un nouveau lien."
+msgstr "Indiquez votre adresse email pour recevoir un nouveau lien."
+
+#: annuaire/templates/annuaire/password_reset_confirm.html:23
+msgid "Envoyer un nouveau lien"
+msgstr "Envoyer un nouveau lien"
+
 #: annuaire/templates/annuaire/password_reset_done.html:8
 msgid ""
 "Si cette adresse correspond à un compte, un email contenant un lien de "
@@ -2391,6 +2411,13 @@ msgid ""
 "Choisissez votre nouveau mot de passe ici : %(protocol)s://%(domain)s%(path)s"
 msgstr ""
 "Choisissez votre nouveau mot de passe ici : %(protocol)s://%(domain)s%(path)s"
+
+#: annuaire/templates/annuaire/password_reset_email.txt:10
+#, python-format
+msgid "Ce lien est à usage unique et expire dans %(days)s jour."
+msgid_plural "Ce lien est à usage unique et expire dans %(days)s jours."
+msgstr[0] "Ce lien est à usage unique et expire dans %(days)s jour."
+msgstr[1] "Ce lien est à usage unique et expire dans %(days)s jours."
 
 #: annuaire/templates/annuaire/password_reset_subject.txt:1
 msgid "Réinitialiser votre mot de passe"
@@ -2713,8 +2740,8 @@ msgstr "Aucun récit n'a encore été ajouté pour cette personne."
 
 #: annuaire/templates/annuaire/personne_detail.html:231
 #, python-format
-msgid "Marié·e le %(start_date)s"
-msgstr "Marié·e le %(start_date)s"
+msgid "Depuis le %(start_date)s"
+msgstr "Depuis le %(start_date)s"
 
 #: annuaire/templates/annuaire/personne_detail.html:233
 #, python-format
@@ -3100,26 +3127,26 @@ msgstr "Liste numérotée"
 msgid "Rien à prévisualiser."
 msgstr "Rien à prévisualiser."
 
-#: annuaire/views.py:189
+#: annuaire/views.py:190
 msgid "Adresse email non reconnue, vous ne pouvez pas créer de compte."
 msgstr "Adresse email non reconnue, vous ne pouvez pas créer de compte."
 
-#: annuaire/views.py:284
+#: annuaire/views.py:285
 #, python-format
 msgid "Échec de l'envoi de l'email pour : %(emails)s"
 msgstr "Échec de l'envoi de l'email pour : %(emails)s"
 
-#: annuaire/views.py:289
+#: annuaire/views.py:290
 #, python-format
 msgid "Lien d'invitation renvoyé pour %(count)s compte(s)."
 msgstr "Lien d'invitation renvoyé pour %(count)s compte(s)."
 
-#: annuaire/views.py:356
+#: annuaire/views.py:357
 #, python-format
 msgid "Mot de passe réinitialisé pour : %(emails)s"
 msgstr "Mot de passe réinitialisé pour : %(emails)s"
 
-#: annuaire/views.py:362
+#: annuaire/views.py:363
 #, python-format
 msgid ""
 "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
@@ -3128,46 +3155,46 @@ msgstr ""
 "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
 "temporaire manuellement."
 
-#: annuaire/views.py:370
+#: annuaire/views.py:371
 #, python-format
 msgid "Échec de la création du compte pour : %(emails)s"
 msgstr "Échec de la création du compte pour : %(emails)s"
 
-#: annuaire/views.py:433
+#: annuaire/views.py:434
 #, python-format
 msgid "les catégories %(names)s"
 msgstr "les catégories %(names)s"
 
-#: annuaire/views.py:436
+#: annuaire/views.py:437
 #, python-format
 msgid "les albums %(names)s"
 msgstr "les albums %(names)s"
 
-#: annuaire/views.py:439
+#: annuaire/views.py:440
 #, python-format
 msgid "les événements %(names)s"
 msgstr "les événements %(names)s"
 
-#: annuaire/views.py:442
+#: annuaire/views.py:443
 #, python-format
 msgid "Impossible de supprimer ce groupe : il est utilisé par %(parts)s."
 msgstr "Impossible de supprimer ce groupe : il est utilisé par %(parts)s."
 
-#: annuaire/views.py:556
+#: annuaire/views.py:557
 msgid "Votre mot de passe a été mis à jour."
 msgstr "Votre mot de passe a été mis à jour."
 
-#: annuaire/views.py:739
+#: annuaire/views.py:759
 msgid "Merci, votre acceptation a été enregistrée."
 msgstr "Merci, votre acceptation a été enregistrée."
 
-#: annuaire/views.py:800
+#: annuaire/views.py:820
 msgid ""
 "Vous devez compléter votre profil avant d'ajouter un membre de la famille."
 msgstr ""
 "Vous devez compléter votre profil avant d'ajouter un membre de la famille."
 
-#: annuaire/views.py:847
+#: annuaire/views.py:867
 msgid ""
 "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà "
 "revendiqué."
@@ -3175,74 +3202,74 @@ msgstr ""
 "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà "
 "revendiqué."
 
-#: annuaire/views.py:1046
+#: annuaire/views.py:1066
 msgid "Élément restauré."
 msgstr "Élément restauré."
 
-#: annuaire/views.py:1055
+#: annuaire/views.py:1075
 msgid "Élément supprimé définitivement."
 msgstr "Élément supprimé définitivement."
 
-#: annuaire/views.py:1077
+#: annuaire/views.py:1097
 msgid "Cette personne a été anonymisée."
 msgstr "Cette personne a été anonymisée."
 
-#: annuaire/views.py:1179
+#: annuaire/views.py:1199
 msgid "Vous ne pouvez pas éditer ce profil."
 msgstr "Vous ne pouvez pas éditer ce profil."
 
-#: annuaire/views.py:1218
+#: annuaire/views.py:1238
 msgid "Vous ne pouvez pas modifier ces relations."
 msgstr "Vous ne pouvez pas modifier ces relations."
 
-#: annuaire/views.py:1249
+#: annuaire/views.py:1269
 msgid "Formulaire invalide. Vérifiez la personne et le type de relation."
 msgstr "Formulaire invalide. Vérifiez la personne et le type de relation."
 
-#: annuaire/views.py:1253
+#: annuaire/views.py:1273
 msgid "Une personne ne peut pas être en relation avec elle-même."
 msgstr "Une personne ne peut pas être en relation avec elle-même."
 
-#: annuaire/views.py:1256
+#: annuaire/views.py:1276
 msgid "Une relation avec cette personne existe déjà."
 msgstr "Une relation avec cette personne existe déjà."
 
-#: annuaire/views.py:1271
+#: annuaire/views.py:1291
 msgid "Modification invalide."
 msgstr "Modification invalide."
 
-#: annuaire/views.py:1354
+#: annuaire/views.py:1374
 #, python-format
 msgid "Fusion effectuée : %(summary)s."
 msgstr "Fusion effectuée : %(summary)s."
 
-#: annuaire/views.py:1354
+#: annuaire/views.py:1374
 msgid "aucune donnée liée à déplacer"
 msgstr "aucune donnée liée à déplacer"
 
-#: annuaire/views.py:1371
+#: annuaire/views.py:1391
 msgid ""
 "Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."
 msgstr ""
 "Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."
 
-#: annuaire/views.py:1373
+#: annuaire/views.py:1393
 msgid "Vous n'êtes pas propriétaire de ce profil."
 msgstr "Vous n'êtes pas propriétaire de ce profil."
 
-#: annuaire/views.py:1433
+#: annuaire/views.py:1453
 msgid "Vous devez compléter votre profil avant de créer une résidence."
 msgstr "Vous devez compléter votre profil avant de créer une résidence."
 
-#: annuaire/views.py:1465
+#: annuaire/views.py:1485
 msgid "Vous n'êtes pas propriétaire de cette résidence."
 msgstr "Vous n'êtes pas propriétaire de cette résidence."
 
-#: annuaire/views.py:1549
+#: annuaire/views.py:1569
 msgid "Erreur dans le formulaire de présence."
 msgstr "Erreur dans le formulaire de présence."
 
-#: annuaire/views.py:1761
+#: annuaire/views.py:1781
 msgid "Le lien de votre calendrier a été régénéré."
 msgstr "Le lien de votre calendrier a été régénéré."
 

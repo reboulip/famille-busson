@@ -66,6 +66,15 @@ def test_relation_create_logs_audit_event(person, other_person):
     assert AuditEvent.objects.filter(content_type__model="relation", action=AuditEvent.Action.CREATE).exists()
 
 
+@pytest.mark.django_db
+def test_relation_audit_event_uses_new_couple_label(person, other_person):
+    relation = Relation.objects.create(person1=person, person2=other_person, relationship_type=1)
+    event = AuditEvent.objects.get(
+        content_type__model="relation", object_id=str(relation.pk), action=AuditEvent.Action.CREATE
+    )
+    assert "en couple" in event.object_repr
+
+
 # --- Actor capture --------------------------------------------------------
 
 

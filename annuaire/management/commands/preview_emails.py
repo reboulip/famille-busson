@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import pathlib
 
+from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.template.loader import render_to_string
 
@@ -163,6 +164,7 @@ class Command(BaseCommand):
             protocol=protocol or "http",
             domain=domain or "localhost:8000",
             validity_minutes=15,
+            validity_days=settings.SELF_SERVICE_RESET_TIMEOUT // (60 * 60 * 24),
         )
         if flow == "password-reset":
             html_template, text_template = "annuaire/emails/password_reset.html", "annuaire/password_reset_email.txt"

@@ -25,11 +25,11 @@
 > A batch of field-reported fixes and small comfort improvements, triaged from GH issues.
 
 ### Cluster: Authentification
-- [ ] 18.1 · Self-service login link resend — a user with an expired login link lands on
+- [x] 18.1 · Self-service login link resend — a user with an expired login link lands on
   a page to request a new one (valid 24h) instead of needing an admin reset. [#147]
 
 ### Cluster: Annuaire
-- [ ] 18.2 · Rename relation labels — "Mariage" becomes "Mariage ou Pacs" and "Conjoint"
+- [x] 18.2 · Rename relation labels — "Mariage" becomes "Mariage ou Pacs" and "Conjoint"
   becomes "En couple" everywhere the labels appear (forms, family tree, GEDCOM export,
   audit log). [#148]
 

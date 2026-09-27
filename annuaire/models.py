@@ -181,8 +181,8 @@ class Settings(models.Model):
 
 class Relation(models.Model):
     RELATION_CHOICES = [
-        (0, _("mariage")),
-        (1, _("conjoint")),
+        (0, _("mariage ou Pacs")),
+        (1, _("en couple")),
         (2, _("parent")),
         (3, _("enfant")),
     ]

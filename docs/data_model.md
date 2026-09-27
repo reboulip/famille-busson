@@ -147,7 +147,7 @@ erDiagram
 | `id` | BigAutoField | ID | PK |
 | `person1` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='ascending_relations', required |
 | `person2` | ForeignKey | En relation avec | → Person (on_delete=CASCADE), related_name='descending_relations', required |
-| `relationship_type` | IntegerField | Type de relation | choices: 0=mariage, 1=conjoint, 2=parent, 3=enfant, required |
+| `relationship_type` | IntegerField | Type de relation | choices: 0=mariage ou Pacs, 1=en couple, 2=parent, 3=enfant, required |
 | `start_date` | DateField | Date de début | optional |
 | `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
 | `end_date` | DateField | Date de fin | optional |

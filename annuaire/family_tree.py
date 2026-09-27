@@ -61,6 +61,7 @@ def build_family_chart_data() -> list[dict]:
         elif rel.relationship_type in _SPOUSE_TYPES and target_id not in rels["spouses"]:
             rels["spouses"].append(target_id)
             nodes[rel.person1_id]["data"]["marriages"][target_id] = {
+                "label": rel.get_relationship_type_display(),
                 "place": rel.marriage_place,
                 "start_date": rel.start_date.strftime("%d/%m/%Y") if rel.start_date else "",
                 "end_date": rel.end_date.strftime("%d/%m/%Y") if rel.end_date else "",

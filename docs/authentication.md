@@ -70,6 +70,26 @@ un de ces liens pour se connecter à la place d'un autre membre.
 - Un utilisateur qui doit changer son mot de passe peut quand même terminer la
   connexion par lien.
 
+## Lien expiré : renvoi en libre-service (18.1)
+
+Un lien d'invitation (créé par le staff lors de la création groupée de comptes) ou de
+réinitialisation dure 7 jours (réglable avec `PASSWORD_RESET_TIMEOUT`, en secondes).
+Une demande de réinitialisation faite par le membre lui-même (« Mot de passe oublié »,
+ou le renvoi décrit ci-dessous) utilise un jeton différent, valable 24 heures par défaut
+(réglable avec `SELF_SERVICE_RESET_TIMEOUT`, en secondes) — plus court, car le membre
+peut toujours en redemander un autre.
+
+Si le lien a expiré, la page affiche désormais un formulaire pour en redemander un
+nouveau, à la place d'un message invitant à contacter un administrateur. Ce formulaire
+n'affiche jamais l'adresse email associée au lien expiré (elle ne serait sinon d'aucune
+utilité pour deviner qui a un compte) : l'utilisateur la ressaisit lui-même. La demande
+passe par le même formulaire, la même limite de débit et la même page de confirmation
+que « Mot de passe oublié ».
+
+Le lien magique expiré propose de la même façon un raccourci vers une nouvelle demande,
+mais garde sa propre durée de 15 minutes (`MAGIC_LINK_TIMEOUT`) — il n'est pas concerné
+par ce changement.
+
 ### Pour aller plus loin
 
 - Une page d'aide pour les membres explique la connexion par lien :

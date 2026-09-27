@@ -103,7 +103,9 @@ These pages work without login:
 - **Login and signup:** `login`, `signup`, `logout`.
 - **Forgotten password:** `password-reset`, `password-reset-done`,
   `password_reset_confirm`. The confirmation page looks the same whether the email is
-  registered or not.
+  registered or not. If the link has expired, that same page also offers a resend form
+  (posting back to `password-reset`) instead of requiring an admin reset — see
+  [`authentication.md`](authentication.md).
 - **Login by email link:** `magic-link-request`, `magic-link-sent`,
   `magic-link-confirm-token`, `magic-link-confirm`. See
   [`authentication.md`](authentication.md).

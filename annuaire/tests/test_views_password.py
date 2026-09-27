@@ -245,6 +245,49 @@ def test_reset_confirm_invalid_token_shows_expired_message(account):
 
 
 @pytest.mark.django_db
+def test_reset_confirm_expired_link_offers_a_resend_form(account):
+    bad_url = reverse("password_reset_confirm", kwargs={"uidb64": "invalid", "token": "invalid-token"})
+    c = Client()
+    response = c.get(bad_url)
+    assert "resend_form" in response.context
+    content = response.content.decode()
+    assert reverse("password-reset") in content
+
+
+@pytest.mark.django_db
+def test_reset_confirm_expired_link_resend_form_does_not_prefill_email(account):
+    bad_url = reverse("password_reset_confirm", kwargs={"uidb64": "invalid", "token": "invalid-token"})
+    c = Client()
+    response = c.get(bad_url)
+    assert account.email not in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_reset_confirm_accepts_a_self_service_reset_token(client, account):
+    # A self-service ("Mot de passe oublié") request mints a
+    # self_service_reset_token_generator token, not the staff-invitation
+    # default_token_generator -- the confirm view must accept both. A valid
+    # token 302-redirects to a "set-password" token URL before rendering the
+    # form (Django's own anti-referer-leak pattern), so follow the redirect.
+    from annuaire.tokens import self_service_reset_token_generator
+
+    uid = urlsafe_base64_encode(force_bytes(account.pk))
+    token = self_service_reset_token_generator.make_token(account)
+    url = reverse("password_reset_confirm", kwargs={"uidb64": uid, "token": token})
+    response = client.get(url, follow=True)
+    assert response.context["validlink"] is True
+
+
+@pytest.mark.django_db
+def test_reset_confirm_still_accepts_a_staff_invitation_token(client, account):
+    # default_token_generator (7-day PASSWORD_RESET_TIMEOUT) is what
+    # BulkAccountCreateView sends -- must keep working unchanged.
+    url = _reset_confirm_url(account)
+    response = client.get(url, follow=True)
+    assert response.context["validlink"] is True
+
+
+@pytest.mark.django_db
 def test_reset_confirm_url_is_exempt_from_forced_password_change_redirect(account, person):
     # A user who is already logged in and flagged must_change_password (e.g. an
     # admin-reset account) must still be able to follow their own reset link
@@ -277,6 +320,33 @@ def test_password_reset_post_valid_email_sends_link_and_redirects(client, accoun
     response = client.post(reverse("password-reset"), {"email": account.email})
     assert response.status_code == 302
     assert response["Location"] == reverse("password-reset-done")
+    assert len(mail.outbox) == 1
+    assert mail.outbox[0].to == [account.email]
+
+
+@pytest.mark.django_db
+def test_password_reset_email_states_validity_from_settings_not_hardcoded(client, account):
+    from django.conf import settings
+
+    client.post(reverse("password-reset"), {"email": account.email})
+    assert len(mail.outbox) == 1
+    body = mail.outbox[0].body
+    html_body = mail.outbox[0].alternatives[0][0]
+    days = settings.SELF_SERVICE_RESET_TIMEOUT // (60 * 60 * 24)
+    assert f"{days} jour" in body
+    assert f"{days}&nbsp;jour" in html_body
+    assert "7 jours" not in body
+    assert "7&nbsp;jours" not in html_body
+
+
+@pytest.mark.django_db
+def test_password_reset_resend_form_on_expired_link_sends_a_new_email(client, account):
+    bad_url = reverse("password_reset_confirm", kwargs={"uidb64": "invalid", "token": "invalid-token"})
+    response = client.get(bad_url)
+    assert not response.context["validlink"]
+
+    resend_response = client.post(reverse("password-reset"), {"email": account.email})
+    assert resend_response.status_code == 302
     assert len(mail.outbox) == 1
     assert mail.outbox[0].to == [account.email]
 
