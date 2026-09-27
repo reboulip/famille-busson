@@ -34,7 +34,7 @@
   audit log). [#148]
 
 ### Cluster: Infrastructure et CI
-- [ ] 18.3 · Fix weekly dependency-upgrade workflow — resolve the ruff check failure
+- [x] 18.3 · Fix weekly dependency-upgrade workflow — resolve the ruff check failure
   blocking `dependency-upgrade.yml`, and make the check auto-format where possible. [#149]
 
 ### Cluster: Carte

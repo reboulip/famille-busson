@@ -23,6 +23,16 @@ other than `develop` or `hotfix/*`. It runs the same checks as a person would: r
 ty, the static files check, and the full test suite. If one check fails, it opens no PR.
 It always bumps the **minor** version.
 
+Before the ruff and format checks, it first runs `ruff check --fix` and `ruff format`
+(safe fixes only, never `--unsafe-fixes`) so a routine style-rule change in the new
+ruff version doesn't block the whole upgrade by itself — whatever ruff can't fix on
+its own still fails the check gate afterwards. It also installs `gettext` and runs
+`manage.py compilemessages` before the test suite, the same as `tests.yml` does,
+since some tests (e.g. `test_middleware_user_language.py`) need compiled `.mo` files
+to pass. `.pre-commit-config.yaml`'s ruff hooks run through `uv run ruff` rather than
+a pinned external revision, so a local commit and this workflow always use the exact
+same ruff version from `uv.lock`.
+
 The front-end libraries in `annuaire/static/vendor/` (leaflet, d3, family-chart,
 pdfjs, etc.) have no build tool. Their versions are listed in
 `annuaire/static/vendor/manifest.json`. The command `manage.py upgrade_vendored_assets`
