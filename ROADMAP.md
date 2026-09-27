@@ -20,6 +20,39 @@
   — see `docs/restore.md`'s empty drill log. Check this off once a drill has actually run
   and been recorded.
 
+## Phase 18 — Corrections diverses et confort d'usage
+
+> A batch of field-reported fixes and small comfort improvements, triaged from GH issues.
+
+### Cluster: Authentification
+- [ ] 18.1 · Self-service login link resend — a user with an expired login link lands on
+  a page to request a new one (valid 24h) instead of needing an admin reset. [#147]
+
+### Cluster: Annuaire
+- [ ] 18.2 · Rename relation labels — "Mariage" becomes "Mariage ou Pacs" and "Conjoint"
+  becomes "En couple" everywhere the labels appear (forms, family tree, GEDCOM export,
+  audit log). [#148]
+
+### Cluster: Infrastructure et CI
+- [ ] 18.3 · Fix weekly dependency-upgrade workflow — resolve the ruff check failure
+  blocking `dependency-upgrade.yml`, and make the check auto-format where possible. [#149]
+
+### Cluster: Carte
+- [ ] 18.4 · Bring map tiles into OSM policy compliance — proper Referer/User-Agent
+  identification and HTTP caching so tile requests aren't blocked by OpenStreetMap's
+  usage policy. [#150]
+
+### Cluster: Interface et navigation
+- [ ] 18.5 · Restore GitHub issue-reporting link in the menu — bring back the link to
+  file a bug or suggestion that used to be at the bottom of the menu. [#153]
+- [ ] 18.6 · Reposition the site version number — move it from floating mid-page into
+  the fixed left sidebar, next to the logout button. [#155]
+
+### Cluster: Calendrier
+- [ ] 18.7 · Add a real calendar grid to the Calendrier tab — a month view showing
+  events, presences and birthdays, not just navigation controls and personal-calendar
+  export links. [#154]
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.
