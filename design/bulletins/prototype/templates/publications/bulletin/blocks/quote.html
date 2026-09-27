@@ -1,0 +1,4 @@
+{% load bulletin %}<blockquote class="fb-bulletin-quote">
+    {% for paragraph in block.paragraphs %}<p>{% inline paragraph %}</p>{% endfor %}
+    {% if block.attribution %}<footer class="fb-meta">— {{ block.attribution|typo }}</footer>{% endif %}
+</blockquote>

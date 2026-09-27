@@ -1,0 +1,121 @@
+{% load bulletin %}
+{# Would be {% block content %} of publications/bulletin_detail.html, extending annuaire/base.html. #}
+<article class="fb-bulletin" lang="{{ bulletin.language }}">
+
+    {% if bulletin.processing.review.status == "draft" %}
+        <div class="fb-alert fb-alert--info fb-bulletin__draft">
+            Transcription automatique, pas encore relue par la famille.
+            <a href="#notes">Voir les notes de transcription</a>.
+        </div>
+    {% endif %}
+
+    <header class="fb-bulletin-mast">
+        {% if masthead %}
+            <div class="fb-bulletin-mast__media">
+                <img class="fb-bulletin-mast__scan fb-bulletin-ink" src="{{ masthead.file }}" alt="{{ masthead.alt }}"
+                     width="{{ masthead.width }}" height="{{ masthead.height }}">
+            </div>
+        {% endif %}
+        <div class="fb-bulletin-mast__text">
+            <p class="fb-eyebrow">Bulletin familial</p>
+            <h1 class="fb-bulletin-mast__title">
+                {{ bulletin.series.title|typo }}
+                <span class="fb-bulletin-mast__number">n°{% firstof bulletin.issue.label bulletin.issue.number %}</span>
+            </h1>
+            <p class="fb-bulletin-mast__date">{{ bulletin.date.text|capfirst }}</p>
+            {% if bulletin.credits %}
+                <p class="fb-meta fb-bulletin-mast__credits">
+                    {% for credit in bulletin.credits %}<span>{{ credit.role|typo }} : <strong>{{ credit.names|join_names }}</strong></span>{% endfor %}
+                </p>
+            {% endif %}
+            <div class="fb-rule"></div>
+            {% if bulletin.summary %}<p class="fb-bulletin-mast__summary">{{ bulletin.summary|typo }}</p>{% endif %}
+            <p class="fb-bulletin-mast__actions">
+                <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#original">{% bicon "image" size=16 %} Feuilleter l’original ({{ pages|length }} pages)</a>
+            </p>
+        </div>
+    </header>
+
+    <nav class="fb-bulletin-toc" aria-labelledby="bulletin-toc-title">
+        <p class="fb-eyebrow" id="bulletin-toc-title">Sommaire</p>
+        <ol>
+            {% for entry in toc %}
+                <li>
+                    <a href="#{{ entry.id }}">
+                        <span class="fb-bulletin-toc__text">
+                            {% if entry.title %}
+                                {% if entry.rubric %}<span class="fb-bulletin-toc__rubric">{{ entry.rubric|typo }}</span>{% endif %}
+                                <span class="fb-bulletin-toc__title">{{ entry.title|typo }}</span>
+                            {% else %}
+                                <span class="fb-bulletin-toc__title">{{ entry.rubric|typo }}</span>
+                            {% endif %}
+                        </span>
+                        <span class="fb-bulletin-toc__leader" aria-hidden="true"></span>
+                        <span class="fb-bulletin-toc__page">{{ entry.pages|pages_label }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ol>
+    </nav>
+
+    {% for section in sections %}
+        <section class="fb-bulletin-section{% if section.rubric %} fb-bulletin-section--rubric{% endif %}">
+            {% if section.rubric %}<h2 class="fb-bulletin-rubric">{{ section.rubric|typo }}</h2>{% endif %}
+            {% for article in section.articles %}
+                {% include "publications/bulletin/_article.html" %}
+            {% endfor %}
+        </section>
+    {% endfor %}
+
+    <section class="fb-bulletin-originals" id="original">
+        <div class="fb-section-head">
+            <h2>Le document original</h2>
+            <span class="fb-meta">{{ pages|length }} pages{% if bulletin.source.scanned_on %} · numérisé le {{ bulletin.source.scanned_on|long_date }}{% endif %}</span>
+        </div>
+        {# The scans are pictures without text: a carousel ("feuilleter"), shown as a strip of pages. #}
+        <div class="fb-bulletin-carousel fb-bulletin-carousel--strip" data-carousel aria-roledescription="carrousel" aria-label="Pages du bulletin original">
+            <ol class="fb-bulletin-carousel__track" data-carousel-track tabindex="0">
+                {% for page in pages %}
+                    <li class="fb-bulletin-carousel__slide" id="page-{{ page.number }}" aria-roledescription="diapositive" aria-label="Page {{ page.number }} sur {{ pages|length }}">
+                        <a class="fb-bulletin-carousel__link" href="{{ page.img.file }}" target="_blank" rel="noopener" title="Agrandir">
+                            <img src="{{ page.img.file }}" alt="{{ page.img.alt }}" width="{{ page.img.width }}" height="{{ page.img.height }}" loading="lazy">
+                        </a>
+                        <span class="fb-meta">Page {{ page.number }}</span>
+                    </li>
+                {% endfor %}
+            </ol>
+            <div class="fb-bulletin-carousel__nav" data-carousel-nav hidden>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-prev aria-label="Page précédente">{% bicon "chevron-left" size=16 %}</button>
+                <span class="fb-bulletin-carousel__count" data-carousel-count aria-live="polite">1 / {{ pages|length }}</span>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-next aria-label="Page suivante">{% bicon "chevron-right" size=16 %}</button>
+            </div>
+        </div>
+        {% if marginalia %}
+            <h3 class="fb-bulletin-originals__sub">Annotations ajoutées au document</h3>
+            {% for note in marginalia %}
+                <figure class="fb-bulletin-marginalia">
+                    <img class="fb-bulletin-ink" src="{{ note.img.file }}" alt="{{ note.img.alt }}" width="{{ note.img.width }}" height="{{ note.img.height }}">
+                    <figcaption class="fb-meta">{{ note.description|typo }} <a href="#page-{{ note.page }}">p. {{ note.page }}</a></figcaption>
+                </figure>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    {% with processing=bulletin.processing %}
+        <details class="fb-bulletin-notes" id="notes">
+            <summary>Notes de transcription ({{ processing.notes|length }})</summary>
+            <ul>
+                {% for note in processing.notes %}
+                    <li class="fb-bulletin-notes__item fb-bulletin-notes__item--{{ note.level }}">
+                        {% if note.page %}<a href="#page-{{ note.page }}">p. {{ note.page }}</a> — {% endif %}{{ note.message|typo }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="fb-meta">
+                Transcrit le {{ processing.date|long_date }} · {{ processing.agent }}{% if processing.model %} ({{ processing.model }}){% endif %}
+                · conventions {{ processing.conventions }} · statut : {% if processing.review.status == "reviewed" %}relu{% else %}brouillon{% endif %}
+                · schéma {{ bulletin.schema_version }}
+            </p>
+        </details>
+    {% endwith %}
+</article>

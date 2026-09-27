@@ -1,0 +1,10 @@
+{% load bulletin %}{% with hand=block.script|default:"typed" %}
+<div class="fb-bulletin-signature">
+    {% if block.closing %}<p class="fb-bulletin-signature__closing{% if hand == 'handwritten' %} fb-hand{% endif %}">{% inline block.closing %}</p>{% endif %}
+    {% if block.role %}<p class="fb-bulletin-signature__role">{{ block.role|typo }}</p>{% endif %}
+    {% if block.name %}<p class="fb-bulletin-signature__name{% if hand == 'handwritten' %} fb-hand{% endif %}">{% inline block.name %}</p>{% endif %}
+    {% if block.image %}{% with img=images|get:block.image %}
+        <img class="fb-bulletin-ink fb-bulletin-signature__image" src="{{ img.file }}" alt="{{ img.alt }}" width="{{ img.width }}" height="{{ img.height }}" loading="lazy">
+    {% endwith %}{% endif %}
+</div>
+{% endwith %}

@@ -1,0 +1,12 @@
+{% load bulletin %}{% with img=images|get:block.image %}
+{# layout: "dock" (floats right, text wraps around), "center" (nothing to wrap), "ink" (small crop in the flow) #}
+<figure class="fb-bulletin-figure fb-bulletin-figure--{{ img.kind }} fb-bulletin-figure--{{ block.layout }}" style="--natural-w: {{ img.width }}px">
+    <a class="fb-bulletin-figure__link" href="{{ img.file }}" target="_blank" rel="noopener" title="Agrandir">
+        <img src="{{ img.file }}" alt="{{ img.alt }}" width="{{ img.width }}" height="{{ img.height }}" loading="lazy"
+             {% if img.kind in ink_kinds %}class="fb-bulletin-ink"{% endif %}>
+    </a>
+    <figcaption class="fb-bulletin-figure__caption">
+        {% include "publications/bulletin/_caption.html" with caption=block.caption editorial=block.caption_editorial %}
+    </figcaption>
+</figure>
+{% endwith %}

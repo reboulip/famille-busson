@@ -1,0 +1,97 @@
+{% load bulletin %}<!DOCTYPE html>
+{# Prototype only: a static stand-in for annuaire/base.html (same shell classes, no Django context). #}
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }} — Famille Busson</title>
+    <meta name="color-scheme" content="light dark">
+    <script>
+        try {
+            var q = new URLSearchParams(location.search).get('theme');
+            var t = q || localStorage.getItem('fb-theme');
+            if (t === 'dark' || t === 'light') {
+                document.documentElement.setAttribute('data-bs-theme', t);
+            }
+        } catch (e) { /* private mode / storage blocked — fall back to the OS preference */ }
+    </script>
+    <link rel="stylesheet" href="{{ static }}css/bootstrap.css">
+    <link rel="stylesheet" href="{{ static }}css/tokens.css">
+    <link rel="stylesheet" href="{{ static }}css/components.css">
+    <link rel="stylesheet" href="{{ static }}css/main.css">
+    <link rel="stylesheet" href="{{ static }}css/bulletin.css">
+</head>
+<body>
+    <header class="fb-topbar">
+        <button class="fb-btn fb-btn--ghost" type="button"
+                data-bs-toggle="offcanvas" data-bs-target="#sidebarNav"
+                aria-controls="sidebarNav" aria-label="Ouvrir le menu">
+            {% bicon "menu" size=22 %}
+        </button>
+        <span class="fb-wordmark">Famille Busson</span>
+    </header>
+
+    <div class="fb-layout">
+        <div class="offcanvas-lg offcanvas-start fb-sidebar-host" tabindex="-1" id="sidebarNav">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title">Menu</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas"
+                        data-bs-target="#sidebarNav" aria-label="Fermer"></button>
+            </div>
+            <div class="offcanvas-body">
+                <aside class="fb-sidebar">
+                    <a class="fb-brand" href="{{ home }}">
+                        <span class="fb-brand__name"><span class="fb-wordmark">Famille Busson</span></span>
+                        <span class="fb-brand__spacer"></span>
+                        {% include "ridge.html" %}
+                    </a>
+                    <div class="fb-eaves"></div>
+                    <nav class="fb-nav" aria-label="Navigation principale">
+                        <div class="fb-nav__group">
+                            <ul>
+                                <li><a href="#">Accueil</a></li>
+                                <li><a href="#">Quoi de neuf</a></li>
+                                <li><a href="#">Calendrier</a></li>
+                            </ul>
+                        </div>
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Famille Busson</p>
+                            <ul>
+                                <li><a href="#">Annuaire</a></li>
+                                <li><a href="#">Généalogie</a></li>
+                            </ul>
+                        </div>
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Publications</p>
+                            <ul>
+                                <li><a href="#">Toutes les publications</a></li>
+                                <li><a href="{{ home }}" aria-current="page">Bulletins familiaux</a></li>
+                            </ul>
+                        </div>
+                        <div class="fb-nav__group">
+                            <p class="fb-eyebrow fb-nav__label">Documents et photos</p>
+                            <ul>
+                                <li><a href="#">Tous les documents</a></li>
+                                <li><a href="#">Tous les albums</a></li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <div class="fb-nav__foot">
+                        <a class="fb-btn fb-btn--ghost fb-btn--sm" href="?theme=light">Alpenglow</a>
+                        <a class="fb-btn fb-btn--ghost fb-btn--sm" href="?theme=dark">Nightfall</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <main class="fb-content">
+            <div class="fb-content__inner">
+                {% include content_template %}
+                <footer class="fb-footer">Prototype de rendu — schéma bulletin {{ schema_version }}</footer>
+            </div>
+        </main>
+    </div>
+    <script src="{{ static }}js/bootstrap.bundle.min.js"></script>
+    <script src="{{ static }}js/bulletin.js"></script>
+</body>
+</html>

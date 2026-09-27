@@ -53,6 +53,31 @@
   events, presences and birthdays, not just navigation controls and personal-calendar
   export links. [#154]
 
+## Phase 19 — Bulletins familiaux : import et rendu
+
+> Dozens of scanned family bulletins (*Busson's Connection*, 1990s) are to become web
+> pages that always render the same way. An AI agent turns each PDF into a validated
+> JSON + pictures package. That step is prototyped on BC n°17, and the spec, schema and
+> working prototype are in `design/bulletins/`. This phase brings those packages into
+> `publications`.
+
+### Cluster: Bulletins familiaux
+- [ ] 19.1 · Bulletin import and rendering. Staff upload a bulletin package (a zip of
+  `bulletin.json` + `images/`). It is validated against
+  `design/bulletins/bulletin.schema.json` plus integrity checks and previewed, then
+  stored as a new `Bulletin` model: the JSON is the source of truth, the pictures are
+  files. It renders with fixed templates as list and detail pages that use the full
+  screen width: **pictures dock right with the text wrapping around them**, several
+  pictures with little or no text form a **carousel**, and **every picture has a
+  caption** (captions added during transcription are marked). Tables stack on phones,
+  and there is a dark mode and a self-hosted Caveat font. Spec: `design/bulletins/SPEC.md`:
+  §2 package (schema 0.2) and transcription conventions, §3 rendering (§3.1 docking,
+  carousels, captions), §4 import requirements. The prototype templates, CSS and JS in
+  `design/bulletins/prototype/` are meant to be lifted as-is, and
+  `prototype/fixtures/demo-001/` is a ready synthetic test fixture. Settle the open
+  questions in §6 first: model choice, storing the original PDF, visibility of
+  addresses and phone numbers.
+
 ## Backlog
 
 > Unscoped items held for a future triage pass — not tied to any phase or sprint.

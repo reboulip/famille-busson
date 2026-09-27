@@ -1,0 +1,361 @@
+{
+  "$schema": "../../../bulletin.schema.json",
+  "schema_version": "0.2",
+  "id": "demo-001",
+  "title": "Bulletin de démonstration n°1",
+  "series": {
+    "code": "DEMO",
+    "title": "Bulletin de démonstration"
+  },
+  "issue": {
+    "number": 1
+  },
+  "date": {
+    "value": "2026-09",
+    "text": "septembre 2026"
+  },
+  "language": "fr",
+  "credits": [
+    {
+      "role": "Rédaction",
+      "names": [
+        "Prototype"
+      ]
+    }
+  ],
+  "summary": "Numéro fictif, aux images générées, qui sert à tester le rendu : photo habillée par le texte, carrousels de photos légendées, mot illisible et encadré.",
+  "cover_image": "demo-001-page-01",
+  "source": {
+    "file_name": "demo-001.pdf",
+    "sha256": "fd0d4cd12e2aa98783aa899d34f4fbd31167456659961a8d2c72ac881cebe7c0",
+    "page_count": 2,
+    "producer": "make_demo.py",
+    "scanned_on": "2026-09-27",
+    "pages": [
+      {
+        "number": 1,
+        "image": "demo-001-page-01"
+      },
+      {
+        "number": 2,
+        "image": "demo-001-page-02"
+      }
+    ]
+  },
+  "images": [
+    {
+      "id": "demo-001-page-01",
+      "file": "images/demo-001-page-01.jpg",
+      "kind": "page",
+      "media_type": "image/jpeg",
+      "width": 1240,
+      "height": 1754,
+      "sha256": "4c3848e4e6eecee543d9ec0cd45b5bb9f0f5089e7960c6fb9b1fdfdceb1a5bb2",
+      "source": {
+        "page": 1,
+        "dpi": 200
+      },
+      "alt": "Page 1 du bulletin de démonstration"
+    },
+    {
+      "id": "demo-001-page-02",
+      "file": "images/demo-001-page-02.jpg",
+      "kind": "page",
+      "media_type": "image/jpeg",
+      "width": 1240,
+      "height": 1754,
+      "sha256": "9d8dbd31854432eadbc57f3d57b42e87178a182dc623e48c8e8e4474a5ab6ebf",
+      "source": {
+        "page": 2,
+        "dpi": 200
+      },
+      "alt": "Page 2 du bulletin de démonstration"
+    },
+    {
+      "id": "demo-001-photo-01",
+      "file": "images/demo-001-photo-01.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "6de44fc48511c34aca11204f2426cef176a4f27efe56df68b564805cd3707be9",
+      "source": {
+        "page": 1,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Le lac au petit matin"
+    },
+    {
+      "id": "demo-001-photo-02",
+      "file": "images/demo-001-photo-02.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 900,
+      "height": 1200,
+      "sha256": "200d3bee5b00bee30e16decf6f6d8c13277003f406dae2fa92c53e7de2792a31",
+      "source": {
+        "page": 2,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Le sentier"
+    },
+    {
+      "id": "demo-001-photo-03",
+      "file": "images/demo-001-photo-03.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "12748380a1bde2c74eb6d0e43fc0ab669a3ca0607edc249f36695ffb164de0b7",
+      "source": {
+        "page": 2,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Au bord de l’eau"
+    },
+    {
+      "id": "demo-001-photo-04",
+      "file": "images/demo-001-photo-04.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 1200,
+      "height": 900,
+      "sha256": "b7ef2ad7fe246d1359d6414e407f3e4f23bc2b6dcab0288db678c45a273d6d15",
+      "source": {
+        "page": 2,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Le retour"
+    },
+    {
+      "id": "demo-001-photo-05",
+      "file": "images/demo-001-photo-05.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "c6b18fd174474e51de80bb7c085803c7272c7b4d290c136271a9c6d8e18a4bf7",
+      "source": {
+        "page": 2,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Le chalet en hiver"
+    },
+    {
+      "id": "demo-001-photo-06",
+      "file": "images/demo-001-photo-06.jpg",
+      "kind": "photo",
+      "media_type": "image/jpeg",
+      "width": 1200,
+      "height": 800,
+      "sha256": "d39d999a392660d22001aafc390beedd903c531739cd7c9694f41a441792ddf0",
+      "source": {
+        "page": 2,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Image générée : Le chalet au printemps"
+    },
+    {
+      "id": "demo-001-scribble-01",
+      "file": "images/demo-001-scribble-01.png",
+      "kind": "handwriting",
+      "media_type": "image/png",
+      "width": 260,
+      "height": 70,
+      "sha256": "31e5ea1065a69a0aa5f5a43a4d343d68766024fb51926aa0f4ea007140498dda",
+      "source": {
+        "page": 1,
+        "dpi": 200,
+        "bbox": [
+          0.1,
+          0.12,
+          0.9,
+          0.55
+        ]
+      },
+      "alt": "Mot manuscrit illisible",
+      "transcript": null
+    }
+  ],
+  "articles": [
+    {
+      "id": "photo-habillee",
+      "title": "Une photo habillée par le texte",
+      "script": "typed",
+      "pages": [
+        1
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Ce numéro n’existe pas : il sert à vérifier la mise en page des photos."
+        },
+        {
+          "type": "figure",
+          "image": "demo-001-photo-01",
+          "caption": "Le lac au petit matin (légende imprimée dans le bulletin)."
+        },
+        {
+          "type": "paragraph",
+          "text": "Ce paragraphe tient lieu d’article : il est assez long pour que le texte coule le long de la photo, puis reprenne toute la largeur de la colonne une fois la photo dépassée. Les bulletins mêlent souvent une image et un récit ; la photo se range à droite et le texte l’habille, comme sur le papier."
+        },
+        {
+          "type": "paragraph",
+          "text": "Ce paragraphe tient lieu d’article : il est assez long pour que le texte coule le long de la photo, puis reprenne toute la largeur de la colonne une fois la photo dépassée. Les bulletins mêlent souvent une image et un récit ; la photo se range à droite et le texte l’habille, comme sur le papier."
+        },
+        {
+          "type": "paragraph",
+          "text": [
+            "Un mot que personne n’a su lire reste une image, au fil du texte : ",
+            {
+              "kind": "illegible",
+              "image": "demo-001-scribble-01"
+            },
+            ". Le lecteur voit l’écriture d’origine."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "text": "Ce paragraphe tient lieu d’article : il est assez long pour que le texte coule le long de la photo, puis reprenne toute la largeur de la colonne une fois la photo dépassée. Les bulletins mêlent souvent une image et un récit ; la photo se range à droite et le texte l’habille, comme sur le papier."
+        }
+      ]
+    },
+    {
+      "id": "journee-au-lac",
+      "rubric": "Album",
+      "title": "La journée au lac",
+      "script": "typed",
+      "pages": [
+        2
+      ],
+      "blocks": [
+        {
+          "type": "gallery",
+          "caption": "Une page de photos, sans texte",
+          "items": [
+            {
+              "image": "demo-001-photo-02",
+              "caption": "Le départ par le sentier."
+            },
+            {
+              "image": "demo-001-photo-03",
+              "caption": "Pique-nique au bord de l’eau."
+            },
+            {
+              "image": "demo-001-photo-04",
+              "caption": "Le retour, au coucher du soleil."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deux-photos",
+      "title": "Deux photos à la suite",
+      "script": "typed",
+      "pages": [
+        2
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Deux photos se suivent sans texte entre elles : le site les réunit en carrousel."
+        },
+        {
+          "type": "figure",
+          "image": "demo-001-photo-05",
+          "caption": "Le chalet sous la neige.",
+          "caption_editorial": true
+        },
+        {
+          "type": "figure",
+          "image": "demo-001-photo-06",
+          "caption": "La même vue au printemps.",
+          "caption_editorial": true
+        }
+      ]
+    },
+    {
+      "id": "encadre",
+      "title": "Un encadré",
+      "script": "typed",
+      "pages": [
+        2
+      ],
+      "blocks": [
+        {
+          "type": "paragraph",
+          "text": "Un encadré isole une information du reste de l’article."
+        },
+        {
+          "type": "aside",
+          "title": "À retenir",
+          "blocks": [
+            {
+              "type": "paragraph",
+              "text": "Les légendes ajoutées à la transcription sont en italique."
+            },
+            {
+              "type": "list",
+              "style": "bullet",
+              "items": [
+                "Une photo seule s’aligne à droite.",
+                "Plusieurs photos forment un carrousel."
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "processing": {
+    "agent": "make_demo.py (données fictives)",
+    "date": "2026-09-27",
+    "conventions": "faithful-v1",
+    "review": {
+      "status": "reviewed"
+    },
+    "notes": [
+      {
+        "level": "info",
+        "message": "Numéro fictif : textes et images générés pour tester le rendu."
+      }
+    ]
+  }
+}
