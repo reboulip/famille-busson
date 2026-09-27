@@ -11,41 +11,38 @@
         </div>
     </div>
 
-    {% include "annuaire/_calendar_subscribe.html" %}
-
-    {% if has_entries %}
-        <div class="unified-calendar"
-             data-entries='{{ entries_json|escape }}'
-             data-window-start="{{ window_start }}"
-             data-window-end="{{ window_end }}"
-             data-active-types="{{ active_types|join:',' }}"
-             data-feed-url="{% url 'calendar-feed-ajax' %}">
-            <div class="unified-calendar-toolbar">
-                <div class="fb-btn-group" role="group" aria-label="{% translate 'Navigation' %}">
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="{% translate 'Mois précédent' %}">{% translate '← Mois' %}</button>
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">{% translate "Aujourd'hui" %}</button>
-                    <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="{% translate 'Mois suivant' %}">{% translate 'Mois →' %}</button>
-                </div>
-                <span class="unified-calendar-range fb-meta"></span>
+    <div class="unified-calendar"
+         data-entries='{{ entries_json|escape }}'
+         data-window-start="{{ window_start }}"
+         data-window-end="{{ window_end }}"
+         data-active-types="{{ active_types|join:',' }}"
+         data-feed-url="{% url 'calendar-feed-ajax' %}">
+        <div class="unified-calendar-toolbar">
+            <div class="fb-btn-group" role="group" aria-label="{% translate 'Navigation' %}">
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-prev" aria-label="{% translate 'Mois précédent' %}">{% translate '← Mois' %}</button>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-today">{% translate "Aujourd'hui" %}</button>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm cal-next" aria-label="{% translate 'Mois suivant' %}">{% translate 'Mois →' %}</button>
             </div>
-            <div class="cal-filters" role="group" aria-label="{% translate 'Filtrer par type' %}">
-                {% for t in all_types %}
-                    <button type="button" class="fb-chip cal-filter-chip cal-type-{{ t }}" data-type="{{ t }}">
-                        {% if t == "event" %}{% translate "Événements" %}
-                        {% elif t == "presence" %}{% translate "Présences" %}
-                        {% elif t == "birthday" %}{% translate "Anniversaires" %}
-                        {% endif %}
-                    </button>
-                {% endfor %}
-            </div>
-            <div class="unified-calendar-month"></div>
-            <div class="unified-calendar-agenda"></div>
+            <span class="unified-calendar-range fb-meta"></span>
         </div>
-        <script src="{% static 'js/calendar_core.js' %}"></script>
-        <script src="{% static 'js/unified_calendar.js' %}"></script>
-    {% else %}
-        {% translate "Rien à afficher pour l'instant" as empty_title %}
-        {% translate "Les événements, présences et anniversaires à venir apparaîtront ici." as empty_body %}
-        {% include "annuaire/_empty.html" with title=empty_title body=empty_body %}
-    {% endif %}
+        <div class="cal-filters" role="group" aria-label="{% translate 'Filtrer par type' %}">
+            {% for t in all_types %}
+                <button type="button" class="fb-chip cal-filter-chip cal-type-{{ t }}" data-type="{{ t }}">
+                    {% if t == "event" %}{% translate "Événements" %}
+                    {% elif t == "presence" %}{% translate "Présences" %}
+                    {% elif t == "birthday" %}{% translate "Anniversaires" %}
+                    {% endif %}
+                </button>
+            {% endfor %}
+        </div>
+        <div class="unified-calendar-weekdays"></div>
+        <div class="unified-calendar-month"></div>
+        <div class="unified-calendar-agenda"></div>
+    </div>
+
+    {% include "annuaire/_calendar_subscribe.html" %}
 {% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/calendar_core.js' %}"></script>
+    <script src="{% static 'js/unified_calendar.js' %}"></script>
+{% endblock extra_js %}

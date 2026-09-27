@@ -38,18 +38,18 @@
   blocking `dependency-upgrade.yml`, and make the check auto-format where possible. [#149]
 
 ### Cluster: Carte
-- [ ] 18.4 · Bring map tiles into OSM policy compliance — proper Referer/User-Agent
+- [x] 18.4 · Bring map tiles into OSM policy compliance — proper Referer/User-Agent
   identification and HTTP caching so tile requests aren't blocked by OpenStreetMap's
   usage policy. [#150]
 
 ### Cluster: Interface et navigation
-- [ ] 18.5 · Restore GitHub issue-reporting link in the menu — bring back the link to
+- [x] 18.5 · Restore GitHub issue-reporting link in the menu — bring back the link to
   file a bug or suggestion that used to be at the bottom of the menu. [#153]
-- [ ] 18.6 · Reposition the site version number — move it from floating mid-page into
+- [x] 18.6 · Reposition the site version number — move it from floating mid-page into
   the fixed left sidebar, next to the logout button. [#155]
 
 ### Cluster: Calendrier
-- [ ] 18.7 · Add a real calendar grid to the Calendrier tab — a month view showing
+- [x] 18.7 · Add a real calendar grid to the Calendrier tab — a month view showing
   events, presences and birthdays, not just navigation controls and personal-calendar
   export links. [#154]
 

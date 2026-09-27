@@ -400,6 +400,21 @@ a:hover { color: var(--fb-alpenglow); text-decoration-color: currentColor; }
 }
 .fb-nav__logout-form { margin: 0; }
 
+/* The logout/login control and the version number share one full-width row,
+   so they stay paired regardless of how the foot's other controls wrap at the
+   sidebar's narrow width. */
+.fb-nav__session {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-basis: 100%;
+    gap: var(--fb-sp-2);
+}
+.fb-nav__version {
+    font-size: var(--fb-text-xs);
+    color: var(--fb-bark);
+}
+
 /* The nav's own <a> rule above turns every descendant link into a full-width
    nav row; the foot's buttons and links are ordinary inline controls. */
 .fb-nav__foot a {

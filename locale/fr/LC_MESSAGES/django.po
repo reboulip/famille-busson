@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 17:20+0200\n"
+"POT-Creation-Date: 2026-09-27 17:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -668,7 +668,7 @@ msgstr "Vos préférences de notification."
 msgid "Les résidences dont vous êtes propriétaire."
 msgstr "Les résidences dont vous êtes propriétaire."
 
-#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
+#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:32
 msgid "Présences"
 msgstr "Présences"
 
@@ -734,7 +734,7 @@ msgstr ""
 "Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi "
 "ceux que vous pouvez voir."
 
-#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:34
+#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:31
 #: events/models.py:92 events/templates/events/event_confirm_delete.html:8
 #: events/templates/events/event_detail.html:9
 #: events/templates/events/event_form.html:9
@@ -892,57 +892,57 @@ msgstr "Tapez au moins 2 lettres pour chercher…"
 msgid "Chercher une personne"
 msgstr "Chercher une personne"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:7
-#: annuaire/templates/annuaire/calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:6
+#: annuaire/templates/annuaire/calendar.html:21
 msgid "Navigation"
 msgstr "Navigation"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "Mois précédent"
 msgstr "Mois précédent"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "← Mois"
 msgstr "← Mois"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:9
-#: annuaire/templates/annuaire/calendar.html:26
+#: annuaire/templates/annuaire/_presence_calendar.html:8
+#: annuaire/templates/annuaire/calendar.html:23
 msgid "Aujourd'hui"
 msgstr "Aujourd'hui"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois suivant"
 msgstr "Mois suivant"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois →"
 msgstr "Mois →"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:12
+#: annuaire/templates/annuaire/_presence_calendar.html:11
 msgid "Échelle"
 msgstr "Échelle"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:13
+#: annuaire/templates/annuaire/_presence_calendar.html:12
 msgid "Semaines"
 msgstr "Semaines"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:14
+#: annuaire/templates/annuaire/_presence_calendar.html:13
 msgid "Mois"
 msgstr "Mois"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:22
+#: annuaire/templates/annuaire/_presence_calendar.html:21
 msgid "passé"
 msgstr "passé"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:23
+#: annuaire/templates/annuaire/_presence_calendar.html:22
 msgid "en cours"
 msgstr "en cours"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:23
 msgid "à venir"
 msgstr "à venir"
 
@@ -1296,25 +1296,25 @@ msgstr "Changer de langue"
 msgid "Changer de thème"
 msgstr "Changer de thème"
 
-#: annuaire/templates/annuaire/base.html:180
+#: annuaire/templates/annuaire/base.html:181
 msgid "Déconnexion"
 msgstr "Déconnexion"
 
-#: annuaire/templates/annuaire/base.html:184
+#: annuaire/templates/annuaire/base.html:185
 #: annuaire/templates/annuaire/emails/magic_link.html:33
 #: annuaire/templates/annuaire/login.html:17
 msgid "Se connecter"
 msgstr "Se connecter"
 
-#: annuaire/templates/annuaire/base.html:204
+#: annuaire/templates/annuaire/base.html:207
 msgid "La politique de confidentialité a été mise à jour."
 msgstr "La politique de confidentialité a été mise à jour."
 
-#: annuaire/templates/annuaire/base.html:207
+#: annuaire/templates/annuaire/base.html:210
 msgid "Consultez-la"
 msgstr "Consultez-la"
 
-#: annuaire/templates/annuaire/base.html:211
+#: annuaire/templates/annuaire/base.html:214
 msgid "J'ai lu et j'accepte"
 msgstr "J'ai lu et j'accepte"
 
@@ -1431,23 +1431,13 @@ msgstr "Créer / réinitialiser les comptes"
 msgid "Événements, présences et anniversaires de la famille, au même endroit."
 msgstr "Événements, présences et anniversaires de la famille, au même endroit."
 
-#: annuaire/templates/annuaire/calendar.html:31
+#: annuaire/templates/annuaire/calendar.html:28
 msgid "Filtrer par type"
 msgstr "Filtrer par type"
 
-#: annuaire/templates/annuaire/calendar.html:36
+#: annuaire/templates/annuaire/calendar.html:33
 msgid "Anniversaires"
 msgstr "Anniversaires"
-
-#: annuaire/templates/annuaire/calendar.html:47
-#: annuaire/templates/annuaire/home.html:100
-#: annuaire/templates/annuaire/place_list.html:46
-msgid "Rien à afficher pour l'instant"
-msgstr "Rien à afficher pour l'instant"
-
-#: annuaire/templates/annuaire/calendar.html:48
-msgid "Les événements, présences et anniversaires à venir apparaîtront ici."
-msgstr "Les événements, présences et anniversaires à venir apparaîtront ici."
 
 #: annuaire/templates/annuaire/carte.html:18
 #, python-format
@@ -2100,6 +2090,11 @@ msgstr "Commencez par explorer qui fait partie de la famille."
 #: annuaire/templates/annuaire/home.html:76
 msgid "Voir l'annuaire"
 msgstr "Voir l'annuaire"
+
+#: annuaire/templates/annuaire/home.html:100
+#: annuaire/templates/annuaire/place_list.html:46
+msgid "Rien à afficher pour l'instant"
+msgstr "Rien à afficher pour l'instant"
 
 #: annuaire/templates/annuaire/home.html:101
 #, python-format

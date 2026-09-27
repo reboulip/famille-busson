@@ -181,7 +181,8 @@ starting.
 ## App version
 
 The app reads its version from `pyproject.toml` when it starts. The version appears in
-small text at the bottom of every page (`v1.5.0`, for example), and in `/healthz`.
+small text in the fixed left sidebar, next to the logout/login control (`v1.5.0`, for
+example), and in `/healthz`.
 
 ## Scheduled tasks
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-27 17:20+0200\n"
+"POT-Creation-Date: 2026-09-27 17:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -663,7 +663,7 @@ msgstr "Your notification preferences."
 msgid "Les résidences dont vous êtes propriétaire."
 msgstr "The residences you own."
 
-#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
+#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:32
 msgid "Présences"
 msgstr "Stays"
 
@@ -727,7 +727,7 @@ msgstr ""
 "The albums and photos you have uploaded, and the photos where you are "
 "tagged, among those you can see."
 
-#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:34
+#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:31
 #: events/models.py:92 events/templates/events/event_confirm_delete.html:8
 #: events/templates/events/event_detail.html:9
 #: events/templates/events/event_form.html:9
@@ -883,57 +883,57 @@ msgstr "Type at least 2 letters to search…"
 msgid "Chercher une personne"
 msgstr "Search for a person"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:7
-#: annuaire/templates/annuaire/calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:6
+#: annuaire/templates/annuaire/calendar.html:21
 msgid "Navigation"
 msgstr "Navigation"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "Mois précédent"
 msgstr "Previous month"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "← Mois"
 msgstr "← Month"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:9
-#: annuaire/templates/annuaire/calendar.html:26
+#: annuaire/templates/annuaire/_presence_calendar.html:8
+#: annuaire/templates/annuaire/calendar.html:23
 msgid "Aujourd'hui"
 msgstr "Today"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois suivant"
 msgstr "Next month"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois →"
 msgstr "Month →"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:12
+#: annuaire/templates/annuaire/_presence_calendar.html:11
 msgid "Échelle"
 msgstr "Scale"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:13
+#: annuaire/templates/annuaire/_presence_calendar.html:12
 msgid "Semaines"
 msgstr "Weeks"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:14
+#: annuaire/templates/annuaire/_presence_calendar.html:13
 msgid "Mois"
 msgstr "Months"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:22
+#: annuaire/templates/annuaire/_presence_calendar.html:21
 msgid "passé"
 msgstr "past"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:23
+#: annuaire/templates/annuaire/_presence_calendar.html:22
 msgid "en cours"
 msgstr "ongoing"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:23
 msgid "à venir"
 msgstr "upcoming"
 
@@ -1287,25 +1287,25 @@ msgstr "Change language"
 msgid "Changer de thème"
 msgstr "Change theme"
 
-#: annuaire/templates/annuaire/base.html:180
+#: annuaire/templates/annuaire/base.html:181
 msgid "Déconnexion"
 msgstr "Log out"
 
-#: annuaire/templates/annuaire/base.html:184
+#: annuaire/templates/annuaire/base.html:185
 #: annuaire/templates/annuaire/emails/magic_link.html:33
 #: annuaire/templates/annuaire/login.html:17
 msgid "Se connecter"
 msgstr "Log in"
 
-#: annuaire/templates/annuaire/base.html:204
+#: annuaire/templates/annuaire/base.html:207
 msgid "La politique de confidentialité a été mise à jour."
 msgstr "The privacy policy has been updated."
 
-#: annuaire/templates/annuaire/base.html:207
+#: annuaire/templates/annuaire/base.html:210
 msgid "Consultez-la"
 msgstr "View it"
 
-#: annuaire/templates/annuaire/base.html:211
+#: annuaire/templates/annuaire/base.html:214
 msgid "J'ai lu et j'accepte"
 msgstr "I have read and accept"
 
@@ -1422,23 +1422,13 @@ msgstr "Create / reset accounts"
 msgid "Événements, présences et anniversaires de la famille, au même endroit."
 msgstr "Family events, stays and birthdays, all in one place."
 
-#: annuaire/templates/annuaire/calendar.html:31
+#: annuaire/templates/annuaire/calendar.html:28
 msgid "Filtrer par type"
 msgstr "Filter by type"
 
-#: annuaire/templates/annuaire/calendar.html:36
+#: annuaire/templates/annuaire/calendar.html:33
 msgid "Anniversaires"
 msgstr "Birthdays"
-
-#: annuaire/templates/annuaire/calendar.html:47
-#: annuaire/templates/annuaire/home.html:100
-#: annuaire/templates/annuaire/place_list.html:46
-msgid "Rien à afficher pour l'instant"
-msgstr "Nothing to display yet"
-
-#: annuaire/templates/annuaire/calendar.html:48
-msgid "Les événements, présences et anniversaires à venir apparaîtront ici."
-msgstr "Upcoming events, stays and birthdays will appear here."
 
 #: annuaire/templates/annuaire/carte.html:18
 #, python-format
@@ -2068,6 +2058,11 @@ msgstr "Start by exploring who's part of the family."
 #: annuaire/templates/annuaire/home.html:76
 msgid "Voir l'annuaire"
 msgstr "View the directory"
+
+#: annuaire/templates/annuaire/home.html:100
+#: annuaire/templates/annuaire/place_list.html:46
+msgid "Rien à afficher pour l'instant"
+msgstr "Nothing to display yet"
 
 #: annuaire/templates/annuaire/home.html:101
 #, python-format
