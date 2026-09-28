@@ -1,0 +1,1 @@
+{% load bulletin %}{% with tag=block.level|heading_tag:base %}<{{ tag }} class="fb-bulletin-h fb-bulletin-h--{{ block.level }}">{{ block.text|typo }}</{{ tag }}>{% endwith %}

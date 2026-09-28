@@ -1,0 +1,12 @@
+{% extends "annuaire/base.html" %}
+{% load static %}
+{% block title %}{{ page_title }} — {{ site_config.site_name }}{% endblock title %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/bulletin.css' %}">
+{% endblock extra_css %}
+{% block content %}
+    {% include "publications/bulletin/_preview.html" %}
+{% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/bulletin.js' %}"></script>
+{% endblock extra_js %}

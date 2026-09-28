@@ -1,0 +1,23 @@
+{% load bulletin %}{# Render-time block: consecutive pictures or a gallery (see render.prepare_blocks). #}
+<figure class="fb-bulletin-carousel" data-carousel aria-roledescription="carrousel" aria-label="{{ block.slides|length }} photos">
+    <div class="fb-bulletin-carousel__track" data-carousel-track tabindex="0">
+        {% for slide in block.slides %}{% with img=images|get:slide.image %}
+            <figure class="fb-bulletin-carousel__slide" aria-roledescription="diapositive" aria-label="{{ forloop.counter }} sur {{ block.slides|length }}">
+                <a class="fb-bulletin-carousel__link" href="{{ img.file }}" target="_blank" rel="noopener" title="Agrandir">
+                    <img src="{{ img.file }}" alt="{{ img.alt }}" width="{{ img.width }}" height="{{ img.height }}" loading="lazy">
+                </a>
+                <figcaption class="fb-bulletin-figure__caption">
+                    {% include "publications/bulletin/_caption.html" with caption=slide.caption editorial=slide.caption_editorial %}
+                </figcaption>
+            </figure>
+        {% endwith %}{% endfor %}
+    </div>
+    <div class="fb-bulletin-carousel__nav" data-carousel-nav hidden>
+        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-prev aria-label="Photo précédente">{% bicon "chevron-left" size=16 %}</button>
+        <span class="fb-bulletin-carousel__count" data-carousel-count aria-live="polite">1 / {{ block.slides|length }}</span>
+        <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-next aria-label="Photo suivante">{% bicon "chevron-right" size=16 %}</button>
+    </div>
+    {% if block.caption %}
+        <figcaption class="fb-bulletin-carousel__caption{% if block.caption_editorial %} fb-bulletin-caption--editorial{% endif %}">{% inline block.caption %}</figcaption>
+    {% endif %}
+</figure>

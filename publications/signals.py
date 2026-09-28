@@ -9,10 +9,28 @@ from annuaire.models import Settings as NotificationSettings
 from annuaire.search.indexing import enqueue_reindex, register_search_index
 from annuaire.search.registry import SearchSpec
 
-from .models import Attachment, BlogPost
+from .bulletin_access import accessible_bulletins
+from .bulletin_package import flatten_bulletin_text
+from .models import Attachment, BlogPost, Bulletin, BulletinImage, BulletinImport, BulletinImportImage
 from .tasks import send_blog_post_notification
 
 register_file_cleanup(Attachment, "file")
+register_file_cleanup(Bulletin, "source_pdf")
+register_file_cleanup(BulletinImage, "file")
+register_file_cleanup(BulletinImport, "source_pdf")
+register_file_cleanup(BulletinImportImage, "file")
+
+register_search_index(
+    Bulletin,
+    SearchSpec(
+        weights={"A": lambda b: b.title, "B": lambda b: b.summary, "C": lambda b: flatten_bulletin_text(b.data)},
+        source_fields=frozenset({"title", "summary", "data"}),
+        accessible=accessible_bulletins,
+        label="Bulletins familiaux",
+        card_template="publications/_bulletin_card.html",
+        order=["-sort_date"],
+    ),
+)
 
 
 def _blogpost_body_and_tags(post):

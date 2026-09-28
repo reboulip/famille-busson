@@ -1,0 +1,23 @@
+{% load bulletin %}<figure class="fb-bulletin-table">
+    {% if block.caption %}<figcaption class="fb-bulletin-table__caption">{{ block.caption|typo }}</figcaption>{% endif %}
+    <table class="fb-table">
+        <thead>
+            <tr>{% for col in block.render_cols %}<th scope="col" class="{{ col.cls }}">{{ col.label|typo }}</th>{% endfor %}</tr>
+        </thead>
+        {% for group in block.render_groups %}
+            <tbody class="fb-bulletin-table__group">
+                {% if group.label %}<tr class="fb-bulletin-table__group-label"><th colspan="{{ block.render_cols|length }}" scope="rowgroup">{{ group.label|typo }}</th></tr>{% endif %}
+                {% for row in group.rows %}
+                    <tr>
+                        {% for cell in row %}
+                            <td class="{{ cell.col.cls }}{% if cell.value is None %} is-empty{% endif %}" data-label="{{ cell.col.label }}">
+                                {% if cell.value is None %}<span aria-hidden="true">—</span><span class="visually-hidden">non renseigné</span>{% else %}{% inline cell.value %}{% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        {% endfor %}
+    </table>
+    {% if block.footnote %}<p class="fb-meta fb-bulletin-table__foot">{{ block.footnote|typo }}</p>{% endif %}
+</figure>

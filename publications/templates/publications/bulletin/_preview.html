@@ -1,0 +1,130 @@
+{% load bulletin %}
+{% load icons %}
+{% load i18n %}
+{% comment %}
+Shared by bulletin_detail.html (a published Bulletin) and
+bulletin_import_preview.html (a staged BulletinImport) -- same context shape
+(bulletin, images, ink_kinds, masthead, sections, toc, pages, marginalia),
+built by publications.bulletin_render.build_bulletin_context().
+{% endcomment %}
+<article class="fb-bulletin" lang="{{ bulletin.language }}">
+
+    {% if bulletin.processing.review.status == "draft" %}
+        <div class="fb-alert fb-alert--info fb-bulletin__draft">
+            {% translate "Transcription automatique, pas encore relue par la famille." %}
+            <a href="#notes">{% translate "Voir les notes de transcription" %}</a>.
+        </div>
+    {% endif %}
+
+    <header class="fb-bulletin-mast">
+        {% if masthead %}
+            <div class="fb-bulletin-mast__media">
+                <img class="fb-bulletin-mast__scan fb-bulletin-ink" src="{{ masthead.file }}" alt="{{ masthead.alt }}"
+                     width="{{ masthead.width }}" height="{{ masthead.height }}">
+            </div>
+        {% endif %}
+        <div class="fb-bulletin-mast__text">
+            <p class="fb-eyebrow">{% translate "Bulletin familial" %}</p>
+            <h1 class="fb-bulletin-mast__title">
+                {{ bulletin.series.title|typo }}
+                <span class="fb-bulletin-mast__number">n°{% firstof bulletin.issue.label bulletin.issue.number %}</span>
+            </h1>
+            <p class="fb-bulletin-mast__date">{{ bulletin.date.text|capfirst }}</p>
+            {% if bulletin.credits %}
+                <p class="fb-meta fb-bulletin-mast__credits">
+                    {% for credit in bulletin.credits %}<span>{{ credit.role|typo }} : <strong>{{ credit.names|join_names }}</strong></span>{% endfor %}
+                </p>
+            {% endif %}
+            <div class="fb-rule"></div>
+            {% if bulletin.summary %}<p class="fb-bulletin-mast__summary">{{ bulletin.summary|typo }}</p>{% endif %}
+            <p class="fb-bulletin-mast__actions">
+                <a class="fb-btn fb-btn--quiet fb-btn--sm" href="#original">{% icon "image" size=16 %} {% blocktranslate trimmed count counter=pages|length %}Feuilleter l’original ({{ counter }} page){% plural %}Feuilleter l’original ({{ counter }} pages){% endblocktranslate %}</a>
+                {% if source_pdf_url %}
+                    <a class="fb-btn fb-btn--quiet fb-btn--sm" href="{{ source_pdf_url }}" download>{% icon "download" size=16 %} {% translate "Télécharger le PDF original" %}</a>
+                {% endif %}
+            </p>
+        </div>
+    </header>
+
+    <nav class="fb-bulletin-toc" aria-labelledby="bulletin-toc-title">
+        <p class="fb-eyebrow" id="bulletin-toc-title">{% translate "Sommaire" %}</p>
+        <ol>
+            {% for entry in toc %}
+                <li>
+                    <a href="#{{ entry.id }}">
+                        <span class="fb-bulletin-toc__text">
+                            {% if entry.title %}
+                                {% if entry.rubric %}<span class="fb-bulletin-toc__rubric">{{ entry.rubric|typo }}</span>{% endif %}
+                                <span class="fb-bulletin-toc__title">{{ entry.title|typo }}</span>
+                            {% else %}
+                                <span class="fb-bulletin-toc__title">{{ entry.rubric|typo }}</span>
+                            {% endif %}
+                        </span>
+                        <span class="fb-bulletin-toc__leader" aria-hidden="true"></span>
+                        <span class="fb-bulletin-toc__page">{{ entry.pages|pages_label }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ol>
+    </nav>
+
+    {% for section in sections %}
+        <section class="fb-bulletin-section{% if section.rubric %} fb-bulletin-section--rubric{% endif %}">
+            {% if section.rubric %}<h2 class="fb-bulletin-rubric">{{ section.rubric|typo }}</h2>{% endif %}
+            {% for article in section.articles %}
+                {% include "publications/bulletin/_article.html" %}
+            {% endfor %}
+        </section>
+    {% endfor %}
+
+    <section class="fb-bulletin-originals" id="original">
+        <div class="fb-section-head">
+            <h2>{% translate "Le document original" %}</h2>
+            <span class="fb-meta">{% blocktranslate trimmed count counter=pages|length %}{{ counter }} page{% plural %}{{ counter }} pages{% endblocktranslate %}{% if bulletin.source.scanned_on %} · {% blocktranslate trimmed with date=bulletin.source.scanned_on|long_date %}numérisé le {{ date }}{% endblocktranslate %}{% endif %}</span>
+        </div>
+        <div class="fb-bulletin-carousel fb-bulletin-carousel--strip" data-carousel aria-roledescription="carrousel" aria-label="{% translate 'Pages du bulletin original' %}">
+            <ol class="fb-bulletin-carousel__track" data-carousel-track tabindex="0">
+                {% for page in pages %}
+                    <li class="fb-bulletin-carousel__slide" id="page-{{ page.number }}" aria-roledescription="diapositive" aria-label="{% blocktranslate trimmed with number=page.number total=pages|length %}Page {{ number }} sur {{ total }}{% endblocktranslate %}">
+                        <a class="fb-bulletin-carousel__link" href="{{ page.img.file }}" target="_blank" rel="noopener" title="{% translate 'Agrandir' %}">
+                            <img src="{{ page.img.file }}" alt="{{ page.img.alt }}" width="{{ page.img.width }}" height="{{ page.img.height }}" loading="lazy">
+                        </a>
+                        <span class="fb-meta">{% blocktranslate trimmed with number=page.number %}Page {{ number }}{% endblocktranslate %}</span>
+                    </li>
+                {% endfor %}
+            </ol>
+            <div class="fb-bulletin-carousel__nav" data-carousel-nav hidden>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-prev aria-label="{% translate 'Page précédente' %}">{% icon "chevron-left" size=16 %}</button>
+                <span class="fb-bulletin-carousel__count" data-carousel-count aria-live="polite">1 / {{ pages|length }}</span>
+                <button type="button" class="fb-btn fb-btn--quiet fb-btn--sm" data-carousel-next aria-label="{% translate 'Page suivante' %}">{% icon "chevron-right" size=16 %}</button>
+            </div>
+        </div>
+        {% if marginalia %}
+            <h3 class="fb-bulletin-originals__sub">{% translate "Annotations ajoutées au document" %}</h3>
+            {% for note in marginalia %}
+                <figure class="fb-bulletin-marginalia">
+                    <img class="fb-bulletin-ink" src="{{ note.img.file }}" alt="{{ note.img.alt }}" width="{{ note.img.width }}" height="{{ note.img.height }}">
+                    <figcaption class="fb-meta">{{ note.description|typo }} <a href="#page-{{ note.page }}">p. {{ note.page }}</a></figcaption>
+                </figure>
+            {% endfor %}
+        {% endif %}
+    </section>
+
+    {% with processing=bulletin.processing %}
+        <details class="fb-bulletin-notes" id="notes">
+            <summary>{% blocktranslate trimmed count counter=processing.notes|length %}Notes de transcription ({{ counter }}){% plural %}Notes de transcription ({{ counter }}){% endblocktranslate %}</summary>
+            <ul>
+                {% for note in processing.notes %}
+                    <li class="fb-bulletin-notes__item fb-bulletin-notes__item--{{ note.level }}">
+                        {% if note.page %}<a href="#page-{{ note.page }}">p. {{ note.page }}</a> — {% endif %}{{ note.message|typo }}
+                    </li>
+                {% endfor %}
+            </ul>
+            <p class="fb-meta">
+                {% blocktranslate trimmed with date=processing.date|long_date agent=processing.agent %}Transcrit le {{ date }} · {{ agent }}{% endblocktranslate %}{% if processing.model %} ({{ processing.model }}){% endif %}
+                · {% translate "conventions" %} {{ processing.conventions }} · {% translate "statut" %} : {% if processing.review.status == "reviewed" %}{% translate "relu" %}{% else %}{% translate "brouillon" %}{% endif %}
+                · {% translate "schéma" %} {{ bulletin.schema_version }}
+            </p>
+        </details>
+    {% endwith %}
+</article>

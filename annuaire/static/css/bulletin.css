@@ -1,0 +1,691 @@
+/* =========================================================================
+   Bulletin familial — archetype E (long-form) variant
+   =========================================================================
+
+   Prototype stylesheet for rendering a bulletin package. Depends on tokens.css
+   and components.css exactly like every other view: no hardcoded colour, so
+   Nightfall comes for free. Destined for publications/static/css/bulletin.css
+   (or a section of components.css) once the feature is built.
+
+   Layout
+   - The page uses the whole screen width (it opts out of the app's 76rem cap)
+     and centres a prose column (--bulletin-measure, ≈72 characters). The
+     masthead, the sommaire and the page scans use a wider track.
+   - Article bodies are one flow of text, so pictures can DOCK RIGHT with the
+     text wrapping around them. On wide screens a docked picture hangs into the
+     free margin; tables and carousels spread into both margins.
+   - Several pictures with no text between them (or a gallery) form a CAROUSEL.
+   - Every picture carries a caption line; captions added during transcription
+     are marked as such.
+   - Below 40rem nothing floats: pictures stack at full width.
+   ========================================================================= */
+
+/* Caveat (OFL), self-hosted like Bitter/Karla in tokens.css: variable woff2 from
+   @fontsource-variable/caveat 5.3.0, latin + latin-ext subsets only. */
+@font-face {
+    font-family: 'Caveat';
+    src: url('../fonts/caveat-latin-wght-normal.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+    font-family: 'Caveat';
+    src: url('../fonts/caveat-latin-ext-wght-normal.woff2') format('woff2');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+/* --- Page grid ----------------------------------------------------------- */
+
+/* The bulletin opts out of the app's 76rem content cap: it uses the whole screen. */
+.fb-content__inner:has(> .fb-bulletin) { max-width: none; }
+
+.fb-bulletin {
+    --bulletin-measure: 42rem;
+    --bulletin-wide: 72rem;
+    --bulletin-gutter: calc((var(--bulletin-wide) - var(--bulletin-measure)) / 2);
+    --fb-font-hand: 'Caveat', 'Segoe Print', 'Bradley Hand', 'Comic Sans MS', cursive;
+    container: bulletin / inline-size;
+    display: grid;
+    /* The prose track is a definite size (not minmax): grid sizing hands leftover space out
+       evenly between growable tracks, so a minmax() prose track only got a third of a phone's
+       width. Sized first, it takes all it needs, then the gutters share what is left. */
+    grid-template-columns:
+        [full-start] minmax(0, 1fr)
+        [wide-start] minmax(0, var(--bulletin-gutter))
+        [content-start] min(100%, var(--bulletin-measure)) [content-end]
+        minmax(0, var(--bulletin-gutter)) [wide-end]
+        minmax(0, 1fr) [full-end];
+}
+
+.fb-bulletin > * { grid-column: content; min-width: 0; }
+.fb-bulletin > .fb-bulletin__draft,
+.fb-bulletin > .fb-bulletin-mast,
+.fb-bulletin > .fb-bulletin-toc,
+.fb-bulletin > .fb-bulletin-originals { grid-column: wide; }
+
+.fb-hand { font-family: var(--fb-font-hand); font-weight: 600; letter-spacing: 0.01em; }
+
+/* --- Masthead: scan and titles side by side when there is room ---------- */
+
+.fb-bulletin-mast {
+    display: grid;
+    gap: var(--fb-sp-4) var(--fb-sp-7);
+    align-items: center;
+    margin-bottom: var(--fb-sp-6);
+}
+@container bulletin (min-width: 56rem) {
+    .fb-bulletin-mast { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+}
+.fb-bulletin-mast__scan { display: block; width: 100%; max-width: 34rem; height: auto; }
+.fb-bulletin-mast__title {
+    font-size: var(--fb-text-display);
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    margin: var(--fb-sp-1) 0 0;
+}
+.fb-bulletin-mast__number { color: var(--fb-ember); white-space: nowrap; }
+.fb-bulletin-mast__date {
+    font-family: var(--fb-font-display);
+    font-size: 1.125rem;
+    color: var(--fb-bark);
+    margin: var(--fb-sp-1) 0 var(--fb-sp-2);
+}
+.fb-bulletin-mast__credits { margin-bottom: var(--fb-sp-4); }
+.fb-bulletin-mast__credits span + span::before { content: " · "; }
+.fb-bulletin-mast__credits strong { color: var(--fb-ink); font-weight: 600; }
+.fb-bulletin-mast__summary { font-size: var(--fb-text-lg); line-height: 1.6; max-width: var(--bulletin-measure); }
+.fb-bulletin-mast__actions { margin-top: var(--fb-sp-4); }
+
+/* --- Sommaire: a printed-style table of contents with dot leaders -------- */
+
+.fb-bulletin-toc {
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-1);
+    padding: var(--fb-sp-4) var(--fb-sp-5);
+    margin: 0 0 var(--fb-sp-6);
+}
+.fb-bulletin-toc ol { list-style: none; margin: var(--fb-sp-2) 0 0; padding: 0; }
+@container bulletin (min-width: 56rem) {
+    .fb-bulletin-toc ol { columns: 2; column-gap: var(--fb-sp-7); }
+}
+.fb-bulletin-toc li { break-inside: avoid; }
+.fb-bulletin-toc a {
+    display: flex;
+    align-items: last baseline;   /* leader + page number sit on the title's last line */
+    gap: var(--fb-sp-2);
+    padding: var(--fb-sp-2) 0;
+    color: var(--fb-ink);
+    text-decoration: none;
+    border-top: 1px solid color-mix(in srgb, var(--fb-border) 60%, transparent);
+}
+.fb-bulletin-toc__text { min-width: 0; }
+.fb-bulletin-toc__rubric {
+    display: block;
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-eyebrow);
+    color: var(--fb-bark);
+}
+.fb-bulletin-toc__title { font-family: var(--fb-font-display); font-weight: 500; line-height: 1.35; }
+.fb-bulletin-toc__leader {
+    flex: 1 1 1.5rem;
+    min-width: 1.5rem;
+    border-bottom: 2px dotted var(--fb-border-strong);
+    transform: translateY(-0.3em);
+}
+.fb-bulletin-toc__page {
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+.fb-bulletin-toc a:hover .fb-bulletin-toc__title { color: var(--fb-ember); }
+
+/* --- Rubric: the original's rounded, shadowed label box, redrawn --------- */
+
+.fb-bulletin-section { margin-top: var(--fb-sp-6); }
+.fb-bulletin-rubric {
+    display: inline-block;
+    margin: 0 0 var(--fb-sp-4);
+    padding: 0.3rem 1.1rem 0.35rem;
+    font-size: 1.375rem;
+    font-weight: 700;
+    background: var(--fb-card);
+    border: 2px solid var(--fb-ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--fb-ink);
+}
+
+/* --- Article ------------------------------------------------------------- */
+
+.fb-bulletin-article { margin: 0 0 var(--fb-sp-7); scroll-margin-top: var(--fb-sp-5); }
+.fb-bulletin-article__head { margin-bottom: var(--fb-sp-4); }
+.fb-bulletin-article__kicker { color: var(--fb-ember); margin-bottom: var(--fb-sp-1); }
+.fb-bulletin-article__title { font-size: 1.75rem; line-height: 1.15; margin: 0; }
+.fb-bulletin-article--handwritten .fb-bulletin-article__title {
+    font-family: var(--fb-font-hand);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.05;
+}
+.fb-bulletin-article__subtitle {
+    font-family: var(--fb-font-display);
+    font-style: italic;
+    font-size: 1.125rem;
+    color: var(--fb-bark);
+    margin: var(--fb-sp-1) 0 0;
+}
+.fb-bulletin-article__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--fb-sp-1) var(--fb-sp-3);
+    margin-top: var(--fb-sp-2);
+}
+.fb-bulletin-article__byline { font-style: italic; }
+.fb-bulletin-article__pages { font-variant-numeric: tabular-nums; }
+
+/* The body is one flow of text (docked pictures need that) and contains its floats. */
+.fb-bulletin-article__body {
+    display: flow-root;
+    font-size: var(--fb-text-lg);
+    line-height: var(--fb-leading-long);
+    overflow-wrap: break-word;
+    /* Free space on each side of the centred prose column; 0 on a phone. Docked pictures
+       may hang into it, tables and carousels may spread into it. */
+    --gutter-free: max(0px, (100cqi - var(--bulletin-measure)) / 2);
+    --outset-dock: clamp(0px, var(--gutter-free) - var(--fb-sp-5), 14rem);
+    --outset-wide: min(var(--gutter-free), var(--bulletin-gutter));
+}
+
+/* Handwritten pieces sit on a sheet of notebook paper: card ground and a margin rule.
+   Nothing spreads out of the sheet. */
+.fb-bulletin-article--handwritten > .fb-bulletin-article__body {
+    --outset-dock: 0px;
+    --outset-wide: 0px;
+    position: relative;
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-1);
+    padding: var(--fb-sp-5) var(--fb-sp-5) var(--fb-sp-5) calc(var(--fb-sp-5) + 12px);
+}
+.fb-bulletin-article--handwritten > .fb-bulletin-article__body::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 14px;
+    width: 2px;
+    background: color-mix(in srgb, var(--fb-alpenglow) 40%, transparent);
+}
+
+.fb-bulletin-p { margin: 0 0 var(--fb-sp-3); }
+.fb-bulletin-h { margin: var(--fb-sp-5) 0 var(--fb-sp-2); }
+.fb-bulletin-h--1 { font-size: 1.25rem; }
+.fb-bulletin-h--2 { font-size: 1.0625rem; }
+.fb-bulletin-list { margin: 0 0 var(--fb-sp-3); padding-left: 1.25rem; }
+.fb-bulletin-list li + li { margin-top: var(--fb-sp-2); }
+.fb-bulletin-list li::marker { color: var(--fb-alpenglow); }
+
+.fb-bulletin-quote {
+    margin: var(--fb-sp-4) 0;
+    padding-left: var(--fb-sp-4);
+    border-left: 3px solid var(--fb-alpenglow);
+    color: var(--fb-bark);
+    font-style: italic;
+}
+.fb-bulletin-quote p { margin: 0 0 var(--fb-sp-2); }
+
+/* The original's short centred rules become a short centred alpenglow stub. */
+.fb-bulletin-sep {
+    clear: both;
+    width: 56px;
+    height: 3px;
+    margin: var(--fb-sp-5) auto;
+    border: 0;
+    border-radius: 2px;
+    background: var(--fb-alpenglow);
+    opacity: 1;
+}
+
+/* --- Uncertain readings ----------------------------------------------------- */
+
+.fb-bulletin-uncertain {
+    text-decoration: underline dotted var(--fb-alpenglow);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.22em;
+    cursor: help;
+}
+.fb-bulletin-uncertain:focus-visible { outline: 2px solid var(--fb-alpenglow); outline-offset: 2px; border-radius: 2px; }
+.fb-bulletin-uncertain__mark {
+    font-family: var(--fb-font-body);
+    font-size: 0.65em;
+    font-weight: 700;
+    vertical-align: super;
+    color: var(--fb-ember);
+    margin-left: 1px;
+}
+
+/* --- Ink on paper: scans blend into the page, and flip in Nightfall ------- */
+
+.fb-bulletin-ink { mix-blend-mode: multiply; }
+[data-bs-theme="dark"] .fb-bulletin-ink { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-bs-theme="light"]) .fb-bulletin-ink { filter: invert(1) hue-rotate(180deg); mix-blend-mode: screen; }
+}
+.fb-bulletin-illegible { height: 1.6em; width: auto; vertical-align: middle; }
+
+/* --- Family news ("Prénom : nouvelles") ----------------------------------- */
+
+.fb-bulletin-news {
+    display: grid;
+    grid-template-columns: 8.5rem minmax(0, 1fr);
+    gap: 0 var(--fb-sp-4);
+    padding: var(--fb-sp-3) 0;
+}
+.fb-bulletin-news + .fb-bulletin-news { border-top: 1px dashed var(--fb-border-strong); }
+.fb-bulletin-news__subject {
+    margin: 0;
+    font-size: 1.75rem;
+    line-height: 1.1;
+    color: var(--fb-ember);
+    overflow-wrap: anywhere;
+}
+.fb-bulletin-news__headline {
+    font-family: var(--fb-font-display);
+    font-style: italic;
+    font-weight: 600;
+    margin: 0 0 var(--fb-sp-2);
+}
+.fb-bulletin-news__body { display: flow-root; }
+.fb-bulletin-news__body > :last-child { margin-bottom: 0; }
+.fb-bulletin-news__body .fb-bulletin-sep { margin: var(--fb-sp-4) auto; }
+@container bulletin (max-width: 35.99rem) {
+    .fb-bulletin-news { grid-template-columns: minmax(0, 1fr); }
+    .fb-bulletin-news__subject { margin-bottom: var(--fb-sp-1); }
+}
+
+/* --- Event card (a flex box: it sits beside a docked picture, never under it) */
+
+.fb-bulletin-event {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--fb-sp-4);
+    margin: 0 0 var(--fb-sp-5);
+    padding: var(--fb-sp-4);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-radius: var(--fb-radius);
+    box-shadow: var(--fb-shadow-2);
+}
+.fb-bulletin-article--handwritten .fb-bulletin-event { background: var(--fb-parchment); box-shadow: none; }
+.fb-bulletin-event__badge {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: 5.75rem;
+    text-align: center;
+    border: 1px solid var(--fb-border-strong);
+    border-radius: var(--fb-radius-sm);
+    background: var(--fb-card);
+    overflow: hidden;
+    line-height: 1.2;
+}
+.fb-bulletin-event__month {
+    background: var(--fb-ember);
+    color: var(--fb-card);
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 0;
+}
+.fb-bulletin-event__days {
+    font-family: var(--fb-font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding-top: var(--fb-sp-1);
+    white-space: nowrap;
+}
+.fb-bulletin-event__year { font-size: var(--fb-text-xs); color: var(--fb-bark); padding-bottom: var(--fb-sp-1); }
+.fb-bulletin-event__body { min-width: 0; font-size: 0.9375rem; line-height: 1.5; }
+.fb-bulletin-event__title { font-family: var(--fb-font-display); font-weight: 600; font-size: 1.0625rem; margin: 0 0 2px; }
+.fb-bulletin-event__organizer { color: var(--fb-bark); margin: 0 0 var(--fb-sp-2); }
+.fb-bulletin-event__facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.fb-bulletin-event__facts li { display: flex; gap: var(--fb-sp-2); align-items: flex-start; }
+.fb-bulletin-event__facts .fb-icon { color: var(--fb-alpenglow); margin-top: 2px; }
+
+/* --- Figures ---------------------------------------------------------------
+   Three layouts, decided by the renderer (render.prepare_blocks):
+     dock    floats right, the following text wraps around it; hangs into the
+             free margin on wide screens (--outset-dock); never wider than the
+             picture's own resolution (--natural-w, set inline per picture)
+     center  nothing to wrap around: centred, may spread into the margins
+     ink     handwriting / signature crops: small, in the flow
+   The link is display: inline or block, never inline-block: a shrink-to-fit
+   wrapper makes percentage widths cyclic and the image collapses (seen in the
+   first prototype). */
+
+.fb-bulletin-figure { margin: 0; }
+.fb-bulletin-figure__link { display: block; }
+.fb-bulletin-figure img { display: block; max-width: 100%; height: auto; }
+
+.fb-bulletin-figure--dock {
+    float: right;
+    clear: right;
+    width: min(calc(45% + var(--outset-dock)), var(--natural-w, 100%));
+    margin: var(--fb-sp-1) calc(-1 * var(--outset-dock)) var(--fb-sp-4) var(--fb-sp-5);
+}
+.fb-bulletin-figure--dock img { width: 100%; max-height: 80vh; object-fit: contain; }
+
+.fb-bulletin-figure--center {
+    clear: both;
+    margin: var(--fb-sp-6) calc(-1 * var(--outset-wide));
+    text-align: center;
+}
+.fb-bulletin-figure--center .fb-bulletin-figure__link { display: inline; }
+.fb-bulletin-figure--center img { display: inline-block; width: auto; max-height: 80vh; vertical-align: top; }
+
+.fb-bulletin-figure--ink { margin: var(--fb-sp-4) 0; }
+.fb-bulletin-figure--ink img { width: min(100%, 20rem); }
+
+.fb-bulletin-figure--photo img {
+    border-radius: var(--fb-radius-sm);
+    border: 1px solid var(--fb-border);
+    box-shadow: var(--fb-shadow-2);
+}
+/* An inserted document (flyer, clipping) keeps its paper: framed like a print on the table. */
+.fb-bulletin-figure--document img {
+    background: #fff;
+    padding: var(--fb-sp-3);
+    border: 1px solid var(--fb-border);
+    border-radius: 3px;
+    box-shadow: var(--fb-shadow-2);
+    transform: rotate(-0.8deg);
+}
+[data-bs-theme="dark"] .fb-bulletin-figure--document img { filter: brightness(0.86); }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-bs-theme="light"]) .fb-bulletin-figure--document img { filter: brightness(0.86); }
+}
+
+/* Captions: every picture gets one line — its caption (printed, or added during
+   transcription and then set in italics) followed by the page it comes from. */
+.fb-bulletin-figure__caption {
+    display: block;
+    margin-top: var(--fb-sp-2);
+    font-size: var(--fb-text-sm);
+    line-height: 1.45;
+    color: var(--fb-bark);
+    text-align: left;
+}
+.fb-bulletin-figure--center .fb-bulletin-figure__caption { text-align: center; }
+.fb-bulletin-caption { color: var(--fb-ink); }
+.fb-bulletin-caption--editorial { font-style: italic; color: var(--fb-bark); }
+.fb-bulletin-caption__source { color: var(--fb-bark); white-space: nowrap; }
+.fb-bulletin-caption + .fb-bulletin-caption__source::before { content: "· "; }
+
+/* Narrow screens: nothing floats; pictures stack at full width with their caption. */
+@container bulletin (max-width: 39.99rem) {
+    .fb-bulletin-figure--dock {
+        float: none;
+        width: auto;
+        margin: var(--fb-sp-5) 0;
+        text-align: center;
+    }
+    .fb-bulletin-figure--dock .fb-bulletin-figure__link { display: inline; }
+    .fb-bulletin-figure--dock img { display: inline-block; width: auto; vertical-align: top; }
+    .fb-bulletin-figure--dock .fb-bulletin-figure__caption { text-align: center; }
+    .fb-bulletin-figure--document img { transform: none; padding: var(--fb-sp-2); }
+}
+
+/* --- Carousel ---------------------------------------------------------------
+   A CSS scroll-snap track: swipe, trackpad, scrollbar and arrow keys work with no
+   script; bulletin.js adds the previous/next buttons and the "2 / 5" counter.
+   Default: one picture at a time. --strip: a row of pages (the original scans). */
+
+.fb-bulletin-carousel {
+    clear: both;
+    margin: var(--fb-sp-6) calc(-1 * var(--outset-wide, 0px));
+}
+.fb-bulletin-carousel__track {
+    position: relative;   /* bulletin.js measures slides from the track */
+    display: flex;
+    gap: var(--fb-sp-4);
+    margin: 0;
+    padding: var(--fb-sp-4);
+    list-style: none;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--fb-sp-4);
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    background: var(--fb-panel);
+    border-radius: var(--fb-radius);
+}
+.fb-bulletin-carousel__track:focus-visible { outline: 2px solid var(--fb-alpenglow); outline-offset: 2px; }
+.fb-bulletin-carousel__slide {
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    text-align: center;
+    scroll-snap-align: center;
+}
+.fb-bulletin-carousel__link { display: block; max-width: 100%; }
+.fb-bulletin-carousel__slide img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: min(70vh, 36rem);
+    border-radius: var(--fb-radius-sm);
+    box-shadow: var(--fb-shadow-2);
+}
+.fb-bulletin-carousel__slide .fb-bulletin-figure__caption { max-width: var(--bulletin-measure); text-align: center; }
+.fb-bulletin-carousel__nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--fb-sp-3);
+    margin-top: var(--fb-sp-3);
+}
+.fb-bulletin-carousel__nav[hidden] { display: none; }
+.fb-bulletin-carousel__nav .fb-btn:disabled { opacity: 0.4; cursor: default; }
+.fb-bulletin-carousel__count {
+    min-width: 4em;
+    text-align: center;
+    font-size: var(--fb-text-sm);
+    color: var(--fb-bark);
+    font-variant-numeric: tabular-nums;
+}
+.fb-bulletin-carousel__caption {
+    margin-top: var(--fb-sp-2);
+    text-align: center;
+    font-family: var(--fb-font-display);
+    font-weight: 600;
+}
+
+.fb-bulletin-carousel--strip .fb-bulletin-carousel__slide {
+    flex: 0 0 auto;
+    justify-content: flex-start;
+    scroll-snap-align: start;
+}
+.fb-bulletin-carousel--strip .fb-bulletin-carousel__slide img {
+    width: auto;
+    height: min(62vh, 34rem);
+    max-width: none;
+    max-height: none;
+    background: #fff;
+    border: 1px solid var(--fb-border);
+    border-radius: 3px;
+}
+.fb-bulletin-carousel--strip .fb-bulletin-carousel__slide .fb-meta { margin-top: var(--fb-sp-2); }
+.fb-bulletin-carousel--strip .fb-bulletin-carousel__slide:target img { outline: 3px solid var(--fb-alpenglow); outline-offset: 3px; }
+
+/* --- Signature ------------------------------------------------------------- */
+
+/* Spans the prose column and right-aligns inside it, so it lines up with the prose edge. */
+.fb-bulletin-signature {
+    clear: both;
+    margin: var(--fb-sp-5) 0 0;
+    text-align: right;
+    line-height: 1.3;
+}
+.fb-bulletin-signature__closing,
+.fb-bulletin-signature__name { margin: 0; font-size: 1.1rem; }
+.fb-bulletin-signature__closing.fb-hand,
+.fb-bulletin-signature__name.fb-hand { font-size: 1.75rem; }
+.fb-bulletin-signature__role { margin: var(--fb-sp-2) 0 0; font-size: var(--fb-text-sm); color: var(--fb-bark); }
+.fb-bulletin-signature__image { display: block; width: 11rem; height: auto; margin: var(--fb-sp-1) 0 0 auto; }
+
+/* --- Address (personal data: shown to members only, with its date) -------- */
+
+.fb-bulletin-address {
+    display: flow-root;   /* sits beside a docked picture instead of running under it */
+    margin: var(--fb-sp-4) 0;
+    padding: var(--fb-sp-4) var(--fb-sp-5);
+    font-style: normal;
+    text-align: center;
+    line-height: 1.6;
+    background: var(--fb-panel);
+    border-radius: var(--fb-radius);
+}
+.fb-bulletin-address__label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--fb-sp-1);
+    margin-bottom: var(--fb-sp-2);
+    font-size: var(--fb-text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-eyebrow);
+    color: var(--fb-bark);
+}
+
+/* --- Aside (encadré) ------------------------------------------------------- */
+
+.fb-bulletin-aside {
+    display: flow-root;
+    margin: var(--fb-sp-5) 0;
+    padding: var(--fb-sp-4) var(--fb-sp-5);
+    background: var(--fb-card);
+    border: 1px solid var(--fb-border);
+    border-left: 3px solid var(--fb-gold);
+    border-radius: var(--fb-radius-sm);
+}
+.fb-bulletin-aside__title { font-family: var(--fb-font-display); font-weight: 600; margin-bottom: var(--fb-sp-2); }
+.fb-bulletin-aside > :last-child { margin-bottom: 0; }
+
+/* --- Table (spreads into the margins when the screen allows) --------------- */
+
+.fb-bulletin-table { clear: both; margin: var(--fb-sp-5) calc(-1 * var(--outset-wide)); }
+.fb-bulletin-table__caption {
+    font-family: var(--fb-font-display);
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: var(--fb-sp-2);
+}
+.fb-bulletin-table .fb-table { font-size: 0.9375rem; line-height: 1.4; }
+.fb-bulletin-table .fb-table td { padding: var(--fb-sp-2) var(--fb-sp-3); }
+.fb-bulletin-table .fb-table thead th { padding: var(--fb-sp-2) var(--fb-sp-3); }
+.fb-bulletin-table .is-key {
+    width: 1%;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--fb-bark);
+}
+.fb-bulletin-table td.is-label { font-weight: 600; }
+.fb-bulletin-table td.is-empty { color: var(--fb-border-strong); }
+.fb-bulletin-table tbody + tbody { border-top: 3px double var(--fb-border-strong); }
+.fb-bulletin-table__group-label th {
+    background: var(--fb-parchment);
+    font-size: var(--fb-text-xs);
+    text-transform: uppercase;
+    letter-spacing: var(--fb-tracking-eyebrow);
+    color: var(--fb-bark);
+    padding: var(--fb-sp-1) var(--fb-sp-3);
+}
+.fb-bulletin-table__foot { text-align: right; margin-top: var(--fb-sp-2); font-variant-numeric: tabular-nums; }
+
+/* Narrow: each row becomes a small record — the key and the row label, then labelled fields. */
+@container bulletin (max-width: 35.99rem) {
+    .fb-bulletin-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+    .fb-bulletin-table .fb-table,
+    .fb-bulletin-table tbody,
+    .fb-bulletin-table td { display: block; }
+    .fb-bulletin-table tbody tr {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 0 var(--fb-sp-2);
+        padding: var(--fb-sp-2) var(--fb-sp-3);
+        border-bottom: 1px solid var(--fb-border);
+    }
+    .fb-bulletin-table tbody tr:last-child { border-bottom: 0; }
+    .fb-bulletin-table .fb-table td { padding: 0; border: 0; }
+    .fb-bulletin-table td.is-key { color: var(--fb-ember); font-weight: 700; width: auto; }
+    .fb-bulletin-table td:not(.is-key):not(.is-label) { grid-column: 1 / -1; font-size: 0.875rem; }
+    .fb-bulletin-table td:not(.is-key):not(.is-label)::before {
+        content: attr(data-label) " : ";
+        color: var(--fb-bark);
+    }
+    .fb-bulletin-table__group-label { display: block; }
+}
+
+/* --- The original document ------------------------------------------------- */
+
+.fb-bulletin-originals { margin-top: var(--fb-sp-7); }
+.fb-bulletin-originals .fb-section-head { flex-wrap: wrap; gap: var(--fb-sp-1) var(--fb-sp-4); }
+.fb-bulletin-originals .fb-bulletin-carousel { margin: 0; }
+.fb-bulletin-originals__sub { margin-top: var(--fb-sp-5); font-size: 1rem; }
+.fb-bulletin-marginalia { display: flex; flex-wrap: wrap; align-items: center; gap: var(--fb-sp-3); margin: 0; }
+.fb-bulletin-marginalia img { height: 2.5rem; width: auto; }
+
+/* --- Transcription notes --------------------------------------------------- */
+
+.fb-bulletin-notes {
+    margin-top: var(--fb-sp-6);
+    padding-top: var(--fb-sp-4);
+    border-top: 1px solid var(--fb-border);
+}
+.fb-bulletin-notes summary { cursor: pointer; font-family: var(--fb-font-display); font-weight: 600; }
+.fb-bulletin-notes ul { margin: var(--fb-sp-3) 0; padding-left: 1.2rem; font-size: var(--fb-text-sm); }
+.fb-bulletin-notes li + li { margin-top: var(--fb-sp-1); }
+.fb-bulletin-notes__item--warning::marker { color: var(--fb-warning); content: "▲ "; font-size: 0.7em; }
+
+/* --- Listing: one card per issue ------------------------------------------- */
+
+.fb-bulletin-card { display: grid; grid-template-columns: 7rem minmax(0, 1fr); gap: var(--fb-sp-4); align-items: start; }
+.fb-bulletin-card__cover {
+    width: 100%;
+    height: auto;
+    background: #fff;
+    border: 1px solid var(--fb-border);
+    border-radius: 3px;
+    box-shadow: var(--fb-shadow-1);
+}
+.fb-bulletin-card__title { font-size: 1.25rem; margin: 0 0 var(--fb-sp-1); }
+.fb-bulletin-card__title a { color: var(--fb-ink); text-decoration: none; }
+.fb-bulletin-card__title a:hover { color: var(--fb-ember); }
+.fb-bulletin-card__summary { margin: var(--fb-sp-2) 0 0; color: var(--fb-bark); font-size: 0.9375rem; }
+@media (max-width: 575.98px) { .fb-bulletin-card { grid-template-columns: 5rem minmax(0, 1fr); } }

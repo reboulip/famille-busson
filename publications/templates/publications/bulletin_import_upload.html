@@ -1,0 +1,27 @@
+{% extends "annuaire/base.html" %}
+{% load crispy_forms_filters %}
+{% load i18n %}
+{% block content %}
+    {# Archetype G — form. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{% translate "Publications" %}</p>
+            <h1>{% translate "Importer un bulletin" %}</h1>
+            <p class="fb-page-head__lede">
+                {% blocktranslate trimmed %}
+                Un paquet est une archive zip contenant bulletin.json et un dossier
+                images/. Il est validé puis prévisualisé à l'étape suivante ; rien
+                n'est publié avant une confirmation explicite.
+                {% endblocktranslate %}
+            </p>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="fb-form fb-card">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="fb-form__actions">
+            <button type="submit" class="fb-btn fb-btn--primary">{% translate "Analyser le paquet" %}</button>
+        </div>
+    </form>
+{% endblock content %}

@@ -20,6 +20,7 @@ dependencies = [
     "djangorestframework>=3.16.1",
     "gunicorn>=26.0.0",
     "idna>=3.11",
+    "jsonschema>=4.26.0",
     "jwt>=1.3.1",
     "markdown>=3.9",
     "nh3>=0.3.1",
@@ -105,4 +106,9 @@ python-version = "3.13"
 unresolved-attribute = "warn"
 invalid-assignment = "warn"
 unsupported-operator = "warn"
+# Same root cause, for JSONField specifically: instance access to a JSONField
+# (e.g. Bulletin.data) is inferred as the field descriptor class, which has no
+# __getitem__, rather than the deserialized dict/list it actually holds at
+# runtime -- false positive on every `instance.some_json_field["key"]`.
+not-subscriptable = "warn"
 no-matching-overload = "warn"

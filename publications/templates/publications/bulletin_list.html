@@ -1,0 +1,60 @@
+{% extends "annuaire/base.html" %}
+{% load bulletin %}
+{% load icons %}
+{% load static %}
+{% load i18n %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/bulletin.css' %}">
+{% endblock extra_css %}
+{% block content %}
+    {# Archetype C — collection feed. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{% translate "Publications" %}</p>
+            <h1>{% translate "Bulletins familiaux" %}</h1>
+            <p class="fb-page-head__lede">{% translate "Les numéros transcrits depuis les originaux papier." %}</p>
+        </div>
+        {% if user.is_staff %}
+            <div class="fb-page-head__actions">
+                <a href="{% url 'bulletin-import-upload' %}" class="fb-btn fb-btn--primary">{% icon "plus" size=16 %} {% translate "Importer un bulletin" %}</a>
+            </div>
+        {% endif %}
+    </div>
+
+    {% for entry in bulletins %}
+        <article class="fb-card fb-post-card fb-bulletin-card">
+            {% with cover=entry.cover_image %}
+                {% if cover %}
+                    <a href="{% url 'bulletin-detail' entry.pk %}" tabindex="-1" aria-hidden="true">
+                        <img class="fb-bulletin-card__cover" src="{{ cover.file.url }}" alt="" width="{{ cover.width }}" height="{{ cover.height }}" loading="lazy">
+                    </a>
+                {% endif %}
+            {% endwith %}
+            <div>
+                <h2 class="fb-post-card__title fb-bulletin-card__title">
+                    <a class="stretched-link" href="{% url 'bulletin-detail' entry.pk %}">{{ entry.series_title|typo }} n°{% firstof entry.issue_label entry.issue_number %}</a>
+                </h2>
+                <p class="fb-meta">
+                    {{ entry.date_value|long_date|capfirst }}
+                    {% if entry.status == "draft" %}<span class="fb-chip fb-chip--gold">{% translate "Brouillon" %}</span>{% endif %}
+                </p>
+                {% if entry.summary %}<p class="fb-bulletin-card__summary">{{ entry.summary|typo }}</p>{% endif %}
+            </div>
+        </article>
+    {% empty %}
+        {% translate "Aucun bulletin pour l'instant" as empty_title %}
+        {% include "annuaire/_empty.html" with title=empty_title %}
+    {% endfor %}
+
+    {% if is_paginated %}
+        <nav class="fb-pagination pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">&larr; {% translate "Précédent" %}</a>
+            {% endif %}
+            <span>{% blocktranslate trimmed with number=page_obj.number pages=page_obj.paginator.num_pages %}Page {{ number }} / {{ pages }}{% endblocktranslate %}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="fb-btn fb-btn--quiet fb-btn--sm">{% translate "Suivant" %} &rarr;</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% endblock content %}

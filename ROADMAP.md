@@ -62,7 +62,7 @@
 > `publications`.
 
 ### Cluster: Bulletins familiaux
-- [ ] 19.1 · Bulletin import and rendering. Staff upload a bulletin package (a zip of
+- [x] 19.1 · Bulletin import and rendering. Staff upload a bulletin package (a zip of
   `bulletin.json` + `images/`). It is validated against
   `design/bulletins/bulletin.schema.json` plus integrity checks and previewed, then
   stored as a new `Bulletin` model: the JSON is the source of truth, the pictures are

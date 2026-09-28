@@ -1,0 +1,77 @@
+{% extends "annuaire/base.html" %}
+{% load icons %}
+{% load static %}
+{% load i18n %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/bulletin.css' %}">
+{% endblock extra_css %}
+{% block content %}
+    {# Archetype I — review, with a destructive-confirm-flavoured action row. #}
+    <div class="fb-page-head">
+        <div class="fb-page-head__titles">
+            <p class="fb-eyebrow">{% translate "Publications" %}</p>
+            <h1>{% blocktranslate trimmed with filename=bulletin_import.original_filename %}Révision de l'import « {{ filename }} »{% endblocktranslate %}</h1>
+            <p class="fb-page-head__lede">
+                {% translate "Ce bulletin n'est pas visible sur le site tant que vous n'avez pas cliqué sur « Publier » ci-dessous." %}
+            </p>
+        </div>
+    </div>
+
+    <div class="fb-card" style="margin-bottom: var(--fb-sp-5)">
+        <div class="fb-section-head">
+            <h2>{% translate "Rapport de validation" %}</h2>
+        </div>
+        {% with report=bulletin_import.validation_report %}
+            {% if report.errors %}
+                <div class="fb-alert fb-alert--danger">
+                    <p class="fb-card__label">{% blocktranslate trimmed count counter=report.errors|length %}{{ counter }} erreur{% plural %}{{ counter }} erreurs{% endblocktranslate %} — {% translate "la publication est bloquée tant qu'elles ne sont pas corrigées." %}</p>
+                    <ul>
+                        {% for error in report.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p class="fb-alert fb-alert--success">{% icon "check" size=16 %} {% translate "Aucune erreur." %}</p>
+            {% endif %}
+            {% if report.warnings %}
+                <details>
+                    <summary>{% blocktranslate trimmed count counter=report.warnings|length %}{{ counter }} avertissement{% plural %}{{ counter }} avertissements{% endblocktranslate %}</summary>
+                    <ul>
+                        {% for warning in report.warnings %}<li>{{ warning }}</li>{% endfor %}
+                    </ul>
+                </details>
+            {% endif %}
+            {% if report.stats %}
+                <p class="fb-meta">
+                    {% for key, value in report.stats.items %}{{ key }} : {{ value }}{% if not forloop.last %} · {% endif %}{% endfor %}
+                </p>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="fb-record__actions" style="margin-bottom: var(--fb-sp-5)">
+        <form method="post" action="{% url 'bulletin-import-apply' bulletin_import.pk %}" style="display:inline">
+            {% csrf_token %}
+            {% translate "Publier ce bulletin sur le site ?" as confirm_apply_message %}
+            <button type="submit" class="fb-btn fb-btn--primary" {% if not bulletin_import.can_publish %}disabled{% endif %}
+                    onclick="return confirm('{{ confirm_apply_message|escapejs }}')">
+                {% icon "check" size=16 %} {% translate "Publier" %}
+            </button>
+        </form>
+        <form method="post" action="{% url 'bulletin-import-discard' bulletin_import.pk %}" style="display:inline">
+            {% csrf_token %}
+            {% translate "Abandonner cet import ?" as confirm_discard_message %}
+            <button type="submit" class="fb-btn fb-btn--ghost fb-btn--danger-text"
+                    onclick="return confirm('{{ confirm_discard_message|escapejs }}')">
+                {% translate "Abandonner l'import" %}
+            </button>
+        </form>
+    </div>
+
+    <div class="fb-section-head">
+        <h2>{% translate "Aperçu du rendu" %}</h2>
+    </div>
+    {% include "publications/bulletin/_preview.html" %}
+{% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/bulletin.js' %}"></script>
+{% endblock extra_js %}
