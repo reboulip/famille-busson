@@ -1,8 +1,8 @@
 # Search
 
-One search field, on every page, searches people, publications, documents, albums,
-photos and life stories at the same time. This page describes how search behaves. The
-code is in `annuaire/search/`.
+One search field, on every page, searches people, publications, bulletins, documents,
+albums, photos and life stories at the same time. This page describes how search
+behaves. The code is in `annuaire/search/`.
 
 ## The search field
 
@@ -14,9 +14,9 @@ to type more.
 
 ## Results page
 
-- **Default view:** results are grouped by type (people, publications, documents,
-  albums, photos, stories), with up to 5 results per type. If a type has more results,
-  a "Voir tout (N) →" link appears.
+- **Default view:** results are grouped by type (people, publications, bulletins,
+  documents, albums, photos, stories), with up to 5 results per type. If a type has more
+  results, a "Voir tout (N) →" link appears.
 - **"Voir tout" view** (`?type=...`): the results of one type only, 20 per page, with a
   link back to the grouped view. If the type is unknown, the page shows "Aucun
   résultat".
