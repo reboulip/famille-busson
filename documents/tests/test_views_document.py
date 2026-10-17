@@ -314,10 +314,12 @@ def test_document_create_get_category_field_indents_child_under_parent(auth_clie
 
     child = Category.objects.create(name="Sous-catégorie", parent=category)
     response = auth_client.get(reverse("document-create"))
-    choices = dict(response.context["form"].fields["category"].choices)
+    field = response.context["form"].fields["category"]
+    choices = dict(field.choices)
     assert choices[child.pk] == "    Sous-catégorie"
     assert choices[category.pk] == category.name
-    assert choices[""] == "---------"
+    # The blank label is Django's own default, which changes between releases.
+    assert choices[""] == field.empty_label
 
 
 @pytest.mark.django_db
