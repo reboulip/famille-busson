@@ -4,7 +4,7 @@ from typing import Any
 
 from django.db.models import Model, QuerySet
 
-_registry: dict[type[Model], "SearchSpec"] = {}
+_registry: dict[type[Model], SearchSpec] = {}
 
 
 @dataclass(frozen=True)

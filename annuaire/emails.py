@@ -54,7 +54,7 @@ def birthday_photo(person) -> InlineImage | None:
             return None
         with photo.open("rb") as handle:
             data = handle.read()
-    except (OSError, ValueError):
+    except OSError, ValueError:
         logger.warning("Could not read profile photo for person %s; using initials instead", person.pk)
         return None
     return InlineImage(cid="profile-photo", data=data, filename=photo.name.rsplit("/", 1)[-1])

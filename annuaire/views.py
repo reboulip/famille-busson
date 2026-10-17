@@ -512,7 +512,7 @@ def check_emails_ajax(request):
     try:
         data = json.loads(request.body)
         emails = data.get("emails", [])
-    except (json.JSONDecodeError, AttributeError):
+    except json.JSONDecodeError, AttributeError:
         return JsonResponse({"error": "Invalid JSON"}, status=400)
     existing = list(Account.objects.filter(email__in=emails).values_list("email", flat=True))
     return JsonResponse({"existing": existing})
@@ -667,7 +667,7 @@ def _get_account_from_uidb64(uidb64):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         return Account.objects.get(pk=uid)
-    except (TypeError, ValueError, OverflowError, Account.DoesNotExist, ValidationError):
+    except TypeError, ValueError, OverflowError, Account.DoesNotExist, ValidationError:
         return None
 
 

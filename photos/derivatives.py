@@ -49,7 +49,7 @@ def read_exif_taken_at(image: Image.Image) -> dt.datetime | None:
             return None
         naive = dt.datetime.strptime(raw, "%Y:%m:%d %H:%M:%S")
         return django_timezone.make_aware(naive, dt.UTC)
-    except (ValueError, TypeError, OSError):
+    except ValueError, TypeError, OSError:
         return None
 
 
