@@ -139,7 +139,7 @@ def test_no_residual_branding_outside_the_allowlist():
             continue
         try:
             text = path.read_text(encoding="utf-8")
-        except (UnicodeDecodeError, OSError):
+        except UnicodeDecodeError, OSError:
             continue
         if BANNED.search(text):
             offenders.append(rel)

@@ -47,7 +47,7 @@ def _get_features(url: str, params: dict) -> list[dict]:
         response = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
         response.raise_for_status()
         return response.json().get("features", [])
-    except (requests.RequestException, ValueError):
+    except requests.RequestException, ValueError:
         return []
 
 

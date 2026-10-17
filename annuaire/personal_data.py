@@ -429,7 +429,7 @@ def build_personal_data_archive(person: Person, viewer: Account) -> bytes:
             try:
                 with person.profile_photo.open("rb") as fh:
                     archive.writestr(f"photo-profil.{extension}", fh.read())
-            except (FileNotFoundError, OSError):
+            except FileNotFoundError, OSError:
                 pass
     return buffer.getvalue()
 

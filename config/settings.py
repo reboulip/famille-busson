@@ -29,7 +29,7 @@ def _read_app_version() -> str:
     try:
         with open(BASE_DIR / "pyproject.toml", "rb") as f:
             return tomllib.load(f)["project"]["version"]
-    except (OSError, tomllib.TOMLDecodeError, KeyError):
+    except OSError, tomllib.TOMLDecodeError, KeyError:
         return ""
 
 

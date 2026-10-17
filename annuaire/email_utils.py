@@ -48,7 +48,7 @@ class OutgoingEmail:
     inline_images: tuple[InlineImage, ...] = field(default_factory=tuple)
 
     @classmethod
-    def coerce(cls, message) -> "OutgoingEmail":
+    def coerce(cls, message) -> OutgoingEmail:
         """Accept either an OutgoingEmail or a legacy `(email, subject, body)` tuple.
 
         The tuple form predates HTML emails and is still the shortest way to send a

@@ -5,8 +5,14 @@
     "version": "7.9.0",
     "dir": "d3",
     "files": [
-      { "src": "dist/d3.min.js", "dest": "d3.min.js" },
-      { "src": "LICENSE", "dest": "LICENSE" }
+      {
+        "src": "dist/d3.min.js",
+        "dest": "d3.min.js"
+      },
+      {
+        "src": "LICENSE",
+        "dest": "LICENSE"
+      }
     ]
   },
   "leaflet": {
@@ -14,14 +20,38 @@
     "version": "1.9.4",
     "dir": "leaflet",
     "files": [
-      { "src": "dist/leaflet.js", "dest": "leaflet.js" },
-      { "src": "dist/leaflet.css", "dest": "leaflet.css" },
-      { "src": "dist/images/layers-2x.png", "dest": "images/layers-2x.png" },
-      { "src": "dist/images/layers.png", "dest": "images/layers.png" },
-      { "src": "dist/images/marker-icon-2x.png", "dest": "images/marker-icon-2x.png" },
-      { "src": "dist/images/marker-icon.png", "dest": "images/marker-icon.png" },
-      { "src": "dist/images/marker-shadow.png", "dest": "images/marker-shadow.png" },
-      { "src": "LICENSE", "dest": "LICENSE" }
+      {
+        "src": "dist/leaflet.js",
+        "dest": "leaflet.js"
+      },
+      {
+        "src": "dist/leaflet.css",
+        "dest": "leaflet.css"
+      },
+      {
+        "src": "dist/images/layers-2x.png",
+        "dest": "images/layers-2x.png"
+      },
+      {
+        "src": "dist/images/layers.png",
+        "dest": "images/layers.png"
+      },
+      {
+        "src": "dist/images/marker-icon-2x.png",
+        "dest": "images/marker-icon-2x.png"
+      },
+      {
+        "src": "dist/images/marker-icon.png",
+        "dest": "images/marker-icon.png"
+      },
+      {
+        "src": "dist/images/marker-shadow.png",
+        "dest": "images/marker-shadow.png"
+      },
+      {
+        "src": "LICENSE",
+        "dest": "LICENSE"
+      }
     ]
   },
   "leaflet.markercluster": {
@@ -29,10 +59,22 @@
     "version": "1.5.3",
     "dir": "leaflet.markercluster",
     "files": [
-      { "src": "dist/leaflet.markercluster.js", "dest": "leaflet.markercluster.js" },
-      { "src": "dist/leaflet.markercluster.js.map", "dest": "leaflet.markercluster.js.map" },
-      { "src": "dist/MarkerCluster.css", "dest": "MarkerCluster.css" },
-      { "src": "LICENSE", "dest": "LICENSE" }
+      {
+        "src": "dist/leaflet.markercluster.js",
+        "dest": "leaflet.markercluster.js"
+      },
+      {
+        "src": "dist/leaflet.markercluster.js.map",
+        "dest": "leaflet.markercluster.js.map"
+      },
+      {
+        "src": "dist/MarkerCluster.css",
+        "dest": "MarkerCluster.css"
+      },
+      {
+        "src": "LICENSE",
+        "dest": "LICENSE"
+      }
     ]
   },
   "family-chart": {
@@ -40,9 +82,18 @@
     "version": "0.9.0",
     "dir": "family-chart",
     "files": [
-      { "src": "dist/family-chart.min.js", "dest": "family-chart.min.js" },
-      { "src": "dist/styles/family-chart.css", "dest": "family-chart.css" },
-      { "src": "LICENSE.txt", "dest": "LICENSE" }
+      {
+        "src": "dist/family-chart.min.js",
+        "dest": "family-chart.min.js"
+      },
+      {
+        "src": "dist/styles/family-chart.css",
+        "dest": "family-chart.css"
+      },
+      {
+        "src": "LICENSE.txt",
+        "dest": "LICENSE"
+      }
     ]
   },
   "html-to-image": {
@@ -50,18 +101,33 @@
     "version": "1.11.13",
     "dir": "html-to-image",
     "files": [
-      { "src": "dist/html-to-image.js", "dest": "html-to-image.js" },
-      { "src": "LICENSE", "dest": "LICENSE" }
+      {
+        "src": "dist/html-to-image.js",
+        "dest": "html-to-image.js"
+      },
+      {
+        "src": "LICENSE",
+        "dest": "LICENSE"
+      }
     ]
   },
   "pdfjs": {
     "package": "pdfjs-dist",
-    "version": "6.3.289",
+    "version": "6.4.299",
     "dir": "pdfjs",
     "files": [
-      { "src": "build/pdf.min.mjs", "dest": "pdf.min.mjs" },
-      { "src": "build/pdf.worker.min.mjs", "dest": "pdf.worker.min.mjs" },
-      { "src": "LICENSE", "dest": "LICENSE" }
+      {
+        "src": "build/pdf.min.mjs",
+        "dest": "pdf.min.mjs"
+      },
+      {
+        "src": "build/pdf.worker.min.mjs",
+        "dest": "pdf.worker.min.mjs"
+      },
+      {
+        "src": "LICENSE",
+        "dest": "LICENSE"
+      }
     ]
   }
 }
