@@ -9,6 +9,8 @@ from photos.models import Album
 
 from .models import Attachment, BlogPost, Comment, Tag
 
+MAX_PACKAGE_UPLOAD_BYTES = 50 * 1024 * 1024  # matches publications.bulletin_package.MAX_PACKAGE_SIZE
+
 
 class BlogPostForm(forms.ModelForm):
     tags = forms.CharField(
@@ -83,3 +85,17 @@ AttachmentFormSet = forms.inlineformset_factory(
     extra=0,
     can_delete=True,
 )
+
+
+class FormBulletinUpload(forms.Form):
+    package = forms.FileField(label=_("Paquet du bulletin (.zip)"))
+    source_pdf = forms.FileField(label=_("PDF original"), required=False)
+
+    def clean_package(self):
+        uploaded = self.cleaned_data["package"]
+        if uploaded.size > MAX_PACKAGE_UPLOAD_BYTES:
+            raise forms.ValidationError(
+                _("Fichier trop volumineux (max %(max_mb)s Mo).")
+                % {"max_mb": MAX_PACKAGE_UPLOAD_BYTES // (1024 * 1024)}
+            )
+        return uploaded

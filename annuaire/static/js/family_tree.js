@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', function () {
             .map((rel) => {
                 const marriage = (person.data.marriages || {})[rel.id];
                 const parts = [];
-                if (marriage && marriage.start_date) parts.push(`marié·e le ${marriage.start_date}`);
+                if (marriage && marriage.start_date) parts.push(`${marriage.label || 'en couple'} depuis le ${marriage.start_date}`);
                 if (marriage && marriage.place) parts.push(`à ${marriage.place}`);
                 if (marriage && marriage.end_date) parts.push(`jusqu'au ${marriage.end_date}`);
                 const meta = parts.length ? `<div class="genealogie-detail-empty">${parts.join(' ')}</div>` : '';

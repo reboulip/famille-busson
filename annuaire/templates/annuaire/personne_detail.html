@@ -223,10 +223,10 @@
                 {% if partner or parents or children %}
                     {% if partner %}
                         <div>
-                            <p class="fb-eyebrow fb-relation-group__label">{{ partner_type|title }}</p>
+                            <p class="fb-eyebrow fb-relation-group__label">{{ partner_type|capfirst }}</p>
                             {% if partner_relation.start_date or partner_relation.marriage_place or partner_relation.end_date %}
                                 <p class="fb-meta">
-                                    {% if partner_relation.start_date %}{% blocktranslate trimmed with start_date=partner_relation.start_date|date:"j F Y" %}Marié·e le {{ start_date }}{% endblocktranslate %}{% endif %}
+                                    {% if partner_relation.start_date %}{% blocktranslate trimmed with start_date=partner_relation.start_date|date:"j F Y" %}Depuis le {{ start_date }}{% endblocktranslate %}{% endif %}
                                     {% if partner_relation.marriage_place %}{% blocktranslate trimmed with place=partner_relation.marriage_place %}à {{ place }}{% endblocktranslate %}{% endif %}
                                     {% if partner_relation.end_date %}· {% blocktranslate trimmed with end_date=partner_relation.end_date|date:"j F Y" %}jusqu'au {{ end_date }}{% endblocktranslate %}{% endif %}
                                 </p>

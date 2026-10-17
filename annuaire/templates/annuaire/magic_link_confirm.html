@@ -14,6 +14,7 @@
         <div class="fb-alert fb-alert--danger">
             {% translate "Ce lien de connexion n'est plus valide, il a peut-être déjà été utilisé ou a expiré." %}
         </div>
+        <a href="{% url 'magic-link-request' %}" class="fb-btn fb-btn--primary fb-btn--block">{% translate "Recevoir un nouveau lien de connexion" %}</a>
         <a href="{% url 'login' %}" class="fb-btn fb-btn--primary fb-btn--block">{% translate "Retour à la connexion" %}</a>
     {% endif %}
 {% endblock content %}

@@ -1,88 +1,79 @@
 # Design system — Alpenglow / Nightfall
 
-How the site is styled, and the rules to follow when adding a view.
+How the site is styled, and the rules to follow when you add a page.
 
-The design pass this implements — rationale, contrast measurements, the per-view
-archetype table and the mockups — lives in [`design/web/SPEC.md`](https://github.com/reboulip/famille-busson/blob/main/design/web/SPEC.md).
-That folder is a throwaway review artifact, not wired into Django; **this page is the
-reference for the shipped system.**
+The original design work (reasons, contrast measurements, mockups) is in
+[`design/web/SPEC.md`](https://github.com/reboulip/famille-busson/blob/main/design/web/SPEC.md).
+That folder was only used for review. **This page describes what is actually in the
+site.**
 
 ## 1. Where things live
 
 | File | What it holds |
 |---|---|
-| `annuaire/static/css/tokens.css` | The `--fb-*` tokens (both palettes), the Bootstrap 5.3 bridge, and the `@font-face` rules. |
-| `annuaire/static/css/components.css` | Every shared component (`.fb-*`). Nothing here hardcodes a colour. |
-| `annuaire/static/css/main.css` | Per-feature CSS and the leaflet / family-chart / pdf.js vendor overrides. |
-| `annuaire/templatetags/icons.py` | The inline SVG icon set — `{% icon "mail" %}`. |
-| `annuaire/templates/annuaire/_ridge.html` | The ridge mark. |
-| `annuaire/templates/annuaire/_empty.html` | The shared empty state. |
-| `annuaire/templates/annuaire/base.html` | The app shell (sidebar, nav, theme script). |
-| `annuaire/templates/annuaire/base_threshold.html` | The logged-out shell (no sidebar). |
-| `annuaire/static/fonts/` | Bitter + Karla, self-hosted (latin + latin-ext subsets). |
+| `annuaire/static/css/tokens.css` | The colour and font variables (`--fb-*`) for both palettes, and the fonts. |
+| `annuaire/static/css/components.css` | The shared components (`.fb-*`). No colour is written directly here. |
+| `annuaire/static/css/main.css` | Page-specific styles, and fixes for the external libraries (map, family tree, PDF viewer). |
+| `annuaire/templatetags/icons.py` | The icons — `{% icon "mail" %}`. |
+| `annuaire/templates/annuaire/_ridge.html` | The mountain ridge drawing. |
+| `annuaire/templates/annuaire/_empty.html` | The shared "nothing here" block. |
+| `annuaire/templates/annuaire/base.html` | The page layout for logged-in users (side menu, theme switch). |
+| `annuaire/templates/annuaire/base_threshold.html` | The page layout for logged-out users (no side menu). |
+| `annuaire/static/fonts/` | The Bitter and Karla fonts, hosted on the site itself. |
 
-**Stylesheet load order is load-bearing** and asserted by
-`test_stylesheets_load_tokens_and_components_after_bootstrap_and_main_last`:
+**The order of the stylesheets matters**, and a test checks it:
 
 ```
 bootstrap.css → tokens.css → components.css → {vendor_css} → main.css
 ```
 
-`tokens.css` re-points Bootstrap's own `--bs-*` variables at the `--fb-*` tokens, so
-stock Bootstrap components (`.btn`, `.alert`, `.table`, `.form-control`, `.nav`,
-crispy-forms output…) inherit the palette without a per-component override. `main.css`
-is last because most of what is left in it exists to beat a *vendor* stylesheet.
+`tokens.css` connects Bootstrap's own variables to ours. So standard Bootstrap
+components (buttons, alerts, tables, forms…) use our colours automatically. `main.css`
+comes last because it must override the external libraries' styles.
 
 ## 2. Colour
 
-Two named palettes, carried over from the email system: **Alpenglow** (day) and
-**Nightfall** (night over the valley). Same token names, different values.
+There are two palettes: **Alpenglow** (light) and **Nightfall** (dark). They use the
+same variable names with different values.
 
-**Never write a literal hex value.** It silently breaks Nightfall. Use `--fb-*`.
+**Never write a colour code (like `#9C4A22`) directly.** It breaks the dark palette.
+Always use a `--fb-*` variable.
 
-The one rule that is easy to get wrong:
+The rule that is easy to get wrong:
 
-- `--fb-alpenglow` is **2.98:1** on `--fb-card` — it is *never* text. Use it for the
-  eaves stub, focus rings, the active-nav marker, card hover borders and button hover.
-- `--fb-ember` is **5.90:1** — it carries every coloured word and fills the primary
-  button.
-- In Nightfall the roles collapse: the bright ember is the readable one (6.28:1) and
-  takes over both.
+- `--fb-alpenglow` has too little contrast for text. **Never use it for text.** Use it
+  for decoration: focus outlines, the active menu marker, hover borders.
+- `--fb-ember` is used for all coloured text and for the main button.
+- In the dark palette, the bright ember is readable, so it takes both roles.
 
-Status colours are only ever the 3px left bar; **status text is always `--fb-ink` on a
-tinted ground**, so every alert is AA by construction in both palettes.
+Status colours (success, warning, error) only appear as a thin bar on the left. The
+status text itself is always in the normal text colour. This keeps every alert
+readable in both palettes.
 
 Full contrast table: `design/web/SPEC.md` §3.2.
 
-**`--fb-ember`/`--fb-alpenglow` are per-deployment overridable (Phase 15.3),
-via `SiteConfig`'s brand colour fields** — the token values and roles
-described above are still the shipped defaults for both palettes; staff can
-only override them from `/annuaire/configuration/`, contrast-validated
-against these same thresholds. See
-[`site_config.md`](site_config.md#theme-and-brand-colours-phase-153) for the
-override mechanism and the theme registry it reads from.
+**Staff can change `--fb-ember` and `--fb-alpenglow`** in the site settings
+(`/annuaire/configuration/`). The site checks the contrast of the chosen colours. See
+[`site_config.md`](site_config.md#theme-and-brand-colours-phase-153).
 
 ## 3. Theme switching
 
-`data-bs-theme` on `<html>` drives both Bootstrap's dark theme and the `--fb-*`
-overrides. Resolution order: explicit choice (localStorage `fb-theme`) →
-`prefers-color-scheme` → light.
+The `data-bs-theme` attribute on `<html>` sets light or dark mode. The site uses, in
+this order: the user's choice (saved in the browser), then the system setting, then
+light mode.
 
-The stored choice is applied by a small **inline** script in `<head>`, before the
-stylesheets paint — an external file would flash the wrong palette first. The toggle
-button itself is `annuaire/static/js/theme_toggle.js`.
+A small script inside `<head>` applies the saved choice before the page is drawn.
+Otherwise the page would flash in the wrong colours first. The switch button is in
+`annuaire/static/js/theme_toggle.js`.
 
 ## 4. Typography
 
-Bitter (display) + Karla (body), self-hosted as variable woff2. The fallback stacks are
-byte-identical to the email system's (`Georgia, 'Noto Serif', serif` /
-`'Trebuchet MS', Verdana, Helvetica, Arial, sans-serif`), so with `font-display: swap`
-the first paint of any page *is* the email's typography.
+Two fonts: Bitter (titles) and Karla (body text). Before they load, the browser uses
+the same fallback fonts as the emails.
 
-⚠️ **`@font-face` `url()` references are validated at collectstatic time** by
-WhiteNoise's `CompressedManifestStaticFilesStorage`. Renaming or moving a font file
-without updating `tokens.css` kills the container at boot. Run the build-sanity check
-after touching `annuaire/static/`:
+⚠️ **Font files are checked when the static files are collected.** If you rename or
+move a font file without updating `tokens.css`, the production container will not
+start. After any change in `annuaire/static/`, run:
 
 ```bash
 DEBUG=False SECRET_KEY=x uv run python manage.py collectstatic --noinput
@@ -90,10 +81,11 @@ DEBUG=False SECRET_KEY=x uv run python manage.py collectstatic --noinput
 
 ## 5. Adding a view
 
-Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7), then:
+Find the type of page you are building (the list is in `design/web/SPEC.md` §7), then
+follow these rules:
 
-1. **Always** open with `.fb-page-head` — the eaves rule is what makes every view read
-   as one product.
+1. **Always start the page with `.fb-page-head`.** This header makes every page look
+   like part of the same site.
    ```html
    <div class="fb-page-head">
        <div class="fb-page-head__titles">
@@ -104,135 +96,92 @@ Pick the archetype it belongs to (the full table is in `design/web/SPEC.md` §7)
        <div class="fb-page-head__actions">…</div>
    </div>
    ```
-2. **Never hand-write "il n'y a rien ici".** Use the shared empty state:
+2. **For an empty list, use the shared empty block.** Do not write your own "il n'y a
+   rien ici":
    ```html
    {% url 'thing-create' as create_url %}
    {% include "annuaire/_empty.html" with title="Aucune chose" body="…" action_url=create_url action_label="Créer" %}
    ```
-   For a first-visit page where a brand-new member needs onboarding guidance, add
-   `empty_hint` (a "commencez par…" line) and/or a quieter `empty_secondary_url`/
-   `empty_secondary_label` action alongside or instead of the primary one:
+   For a page that new members see first, you can add a hint (`empty_hint`) and a
+   second, quieter link (`empty_secondary_url` and `empty_secondary_label`):
    ```html
    {% url 'directory' as directory_url %}
    {% include "annuaire/_empty.html" with title="Aucun profil pour l'instant" empty_hint="Commencez par explorer qui fait partie de la famille." empty_secondary_url=directory_url empty_secondary_label="Voir l'annuaire" %}
    ```
-   These four params are prefixed `empty_*` (unlike `title`/`body`/`action_*`)
-   because every `{% include %}` of this partial omits `only`, so an unprefixed name
-   could silently pick up whatever the parent template's own context happens to
-   call it.
-3. **Use `{% icon %}`, not emoji.** Emoji render as tofu boxes wherever the system has
-   no emoji font and cannot follow the theme. `{% load icons %}` then
-   `{% icon "mail" size=16 %}`. An unknown name raises rather than rendering nothing.
-   Add new glyphs to `_PATHS` in `annuaire/templatetags/icons.py` — 24×24, stroked,
-   `stroke-width` comes from the wrapper.
-4. **People are round, places are rectangular.** `.fb-person-card` + `.fb-avatar` vs
-   `.fb-place-card` + `.fb-place-card__media`. A place with no photo gets the ridge
-   (`.fb-place-placeholder`), never an emoji.
-5. **Threshold pages get no sidebar.** Anything a visitor sees before they are logged
-   in extends `base_threshold.html`. Credential flows (password reset, magic link,
-   forced change) override `{% block ridge %}` with `<div class="fb-horizon"></div>` —
-   the restrained treatment, mirroring how the emails split full vs. restrained.
-6. **Status is never carried by colour alone** — pair the treatment with words (a chip,
-   a label, a date range).
-7. **Card-style list items should be clickable across their whole surface**, not just
-   the title. Give the card `position: relative` and put Bootstrap's `.stretched-link`
-   on the existing title/name `<a>` — its `::after` overlay stretches to fill the
-   nearest positioned ancestor, so no JS is needed. `.fb-post-card` (blog posts,
-   documents) and `.category-tree__row` (category tree rows) both do this. Any other
-   link inside the card that must stay independently clickable (an author link, a
-   category link in the `.fb-meta` line) needs `position: relative; z-index: 2` so it
-   sits above the overlay. An item with no link (e.g. a locked category) gets no
-   `.stretched-link` and stays inert.
-8. **Give a one-consumer layout variant a modifier class, paired with the base class
-   in the selector** — `.fb-post-card.fb-post-card--doc`, not a single-class override.
-   Both classes give the override the same specificity as the base `.fb-post-card`
-   rule, so which one wins is decided by source order (the modifier comes after) —
-   a single-class selector would instead win or lose unpredictably as the stylesheet
-   grows. The documents list row (`fb-post-card--doc`) is the current example: it
-   re-flows `.fb-post-card__body` and `.fb-post-card__meta` into a row without
-   touching the publications feed's `.fb-post-card`.
-9. **Page-specific rules on a component shared by more than one page go in `main.css`
-   under a page-scoped class, never in `components.css`.** `.fb-record` is shared by
-   the profile and place detail pages; the profile's mobile sticky-identity condensing
-   hangs off a `.profile-record` class added only in `personne_detail.html`, so place
-   detail's layout is untouched. A test (`test_the_shared_record_component_is_not_
-   restyled_for_the_profile_page`) asserts `components.css` never mentions the
-   page-scoped class at all.
-10. **To collapse a button's caption to icon-only on small screens**, wrap the caption
-    text in `<span class="…__label">`, hide that span with CSS below the breakpoint, and
-    mirror the same text into `aria-label` and `title` on the button — so the control
-    keeps its accessible name once the text is not painted, and (in this codebase) the
-    text stays in the DOM for any source-text test that asserts on the rendered label
-    string. The genealogy toolbar's four buttons (`genealogie-export`,
-    `genealogie-export-image`, `genealogie-export-gedcom`, `genealogie-fullscreen`) are
-    the current example, using `.genealogie-toolbar__label`.
+   These options start with `empty_` so they do not clash with variables of the page
+   that includes the block.
+3. **Use `{% icon %}`, not emoji.** Emoji do not display on every system and do not
+   follow the theme. Write `{% load icons %}`, then `{% icon "mail" size=16 %}`. An
+   unknown icon name causes an error. To add an icon, add it to `_PATHS` in
+   `annuaire/templatetags/icons.py` (24×24, outline style).
+4. **People are round, places are rectangular.** Use `.fb-person-card` + `.fb-avatar`
+   for people, and `.fb-place-card` + `.fb-place-card__media` for places. A place with
+   no photo shows the ridge drawing (`.fb-place-placeholder`), never an emoji.
+5. **Pages for logged-out visitors have no side menu.** They extend
+   `base_threshold.html`. Pages about passwords and login links (reset, magic link,
+   forced change) use a simpler header: they replace `{% block ridge %}` with
+   `<div class="fb-horizon"></div>`.
+6. **Never show a status with colour only.** Always add words (a label, a date…).
+7. **Make the whole card clickable, not just its title.** Give the card
+   `position: relative`, and add Bootstrap's `.stretched-link` class to the title link.
+   No JavaScript is needed. Examples: `.fb-post-card` and `.category-tree__row`. Other
+   links inside the card need `position: relative; z-index: 2` to stay clickable. A
+   card with no link (for example, a locked category) gets no `.stretched-link`.
+8. **To change a component for one page only, add a modifier class, and use both
+   classes in the selector.** Write `.fb-post-card.fb-post-card--doc`, not just
+   `.fb-post-card--doc`. This way, the override always wins over the base rule. Example:
+   the document list uses `fb-post-card--doc` without changing the blog list.
+9. **Page-specific rules for a shared component go in `main.css`, under a page
+   class. Never put them in `components.css`.** Example: `.fb-record` is used by both
+   the profile page and the place page. The profile's mobile changes use a
+   `.profile-record` class that only the profile page has. A test checks that
+   `components.css` never mentions it.
+10. **To show only the icon of a button on small screens,** put the button text in a
+    `<span class="…__label">`, hide that span on small screens, and copy the same text
+    into the button's `aria-label` and `title`. The button keeps its name for screen
+    readers. Example: the four buttons of the family tree toolbar
+    (`.genealogie-toolbar__label`).
 
 ## 6. The ridge
 
-`{% include "annuaire/_ridge.html" %}` — variants `full` (default: peaks, snowcap,
-pines), `plain` (no pines, for small sizes) and `mark` (near ridge only, for the
-empty-state watermark).
+`{% include "annuaire/_ridge.html" %}` draws the mountain ridge. There are three
+versions: `full` (default: peaks, snow, pine trees), `plain` (no trees, for small
+sizes) and `mark` (one ridge line only, for empty blocks).
 
-It appears in exactly **three** places: the sidebar brand block, the threshold card
-header, and empty states. A ridge on every page would be wallpaper. `map_init.js`
-carries its own inline copy for photoless place markers — keep the two silhouettes in
-sync if either changes.
+It appears in exactly **three** places: the side menu logo, the header of logged-out
+pages, and empty blocks. Do not add it anywhere else. `map_init.js` has its own copy
+for places with no photo on the map. If you change the drawing, change both.
 
 ## 7. Things that will bite you
 
-- **Vendor overrides belong in `main.css`, not `components.css`** — they have to win
-  against stylesheets that load after `components.css`.
-- **Several CSS rules exist to defeat a specific vendor bug** and say so at length in
-  their comments (`.fb-content { min-width: 0 }`, `.map-container { z-index: 0 }`,
-  `align-items: safe center` on the viewer stage, the two-class zoom specificity fix,
-  the family-chart label width pair, `.f3 div.card` neutralizing Bootstrap's `.card`
-  component from painting a square behind family-chart's identically-named node
-  wrapper — `background`/`border`/`border-radius` only, `display` is deliberately left
-  alone). Port the comment with the rule; do not "tidy" them.
-- **Some class names are pinned by tests**: `contact-line`, `genealogie-toolbar` (must
-  come first in its class attribute), `genealogie-detail d-none d-lg-block` (exact
-  string), `markdown-editor-toolbar-btn` (exact attribute order), `category-tree__row`,
-  `fb-post-card--doc`, `fb-post-card__body`, `fb-post-card__meta`, `profile-record`,
+- **Fixes for external libraries go in `main.css`, not `components.css`.** They must
+  load after the libraries' own styles.
+- **Some CSS rules exist only to work around a bug in an external library.** Their
+  comments explain why. Examples: `.fb-content { min-width: 0 }`,
+  `.map-container { z-index: 0 }`, and `.f3 div.card`, which stops Bootstrap's `.card`
+  style from applying to the family tree. If you move such a rule, keep its comment.
+  Do not "clean it up".
+- **Tests check some class names and some CSS rules.** Do not rename or change these
+  without updating the tests: `contact-line`, `genealogie-toolbar` (must be the first
+  class), `genealogie-detail d-none d-lg-block` (exact text),
+  `markdown-editor-toolbar-btn`, `category-tree__row`, `fb-post-card--doc`,
+  `fb-post-card__body`, `fb-post-card__meta`, `profile-record`,
   `profile-record__actions`, `profile-identity`, `profile-identity--pinned`,
   `profile-identity-sentinel`, `genealogie-toolbar__label`, `fb-longform--full`.
-  `.fb-post-card` and `.fb-post-card .fb-meta a` (components.css), `.f3 div.card`
-  (main.css), and the
-  `.fb-post-card--doc`/`.profile-record`/`.profile-identity`/`.genealogie-toolbar__label`/`.fb-longform.fb-longform--full`
-  rules also carry source-text-tested declarations, not just names — see below.
-- **`{# … #}` comments are single-line only.** A multi-line one renders as visible text
-  on the page. Use `{% comment %}…{% endcomment %}`.
-- **`.stretched-link`'s overlay fills the nearest `position`ed ancestor** — get that
-  ancestor's scope wrong and the overlay swallows either too little (nothing happens on
-  most of the card) or too much (nested interactive content goes dead). The category
-  tree row wraps only the row itself, deliberately excluding the child `<ul>`, so child
-  rows stay independently clickable. Anything meant to stay clickable above the overlay
-  needs `position: relative; z-index: 2` of its own — and the `.stretched-link` element
-  itself must **not** be positioned, or the overlay re-anchors to it instead of the
-  card. The technique also makes body text over the card unselectable; that's an
-  accepted trade-off, not a bug to fix.
-- **A `position: sticky` child has no room to travel inside a grid area that only
-  spans one row** — the row auto-sizes to the sticky element's own height, so it
-  never scrolls past it. `.fb-record`'s mobile layout collapses to a single-column
-  grid, so the sticky rule on `.profile-identity` was inert there until the mobile
-  media query gave `.profile-record` a normal block layout. The rail itself
-  (`.fb-record__rail`) is set to `display: contents` at that breakpoint, not
-  `display: block` — a block box would still carry the shared component's own
-  sticky rule and pin the whole rail (identity card + info card together, #124),
-  where `display: contents` removes the rail's box entirely and lets its children
-  flow straight into `.profile-record`, leaving only `.profile-identity`'s own
-  sticky rule in effect.
-- **The source-text tests' `_rule_body()` helper cannot see inside an `@media`
-  block** — its regex finds the first top-level occurrence of a selector, so a rule
-  that only exists inside a media query (the mobile sticky/condensing rules in
-  `main.css`) has to be sliced out by brace-balance first (see `_mobile_block()` in
-  `test_profile_mobile_rail.py`) and asserted on as a raw substring, not through
-  `_rule_body()`.
-- **`vh` resolves against the *largest* viewport** — as if a mobile browser's
-  collapsible bottom bar were already hidden — so a `vh`-sized element's bottom edge
-  sits underneath that bar while it's showing on screen. `dvh` (dynamic viewport
-  height) tracks the bar as it shows and hides. `.genealogie-container`'s mobile rule
-  (in `main.css`'s `@media (max-width: 991.98px)` block for the genealogy section)
-  declares `height: 70vh;` first — kept as the fallback for browsers without `dvh`
-  support — then overrides it with `height: calc(100dvh - 13rem);`; the `13rem` is an
-  estimate of the page chrome above the chart (top bar, page head, toolbar), not a
-  measured value, and the base rule's `min-height: 320px` still floors it.
+- **`{# … #}` comments must fit on one line.** A comment on several lines shows up as
+  text on the page. For longer comments, use `{% comment %}…{% endcomment %}`.
+- **`.stretched-link` covers the nearest element that has a `position`.** Choose that
+  element carefully. If it is too small, most of the card does nothing. If it is too
+  big, links inside it stop working. The link with `.stretched-link` must **not** have
+  a `position` itself. Also, text on the card cannot be selected. This is expected.
+- **`position: sticky` does not work in a grid area that is only one row high.** The
+  row takes the height of the sticky element, so there is no room to scroll. On mobile,
+  the profile page uses a normal block layout for this reason, and the side column uses
+  `display: contents`.
+- **The tests' `_rule_body()` helper cannot read rules inside `@media` blocks.** For
+  those rules, tests first extract the `@media` block (see `_mobile_block()` in
+  `test_profile_mobile_rail.py`).
+- **`vh` ignores the mobile browser's bottom bar,** so an element sized in `vh` can be
+  hidden behind that bar. `dvh` follows the bar as it shows and hides. The family tree
+  on mobile uses `height: 70vh` as a fallback, then `height: calc(100dvh - 13rem)`.
+  `13rem` is an estimate of the space above the tree.

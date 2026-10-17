@@ -199,6 +199,24 @@ def test_profile_detail_shows_partner(auth_client, person, other_person):
 
 
 @pytest.mark.django_db
+def test_profile_detail_shows_capitalized_couple_label_not_titlecased(auth_client, person, other_person):
+    Relation.objects.create(person1=person, person2=other_person, relationship_type=1)
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "En couple" in content
+    assert "En Couple" not in content
+
+
+@pytest.mark.django_db
+def test_profile_detail_shows_marriage_ou_pacs_label(auth_client, person, other_person):
+    Relation.objects.create(person1=person, person2=other_person, relationship_type=0)
+    response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))
+    content = response.content.decode()
+    assert "Mariage ou Pacs" in content
+    assert "Mariage Ou Pacs" not in content
+
+
+@pytest.mark.django_db
 def test_profile_detail_shows_parents(auth_client, person, other_person):
     Relation.objects.create(person1=person, person2=other_person, relationship_type=2)
     response = auth_client.get(reverse("personne-detail", kwargs={"pk": person.pk}))

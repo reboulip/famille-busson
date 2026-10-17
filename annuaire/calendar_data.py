@@ -57,8 +57,12 @@ def _event_entries(
             type="event",
             title=event.title,
             subtitle=event.location,
-            start=event.start.isoformat(),
-            end=event.end.isoformat(),
+            # localtime(), not a raw isoformat() -- Event.save() normalizes an
+            # all-day event to local midnight, but the aware datetime is stored
+            # (and round-trips through .isoformat()) in UTC, which lands the
+            # date a day early in Europe/Paris (grid and iCal feed alike).
+            start=timezone.localtime(event.start).isoformat(),
+            end=timezone.localtime(event.end).isoformat(),
             all_day=event.all_day,
             url=reverse("event-detail", kwargs={"pk": event.pk}),
             uid=_uid(f"event-{event.pk}", host),

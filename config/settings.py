@@ -201,6 +201,10 @@ PASSWORD_RESET_TIMEOUT = env.int("PASSWORD_RESET_TIMEOUT", default=60 * 60 * 24 
 # since it grants an immediate session rather than just a chance to set a
 # password.
 MAGIC_LINK_TIMEOUT = env.int("MAGIC_LINK_TIMEOUT", default=15 * 60)
+# Self-service password reset / expired-invitation resend (18.1) -- shorter
+# than a staff-sent invitation's PASSWORD_RESET_TIMEOUT above, since the
+# member can always just request another one if this one lapses too.
+SELF_SERVICE_RESET_TIMEOUT = env.int("SELF_SERVICE_RESET_TIMEOUT", default=60 * 60 * 24)
 # Corbeille (14.5) -- how long a soft-deleted row stays recoverable before the
 # daily purge job (annuaire.tasks.purge_expired_trash) permanently deletes it.
 TRASH_RETENTION_DAYS = env.int("TRASH_RETENTION_DAYS", default=30)

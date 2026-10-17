@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_not_required, login_required
+from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import Group
 from django.contrib.auth.tokens import default_token_generator
@@ -63,7 +64,7 @@ from .personal_data import PERSONAL_DATA_CATEGORIES, build_personal_data_archive
 from .privacy_notice import record_acceptance
 from .site_config import get_site_config
 from .throttling import EmailRateLimitMixin
-from .tokens import magic_link_token_generator
+from .tokens import magic_link_token_generator, password_setup_token_checker, self_service_reset_token_generator
 
 
 @login_required
@@ -573,6 +574,20 @@ class AccountPasswordResetConfirmView(PasswordResetConfirmView):
     template_name = "annuaire/password_reset_confirm.html"
     post_reset_login = True
     success_url = reverse_lazy("my-profile")
+    # Accepts either a staff-sent invitation token (default_token_generator,
+    # PASSWORD_RESET_TIMEOUT) or a self-service reset token
+    # (self_service_reset_token_generator, SELF_SERVICE_RESET_TIMEOUT) -- see
+    # annuaire/tokens.py. This is what lets 18.1's self-service resend flow
+    # land on the very same confirm page invitations already use.
+    token_generator = password_setup_token_checker
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if not context.get("validlink"):
+            # Blank on purpose -- never pre-fill the email from uidb64, which
+            # would turn an expired-link visit into an email-enumeration oracle.
+            context["resend_form"] = PasswordResetForm()
+        return context
 
     def form_valid(self, form):
         # last_login is None only until this reset (post_reset_login=True stamps
@@ -599,11 +614,16 @@ class AccountPasswordResetView(EmailRateLimitMixin, PasswordResetView):
     subject_template_name = "annuaire/password_reset_subject.txt"
     success_url = reverse_lazy("password-reset-done")
     throttle_scope = "password-reset"
+    # A member-requested reset (or an expired-invitation resend) mints a
+    # shorter-lived, salt-isolated token -- see annuaire/tokens.py. The
+    # confirm view accepts this one and a staff-sent invitation's token alike.
+    token_generator = self_service_reset_token_generator
 
     @property
     def extra_email_context(self):
         config = get_site_config()
         return {
+            "validity_days": settings.SELF_SERVICE_RESET_TIMEOUT // (60 * 60 * 24),
             "site_base_url": settings.SITE_BASE_URL.rstrip("/"),
             "site_name": config.site_name,
             "wordmark": config.wordmark or config.site_name,

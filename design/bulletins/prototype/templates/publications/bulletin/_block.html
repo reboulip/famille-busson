@@ -1,0 +1,14 @@
+{% if block.type == "paragraph" %}{% include "publications/bulletin/blocks/paragraph.html" %}
+{% elif block.type == "heading" %}{% include "publications/bulletin/blocks/heading.html" %}
+{% elif block.type == "list" %}{% include "publications/bulletin/blocks/list.html" %}
+{% elif block.type == "quote" %}{% include "publications/bulletin/blocks/quote.html" %}
+{% elif block.type == "separator" %}<hr class="fb-bulletin-sep">
+{% elif block.type == "figure" %}{% include "publications/bulletin/blocks/figure.html" %}
+{% elif block.type == "carousel" %}{% include "publications/bulletin/blocks/carousel.html" %}
+{% elif block.type == "table" %}{% include "publications/bulletin/blocks/table.html" %}
+{% elif block.type == "event" %}{% include "publications/bulletin/blocks/event.html" %}
+{% elif block.type == "signature" %}{% include "publications/bulletin/blocks/signature.html" %}
+{% elif block.type == "address" %}{% include "publications/bulletin/blocks/address.html" %}
+{% elif block.type == "news_item" %}{% include "publications/bulletin/blocks/news_item.html" %}
+{% elif block.type == "aside" %}{% include "publications/bulletin/blocks/aside.html" %}
+{% endif %}

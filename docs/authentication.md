@@ -1,33 +1,31 @@
 # Authentification
 
-Le site propose deux méthodes de connexion : email + mot de passe (classique), et
-connexion par lien magique (« magic link », sans mot de passe). Cette page détaille
-le fonctionnement de la seconde ; voir [`permissions.md`](permissions.md) pour la
-surface publique (non authentifiée) exposée par chacune.
+Il y a deux façons de se connecter au site :
+
+- avec son email et son mot de passe ;
+- avec un lien reçu par email (« lien magique »), sans mot de passe.
+
+Cette page explique la seconde. Pour la liste des pages accessibles sans être connecté,
+voir [`permissions.md`](permissions.md).
 
 ## Connexion par lien magique
 
 ### Déroulement
 
 1. Sur la page de connexion, l'utilisateur clique sur « Recevez un lien de connexion
-   par email » (`MagicLinkRequestView`, vue publique).
-2. Il saisit son adresse email et valide le formulaire. Cette vue réutilise
-   `PasswordResetForm` de Django **sans le modifier** : `get_users()` ne renvoie que
-   les `Account` existants, actifs, avec un mot de passe utilisable — aucun compte
-   n'est jamais créé depuis ce formulaire (garantie d'inscription fermée).
-3. Si un compte correspond, un email est envoyé avec un lien contenant un jeton à
-   usage unique, valable `MAGIC_LINK_TIMEOUT` secondes (15 minutes par défaut,
-   réglable via la variable d'environnement du même nom). Qu'un compte existe ou non,
-   la page affichée après validation est identique (`magic-link-sent`), pour ne pas
-   révéler quelles adresses sont enregistrées.
-4. Cliquer sur le lien reçu (`magic-link-confirm-token`) ne connecte **pas**
-   immédiatement l'utilisateur : le jeton est vérifié, puis stocké en session, et la
-   page redirige vers une étape de confirmation (`magic-link-confirm`) affichant un
-   simple bouton « Confirmez votre connexion ».
-5. C'est uniquement le `POST` de ce bouton qui appelle `django.contrib.auth.login()`
-   et connecte l'utilisateur, puis applique les mêmes règles de redirection que la
-   confirmation de réinitialisation de mot de passe : changement de mot de passe forcé
-   en premier, puis onboarding si première connexion, sinon page d'accueil.
+   par email ».
+2. Il saisit son adresse email. Ce formulaire ne crée jamais de compte : il fonctionne
+   seulement pour un compte qui existe déjà et qui est actif.
+3. Si le compte existe, le site envoie un email avec un lien. Ce lien ne sert qu'une
+   fois et expire après 15 minutes (réglable avec la variable d'environnement
+   `MAGIC_LINK_TIMEOUT`, en secondes). La page affichée ensuite est toujours la même,
+   que le compte existe ou non. Ainsi, personne ne peut savoir quelles adresses sont
+   inscrites.
+4. Quand l'utilisateur clique sur le lien, il n'est **pas** encore connecté. Le site
+   vérifie le lien, puis affiche une page avec un bouton « Confirmez votre connexion ».
+5. C'est le clic sur ce bouton qui connecte l'utilisateur. Ensuite, il est redirigé :
+   vers le changement de mot de passe s'il est obligatoire, sinon vers l'accueil (ou
+   vers la présentation du site lors de la première connexion).
 
 ```mermaid
 sequenceDiagram
@@ -49,57 +47,55 @@ sequenceDiagram
 
 ### Pourquoi une étape de confirmation en deux temps ?
 
-Certains clients de messagerie et scanners anti-phishing ouvrent automatiquement les
-liens reçus pour les analyser, avant même que l'utilisateur ne clique dessus. Le jeton
-étant à usage unique, un scan automatique le consommerait silencieusement et
-l'utilisateur se retrouverait avec un lien déjà « utilisé » sans avoir rien fait. En
-séparant la validation du lien (un simple `GET`, idempotent) de la connexion
-elle-même (un `POST` déclenché uniquement par un vrai clic sur le bouton), ce risque
-disparaît. Ce même schéma en deux temps est celui que Django utilise déjà pour la
-confirmation de réinitialisation de mot de passe.
+Certaines messageries et certains antivirus ouvrent les liens des emails pour les
+analyser, avant que l'utilisateur ne clique. Le lien ne sert qu'une fois : sans
+confirmation, cette analyse automatique l'utiliserait, et l'utilisateur recevrait un
+lien déjà « usé ». Avec le bouton de confirmation, ouvrir le lien ne suffit pas pour se
+connecter. Seul un vrai clic sur le bouton connecte l'utilisateur.
 
 ### Isolation du jeton de connexion
 
-Le jeton de lien magique est généré par `MagicLinkTokenGenerator`
-(`annuaire/tokens.py`), qui hérite de `PasswordResetTokenGenerator` mais utilise un
-**`key_salt` distinct** de celui des jetons de réinitialisation de mot de passe. Sans
-cette isolation, un lien de réinitialisation — affiché à l'écran aux membres du staff
-lors de la création groupée de comptes (`bulk_account_create.html`) — aurait pu être
-rejoué sur l'URL de connexion par lien pour se connecter silencieusement à la place
-d'un autre membre. Un jeton de réinitialisation est donc explicitement rejeté par le
-flux de connexion par lien, et inversement (couvert par des tests dédiés dans
-`annuaire/tests/test_views_magic_link.py`).
+Les liens de connexion et les liens de réinitialisation du mot de passe utilisent des
+jetons différents. Un lien de réinitialisation ne fonctionne pas comme lien de
+connexion, et inversement.
 
-En plus de la vérification de signature et du plafond `PASSWORD_RESET_TIMEOUT` déjà
-appliqués par la classe parente, `MagicLinkTokenGenerator.check_token()` impose en
-plus la durée de vie plus courte `MAGIC_LINK_TIMEOUT`.
+C'est important : lors de la création de comptes en groupe, le staff voit à l'écran les
+liens de réinitialisation. Sans cette séparation, un membre du staff pourrait utiliser
+un de ces liens pour se connecter à la place d'un autre membre.
 
 ### Autres garanties
 
-- `login()` contourne les vérifications habituelles des backends d'authentification
-  (`is_active`, mot de passe utilisable) : `MagicLinkConfirmView.post()` vérifie donc
-  explicitement `user.is_active` avant de connecter l'utilisateur.
-- Le lien ne supporte pas de paramètre `?next=` : un lien reçu par email n'a pas de
-  destination de redirection légitime à faire porter par l'URL, et l'omettre supprime
-  toute surface de redirection ouverte.
-- `MagicLinkConfirmView` est une vue simple (pas une sous-classe des vues
-  d'authentification de Django), donc explicitement décorée `login_not_required` —
-  sans quoi `LoginRequiredMiddleware` (actif globalement sur ce projet) la
-  bloquerait par défaut.
-- `/annuaire/login/magic/` est listé dans
-  `ForcePasswordChangeMiddleware.EXEMPT_URL_PREFIXES` (`annuaire/middleware.py`), pour
-  qu'un compte avec `must_change_password=True` puisse tout de même terminer le flux
-  au lieu d'être redirigé avant même d'atteindre la vue.
+- Un compte désactivé ne peut pas se connecter par lien magique.
+- Le lien ne peut pas rediriger vers une autre adresse (pas de paramètre `?next=`).
+- Un utilisateur qui doit changer son mot de passe peut quand même terminer la
+  connexion par lien.
+
+## Lien expiré : renvoi en libre-service (18.1)
+
+Un lien d'invitation (créé par le staff lors de la création groupée de comptes) ou de
+réinitialisation dure 7 jours (réglable avec `PASSWORD_RESET_TIMEOUT`, en secondes).
+Une demande de réinitialisation faite par le membre lui-même (« Mot de passe oublié »,
+ou le renvoi décrit ci-dessous) utilise un jeton différent, valable 24 heures par défaut
+(réglable avec `SELF_SERVICE_RESET_TIMEOUT`, en secondes) — plus court, car le membre
+peut toujours en redemander un autre.
+
+Si le lien a expiré, la page affiche désormais un formulaire pour en redemander un
+nouveau, à la place d'un message invitant à contacter un administrateur. Ce formulaire
+n'affiche jamais l'adresse email associée au lien expiré (elle ne serait sinon d'aucune
+utilité pour deviner qui a un compte) : l'utilisateur la ressaisit lui-même. La demande
+passe par le même formulaire, la même limite de débit et la même page de confirmation
+que « Mot de passe oublié ».
+
+Le lien magique expiré propose de la même façon un raccourci vers une nouvelle demande,
+mais garde sa propre durée de 15 minutes (`MAGIC_LINK_TIMEOUT`) — il n'est pas concerné
+par ce changement.
 
 ### Pour aller plus loin
 
-- Page d'aide destinée aux membres (en français, dans l'application) :
-  `/annuaire/aide/connexion-par-lien/` (`MagicLinkHelpView`, gabarit
-  `annuaire/templates/annuaire/help_magic_link.html`).
-- Limitation de débit (rate limiting) sur les endpoints publics d'envoi d'email
-  (inscription, réinitialisation de mot de passe et lien magique) : implémentée
-  (`annuaire.throttling.EmailRateLimitMixin`) — 3 tentatives par heure et 10 par jour
-  par adresse email, plus un coupe-circuit global de 60 par heure par endpoint. Une
-  tentative refusée réaffiche le formulaire avec la même erreur non liée à un champ,
-  qu'un compte existe ou non pour l'adresse soumise (aucun signal d'énumération), avec
-  un code HTTP 429.
+- Une page d'aide pour les membres explique la connexion par lien :
+  `/annuaire/aide/connexion-par-lien/`.
+- **Limite du nombre de demandes.** L'inscription, la réinitialisation du mot de passe
+  et la demande de lien magique envoient des emails. Pour éviter les abus, chaque
+  adresse email est limitée à 3 demandes par heure et 10 par jour. Chaque formulaire
+  est aussi limité à 60 demandes par heure au total. Au-delà, le formulaire affiche une
+  erreur (code HTTP 429). Le message est le même, que le compte existe ou non.

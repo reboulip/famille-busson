@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 21:48+0200\n"
+"POT-Creation-Date: 2026-09-27 17:43+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,7 +63,7 @@ msgstr "Quitter le plein écran"
 msgid "Plein écran"
 msgstr "Plein écran"
 
-#: annuaire/static/js/map_init.js:300
+#: annuaire/static/js/map_init.js:308
 msgid "Aucun membre trouvé"
 msgstr "Aucun membre trouvé"
 
@@ -113,7 +113,7 @@ msgstr "Présence"
 msgid "Anniversaire"
 msgstr "Anniversaire"
 
-#: annuaire/static/js/unified_calendar.js:152
+#: annuaire/static/js/unified_calendar.js:279
 msgid "Rien de prévu ce mois-ci."
 msgstr "Rien de prévu ce mois-ci."
 

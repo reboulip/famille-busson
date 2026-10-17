@@ -1,0 +1,16 @@
+{% load bulletin %}<div class="fb-bulletin-event">
+    {% event_badge block %}
+    <div class="fb-bulletin-event__body">
+        {% if block.title %}<p class="fb-bulletin-event__title">{{ block.title|typo }}</p>{% endif %}
+        {% if block.organizer %}<p class="fb-bulletin-event__organizer">{{ block.organizer|typo }}</p>{% endif %}
+        <ul class="fb-bulletin-event__facts">
+            {% for date in block.dates %}
+                <li>{% bicon "calendar" size=18 %}<span>{% if date.start %}<time datetime="{{ date.start }}">{{ date.text|typo }}</time>{% else %}{{ date.text|typo }}{% endif %}</span></li>
+            {% endfor %}
+            {% if block.place %}
+                <li>{% bicon "pin" size=18 %}<span>{% if block.place.name %}{{ block.place.name|typo }}{% if block.place.locality %}, {% endif %}{% endif %}{% if block.place.locality %}{{ block.place.locality|typo }}{% endif %}</span></li>
+            {% endif %}
+        </ul>
+        {% if block.note %}<p class="fb-meta">{{ block.note|typo }}</p>{% endif %}
+    </div>
+</div>

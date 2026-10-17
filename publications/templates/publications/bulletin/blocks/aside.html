@@ -1,0 +1,6 @@
+{% load bulletin %}<aside class="fb-bulletin-aside">
+    {% if block.title %}<p class="fb-bulletin-aside__title">{{ block.title|typo }}</p>{% endif %}
+    {% for child in block.blocks %}
+        {% include "publications/bulletin/_block.html" with block=child %}
+    {% endfor %}
+</aside>

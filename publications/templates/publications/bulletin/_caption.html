@@ -1,0 +1,2 @@
+{% load bulletin %}{% if caption %}<span class="fb-bulletin-caption{% if editorial %} fb-bulletin-caption--editorial{% endif %}"{% if editorial %} title="Légende ajoutée lors de la transcription"{% endif %}>{% inline caption %}{% if editorial %}<span class="visually-hidden"> (légende ajoutée lors de la transcription)</span>{% endif %}</span>{% endif %}
+<a class="fb-bulletin-caption__source" href="#page-{{ img.source.page }}">{% if img.kind == "document" %}Extrait de la page {{ img.source.page }}{% else %}p. {{ img.source.page }}{% endif %}</a>

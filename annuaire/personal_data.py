@@ -88,6 +88,8 @@ PERSONAL_DATA_HIDDEN_RELATIONS: set[tuple[str, str, str]] = {
     ("genealogy", "gedcomimport", "uploaded_by"),  # -> genealogie
     ("genealogy", "stagedindividual", "match_person"),  # -> genealogie
     ("genealogy", "stagedindividual", "created_person"),  # -> genealogie
+    ("publications", "bulletin", "imported_by"),  # -> publications
+    ("publications", "bulletinimport", "uploaded_by"),  # -> publications
 }
 
 

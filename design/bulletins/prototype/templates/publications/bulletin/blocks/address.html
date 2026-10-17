@@ -1,0 +1,4 @@
+{% load bulletin %}<address class="fb-bulletin-address">
+    <span class="fb-bulletin-address__label">{% bicon "mail" size=14 %} Coordonnées publiées en {{ bulletin.date.value|long_date }}</span>
+    {% for line in block.lines %}{{ line|typo }}{% if not forloop.last %}<br>{% endif %}{% endfor %}
+</address>

@@ -55,6 +55,25 @@ def test_build_calendar_entries_includes_event(account, person):
 
 
 @pytest.mark.django_db
+def test_build_calendar_entries_all_day_event_keeps_its_local_date(account):
+    # An all-day event is normalized to Europe/Paris local midnight by
+    # Event.save(), but stored (and round-tripped through .isoformat()) in
+    # UTC -- a raw .isoformat() would land the date a day early. Local noon
+    # avoids the UTC offset ever crossing a day boundary either way, isolating
+    # the bug this test guards against.
+    day = datetime.date(2026, 7, 14)
+    Event.objects.create(
+        title="Fête au village",
+        start=_aware(2026, 7, 14, 12, 0),
+        all_day=True,
+    )
+    entries = build_calendar_entries(account, day, day, types={"event"})
+    assert len(entries) == 1
+    assert entries[0].start[:10] == "2026-07-14"
+    assert entries[0].end[:10] == "2026-07-14"
+
+
+@pytest.mark.django_db
 def test_build_calendar_entries_includes_presence(account, presence):
     today = datetime.date.today()
     entries = build_calendar_entries(account, today, today + datetime.timedelta(days=60))

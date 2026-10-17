@@ -1,0 +1,26 @@
+{% load bulletin %}
+<div class="fb-page-head">
+    <div class="fb-page-head__titles">
+        <p class="fb-eyebrow">Publications</p>
+        <h1>Bulletins familiaux</h1>
+        <p class="fb-page-head__lede">Les numéros de Busson’s Connection, transcrits depuis les originaux papier.</p>
+    </div>
+</div>
+{% for entry in bulletins %}
+    <article class="fb-card fb-post-card fb-bulletin-card">
+        <a href="{{ entry.href }}" tabindex="-1" aria-hidden="true">
+            <img class="fb-bulletin-card__cover" src="{{ entry.cover }}" alt="" width="{{ entry.cover_w }}" height="{{ entry.cover_h }}" loading="lazy">
+        </a>
+        <div>
+            <h2 class="fb-post-card__title fb-bulletin-card__title">
+                <a class="stretched-link" href="{{ entry.href }}">{{ entry.data.series.title|typo }} n°{% firstof entry.data.issue.label entry.data.issue.number %}</a>
+            </h2>
+            <p class="fb-meta">
+                {{ entry.data.date.text|capfirst }} · {{ entry.data.source.page_count }} pages
+                {% for credit in entry.data.credits|slice:":1" %}· {{ credit.role }} : {{ credit.names|join_names }}{% endfor %}
+                {% if entry.data.processing.review.status == "draft" %}<span class="fb-chip fb-chip--gold">Brouillon</span>{% endif %}
+            </p>
+            {% if entry.data.summary %}<p class="fb-bulletin-card__summary">{{ entry.data.summary|typo }}</p>{% endif %}
+        </div>
+    </article>
+{% endfor %}

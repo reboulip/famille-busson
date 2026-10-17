@@ -237,6 +237,29 @@ def test_magic_link_token_rejected_by_password_reset_endpoint(client, account):
 
 
 @pytest.mark.django_db
+def test_self_service_reset_token_rejected_by_magic_link_endpoint(client, account):
+    from annuaire.tokens import self_service_reset_token_generator
+
+    uid = urlsafe_base64_encode(force_bytes(account.pk))
+    token = self_service_reset_token_generator.make_token(account)
+    url = reverse("magic-link-confirm-token", kwargs={"uidb64": uid, "token": token})
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.context["validlink"] is False
+
+
+@pytest.mark.django_db
+def test_magic_link_expired_page_offers_a_resend_shortcut(client, account, monkeypatch):
+    url = _magic_link_confirm_url(account)
+    future = datetime.now() + timedelta(seconds=settings.MAGIC_LINK_TIMEOUT + 60)
+    monkeypatch.setattr(magic_link_token_generator, "_now", lambda: future)
+    response = client.get(url)
+    assert response.context["validlink"] is False
+    content = response.content.decode()
+    assert reverse("magic-link-request") in content
+
+
+@pytest.mark.django_db
 def test_magic_link_reused_token_after_login_is_invalid(account, person):
     url = _magic_link_confirm_url(account)
     c = Client()

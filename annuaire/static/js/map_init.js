@@ -10,9 +10,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // Metropolitan France, zoomed out -- sensible default when there's nothing to fit to.
     const map = L.map(container).setView([46.6, 2.4], 6);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // Django's default Referrer-Policy is same-origin, so cross-origin tile requests
+    // would otherwise carry no Referer at all -- OSM's tile usage policy requires
+    // one, and blocks requests that don't send it. The referrerPolicy option here
+    // overrides that site-wide policy for this one layer only, sending just the
+    // site's origin (never the page path). The URL uses the current, non-subdomain
+    // endpoint -- the old lettered subdomains are deprecated. Caching and the
+    // browser's own User-Agent are handled by the browser; no code needed for those.
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        referrerPolicy: 'strict-origin-when-cross-origin',
     }).addTo(map);
 
     if (persons.length === 0 && places.length === 0 && events.length === 0) {

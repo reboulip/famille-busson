@@ -89,6 +89,13 @@ jobs:
       - name: Upgrade vendored front-end assets
         run: uv run python manage.py upgrade_vendored_assets --summary-file /tmp/vendor-summary.md
 
+      - name: Ruff auto-fix
+        # Safe fixes only -- this runs unattended, so the unsafe-fix flag stays off.
+        run: uv run ruff check --fix .
+
+      - name: Ruff format
+        run: uv run ruff format .
+
       - name: Ruff check
         run: uv run ruff check .
 
@@ -98,8 +105,11 @@ jobs:
       - name: ty check
         run: uv run ty check --exit-zero-on-warning
 
-      - name: Install tesseract-ocr
-        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-fra
+      - name: Install tesseract-ocr and gettext
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-fra gettext
+
+      - name: Compile message catalogs
+        run: uv run python manage.py compilemessages
 
       - name: Run tests with coverage
         run: uv run --group test pytest

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-22 21:47+0200\n"
+"POT-Creation-Date: 2026-10-17 11:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -206,7 +206,7 @@ msgstr "Confirme ton mot de passe"
 msgid "J'ai lu et j'accepte la politique de confidentialité"
 msgstr "J'ai lu et j'accepte la politique de confidentialité"
 
-#: annuaire/forms.py:308 annuaire/views.py:192
+#: annuaire/forms.py:308 annuaire/views.py:193
 msgid "Un compte avec cet email existe déjà."
 msgstr "Un compte avec cet email existe déjà."
 
@@ -367,22 +367,24 @@ msgid "Anonymisé·e le"
 msgstr "Anonymisé·e le"
 
 #: annuaire/models.py:152 documents/models.py:161 genealogy/models.py:55
-#: photos/models.py:61 photos/models.py:138 publications/models.py:61
+#: photos/models.py:61 photos/models.py:138 publications/models.py:62
+#: publications/models.py:185
 msgid "Vecteur de recherche"
 msgstr "Vecteur de recherche"
 
 #: annuaire/models.py:153 documents/models.py:162 genealogy/models.py:56
-#: photos/models.py:62 photos/models.py:139 publications/models.py:62
+#: photos/models.py:62 photos/models.py:139 publications/models.py:63
+#: publications/models.py:186
 msgid "Texte de recherche"
 msgstr "Texte de recherche"
 
 #: annuaire/models.py:154 documents/models.py:159 events/models.py:80
 #: events/models.py:141 genealogy/models.py:53 genealogy/models.py:107
-#: photos/models.py:59 publications/models.py:59 publications/models.py:132
+#: photos/models.py:59 publications/models.py:60 publications/models.py:133
 msgid "Date de création"
 msgstr "Date de création"
 
-#: annuaire/models.py:161 annuaire/personal_data.py:346
+#: annuaire/models.py:161 annuaire/personal_data.py:348
 msgid "Profil"
 msgstr "Profil"
 
@@ -403,12 +405,12 @@ msgid "Paramètres de notification"
 msgstr "Paramètres de notification"
 
 #: annuaire/models.py:184
-msgid "mariage"
-msgstr "mariage"
+msgid "mariage ou Pacs"
+msgstr "mariage ou Pacs"
 
 #: annuaire/models.py:185
-msgid "conjoint"
-msgstr "conjoint"
+msgid "en couple"
+msgstr "en couple"
 
 #: annuaire/models.py:186
 msgid "parent"
@@ -506,7 +508,7 @@ msgid "Modifications"
 msgstr "Modifications"
 
 #: annuaire/models.py:265 annuaire/templates/annuaire/audit_event_list.html:17
-#: publications/models.py:129
+#: publications/models.py:130
 msgid "Auteur"
 msgstr "Auteur"
 
@@ -557,11 +559,11 @@ msgstr "Fuseau horaire"
 
 #: annuaire/models.py:303
 msgid "Libellé (singulier) des lieux"
-msgstr ""
+msgstr "Libellé (singulier) des lieux"
 
 #: annuaire/models.py:306
 msgid "Libellé (pluriel) des lieux"
-msgstr ""
+msgstr "Libellé (pluriel) des lieux"
 
 #: annuaire/models.py:315
 msgid "Langue par défaut"
@@ -603,7 +605,7 @@ msgstr "Favicon"
 
 #: annuaire/models.py:345 documents/models.py:160 events/models.py:81
 #: events/models.py:142 genealogy/models.py:54 genealogy/models.py:108
-#: photos/models.py:60 publications/models.py:60
+#: photos/models.py:60 publications/models.py:61 publications/models.py:184
 msgid "Dernière modification"
 msgstr "Dernière modification"
 
@@ -620,15 +622,15 @@ msgstr "SiteConfig est un singleton : suppression interdite."
 msgid "Résidence"
 msgstr "Résidence"
 
-#: annuaire/models.py:367 annuaire/personal_data.py:365
+#: annuaire/models.py:367 annuaire/personal_data.py:367
 msgid "Résidences"
 msgstr "Résidences"
 
-#: annuaire/person_merge.py:170
+#: annuaire/person_merge.py:174
 msgid "Impossible de fusionner une personne avec elle-même."
 msgstr "Impossible de fusionner une personne avec elle-même."
 
-#: annuaire/person_merge.py:172
+#: annuaire/person_merge.py:176
 msgid ""
 "Ces deux profils ont chacun un compte lié à un utilisateur ; la fusion est "
 "refusée."
@@ -636,70 +638,73 @@ msgstr ""
 "Ces deux profils ont chacun un compte lié à un utilisateur ; la fusion est "
 "refusée."
 
-#: annuaire/personal_data.py:346
+#: annuaire/personal_data.py:348
 msgid "Vos informations de profil."
 msgstr "Vos informations de profil."
 
-#: annuaire/personal_data.py:349
+#: annuaire/personal_data.py:351
 msgid "Relations familiales"
 msgstr "Relations familiales"
 
-#: annuaire/personal_data.py:350
+#: annuaire/personal_data.py:352
 msgid "Les liens familiaux enregistrés vous concernant."
 msgstr "Les liens familiaux enregistrés vous concernant."
 
-#: annuaire/personal_data.py:355
+#: annuaire/personal_data.py:357
 msgid "Comptes gérés"
 msgstr "Comptes gérés"
 
-#: annuaire/personal_data.py:356
+#: annuaire/personal_data.py:358
 msgid "Les profils que vous gérez, ou qui gèrent le vôtre."
 msgstr "Les profils que vous gérez, ou qui gèrent le vôtre."
 
-#: annuaire/personal_data.py:361
+#: annuaire/personal_data.py:363
 msgid "Préférences de notification"
 msgstr "Préférences de notification"
 
-#: annuaire/personal_data.py:362
+#: annuaire/personal_data.py:364
 msgid "Vos préférences de notification."
 msgstr "Vos préférences de notification."
 
-#: annuaire/personal_data.py:365
+#: annuaire/personal_data.py:367
 msgid "Les résidences dont vous êtes propriétaire."
 msgstr "Les résidences dont vous êtes propriétaire."
 
-#: annuaire/personal_data.py:366 annuaire/templates/annuaire/calendar.html:35
+#: annuaire/personal_data.py:368 annuaire/templates/annuaire/calendar.html:32
 msgid "Présences"
 msgstr "Présences"
 
-#: annuaire/personal_data.py:366
+#: annuaire/personal_data.py:368
 msgid "Vos séjours enregistrés."
 msgstr "Vos séjours enregistrés."
 
-#: annuaire/personal_data.py:367 annuaire/templates/annuaire/base.html:115
-#: publications/models.py:67
+#: annuaire/personal_data.py:369 annuaire/templates/annuaire/base.html:115
+#: publications/models.py:68
 #: publications/templates/publications/blogpost_confirm_delete.html:8
 #: publications/templates/publications/blogpost_detail.html:10
 #: publications/templates/publications/blogpost_form.html:10
 #: publications/templates/publications/blogpost_list.html:8
+#: publications/templates/publications/bulletin_import_preview.html:12
+#: publications/templates/publications/bulletin_import_upload.html:8
+#: publications/templates/publications/bulletin_list.html:13
 #: publications/templates/publications/comment_confirm_delete.html:9
 msgid "Publications"
 msgstr "Publications"
 
-#: annuaire/personal_data.py:367
+#: annuaire/personal_data.py:369
 msgid "Les articles dont vous êtes auteur·e."
 msgstr "Les articles dont vous êtes auteur·e."
 
-#: annuaire/personal_data.py:369 publications/models.py:137
+#: annuaire/personal_data.py:371 publications/models.py:138
 #: publications/templates/publications/blogpost_detail.html:140
 msgid "Commentaires"
 msgstr "Commentaires"
 
-#: annuaire/personal_data.py:369
+#: annuaire/personal_data.py:371
 msgid "Les commentaires que vous avez publiés."
 msgstr "Les commentaires que vous avez publiés."
 
-#: annuaire/personal_data.py:373 documents/models.py:167
+#: annuaire/personal_data.py:375 documents/models.py:167
 #: documents/templates/documents/category_confirm_delete.html:8
 #: documents/templates/documents/category_detail.html:17
 #: documents/templates/documents/category_detail.html:70
@@ -711,7 +716,7 @@ msgstr "Les commentaires que vous avez publiés."
 msgid "Documents"
 msgstr "Documents"
 
-#: annuaire/personal_data.py:374
+#: annuaire/personal_data.py:376
 msgid ""
 "Les documents que vous avez déposés ou caviardés, parmi ceux que vous pouvez "
 "voir."
@@ -719,14 +724,14 @@ msgstr ""
 "Les documents que vous avez déposés ou caviardés, parmi ceux que vous pouvez "
 "voir."
 
-#: annuaire/personal_data.py:379
+#: annuaire/personal_data.py:381
 #: annuaire/templates/annuaire/personne_detail.html:137 genealogy/models.py:48
 #: genealogy/templates/genealogy/story_form.html:24 photos/models.py:146
 #: photos/templates/photos/album_detail.html:37
 msgid "Photos"
 msgstr "Photos"
 
-#: annuaire/personal_data.py:380
+#: annuaire/personal_data.py:382
 msgid ""
 "Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi "
 "ceux que vous pouvez voir."
@@ -734,7 +739,7 @@ msgstr ""
 "Les albums et photos déposés, et les photos où vous êtes identifié·e, parmi "
 "ceux que vous pouvez voir."
 
-#: annuaire/personal_data.py:385 annuaire/templates/annuaire/calendar.html:34
+#: annuaire/personal_data.py:387 annuaire/templates/annuaire/calendar.html:31
 #: events/models.py:92 events/templates/events/event_confirm_delete.html:8
 #: events/templates/events/event_detail.html:9
 #: events/templates/events/event_form.html:9
@@ -742,7 +747,7 @@ msgstr ""
 msgid "Événements"
 msgstr "Événements"
 
-#: annuaire/personal_data.py:386
+#: annuaire/personal_data.py:388
 msgid ""
 "Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux "
 "que vous pouvez voir."
@@ -750,31 +755,31 @@ msgstr ""
 "Les événements créés, organisés ou auxquels vous avez répondu, parmi ceux "
 "que vous pouvez voir."
 
-#: annuaire/personal_data.py:391 annuaire/templates/annuaire/base.html:108
+#: annuaire/personal_data.py:393 annuaire/templates/annuaire/base.html:108
 #: annuaire/templates/annuaire/genealogie.html:23
 msgid "Généalogie"
 msgstr "Généalogie"
 
-#: annuaire/personal_data.py:392
+#: annuaire/personal_data.py:394
 msgid ""
 "Les récits et citations généalogiques vous concernant ou rédigés par vous."
 msgstr ""
 "Les récits et citations généalogiques vous concernant ou rédigés par vous."
 
-#: annuaire/personal_data.py:397
+#: annuaire/personal_data.py:399
 msgid "Consentements"
 msgstr "Consentements"
 
-#: annuaire/personal_data.py:398
+#: annuaire/personal_data.py:400
 msgid "L'acceptation de la politique de confidentialité liée à votre compte."
 msgstr "L'acceptation de la politique de confidentialité liée à votre compte."
 
-#: annuaire/personal_data.py:437
+#: annuaire/personal_data.py:439
 #, python-format
 msgid "Export des données personnelles de %(person)s — générée le %(date)s."
 msgstr "Export des données personnelles de %(person)s — générée le %(date)s."
 
-#: annuaire/personal_data.py:442
+#: annuaire/personal_data.py:444
 msgid ""
 "Ce fichier liste les métadonnées et des liens vers le contenu hébergé sur le "
 "site (voir donnees.json). Les documents, photos et pièces jointes eux-mêmes "
@@ -786,7 +791,7 @@ msgstr ""
 "ne sont pas inclus dans cette archive ; utilisez les liens fournis pour les "
 "consulter en ligne. Votre photo de profil, elle, est incluse directement."
 
-#: annuaire/personal_data.py:453
+#: annuaire/personal_data.py:455
 #, python-format
 msgid "- %(label)s (%(count)s élément(s)) : %(note)s"
 msgstr "- %(label)s (%(count)s élément(s)) : %(note)s"
@@ -892,57 +897,57 @@ msgstr "Tapez au moins 2 lettres pour chercher…"
 msgid "Chercher une personne"
 msgstr "Chercher une personne"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:7
-#: annuaire/templates/annuaire/calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:6
+#: annuaire/templates/annuaire/calendar.html:21
 msgid "Navigation"
 msgstr "Navigation"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "Mois précédent"
 msgstr "Mois précédent"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:8
-#: annuaire/templates/annuaire/calendar.html:25
+#: annuaire/templates/annuaire/_presence_calendar.html:7
+#: annuaire/templates/annuaire/calendar.html:22
 msgid "← Mois"
 msgstr "← Mois"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:9
-#: annuaire/templates/annuaire/calendar.html:26
+#: annuaire/templates/annuaire/_presence_calendar.html:8
+#: annuaire/templates/annuaire/calendar.html:23
 msgid "Aujourd'hui"
 msgstr "Aujourd'hui"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois suivant"
 msgstr "Mois suivant"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:10
-#: annuaire/templates/annuaire/calendar.html:27
+#: annuaire/templates/annuaire/_presence_calendar.html:9
+#: annuaire/templates/annuaire/calendar.html:24
 msgid "Mois →"
 msgstr "Mois →"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:12
+#: annuaire/templates/annuaire/_presence_calendar.html:11
 msgid "Échelle"
 msgstr "Échelle"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:13
+#: annuaire/templates/annuaire/_presence_calendar.html:12
 msgid "Semaines"
 msgstr "Semaines"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:14
+#: annuaire/templates/annuaire/_presence_calendar.html:13
 msgid "Mois"
 msgstr "Mois"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:22
+#: annuaire/templates/annuaire/_presence_calendar.html:21
 msgid "passé"
 msgstr "passé"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:23
+#: annuaire/templates/annuaire/_presence_calendar.html:22
 msgid "en cours"
 msgstr "en cours"
 
-#: annuaire/templates/annuaire/_presence_calendar.html:24
+#: annuaire/templates/annuaire/_presence_calendar.html:23
 msgid "à venir"
 msgstr "à venir"
 
@@ -1103,7 +1108,7 @@ msgid "Effacer"
 msgstr "Effacer"
 
 #: annuaire/templates/annuaire/audit_event_list.html:7
-#: annuaire/templates/annuaire/base.html:132
+#: annuaire/templates/annuaire/base.html:133
 #: annuaire/templates/annuaire/bulk_account_create.html:9
 #: annuaire/templates/annuaire/corbeille_list.html:7
 #: annuaire/templates/annuaire/group_confirm_delete.html:8
@@ -1120,7 +1125,7 @@ msgid "Administration"
 msgstr "Administration"
 
 #: annuaire/templates/annuaire/audit_event_list.html:8
-#: annuaire/templates/annuaire/base.html:138
+#: annuaire/templates/annuaire/base.html:140
 msgid "Journal d'audit"
 msgstr "Journal d'audit"
 
@@ -1218,103 +1223,114 @@ msgstr "%(label)s et Présences"
 msgid "Toutes les publications"
 msgstr "Toutes les publications"
 
-#: annuaire/templates/annuaire/base.html:122
+#: annuaire/templates/annuaire/base.html:118
+#: publications/templates/publications/bulletin_list.html:14
+msgid "Bulletins familiaux"
+msgstr "Bulletins familiaux"
+
+#: annuaire/templates/annuaire/base.html:123
 msgid "Documents et photos"
 msgstr "Documents et photos"
 
-#: annuaire/templates/annuaire/base.html:124
+#: annuaire/templates/annuaire/base.html:125
 msgid "Tous les documents"
 msgstr "Tous les documents"
 
-#: annuaire/templates/annuaire/base.html:125 documents/models.py:49
+#: annuaire/templates/annuaire/base.html:126 documents/models.py:49
 msgid "Catégories"
 msgstr "Catégories"
 
-#: annuaire/templates/annuaire/base.html:126
+#: annuaire/templates/annuaire/base.html:127
 msgid "Tous les albums"
 msgstr "Tous les albums"
 
-#: annuaire/templates/annuaire/base.html:134
+#: annuaire/templates/annuaire/base.html:135
 #: annuaire/templates/annuaire/bulk_account_create.html:10
 msgid "Créer des comptes"
 msgstr "Créer des comptes"
 
-#: annuaire/templates/annuaire/base.html:135
+#: annuaire/templates/annuaire/base.html:136
 #: annuaire/templates/annuaire/group_list.html:9
 msgid "Groupes"
 msgstr "Groupes"
 
-#: annuaire/templates/annuaire/base.html:136
+#: annuaire/templates/annuaire/base.html:137
 #: annuaire/templates/annuaire/person_duplicate_list.html:9
 msgid "Doublons potentiels"
 msgstr "Doublons potentiels"
 
-#: annuaire/templates/annuaire/base.html:137
+#: annuaire/templates/annuaire/base.html:138
 msgid "Importer un GEDCOM"
 msgstr "Importer un GEDCOM"
 
 #: annuaire/templates/annuaire/base.html:139
+#: publications/templates/publications/bulletin_import_upload.html:9
+#: publications/templates/publications/bulletin_list.html:19
+msgid "Importer un bulletin"
+msgstr "Importer un bulletin"
+
+#: annuaire/templates/annuaire/base.html:141
 #: annuaire/templates/annuaire/corbeille_list.html:8
 msgid "Corbeille"
 msgstr "Corbeille"
 
-#: annuaire/templates/annuaire/base.html:140
+#: annuaire/templates/annuaire/base.html:142
 msgid "Configuration"
 msgstr "Configuration"
 
-#: annuaire/templates/annuaire/base.html:141
+#: annuaire/templates/annuaire/base.html:143
 msgid "Console d'admin"
 msgstr "Console d'admin"
 
-#: annuaire/templates/annuaire/base.html:149
+#: annuaire/templates/annuaire/base.html:151
 #: annuaire/templates/annuaire/help_magic_link.html:6
 #: annuaire/templates/annuaire/privacy_notice.html:6
 msgid "Aide"
 msgstr "Aide"
 
-#: annuaire/templates/annuaire/base.html:151
+#: annuaire/templates/annuaire/base.html:153
 #: annuaire/templates/annuaire/help_magic_link.html:7
 msgid "Comment fonctionne la connexion par lien ?"
 msgstr "Comment fonctionne la connexion par lien ?"
 
-#: annuaire/templates/annuaire/base.html:152
+#: annuaire/templates/annuaire/base.html:154
 #: annuaire/templates/annuaire/privacy_notice.html:7
 msgid "Politique de confidentialité"
 msgstr "Politique de confidentialité"
 
-#: annuaire/templates/annuaire/base.html:154
+#: annuaire/templates/annuaire/base.html:156
 #: annuaire/templates/annuaire/base_threshold.html:86
 msgid "Signaler un bug ou proposer une évolution"
 msgstr "Signaler un bug ou proposer une évolution"
 
-#: annuaire/templates/annuaire/base.html:167
+#: annuaire/templates/annuaire/base.html:169
 #: annuaire/templates/annuaire/base_threshold.html:96
 msgid "Changer de langue"
 msgstr "Changer de langue"
 
-#: annuaire/templates/annuaire/base.html:172
+#: annuaire/templates/annuaire/base.html:174
 msgid "Changer de thème"
 msgstr "Changer de thème"
 
-#: annuaire/templates/annuaire/base.html:180
+#: annuaire/templates/annuaire/base.html:183
 msgid "Déconnexion"
 msgstr "Déconnexion"
 
-#: annuaire/templates/annuaire/base.html:184
+#: annuaire/templates/annuaire/base.html:187
 #: annuaire/templates/annuaire/emails/magic_link.html:33
 #: annuaire/templates/annuaire/login.html:17
 msgid "Se connecter"
 msgstr "Se connecter"
 
-#: annuaire/templates/annuaire/base.html:204
+#: annuaire/templates/annuaire/base.html:209
 msgid "La politique de confidentialité a été mise à jour."
 msgstr "La politique de confidentialité a été mise à jour."
 
-#: annuaire/templates/annuaire/base.html:207
+#: annuaire/templates/annuaire/base.html:212
 msgid "Consultez-la"
 msgstr "Consultez-la"
 
-#: annuaire/templates/annuaire/base.html:211
+#: annuaire/templates/annuaire/base.html:216
 msgid "J'ai lu et j'accepte"
 msgstr "J'ai lu et j'accepte"
 
@@ -1337,7 +1353,8 @@ msgid "%(count)s compte(s) traité(s)."
 msgstr "%(count)s compte(s) traité(s)."
 
 #: annuaire/templates/annuaire/bulk_account_create.html:21
-#: genealogy/models.py:199
+#: genealogy/models.py:199 publications/models.py:172
+#: publications/models.py:267
 msgid "Statut"
 msgstr "Statut"
 
@@ -1431,23 +1448,13 @@ msgstr "Créer / réinitialiser les comptes"
 msgid "Événements, présences et anniversaires de la famille, au même endroit."
 msgstr "Événements, présences et anniversaires de la famille, au même endroit."
 
-#: annuaire/templates/annuaire/calendar.html:31
+#: annuaire/templates/annuaire/calendar.html:28
 msgid "Filtrer par type"
 msgstr "Filtrer par type"
 
-#: annuaire/templates/annuaire/calendar.html:36
+#: annuaire/templates/annuaire/calendar.html:33
 msgid "Anniversaires"
 msgstr "Anniversaires"
-
-#: annuaire/templates/annuaire/calendar.html:47
-#: annuaire/templates/annuaire/home.html:100
-#: annuaire/templates/annuaire/place_list.html:46
-msgid "Rien à afficher pour l'instant"
-msgstr "Rien à afficher pour l'instant"
-
-#: annuaire/templates/annuaire/calendar.html:48
-msgid "Les événements, présences et anniversaires à venir apparaîtront ici."
-msgstr "Les événements, présences et anniversaires à venir apparaîtront ici."
 
 #: annuaire/templates/annuaire/carte.html:18
 #, python-format
@@ -1504,6 +1511,7 @@ msgstr ""
 "%(days)s jours avant leur suppression définitive."
 
 #: annuaire/templates/annuaire/corbeille_list.html:21 genealogy/models.py:87
+#: publications/models.py:217 publications/models.py:293
 msgid "Type"
 msgstr "Type"
 
@@ -1594,7 +1602,6 @@ msgid "Choisissez votre mot de passe ici"
 msgstr "Choisissez votre mot de passe ici"
 
 #: annuaire/templates/annuaire/emails/account_setup.txt:8
-#: annuaire/templates/annuaire/password_reset_email.txt:10
 msgid "Ce lien est à usage unique et expire dans 7 jours."
 msgstr "Ce lien est à usage unique et expire dans 7 jours."
 
@@ -1745,16 +1752,25 @@ msgid "Choisir un nouveau mot de passe"
 msgstr "Choisir un nouveau mot de passe"
 
 #: annuaire/templates/annuaire/emails/password_reset.html:38
+#, python-format
 msgid ""
-"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'êtes pas à "
-"l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre mot "
-"de passe restera inchangé."
-msgstr ""
-"Ce lien est à usage unique et expire dans 7&nbsp;jours. Si vous n'êtes pas à "
-"l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre mot "
-"de passe restera inchangé."
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jour. Si vous n'êtes "
+"pas à l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre "
+"mot de passe restera inchangé."
+msgid_plural ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jours. Si vous "
+"n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email&nbsp;: votre mot de passe restera inchangé."
+msgstr[0] ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jour. Si vous n'êtes "
+"pas à l'origine de cette demande, vous pouvez ignorer cet email&nbsp;: votre "
+"mot de passe restera inchangé."
+msgstr[1] ""
+"Ce lien est à usage unique et expire dans %(days)s&nbsp;jours. Si vous "
+"n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet "
+"email&nbsp;: votre mot de passe restera inchangé."
 
-#: annuaire/templates/annuaire/emails/password_reset.html:49
+#: annuaire/templates/annuaire/emails/password_reset.html:53
 #, python-format
 msgid ""
 "Cet email vous a été envoyé par le site privé %(site_name)s à la suite d'une "
@@ -2047,11 +2063,11 @@ msgid "Recevoir un lien de connexion"
 msgstr "Recevoir un lien de connexion"
 
 #: annuaire/templates/annuaire/help_magic_link.html:55
-#: annuaire/templates/annuaire/magic_link_confirm.html:17
+#: annuaire/templates/annuaire/magic_link_confirm.html:18
 #: annuaire/templates/annuaire/magic_link_request.html:26
 #: annuaire/templates/annuaire/magic_link_sent.html:22
 #: annuaire/templates/annuaire/password_reset.html:24
-#: annuaire/templates/annuaire/password_reset_confirm.html:19
+#: annuaire/templates/annuaire/password_reset_confirm.html:25
 #: annuaire/templates/annuaire/password_reset_done.html:16
 msgid "Retour à la connexion"
 msgstr "Retour à la connexion"
@@ -2093,6 +2109,11 @@ msgstr "Commencez par explorer qui fait partie de la famille."
 msgid "Voir l'annuaire"
 msgstr "Voir l'annuaire"
 
+#: annuaire/templates/annuaire/home.html:100
+#: annuaire/templates/annuaire/place_list.html:46
+msgid "Rien à afficher pour l'instant"
+msgstr "Rien à afficher pour l'instant"
+
 #: annuaire/templates/annuaire/home.html:101
 #, python-format
 msgid ""
@@ -2107,7 +2128,7 @@ msgstr ""
 #: annuaire/templates/annuaire/place_list.html:17
 #: annuaire/templates/annuaire/place_list.html:48
 msgid "Créer"
-msgstr ""
+msgstr "Créer"
 
 #: annuaire/templates/annuaire/home.html:107
 msgid "Prochaines présences"
@@ -2252,6 +2273,10 @@ msgstr ""
 "Ce lien de connexion n'est plus valide, il a peut-être déjà été utilisé ou a "
 "expiré."
 
+#: annuaire/templates/annuaire/magic_link_confirm.html:17
+msgid "Recevoir un nouveau lien de connexion"
+msgstr "Recevoir un nouveau lien de connexion"
+
 #: annuaire/templates/annuaire/magic_link_email.txt:9
 #, python-format
 msgid "Connectez-vous ici : %(protocol)s://%(domain)s%(path)s"
@@ -2377,6 +2402,14 @@ msgstr ""
 "Ce lien de réinitialisation n'est plus valide, il a peut-être déjà été "
 "utilisé ou a expiré."
 
+#: annuaire/templates/annuaire/password_reset_confirm.html:19
+msgid "Indiquez votre adresse email pour recevoir un nouveau lien."
+msgstr "Indiquez votre adresse email pour recevoir un nouveau lien."
+
+#: annuaire/templates/annuaire/password_reset_confirm.html:23
+msgid "Envoyer un nouveau lien"
+msgstr "Envoyer un nouveau lien"
+
 #: annuaire/templates/annuaire/password_reset_done.html:8
 msgid ""
 "Si cette adresse correspond à un compte, un email contenant un lien de "
@@ -2391,6 +2424,13 @@ msgid ""
 "Choisissez votre nouveau mot de passe ici : %(protocol)s://%(domain)s%(path)s"
 msgstr ""
 "Choisissez votre nouveau mot de passe ici : %(protocol)s://%(domain)s%(path)s"
+
+#: annuaire/templates/annuaire/password_reset_email.txt:10
+#, python-format
+msgid "Ce lien est à usage unique et expire dans %(days)s jour."
+msgid_plural "Ce lien est à usage unique et expire dans %(days)s jours."
+msgstr[0] "Ce lien est à usage unique et expire dans %(days)s jour."
+msgstr[1] "Ce lien est à usage unique et expire dans %(days)s jours."
 
 #: annuaire/templates/annuaire/password_reset_subject.txt:1
 msgid "Réinitialiser votre mot de passe"
@@ -2666,6 +2706,7 @@ msgstr "Récits"
 #: genealogy/templates/genealogy/gedcom_import_review.html:53
 #: photos/templates/photos/album_detail.html:89
 #: publications/templates/publications/blogpost_list.html:53
+#: publications/templates/publications/bulletin_list.html:52
 msgid "Précédent"
 msgstr "Précédent"
 
@@ -2675,6 +2716,7 @@ msgstr "Précédent"
 #: genealogy/templates/genealogy/gedcom_import_review.html:57
 #: photos/templates/photos/album_detail.html:93
 #: publications/templates/publications/blogpost_list.html:57
+#: publications/templates/publications/bulletin_list.html:56
 msgid "Suivant"
 msgstr "Suivant"
 
@@ -2713,8 +2755,8 @@ msgstr "Aucun récit n'a encore été ajouté pour cette personne."
 
 #: annuaire/templates/annuaire/personne_detail.html:231
 #, python-format
-msgid "Marié·e le %(start_date)s"
-msgstr "Marié·e le %(start_date)s"
+msgid "Depuis le %(start_date)s"
+msgstr "Depuis le %(start_date)s"
 
 #: annuaire/templates/annuaire/personne_detail.html:233
 #, python-format
@@ -3067,7 +3109,8 @@ msgstr "Mise en forme Markdown"
 
 #: annuaire/templates/annuaire/widgets/markdown_editor.html:13
 #: documents/models.py:137 events/models.py:45 genealogy/models.py:43
-#: genealogy/models.py:86 photos/models.py:32 publications/models.py:34
+#: genealogy/models.py:86 photos/models.py:32 publications/models.py:35
+#: publications/models.py:161
 msgid "Titre"
 msgstr "Titre"
 
@@ -3100,26 +3143,26 @@ msgstr "Liste numérotée"
 msgid "Rien à prévisualiser."
 msgstr "Rien à prévisualiser."
 
-#: annuaire/views.py:189
+#: annuaire/views.py:190
 msgid "Adresse email non reconnue, vous ne pouvez pas créer de compte."
 msgstr "Adresse email non reconnue, vous ne pouvez pas créer de compte."
 
-#: annuaire/views.py:284
+#: annuaire/views.py:285
 #, python-format
 msgid "Échec de l'envoi de l'email pour : %(emails)s"
 msgstr "Échec de l'envoi de l'email pour : %(emails)s"
 
-#: annuaire/views.py:289
+#: annuaire/views.py:290
 #, python-format
 msgid "Lien d'invitation renvoyé pour %(count)s compte(s)."
 msgstr "Lien d'invitation renvoyé pour %(count)s compte(s)."
 
-#: annuaire/views.py:356
+#: annuaire/views.py:357
 #, python-format
 msgid "Mot de passe réinitialisé pour : %(emails)s"
 msgstr "Mot de passe réinitialisé pour : %(emails)s"
 
-#: annuaire/views.py:362
+#: annuaire/views.py:363
 #, python-format
 msgid ""
 "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
@@ -3128,46 +3171,46 @@ msgstr ""
 "Échec de l'envoi de l'email pour : %(emails)s — communiquez le mot de passe "
 "temporaire manuellement."
 
-#: annuaire/views.py:370
+#: annuaire/views.py:371
 #, python-format
 msgid "Échec de la création du compte pour : %(emails)s"
 msgstr "Échec de la création du compte pour : %(emails)s"
 
-#: annuaire/views.py:433
+#: annuaire/views.py:434
 #, python-format
 msgid "les catégories %(names)s"
 msgstr "les catégories %(names)s"
 
-#: annuaire/views.py:436
+#: annuaire/views.py:437
 #, python-format
 msgid "les albums %(names)s"
 msgstr "les albums %(names)s"
 
-#: annuaire/views.py:439
+#: annuaire/views.py:440
 #, python-format
 msgid "les événements %(names)s"
 msgstr "les événements %(names)s"
 
-#: annuaire/views.py:442
+#: annuaire/views.py:443
 #, python-format
 msgid "Impossible de supprimer ce groupe : il est utilisé par %(parts)s."
 msgstr "Impossible de supprimer ce groupe : il est utilisé par %(parts)s."
 
-#: annuaire/views.py:556
+#: annuaire/views.py:557
 msgid "Votre mot de passe a été mis à jour."
 msgstr "Votre mot de passe a été mis à jour."
 
-#: annuaire/views.py:739
+#: annuaire/views.py:759
 msgid "Merci, votre acceptation a été enregistrée."
 msgstr "Merci, votre acceptation a été enregistrée."
 
-#: annuaire/views.py:800
+#: annuaire/views.py:820
 msgid ""
 "Vous devez compléter votre profil avant d'ajouter un membre de la famille."
 msgstr ""
 "Vous devez compléter votre profil avant d'ajouter un membre de la famille."
 
-#: annuaire/views.py:847
+#: annuaire/views.py:867
 msgid ""
 "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà "
 "revendiqué."
@@ -3175,74 +3218,74 @@ msgstr ""
 "Ce profil n'est plus disponible — quelqu'un d'autre l'a peut-être déjà "
 "revendiqué."
 
-#: annuaire/views.py:1046
+#: annuaire/views.py:1066
 msgid "Élément restauré."
 msgstr "Élément restauré."
 
-#: annuaire/views.py:1055
+#: annuaire/views.py:1075
 msgid "Élément supprimé définitivement."
 msgstr "Élément supprimé définitivement."
 
-#: annuaire/views.py:1077
+#: annuaire/views.py:1097
 msgid "Cette personne a été anonymisée."
 msgstr "Cette personne a été anonymisée."
 
-#: annuaire/views.py:1179
+#: annuaire/views.py:1199
 msgid "Vous ne pouvez pas éditer ce profil."
 msgstr "Vous ne pouvez pas éditer ce profil."
 
-#: annuaire/views.py:1218
+#: annuaire/views.py:1238
 msgid "Vous ne pouvez pas modifier ces relations."
 msgstr "Vous ne pouvez pas modifier ces relations."
 
-#: annuaire/views.py:1249
+#: annuaire/views.py:1269
 msgid "Formulaire invalide. Vérifiez la personne et le type de relation."
 msgstr "Formulaire invalide. Vérifiez la personne et le type de relation."
 
-#: annuaire/views.py:1253
+#: annuaire/views.py:1273
 msgid "Une personne ne peut pas être en relation avec elle-même."
 msgstr "Une personne ne peut pas être en relation avec elle-même."
 
-#: annuaire/views.py:1256
+#: annuaire/views.py:1276
 msgid "Une relation avec cette personne existe déjà."
 msgstr "Une relation avec cette personne existe déjà."
 
-#: annuaire/views.py:1271
+#: annuaire/views.py:1291
 msgid "Modification invalide."
 msgstr "Modification invalide."
 
-#: annuaire/views.py:1354
+#: annuaire/views.py:1374
 #, python-format
 msgid "Fusion effectuée : %(summary)s."
 msgstr "Fusion effectuée : %(summary)s."
 
-#: annuaire/views.py:1354
+#: annuaire/views.py:1374
 msgid "aucune donnée liée à déplacer"
 msgstr "aucune donnée liée à déplacer"
 
-#: annuaire/views.py:1371
+#: annuaire/views.py:1391
 msgid ""
 "Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."
 msgstr ""
 "Ce profil est lié à un compte : ses propriétaires ne sont plus modifiables."
 
-#: annuaire/views.py:1373
+#: annuaire/views.py:1393
 msgid "Vous n'êtes pas propriétaire de ce profil."
 msgstr "Vous n'êtes pas propriétaire de ce profil."
 
-#: annuaire/views.py:1433
+#: annuaire/views.py:1453
 msgid "Vous devez compléter votre profil avant de créer une résidence."
 msgstr "Vous devez compléter votre profil avant de créer une résidence."
 
-#: annuaire/views.py:1465
+#: annuaire/views.py:1485
 msgid "Vous n'êtes pas propriétaire de cette résidence."
 msgstr "Vous n'êtes pas propriétaire de cette résidence."
 
-#: annuaire/views.py:1549
+#: annuaire/views.py:1569
 msgid "Erreur dans le formulaire de présence."
 msgstr "Erreur dans le formulaire de présence."
 
-#: annuaire/views.py:1761
+#: annuaire/views.py:1781
 msgid "Le lien de votre calendrier a été régénéré."
 msgstr "Le lien de votre calendrier a été régénéré."
 
@@ -3287,6 +3330,7 @@ msgid "Catégorie parente"
 msgstr "Catégorie parente"
 
 #: documents/models.py:43 events/models.py:70 photos/models.py:49
+#: publications/models.py:178
 msgid "Groupes autorisés"
 msgstr "Groupes autorisés"
 
@@ -3306,6 +3350,7 @@ msgstr ""
 "La hiérarchie des catégories ne peut pas dépasser %(max_depth)s niveaux."
 
 #: documents/models.py:79 events/models.py:114 photos/models.py:85
+#: publications/models.py:236
 msgid "Groupe"
 msgstr "Groupe"
 
@@ -3330,6 +3375,7 @@ msgid "Date du document"
 msgstr "Date du document"
 
 #: documents/models.py:149 genealogy/models.py:194 photos/models.py:114
+#: publications/models.py:261
 msgid "Déposé par"
 msgstr "Déposé par"
 
@@ -3342,15 +3388,16 @@ msgid "Document"
 msgstr "Document"
 
 #: documents/models.py:180 documents/models.py:205 photos/models.py:104
-#: publications/models.py:89
+#: publications/models.py:90 publications/models.py:216
+#: publications/models.py:292
 msgid "Fichier"
 msgstr "Fichier"
 
-#: documents/models.py:182 photos/models.py:106 publications/models.py:90
+#: documents/models.py:182 photos/models.py:106 publications/models.py:91
 msgid "Légende"
 msgstr "Légende"
 
-#: documents/models.py:183 photos/models.py:116 publications/models.py:92
+#: documents/models.py:183 photos/models.py:116 publications/models.py:93
 msgid "Date de téléversement"
 msgstr "Date de téléversement"
 
@@ -3404,6 +3451,7 @@ msgstr "Essayez un autre terme, ou changez de catégorie."
 #: documents/templates/documents/_document_results.html:16
 #: photos/templates/photos/album_detail.html:91
 #: publications/templates/publications/blogpost_list.html:55
+#: publications/templates/publications/bulletin_list.html:54
 #, python-format
 msgid "Page %(number)s / %(pages)s"
 msgstr "Page %(number)s / %(pages)s"
@@ -3582,6 +3630,7 @@ msgstr "Réduire"
 
 #: documents/templates/documents/document_detail.html:87
 #: publications/templates/publications/blogpost_detail.html:87
+#: publications/templates/publications/bulletin/_preview.html:89
 msgid "Agrandir"
 msgstr "Agrandir"
 
@@ -3943,7 +3992,7 @@ msgstr "Vous ne pouvez pas répondre pour cette personne."
 msgid "Fichier GEDCOM (.ged)"
 msgstr "Fichier GEDCOM (.ged)"
 
-#: genealogy/forms.py:28
+#: genealogy/forms.py:28 publications/forms.py:98
 #, python-format
 msgid "Fichier trop volumineux (max %(max_mb)s Mo)."
 msgstr "Fichier trop volumineux (max %(max_mb)s Mo)."
@@ -4051,11 +4100,11 @@ msgstr "Un récit ne cible pas une donnée précise ; laissez ce champ vide."
 msgid "En attente de révision"
 msgstr "En attente de révision"
 
-#: genealogy/models.py:177
+#: genealogy/models.py:177 publications/models.py:256
 msgid "Appliqué"
 msgstr "Appliqué"
 
-#: genealogy/models.py:178
+#: genealogy/models.py:178 publications/models.py:257
 msgid "Abandonné"
 msgstr "Abandonné"
 
@@ -4073,11 +4122,11 @@ msgstr "Fusionner avec un profil existant"
 msgid "Ignorer"
 msgstr "Ignorer"
 
-#: genealogy/models.py:196
+#: genealogy/models.py:196 publications/models.py:263
 msgid "Date de dépôt"
 msgstr "Date de dépôt"
 
-#: genealogy/models.py:197
+#: genealogy/models.py:197 publications/models.py:264
 msgid "Nom du fichier"
 msgstr "Nom du fichier"
 
@@ -4093,7 +4142,7 @@ msgstr "Import GEDCOM"
 msgid "Imports GEDCOM"
 msgstr "Imports GEDCOM"
 
-#: genealogy/models.py:216 genealogy/models.py:254
+#: genealogy/models.py:216 genealogy/models.py:254 publications/models.py:289
 msgid "Import"
 msgstr "Import"
 
@@ -4148,6 +4197,7 @@ msgid "Familles importées"
 msgstr "Familles importées"
 
 #: genealogy/templates/genealogy/gedcom_import_review.html:9
+#: publications/templates/publications/bulletin_import_preview.html:13
 #, python-format
 msgid "Révision de l'import « %(filename)s »"
 msgstr "Révision de l'import « %(filename)s »"
@@ -4195,10 +4245,12 @@ msgid "Appliquer l'import"
 msgstr "Appliquer l'import"
 
 #: genealogy/templates/genealogy/gedcom_import_review.html:77
+#: publications/templates/publications/bulletin_import_preview.html:62
 msgid "Abandonner cet import ?"
 msgstr "Abandonner cet import ?"
 
 #: genealogy/templates/genealogy/gedcom_import_review.html:80
+#: publications/templates/publications/bulletin_import_preview.html:65
 msgid "Abandonner l'import"
 msgstr "Abandonner l'import"
 
@@ -4281,7 +4333,7 @@ msgstr ""
 "Import appliqué : %(created)s créé(s), %(merged)s fusionné(s), %(skipped)s "
 "ignoré(s)."
 
-#: genealogy/views.py:254
+#: genealogy/views.py:254 publications/views.py:364
 msgid "Import abandonné."
 msgstr "Import abandonné."
 
@@ -4313,11 +4365,11 @@ msgstr "Accès groupes à albums"
 msgid "Pris le"
 msgstr "Pris le"
 
-#: photos/models.py:117
+#: photos/models.py:117 publications/models.py:218 publications/models.py:294
 msgid "Largeur"
 msgstr "Largeur"
 
-#: photos/models.py:118
+#: photos/models.py:118 publications/models.py:219 publications/models.py:295
 msgid "Hauteur"
 msgstr "Hauteur"
 
@@ -4571,81 +4623,210 @@ msgstr "Vous devez compléter votre profil avant de créer un album."
 msgid "Vous n'êtes pas le créateur de cet album."
 msgstr "Vous n'êtes pas le créateur de cet album."
 
-#: publications/forms.py:16 publications/models.py:27 publications/models.py:40
+#: publications/forms.py:18 publications/models.py:28 publications/models.py:41
 msgid "Étiquettes"
 msgstr "Étiquettes"
 
-#: publications/forms.py:17
+#: publications/forms.py:19
 msgid "Séparez les étiquettes par des virgules."
 msgstr "Séparez les étiquettes par des virgules."
 
-#: publications/forms.py:18
+#: publications/forms.py:20
 msgid "photos, réunion, annonce"
 msgstr "photos, réunion, annonce"
 
-#: publications/models.py:16
+#: publications/forms.py:91
+msgid "Paquet du bulletin (.zip)"
+msgstr "Paquet du bulletin (.zip)"
+
+#: publications/forms.py:92 publications/models.py:170
+#: publications/models.py:272
+msgid "PDF original"
+msgstr "PDF original"
+
+#: publications/models.py:17
 msgid "Aucun"
 msgstr "Aucun"
 
-#: publications/models.py:17
+#: publications/models.py:18
 msgid "Doré"
 msgstr "Doré"
 
-#: publications/models.py:18
+#: publications/models.py:19
 msgid "Alpenglow"
 msgstr "Alpenglow"
 
-#: publications/models.py:21 publications/models.py:26
+#: publications/models.py:22 publications/models.py:27
 msgid "Étiquette"
 msgstr "Étiquette"
 
-#: publications/models.py:22
+#: publications/models.py:23
 msgid "Accent"
 msgstr "Accent"
 
-#: publications/models.py:35
+#: publications/models.py:36
 msgid "Contenu"
 msgstr "Contenu"
 
-#: publications/models.py:45
+#: publications/models.py:46
 #: publications/templates/publications/blogpost_form.html:29
 msgid "Auteur(s)"
 msgstr "Auteur(s)"
 
-#: publications/models.py:51
+#: publications/models.py:52
 #: publications/templates/publications/blogpost_detail.html:116
 #: publications/templates/publications/blogpost_form.html:35
 msgid "Documents liés"
 msgstr "Documents liés"
 
-#: publications/models.py:57
+#: publications/models.py:58
 #: publications/templates/publications/blogpost_detail.html:129
 #: publications/templates/publications/blogpost_form.html:51
 msgid "Albums liés"
 msgstr "Albums liés"
 
-#: publications/models.py:66 publications/models.py:87
-#: publications/models.py:121
+#: publications/models.py:67 publications/models.py:88
+#: publications/models.py:122
 msgid "Publication"
 msgstr "Publication"
 
-#: publications/models.py:91
+#: publications/models.py:92
 msgid "Est une image"
 msgstr "Est une image"
 
-#: publications/models.py:96
+#: publications/models.py:97
 msgid "Pièce jointe"
 msgstr "Pièce jointe"
 
-#: publications/models.py:97
+#: publications/models.py:98
 #: publications/templates/publications/blogpost_detail.html:41
 #: publications/templates/publications/blogpost_form.html:69
 msgid "Pièces jointes"
 msgstr "Pièces jointes"
 
-#: publications/models.py:131 publications/models.py:136
+#: publications/models.py:132 publications/models.py:137
 msgid "Commentaire"
 msgstr "Commentaire"
+
+#: publications/models.py:150
+#: publications/templates/publications/bulletin_list.html:39
+msgid "Brouillon"
+msgstr "Brouillon"
+
+#: publications/models.py:151
+msgid "Publié"
+msgstr "Publié"
+
+#: publications/models.py:154 publications/models.py:215
+#: publications/models.py:265 publications/models.py:291
+msgid "Identifiant"
+msgstr "Identifiant"
+
+#: publications/models.py:155
+msgid "Série"
+msgstr "Série"
+
+#: publications/models.py:156
+msgid "Titre de la série"
+msgstr "Titre de la série"
+
+#: publications/models.py:157
+msgid "Numéro"
+msgstr "Numéro"
+
+#: publications/models.py:158
+msgid "Numéro (libellé)"
+msgstr "Numéro (libellé)"
+
+#: publications/models.py:159
+msgid "Date (ISO partielle)"
+msgstr "Date (ISO partielle)"
+
+#: publications/models.py:160
+msgid "Date de tri"
+msgstr "Date de tri"
+
+#: publications/models.py:162
+msgid "Résumé"
+msgstr "Résumé"
+
+#: publications/models.py:163 publications/models.py:269
+msgid "Contenu (JSON)"
+msgstr "Contenu (JSON)"
+
+#: publications/models.py:164
+msgid "Version du schéma"
+msgstr "Version du schéma"
+
+#: publications/models.py:165
+msgid "SHA-256 de la source"
+msgstr "SHA-256 de la source"
+
+#: publications/models.py:167
+msgid "Nom du fichier source"
+msgstr "Nom du fichier source"
+
+#: publications/models.py:181
+msgid "Importé par"
+msgstr "Importé par"
+
+#: publications/models.py:183
+msgid "Date d'import"
+msgstr "Date d'import"
+
+#: publications/models.py:190 publications/models.py:214
+#: publications/models.py:235
+msgid "Bulletin"
+msgstr "Bulletin"
+
+#: publications/models.py:191
+msgid "Bulletins"
+msgstr "Bulletins"
+
+#: publications/models.py:220 publications/models.py:296
+msgid "SHA-256"
+msgstr "SHA-256"
+
+#: publications/models.py:224
+msgid "Image de bulletin"
+msgstr "Image de bulletin"
+
+#: publications/models.py:225
+msgid "Images de bulletin"
+msgstr "Images de bulletin"
+
+#: publications/models.py:239
+msgid "Accès groupe à bulletin"
+msgstr "Accès groupe à bulletin"
+
+#: publications/models.py:240
+msgid "Accès groupes à bulletins"
+msgstr "Accès groupes à bulletins"
+
+#: publications/models.py:255
+msgid "En attente de relecture"
+msgstr "En attente de relecture"
+
+#: publications/models.py:270
+#: publications/templates/publications/bulletin_import_preview.html:22
+msgid "Rapport de validation"
+msgstr "Rapport de validation"
+
+#: publications/models.py:276
+msgid "Import de bulletin"
+msgstr "Import de bulletin"
+
+#: publications/models.py:277
+msgid "Imports de bulletin"
+msgstr "Imports de bulletin"
+
+#: publications/models.py:300
+msgid "Image d'import de bulletin"
+msgstr "Image d'import de bulletin"
+
+#: publications/models.py:301
+msgid "Images d'import de bulletin"
+msgstr "Images d'import de bulletin"
 
 #: publications/templates/publications/_blogpost_card.html:14
 #: publications/templates/publications/blogpost_detail.html:13
@@ -4782,6 +4963,171 @@ msgstr "Aucune publication avec cette étiquette"
 msgid "Aucune publication pour l'instant"
 msgstr "Aucune publication pour l'instant"
 
+#: publications/templates/publications/bulletin/_preview.html:14
+msgid "Transcription automatique, pas encore relue par la famille."
+msgstr "Transcription automatique, pas encore relue par la famille."
+
+#: publications/templates/publications/bulletin/_preview.html:15
+msgid "Voir les notes de transcription"
+msgstr "Voir les notes de transcription"
+
+#: publications/templates/publications/bulletin/_preview.html:27
+msgid "Bulletin familial"
+msgstr "Bulletin familial"
+
+#: publications/templates/publications/bulletin/_preview.html:41
+#, python-format
+msgid "Feuilleter l’original (%(counter)s page)"
+msgid_plural "Feuilleter l’original (%(counter)s pages)"
+msgstr[0] "Feuilleter l’original (%(counter)s page)"
+msgstr[1] "Feuilleter l’original (%(counter)s pages)"
+
+#: publications/templates/publications/bulletin/_preview.html:43
+msgid "Télécharger le PDF original"
+msgstr "Télécharger le PDF original"
+
+#: publications/templates/publications/bulletin/_preview.html:50
+msgid "Sommaire"
+msgstr "Sommaire"
+
+#: publications/templates/publications/bulletin/_preview.html:82
+msgid "Le document original"
+msgstr "Le document original"
+
+#: publications/templates/publications/bulletin/_preview.html:83
+#, python-format
+msgid "%(counter)s page"
+msgid_plural "%(counter)s pages"
+msgstr[0] "%(counter)s page"
+msgstr[1] "%(counter)s pages"
+
+#: publications/templates/publications/bulletin/_preview.html:83
+#, python-format
+msgid "numérisé le %(date)s"
+msgstr "numérisé le %(date)s"
+
+#: publications/templates/publications/bulletin/_preview.html:85
+msgid "Pages du bulletin original"
+msgstr "Pages du bulletin original"
+
+#: publications/templates/publications/bulletin/_preview.html:88
+#, python-format
+msgid "Page %(number)s sur %(total)s"
+msgstr "Page %(number)s sur %(total)s"
+
+#: publications/templates/publications/bulletin/_preview.html:92
+#, python-format
+msgid "Page %(number)s"
+msgstr "Page %(number)s"
+
+#: publications/templates/publications/bulletin/_preview.html:97
+msgid "Page précédente"
+msgstr "Page précédente"
+
+#: publications/templates/publications/bulletin/_preview.html:99
+msgid "Page suivante"
+msgstr "Page suivante"
+
+#: publications/templates/publications/bulletin/_preview.html:103
+msgid "Annotations ajoutées au document"
+msgstr "Annotations ajoutées au document"
+
+#: publications/templates/publications/bulletin/_preview.html:115
+#, python-format
+msgid "Notes de transcription (%(counter)s)"
+msgid_plural "Notes de transcription (%(counter)s)"
+msgstr[0] "Notes de transcription (%(counter)s)"
+msgstr[1] "Notes de transcription (%(counter)s)"
+
+#: publications/templates/publications/bulletin/_preview.html:124
+#, python-format
+msgid "Transcrit le %(date)s · %(agent)s"
+msgstr "Transcrit le %(date)s · %(agent)s"
+
+#: publications/templates/publications/bulletin/_preview.html:125
+msgid "conventions"
+msgstr "conventions"
+
+#: publications/templates/publications/bulletin/_preview.html:125
+msgid "statut"
+msgstr "statut"
+
+#: publications/templates/publications/bulletin/_preview.html:125
+msgid "relu"
+msgstr "relu"
+
+#: publications/templates/publications/bulletin/_preview.html:125
+msgid "brouillon"
+msgstr "brouillon"
+
+#: publications/templates/publications/bulletin/_preview.html:126
+msgid "schéma"
+msgstr "schéma"
+
+#: publications/templates/publications/bulletin_import_preview.html:15
+msgid ""
+"Ce bulletin n'est pas visible sur le site tant que vous n'avez pas cliqué "
+"sur « Publier » ci-dessous."
+msgstr ""
+"Ce bulletin n'est pas visible sur le site tant que vous n'avez pas cliqué "
+"sur « Publier » ci-dessous."
+
+#: publications/templates/publications/bulletin_import_preview.html:27
+#, python-format
+msgid "%(counter)s erreur"
+msgid_plural "%(counter)s erreurs"
+msgstr[0] "%(counter)s erreur"
+msgstr[1] "%(counter)s erreurs"
+
+#: publications/templates/publications/bulletin_import_preview.html:27
+msgid "la publication est bloquée tant qu'elles ne sont pas corrigées."
+msgstr "la publication est bloquée tant qu'elles ne sont pas corrigées."
+
+#: publications/templates/publications/bulletin_import_preview.html:33
+msgid "Aucune erreur."
+msgstr "Aucune erreur."
+
+#: publications/templates/publications/bulletin_import_preview.html:37
+#, python-format
+msgid "%(counter)s avertissement"
+msgid_plural "%(counter)s avertissements"
+msgstr[0] "%(counter)s avertissement"
+msgstr[1] "%(counter)s avertissements"
+
+#: publications/templates/publications/bulletin_import_preview.html:54
+msgid "Publier ce bulletin sur le site ?"
+msgstr "Publier ce bulletin sur le site ?"
+
+#: publications/templates/publications/bulletin_import_preview.html:57
+msgid "Publier"
+msgstr "Publier"
+
+#: publications/templates/publications/bulletin_import_preview.html:71
+msgid "Aperçu du rendu"
+msgstr "Aperçu du rendu"
+
+#: publications/templates/publications/bulletin_import_upload.html:11
+msgid ""
+"Un paquet est une archive zip contenant bulletin.json et un dossier images/. "
+"Il est validé puis prévisualisé à l'étape suivante ; rien n'est publié avant "
+"une confirmation explicite."
+msgstr ""
+"Un paquet est une archive zip contenant bulletin.json et un dossier images/. "
+"Il est validé puis prévisualisé à l'étape suivante ; rien n'est publié avant "
+"une confirmation explicite."
+
+#: publications/templates/publications/bulletin_import_upload.html:24
+msgid "Analyser le paquet"
+msgstr "Analyser le paquet"
+
+#: publications/templates/publications/bulletin_list.html:15
+msgid "Les numéros transcrits depuis les originaux papier."
+msgstr "Les numéros transcrits depuis les originaux papier."
+
+#: publications/templates/publications/bulletin_list.html:45
+msgid "Aucun bulletin pour l'instant"
+msgstr "Aucun bulletin pour l'instant"
+
 #: publications/templates/publications/comment_confirm_delete.html:10
 msgid "Supprimer ce commentaire ?"
 msgstr "Supprimer ce commentaire ?"
@@ -4830,14 +5176,26 @@ msgstr ""
 "publications sur %(site_name)s (%(site_base_url)s). Pour vous désabonner, "
 "modifiez votre profil : %(settings_url)s"
 
-#: publications/views.py:86
+#: publications/views.py:91
 msgid "Vous n'êtes pas auteur de cette publication."
 msgstr "Vous n'êtes pas auteur de cette publication."
 
-#: publications/views.py:157
+#: publications/views.py:162
 msgid "Vous devez compléter votre profil avant de commenter."
 msgstr "Vous devez compléter votre profil avant de commenter."
 
-#: publications/views.py:178
+#: publications/views.py:183
 msgid "Vous devez compléter votre profil avant de publier."
 msgstr "Vous devez compléter votre profil avant de publier."
+
+#: publications/views.py:297
+msgid "Vous n'avez pas accès à ce bulletin."
+msgstr "Vous n'avez pas accès à ce bulletin."
+
+#: publications/views.py:353
+msgid "Cet import ne peut pas être publié (déjà traité ou en erreur)."
+msgstr "Cet import ne peut pas être publié (déjà traité ou en erreur)."
+
+#: publications/views.py:356
+msgid "Bulletin publié."
+msgstr "Bulletin publié."

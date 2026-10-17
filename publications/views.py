@@ -5,9 +5,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models import Count
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils.translation import gettext as _
+from django.views import View
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -21,8 +22,12 @@ from annuaire.views import StaffRequiredMixin
 from documents.access import accessible_documents
 from photos.access import accessible_albums
 
-from .forms import AttachmentFormSet, BlogPostForm, CommentForm
-from .models import BlogPost, Comment, Tag
+from .bulletin_access import accessible_bulletins, user_can_access_bulletin
+from .bulletin_import import apply_bulletin_import, stage_bulletin_import
+from .bulletin_package import PackageValidationError
+from .bulletin_render import build_bulletin_context
+from .forms import AttachmentFormSet, BlogPostForm, CommentForm, FormBulletinUpload
+from .models import BlogPost, Bulletin, BulletinImport, Comment, Tag
 
 
 def _authors_initial_json(view):
@@ -269,3 +274,92 @@ class CommentDeleteView(StaffRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse("blogpost-detail", kwargs={"pk": self.object.post.pk})
+
+
+class BulletinListView(LoginRequiredMixin, ListView):
+    model = Bulletin
+    template_name = "publications/bulletin_list.html"
+    context_object_name = "bulletins"
+    paginate_by = 20
+
+    def get_queryset(self):
+        return accessible_bulletins(self.request.user).prefetch_related("images").order_by("-sort_date")
+
+
+class BulletinDetailView(LoginRequiredMixin, DetailView):
+    model = Bulletin
+    template_name = "publications/bulletin_detail.html"
+    context_object_name = "bulletin_obj"
+
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset=queryset)
+        if not user_can_access_bulletin(self.request.user, obj):
+            raise PermissionDenied(_("Vous n'avez pas accès à ce bulletin."))
+        return obj
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        image_urls = {img.image_id: img.file.url for img in self.object.images.all()}
+        context.update(build_bulletin_context(self.object.data, image_urls))
+        context["source_pdf_url"] = self.object.source_pdf.url if self.object.source_pdf else None
+        return context
+
+
+class BulletinImportUploadView(StaffRequiredMixin, View):
+    """Staff-only. Validates the uploaded package and stages it -- nothing is
+    written to the published Bulletin/BulletinImage tables here."""
+
+    template_name = "publications/bulletin_import_upload.html"
+
+    def get(self, request, *args, **kwargs):
+        return render(request, self.template_name, {"form": FormBulletinUpload()})
+
+    def post(self, request, *args, **kwargs):
+        form = FormBulletinUpload(request.POST, request.FILES)
+        if not form.is_valid():
+            return render(request, self.template_name, {"form": form})
+
+        uploaded = form.cleaned_data["package"]
+        try:
+            bulletin_import = stage_bulletin_import(
+                zip_file=uploaded,
+                source_pdf=form.cleaned_data.get("source_pdf"),
+                uploaded_by=getattr(request.user, "profile", None),
+                original_filename=uploaded.name,
+            )
+        except PackageValidationError as exc:
+            form.add_error("package", str(exc))
+            return render(request, self.template_name, {"form": form})
+
+        return redirect("bulletin-import-preview", pk=bulletin_import.pk)
+
+
+class BulletinImportPreviewView(StaffRequiredMixin, View):
+    template_name = "publications/bulletin_import_preview.html"
+
+    def get(self, request, *args, **kwargs):
+        bulletin_import = get_object_or_404(BulletinImport, pk=kwargs["pk"])
+        image_urls = {img.image_id: img.file.url for img in bulletin_import.images.all()}
+        context = {"bulletin_import": bulletin_import}
+        context.update(build_bulletin_context(bulletin_import.data, image_urls))
+        context["source_pdf_url"] = bulletin_import.source_pdf.url if bulletin_import.source_pdf else None
+        return render(request, self.template_name, context)
+
+
+class BulletinImportApplyView(StaffRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        bulletin_import = get_object_or_404(BulletinImport, pk=kwargs["pk"])
+        if not bulletin_import.can_publish:
+            messages.error(request, _("Cet import ne peut pas être publié (déjà traité ou en erreur)."))
+            return redirect("bulletin-import-preview", pk=bulletin_import.pk)
+        bulletin = apply_bulletin_import(bulletin_import, getattr(request.user, "profile", None))
+        messages.success(request, _("Bulletin publié."))
+        return redirect("bulletin-detail", pk=bulletin.pk)
+
+
+class BulletinImportDiscardView(StaffRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        bulletin_import = get_object_or_404(BulletinImport, pk=kwargs["pk"])
+        bulletin_import.delete()
+        messages.success(request, _("Import abandonné."))
+        return redirect("bulletin-import-upload")

@@ -76,6 +76,10 @@ _PATHS: dict[str, str] = {
     "logout": '<path d="M14 5H5v14h9"/><path d="M17 8.5 20.5 12 17 15.5"/><path d="M20 12h-9"/>',
     "chevron-left": '<path d="m14.5 5.5-6 6.5 6 6.5"/>',
     "chevron-right": '<path d="m9.5 5.5 6 6.5-6 6.5"/>',
+    "pin": (
+        '<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>'
+    ),
+    "pen": '<path d="m14.5 4.5 3 3L9 16l-4 1 1-4z"/><path d="M4 20.5c2.5-1 4.5-1 6.5 0s4 1 6.5-.5"/>',
 }
 
 

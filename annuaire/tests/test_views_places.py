@@ -28,6 +28,26 @@ def test_place_list_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_place_list_jsi18n_catalog_loads_before_presence_calendar_js(auth_client):
+    # presence_calendar.js calls gettext() at module load time too -- same
+    # bug as #154's calendar page, fixed the same way.
+    response = auth_client.get(reverse("place-list"))
+    content = response.content.decode()
+    catalog_pos = content.index(reverse("javascript-catalog"))
+    script_pos = content.index("js/presence_calendar.js")
+    assert catalog_pos < script_pos
+
+
+@pytest.mark.django_db
+def test_place_detail_jsi18n_catalog_loads_before_presence_calendar_js(auth_client, place):
+    response = auth_client.get(reverse("place-detail", kwargs={"pk": place.pk}))
+    content = response.content.decode()
+    catalog_pos = content.index(reverse("javascript-catalog"))
+    script_pos = content.index("js/presence_calendar.js")
+    assert catalog_pos < script_pos
+
+
+@pytest.mark.django_db
 def test_place_list_context_has_places(auth_client, place):
     response = auth_client.get(reverse("place-list"))
     assert place in response.context["places"]

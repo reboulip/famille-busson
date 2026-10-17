@@ -1,13 +1,23 @@
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.3
-    hooks:
-      - id: ruff-check
-        args: [--fix]
-      - id: ruff-format
-
   - repo: local
     hooks:
+      # Local (uv run) rather than pinned to an external revision of astral-sh's own
+      # ruff pre-commit hooks, so this always runs the exact ruff version uv.lock
+      # pins -- the same one CI and the weekly dependency-upgrade workflow use. A
+      # pinned external revision can drift from uv.lock after a dependency bump,
+      # which reformats the same code back and forth between local commits and CI.
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --fix --force-exclude
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --force-exclude
+        language: system
+        types: [python]
+
       - id: ty
         name: ty (type check)
         entry: uv run ty check --exit-zero-on-warning

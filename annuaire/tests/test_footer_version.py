@@ -55,4 +55,4 @@ def test_footer_shows_the_version_for_anonymous_users_on_the_app_shell(client):
 def test_footer_renders_nothing_when_the_version_is_empty(auth_client, settings):
     settings.APP_VERSION = ""
     response = auth_client.get(reverse("directory"))
-    assert "fb-footer" not in response.content.decode()
+    assert "fb-nav__version" not in response.content.decode()

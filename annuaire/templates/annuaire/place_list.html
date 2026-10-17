@@ -49,3 +49,7 @@
         {% endfor %}
     </div>
 {% endblock content %}
+{% block extra_js %}
+    <script src="{% static 'js/calendar_core.js' %}"></script>
+    <script src="{% static 'js/presence_calendar.js' %}"></script>
+{% endblock extra_js %}

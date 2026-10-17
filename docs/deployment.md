@@ -1,123 +1,102 @@
 # Deployment
 
-famille-busson runs on a single VPS (`bubu.reboulip.fr`) as two Docker containers —
-Postgres and the Django app behind Gunicorn — deployed automatically on every push to
-`main`. This page ties together what's otherwise spread across `Dockerfile`,
-`docker-entrypoint.sh`, `docker-compose.prod.yml`, `.env.example` and the two deploy
-workflows. For the from-scratch "stand up a fresh instance" recipe (a different family,
-or a differently-branded copy), see [`installation.md`](installation.md) instead — this
-page documents how *this* instance's CI/CD and running stack work.
+famille-busson runs on a single server (`bubu.reboulip.fr`) with Docker. Every push to
+`main` deploys a new version automatically. This page explains how the pieces fit
+together. To set up a new installation from scratch, see
+[`installation.md`](installation.md).
 
 ## CI/CD pipeline
 
-Four workflows run on `main` (all in `.github/workflows/`):
+Four GitHub workflows (in `.github/workflows/`):
 
-| Workflow | Trigger | Does |
+| Workflow | Runs on | What it does |
 |---|---|---|
-| `tests.yml` | push to `develop`/`main`, PRs into `main` | Runs the pytest suite; the gate a `develop` → `main` PR must pass (see the `/release` skill). |
-| `build-and-deploy.yml` | push to `main` | Builds the Docker image, pushes it to GHCR, then deploys it to the VPS over SSH. |
-| `release.yml` | push to `main` | Tags `v<version>` (read from `pyproject.toml`) and creates the GitHub Release, if not already tagged (see `CLAUDE.md` §10). |
-| `dependency-upgrade.yml` | weekly (Friday night, `cron`), or manual (`workflow_dispatch`) | Upgrades the pinned Python minor version, every uv-managed package, and the vendored front-end assets (see below), then opens a `deps/<date>` → `main` PR only if lint/ty/collectstatic-sanity/the full test suite all pass (see `CLAUDE.md` §8/§10/§11). |
+| `tests.yml` | push to `develop` or `main`, and PRs into `main` | Runs the linters and the tests. A PR into `main` must pass it. |
+| `build-and-deploy.yml` | push to `main` | Builds the Docker image, pushes it to GHCR, and deploys it to the server over SSH. |
+| `release.yml` | push to `main` | Creates the `v<version>` tag and the GitHub Release, using the version in `pyproject.toml`. |
+| `dependency-upgrade.yml` | every Friday night, or by hand | Upgrades Python, the Python packages and the front-end libraries, then opens a PR into `main` if all checks pass. |
 
 ### Automated dependency upgrades
 
-`dependency-upgrade.yml` is the only workflow that opens a PR straight to `main` from a
-branch other than `develop`/`hotfix/*` — a documented exception, on the same footing as
-a hotfix (`CLAUDE.md` §8). It runs every gate a human contributor would (ruff, ty,
-`collectstatic` sanity check, full pytest suite) *before* opening the PR — if anything
-fails, the workflow run fails and no PR is opened, so a broken upstream release never
-reaches `main` unreviewed. It always bumps the **minor** version, since there's no human
-in the loop to judge release-worthiness (`CLAUDE.md` §10).
+`dependency-upgrade.yml` is the only workflow that opens a PR into `main` from a branch
+other than `develop` or `hotfix/*`. It runs the same checks as a person would: ruff,
+ty, the static files check, and the full test suite. If one check fails, it opens no PR.
+It always bumps the **minor** version.
 
-Vendored front-end libraries under `annuaire/static/vendor/` (leaflet, d3, family-chart,
-pdfjs, leaflet.markercluster, html-to-image — not the Django admin's own bundled vendor
-assets, which upgrade with Django itself) have no build tooling of their own; they're
-tracked by `annuaire/static/vendor/manifest.json` (package name, pinned version, and
-npm-package-path → local-file mapping per library) and fetched via jsdelivr by
-`manage.py upgrade_vendored_assets` — see that command's docstring.
+Before the ruff and format checks, it first runs `ruff check --fix` and `ruff format`
+(safe fixes only, never `--unsafe-fixes`) so a routine style-rule change in the new
+ruff version doesn't block the whole upgrade by itself — whatever ruff can't fix on
+its own still fails the check gate afterwards. It also installs `gettext` and runs
+`manage.py compilemessages` before the test suite, the same as `tests.yml` does,
+since some tests (e.g. `test_middleware_user_language.py`) need compiled `.mo` files
+to pass. `.pre-commit-config.yaml`'s ruff hooks run through `uv run ruff` rather than
+a pinned external revision, so a local commit and this workflow always use the exact
+same ruff version from `uv.lock`.
+
+The front-end libraries in `annuaire/static/vendor/` (leaflet, d3, family-chart,
+pdfjs, etc.) have no build tool. Their versions are listed in
+`annuaire/static/vendor/manifest.json`. The command `manage.py upgrade_vendored_assets`
+downloads new versions and updates that file.
 
 ## Docker image
 
-`Dockerfile` is Python 3.13 slim + `uv`. Dependencies are synced in a separate layer
-before the app code is copied in, so `uv sync` only reruns when `pyproject.toml`/
-`uv.lock` change. The image is built without dev dependencies (`--no-dev`). It does
-**not** set `USER appuser` — the container starts as root so `docker-entrypoint.sh` can
-fix ownership of the bind-mounted media volume before dropping privileges (see below).
-The `tesseract-ocr`/`tesseract-ocr-fra` system packages are installed via `apt-get` in
-their own early layer, ahead of the OCR content-extraction pipeline that will consume
-them (see `ROADMAP.md`); `tests.yml`'s CI job installs the same packages so the test
-suite runs against the same environment. `gettext` is installed the same way, for
-Phase 15.4's i18n message catalogs: the Dockerfile runs
-`manage.py compilemessages` as its own step right after the app code is copied in, so
-`locale/fr/LC_MESSAGES/*.mo` is baked into the image at **build** time rather than
-compiled at container start — the `worker` service (`RUN_STARTUP_TASKS=0`, see
-"Scheduled tasks" below) sends notification emails and never runs the startup tasks
-that could otherwise compile it, so it would render every email untranslated if
-compilation were deferred to entrypoint time. The committed `.po` sources are tracked
-in git; the compiled `.mo` files are gitignored. See [`i18n.md`](i18n.md) for the full
-message-catalog workflow, and a warning-level system check (`annuaire.checks`, id
-`annuaire.W004`) that flags a configured language whose `.mo` didn't get compiled,
-same rationale as `W001`-`W003`.
+The image is built from `Dockerfile`: Python 3.13 slim, plus `uv`. It also installs:
+
+- `tesseract-ocr` and `tesseract-ocr-fra`, to read text from scanned documents (OCR);
+- `gettext`, to compile the translation files.
+
+Translations are compiled **when the image is built**, not when the container starts.
+This matters because the `worker` container sends emails but skips the startup tasks.
+If translations were compiled at startup, its emails would not be translated. See
+[`i18n.md`](i18n.md).
+
+The container starts as `root`, then switches to a normal user (see below).
 
 ## `docker-entrypoint.sh` — the root → chown → appuser dance
 
-The entrypoint runs twice per container start:
-1. **As root** (first pass): `chown -R appuser:appuser` on both `/app/media` and
-   `/app/documents_data`, then re-execs itself as `appuser` via `runuser`. This exists
-   because both are host bind mounts whose ownership can't be relied on to already
-   match `appuser`'s UID (1000) — pinning the host-side UID ahead of time isn't
-   reliable across VPS redeploys.
-2. **As `appuser`** (second pass, the `id -u` check no longer matches root): runs
-   `manage.py migrate --noinput` and `collectstatic --noinput`, then `exec`s the
-   container's `CMD` (`gunicorn config.wsgi:application`).
+The entrypoint script runs in two passes:
+
+1. **As root:** it gives the `appuser` user ownership of the `media` and `documents`
+   folders. These folders come from the server, so their owner is not always correct.
+   Then the script restarts itself as `appuser`.
+2. **As `appuser`:** it applies database migrations (`migrate`), collects static files
+   (`collectstatic`), and starts Gunicorn.
 
 ## Production stack (`docker-compose.prod.yml`)
 
-Bind mounts, the `web` image, and the published port are `${VAR:-<current-value>}`
-templated (`DATA_ROOT`, `APP_IMAGE`, `WEB_PORT` — see "Environment variables" below),
-so a different deployment can relocate its data directory, run a different image, or
-publish a different port purely via `.env`, without editing this file. The table below
-shows this project's own current values, which are exactly the defaults.
-
 | Service | Image | Notes |
 |---|---|---|
-| `db` | `postgres:16-alpine` | Data at `${DATA_ROOT:-/srv/bubu/data}/postgres` on the host; healthcheck gates `web`'s startup. |
-| `cache` | `valkey/valkey:8-alpine` | Data at `${DATA_ROOT:-/srv/bubu/data}/valkey`; internal-only (no published port); healthcheck gates `web`'s startup. See "Shared cache" below. |
-| `web` | `${APP_IMAGE:-ghcr.io/reboulip/famille-busson:latest}` | Media at `${DATA_ROOT:-/srv/bubu/data}/media`; protected document storage at `${DATA_ROOT:-/srv/bubu/data}/documents` (see below); reads `.env`; published on host port `${WEB_PORT:-8001}` → container `8000`; healthcheck via `/healthz` (see below). |
+| `db` | `postgres:16-alpine` | The database. Data in `${DATA_ROOT}/postgres`. |
+| `cache` | `valkey/valkey:8-alpine` | Cache and job queue. Data in `${DATA_ROOT}/valkey`. Not reachable from outside. See "Shared cache" below. |
+| `web` | `${APP_IMAGE}` | The Django app. Uploaded files in `${DATA_ROOT}/media` and `${DATA_ROOT}/documents`. Listens on port `${WEB_PORT}`. Health check on `/healthz`. |
+| `worker` | `${APP_IMAGE}` | Runs the background jobs (see [`background_tasks.md`](background_tasks.md)). Same image and same folders as `web`. |
 
-On the VPS, `/srv/bubu/` holds `docker-compose.yml` (copied in by `build-and-deploy.yml`
-from this repo's `docker-compose.prod.yml`), `.env` (see below), and the data volumes
-above.
+The defaults are `DATA_ROOT=/srv/bubu/data`,
+`APP_IMAGE=ghcr.io/reboulip/famille-busson:latest` and `WEB_PORT=8001`. Another
+installation can change them in `.env` without editing the compose file.
+
+On the server, `/srv/bubu/` holds `docker-compose.yml` (a copy of
+`docker-compose.prod.yml`, made by the deploy workflow), `.env`, and the data folders.
 
 ### Shared cache
 
-`CACHES` was unset until this item, so every gunicorn worker held its own independent
-`LocMemCache` — a value written by one worker was invisible to the others, which quietly
-undermines anything relying on the cache being actually shared (rate-limiting, in
-particular — see a later item). `config/settings.py` now reads `CACHES` via
-`django-environ`'s `env.cache("CACHE_URL", default="locmemcache://")`, resolving a
-`redis://`/`valkey://` URL to Django's built-in `django.core.cache.backends.redis.
-RedisCache` (no `django-redis` package needed — only plain `redis`, the client library,
-is a dependency). A warning-level system check (`annuaire.checks`, id `annuaire.W002`)
-flags a `CACHES` that's still `LocMemCache` outside `DEBUG`, same rationale as `W001`:
-checks run before `collectstatic` under `set -euo pipefail`, so it warns rather than
-blocking container boot.
+The app reads its cache settings from `CACHE_URL`. In production it points to the
+Valkey container. Without it, each Gunicorn worker has its own private memory cache, and
+features that need a shared cache (like rate limiting) do not work correctly.
 
-The `cache` container serves **two roles on separate logical DBs**: db 0 is the Django
-cache; db 1 is the background task queue's broker (see
-[`background_tasks.md`](background_tasks.md)) — one Valkey instance, not two
-containers. `--maxmemory-policy noeviction` is required, not just a sane default: with
-the queue sharing this instance, an eviction policy would silently drop unprocessed
-jobs along with cache entries under memory pressure. `--appendonly yes` persistence
-means in-flight state (queued jobs included) survives a container restart. Dev and the
-test suite never need a real Valkey — `CACHE_URL` defaults to `locmemcache://`, and
-`conftest.py` forces `LocMemCache` plus clears it before every test regardless of a
-developer's local `.env`.
+The Valkey container has two roles: database 0 is the Django cache, and database 1 is
+the job queue. Two settings are important:
+
+- `--maxmemory-policy noeviction`: Valkey must never drop data when memory is full.
+  Otherwise it could lose queued jobs.
+- `--appendonly yes`: data, including queued jobs, survives a restart.
+
+In development and in tests, you do not need Valkey. The app uses a memory cache by
+default.
 
 ### `/healthz`
 
-Deepened beyond "the process is up" to actually check the database, cache, queue and
-storage backends — see `annuaire/health.py`. Response contract:
+`/healthz` checks that the database, cache, queue and file storage all work. It returns:
 
 ```json
 {
@@ -133,281 +112,213 @@ storage backends — see `annuaire/health.py`. Response contract:
 }
 ```
 
-`Content-Type: application/json`, `Cache-Control: no-store`. The top-level `status` is
-exactly `ok` / `degraded` / `error`; each individual check's own `status` is only ever
-`ok` or `error` — `degraded` exists solely as the top-level summary for "a non-critical
-check failed." Never a raw exception message or traceback, which for the database check
-in particular could leak the DSN host/user; full detail goes to the structured log
-(`logging.getLogger("django")`, `WARNING`) only.
+Error details are never shown in the response. They go to the log.
 
-**Criticality is not uniform.** `database`, `media_storage` and `documents_storage` are
-critical: any failure makes the *overall* `status` `"error"` and the HTTP status `503`.
-`cache` and `queue` are not: a failure there makes the overall `status` `"degraded"`
-but the HTTP status stays `200` — this is what keeps a local dev `curl -sf
-.../healthz` (no Valkey running locally) reporting healthy, and what stops a Valkey
-blip from taking the whole site down in production.
+**Not all checks are equally important:**
 
-**The compose healthcheck** (`docker-compose.prod.yml`'s `web` service) runs
-`scripts/healthcheck.py` rather than `curl`/`wget` — neither exists in the
-`python:3.13-slim` base image. It sends an explicit `Host` header matching
-`ALLOWED_HOSTS`'s first entry, because `SECURE_SSL_REDIRECT` (on by default outside
-`DEBUG`) would otherwise turn a plain-HTTP in-container request into a 301 that never
-reaches the view, and a request without a matching `Host` header gets a `DisallowedHost`
-400 instead — `config/settings.py`'s `SECURE_REDIRECT_EXEMPT` covers the first
-half, the explicit header covers the second. A 503 response makes the script exit
-non-zero (via the propagating `HTTPError`), which is what marks the container unhealthy
-in `docker ps`/`docker compose ps` — this is visibility, not recovery; nothing restarts
-`web` automatically on an unhealthy status.
+- If `database`, `media_storage` or `documents_storage` fails, the status is `error`
+  and the HTTP code is `503`.
+- If `cache` or `queue` fails, the status is `degraded`, but the HTTP code stays `200`.
+  A short Valkey problem does not take the whole site down.
 
-**External uptime monitoring** is a manual dashboard step, not code: register
-`https://bubu.reboulip.fr/healthz` with a free-tier monitor (e.g. UptimeRobot) doing a
-keyword match on `"status": "ok"` in the response body — a `"degraded"` or `"error"`
-response, or no response at all, fails the match and triggers the monitor's alert.
+**Docker health check:** the `web` container runs `scripts/healthcheck.py` (the image
+has no `curl`). If `/healthz` returns `503`, Docker marks the container "unhealthy".
+This is only for visibility: nothing restarts the container automatically.
+
+**External monitoring:** set this up by hand. Add `https://bubu.reboulip.fr/healthz`
+to a free uptime monitor (for example UptimeRobot), with a keyword check on
+`"status": "ok"`.
 
 ### Protected document storage
 
-`/srv/bubu/data/documents` (mounted at `/app/documents_data`, `settings.DOCUMENTS_ROOT`)
-is deliberately separate from the `media` volume: it holds `documents.DocumentFile`
-uploads and their generated thumbnails, which are access-controlled per `documents.
-Category` and must never be reachable through `MEDIA_URL`/`media_serve` or any other
-public path (`documents/storage.py`'s `DocumentStorage.url()` raises rather than
-producing one). The only way to reach a file's bytes is `documents.views.
-DocumentFileView` (routes `document-file`/`document-file-thumbnail`, keyed by
-`DocumentFile` pk, never by path), which re-checks the category's effective group
-access on every request. Orphaned files (a deleted
-`DocumentFile`, or one whose `file`/`thumbnail` is replaced) are cleaned up
-automatically via `annuaire/file_cleanup.py`'s `register_file_cleanup`, wired in
-`documents/signals.py`.
+Documents and photos are stored in `/srv/bubu/data/documents`, apart from the normal
+`media` folder. They have no public URL. The only way to download one is through the
+app, which checks the user's group access on every request. When a file is deleted or
+replaced in the app, the old file on disk is removed automatically.
 
 ## Environment variables
 
-`.env.example` at the repo root is the checklist — copy it to `/srv/bubu/.env` on the
-VPS (never commit a real `.env`). Key point: `POSTGRES_*` feeds the `db` container
-directly, while `DATABASE_URL` is what Django (`config/settings.py`, via
-`django-environ`) actually reads — the two must be kept in sync by hand. Email defaults
-to the console backend (no-op) until `EMAIL_BACKEND` is switched to SMTP.
-`DEFAULT_FROM_EMAIL` no longer defaults to a Busson-specific address in code — it's `""`
-until set — so production must set it explicitly (or configure `SiteConfig.sender_address`
-via `bootstrap_site`/the site configuration screen instead, see [`site_config.md`](site_config.md)).
-A warning-level system check (`annuaire.checks`, id `annuaire.W006`) flags the case where
-neither is set outside `DEBUG`, since outgoing mail would then have no From address.
-`SITE_BASE_URL`
-is used to build absolute links in emails sent outside a request context — birthday
-reminders and blog post notifications — and should still be set explicitly to
-`https://bubu.reboulip.fr` in production. If left unset, `config/settings.py`'s
-`_default_site_base_url()` now derives a non-localhost fallback from
-`CSRF_TRUSTED_ORIGINS` (first entry) or, failing that, the first non-wildcard,
-non-localhost `ALLOWED_HOSTS` entry — falling back to `http://localhost:8000` only if
-neither yields anything. This is a safety net, not a substitute: a warning-level system
-check (`annuaire.checks`, id `annuaire.W001`) flags a `SITE_BASE_URL` that still resolves
-to localhost outside `DEBUG`.
+`.env.example` lists every variable. Copy it to `/srv/bubu/.env` on the server. Never
+commit a real `.env`.
 
-The five `PRIVACY_*` variables (`PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTROLLER_CONTACT`,
-`PRIVACY_HOSTING_PROVIDER`, `PRIVACY_HOSTING_COUNTRY`, `PRIVACY_RETENTION_SUMMARY`) feed
-the public privacy notice page's legal facts (who the data controller is, hosting
-provider/country, rights-request contact, retention summary) and all default to `""`.
-Development and tests are fine leaving them unset; **production must set all five**
-before launch — see [`privacy.md`](privacy.md#legal-facts-environment-variables-not-hardcoded).
+The most important points:
 
-`TIME_ZONE` (default `Europe/Paris`) is what `config/settings.py`'s `TIME_ZONE` setting
-reads — the zone management commands and the `worker`/`qcluster` background process
-always run under, regardless of `SiteConfig.timezone` (which only activates per-request,
-during the web request/response cycle — see [`site_config.md`](site_config.md)).
-`GEOCODER_PRIMARY` (default `ban`) picks which provider `annuaire/geocoding.py`'s
-`search_addresses()` queries first — BAN (France-only, authoritative) by default, with
-Photon (worldwide, OpenStreetMap-based) as the fallback; set it to `photon` to swap the
-two roles for a deployment outside France.
+- **Database:** `POSTGRES_*` configures the `db` container. `DATABASE_URL` is what
+  Django reads. You must keep them in sync by hand.
+- **Email:** emails are only logged until you set `EMAIL_BACKEND` to SMTP. Set the
+  sender address with `DEFAULT_FROM_EMAIL`, or in the site settings (see
+  [`site_config.md`](site_config.md)).
+- **`SITE_BASE_URL`:** used to build links in emails sent by background jobs (birthday
+  reminders, new post notifications). In production, set it to
+  `https://bubu.reboulip.fr`. If it is missing, the app tries to guess it from
+  `CSRF_TRUSTED_ORIGINS` or `ALLOWED_HOSTS`.
+- **`PRIVACY_*` (five variables):** the legal facts shown on the privacy page. They
+  must all be set in production. See
+  [`privacy.md`](privacy.md#legal-facts-environment-variables-not-hardcoded).
+- **`TIME_ZONE`** (default `Europe/Paris`): the time zone for background jobs and
+  management commands. Web pages use the time zone from the site settings instead.
+- **`GEOCODER_PRIMARY`** (default `ban`): the service used first to turn an address
+  into map coordinates. `ban` is the French national address database. `photon` works
+  worldwide. Set `photon` for an installation outside France.
+- **`DATA_ROOT`, `APP_IMAGE`, `WEB_PORT`:** read by Docker Compose, not by Django. See
+  "Production stack" above.
 
-`DATA_ROOT`, `APP_IMAGE`, `WEB_PORT` (the "Deployment (compose-level)" block in
-`.env.example`, right after the database section) are read by `docker-compose.prod.yml`
-itself, not by Django — they template the host bind-mount root (default
-`/srv/bubu/data`), the image to run (default `ghcr.io/reboulip/famille-busson:latest`),
-and the published host port (default `8001`) across all four services (`db`, `cache`,
-`web`, `worker`). Byte-identical to the previous hardcoded values off an untouched
-`.env`; a different deployment can relocate its data directory, run a different image,
-or publish a different port without editing `docker-compose.prod.yml` itself. See
-[`installation.md`](installation.md) for the from-scratch setup walkthrough that uses
-these.
+**Configuration warnings.** When `DEBUG` is off, the app checks its configuration at
+startup and shows a warning if something is missing:
+
+| Id | Problem |
+|---|---|
+| `annuaire.W001` | `SITE_BASE_URL` still points to `localhost`. |
+| `annuaire.W002` | No shared cache (`CACHE_URL` not set). |
+| `annuaire.W003` | No `SENTRY_DSN` (see [`observability.md`](observability.md)). |
+| `annuaire.W004` | A language has no compiled translation file (see [`i18n.md`](i18n.md)). |
+| `annuaire.W005` | The site has no name (`bootstrap_site` was never run). |
+| `annuaire.W006` | No sender address for emails. |
+
+These are warnings, not errors, on purpose: an error would stop the container from
+starting.
 
 ## App version
 
-`APP_VERSION` (`config/settings.py`) is read once at import time from
-`pyproject.toml`'s `[project].version`, via `tomllib` directly — not
-`importlib.metadata`, which has no dist-info to look up on this uv *virtual* project
-(no `[build-system]` table, `--no-install-project` in the Dockerfile). It's exposed to
-every template through the new `annuaire.context_processors.site_version` context
-processor and shown as a discreet `v<version>` line in the footer, on both the
-authenticated app shell and the anonymous/login threshold pages. Falls back to an empty
-string (footer line omitted) rather than a 500 if `pyproject.toml` is missing or
-malformed. This is also the seam Phase 15.1's planned `SiteConfig` context processor is
-expected to build on.
+The app reads its version from `pyproject.toml` when it starts. The version appears in
+small text in the fixed left sidebar, next to the logout/login control (`v1.5.0`, for
+example), and in `/healthz`.
 
 ## Scheduled tasks
 
-These recurring jobs now run on the background task queue (django-q2's `worker`
-container) instead of crontab — see [`background_tasks.md`](background_tasks.md) for
-the queue itself. This section covers the commands' hand-runnable form, still useful
-for an ad-hoc run or a birthday-reminder backfill.
+These jobs run automatically on the job queue (see
+[`background_tasks.md`](background_tasks.md)). You can also run each one by hand, for
+example to test it or to catch up.
 
-`send_birthday_reminders` (`annuaire/management/commands/send_birthday_reminders.py`)
-emails subscribed members for each person whose birthday is today. The scheduled queue
-run happens once a day; the command exits non-zero (and logs at ERROR level) if any
-reminder fails to send. Use `--date YYYY-MM-DD` to run it for a specific day (e.g. to
-verify things work without waiting for a real birthday) and `--dry-run` to see who would
-receive a reminder without sending anything:
+`send_birthday_reminders` emails the members who asked for birthday reminders, for each
+person whose birthday is today. It runs once a day. Use `--date YYYY-MM-DD` to run it
+for another day, and `--dry-run` to see who would get an email without sending
+anything:
 
 ```
 docker compose exec -T web python manage.py send_birthday_reminders --date 2026-06-10 --dry-run
 ```
 
-`extract_document_content` (`documents/management/commands/extract_document_content.py`)
-backfills `DocumentFile.extracted_text`/`thumbnail` for pending uploads — PDF text via
-PyMuPDF with Tesseract OCR fallback for image-only pages/scans, direct OCR for raster
-image uploads, and a first-page thumbnail for PDFs (office docs and plain text files are
-marked "unsupported" and never processed). Capped at 20 files and 20 OCR'd pages per file
-per run, to avoid a pathological upload OOMing gunicorn. The scheduled queue run happens
-every 15 minutes; run it by hand the same way:
+`extract_document_content` reads the text of new documents (so they can be searched)
+and makes a preview image for PDFs. It uses OCR for scans and images. Office and plain
+text files are not processed. Each run handles up to 20 files. It runs every 15 minutes:
 
 ```
 docker compose exec -T web python manage.py extract_document_content
 ```
 
-`generate_photo_derivatives` (`photos/management/commands/generate_photo_derivatives.py`)
-backfills `Photo.thumbnail`/`web`/`taken_at` for photos left `derivative_status="pending"`
-— normally each photo's derivatives are generated as soon as it's uploaded (enqueued from
-a `post_save` signal, see `photos/signals.py`), so this is a safety net for photos
-uploaded while a worker was down. Capped at 20 photos per run. The scheduled queue run
-happens every 15 minutes; run it by hand the same way:
+`generate_photo_derivatives` makes the thumbnail and web-size version of new photos,
+and reads their date. This normally happens right after upload. This job is a safety
+net for photos uploaded while the worker was down. Each run handles up to 20 photos. It
+runs every 15 minutes:
 
 ```
 docker compose exec -T web python manage.py generate_photo_derivatives
 ```
 
-`reindex_search` (`annuaire/management/commands/reindex_search.py`) rebuilds every
-registered model's search index (`Person`, `BlogPost`, `Document`, `Album`, `Photo`) from
-scratch — normally each row's index updates on save/delete via a signal (see
-`background_tasks.md`'s on-demand tasks), so this is a safety net or a one-off after
-changing what a `SearchSpec` indexes. The scheduled queue run happens nightly at 03:00
-UTC; run it by hand the same way:
+`reindex_search` rebuilds the search index from scratch. The index is normally updated
+each time something is saved. This job is a safety net. Run it by hand after you change
+what is indexed. It runs every night at 03:00 UTC:
 
 ```
 docker compose exec -T web python manage.py reindex_search
 ```
 
-**Migration step, once, when this deploy first ships**: remove the two old crontab
-entries that used to run these commands (`send_birthday_reminders` daily,
-`extract_document_content` every 15 minutes) from the VPS's crontab. Leaving them active
-alongside the new queue would run both jobs twice — the birthday reminder task has its
-own same-day lock guarding against that specific case, but the extraction job does not,
-and there's no reason to run either path twice regardless.
-
 ## Sauvegardes
 
-`scripts/backup.sh` dumps Postgres, archives `media/` and `documents/`, encrypts a
-copy of `.env`, and copies the result off-VPS via `rclone`. It's a plain host-side bash
-script (not run inside a container, unlike the scheduled tasks above) — it shells out to
-`docker compose exec` itself for the parts that need the running containers. It ships
-with the repo and is copied to the VPS by `build-and-deploy.yml` alongside
-`docker-compose.prod.yml`, so a fix to it reaches production the same way any other code
-change does; it still has to be scheduled by hand, same as the jobs above:
+`scripts/backup.sh` backs up the site. It:
+
+1. dumps the Postgres database;
+2. archives the `media/` and `documents/` folders;
+3. encrypts a copy of `.env`;
+4. copies everything to off-site storage with `rclone`.
+
+The script runs on the server itself, not in a container. The deploy workflow copies it
+to the server, but you must schedule it yourself with cron:
 
 ```
 0 3 * * * cd /srv/bubu && bash scripts/backup.sh >> logs/backup.log 2>&1
 ```
 
-Each run writes to `$BACKUP_DIR/<UTC-timestamp>/` (e.g. `backups/20260906T030000Z/`):
-`db.dump` (`pg_dump -Fc`), `media.tar.gz`, `documents.tar.gz`, an age-encrypted `env.age`,
-and a `manifest.json` recording per-artifact size and sha256, the app and Postgres
-versions, start/end time, and exit status. `manifest.json`'s shape is a contract other
-tooling reads (the restore script, backup monitoring) — treat a change to it as a breaking
-change and bump its `manifest_version` field.
+Each run creates a folder named after the time (e.g. `backups/20260906T030000Z/`), with:
 
-**Configuration** (`.env.example`'s `BACKUP_*` block):
+- `db.dump` — the database;
+- `media.tar.gz` and `documents.tar.gz` — the files;
+- `env.age` — the encrypted `.env`;
+- `manifest.json` — the size and checksum of each file, the app and Postgres versions,
+  and the result. The restore script reads this file. If you change its format, increase
+  its `manifest_version` field.
+
+**Configuration** (the `BACKUP_*` variables in `.env.example`):
 
 | Var | Meaning |
 |---|---|
-| `BACKUP_DIR` | Where run directories are written on the VPS. |
-| `BACKUP_KEEP_DAILY` / `BACKUP_KEEP_WEEKLY` | Local retention: the most recent N runs, plus M older ones kept roughly weekly. |
-| `BACKUP_KEEP_MONTHLY` | Extra off-site-only retention, beyond daily+weekly — off-site storage is cheap, VPS disk is not. |
-| `BACKUP_REMOTE` | An `rclone` remote path (e.g. `b2:famille-busson-backups/`) to copy each run to. Empty disables off-site copy entirely. |
-| `BACKUP_AGE_RECIPIENT` | The [age](https://github.com/FiloSottile/age) public key/recipient `.env` is encrypted to. Empty skips encrypting `.env` (it's still excluded from the backup, which then loses `SECRET_KEY`/the DB password if the VPS is lost — set this up before relying on the backup for disaster recovery). |
-| `BACKUP_PING_URL` | A dead-man's-switch base URL (e.g. a healthchecks.io check) — pinged at start, on success (`/0`), and on failure (`/fail`). Empty disables monitoring pings. |
-| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` / `BACKUP_MIN_DOCUMENTS_BYTES` | Absolute sanity floors: a dump/archive smaller than this aborts the run rather than shipping a silently truncated backup. All disabled (`0`) except the DB floor by default. |
-| `BACKUP_MIN_DB_RATIO` / `BACKUP_MIN_MEDIA_RATIO` / `BACKUP_MIN_DOCUMENTS_RATIO` | Relative sanity floors: this run's artifact must be at least this fraction of the *previous* run's size for the same artifact, or the run aborts. Catches a slow-creeping truncation that stays individually above the absolute floor every night. `0` disables the check (the default for documents, since that archive can legitimately shrink a lot in one run). Deliberately loose defaults (`0.5`) — a family site's day-to-day size swings shouldn't page anyone. |
+| `BACKUP_DIR` | Where backups are written on the server. |
+| `BACKUP_KEEP_DAILY` / `BACKUP_KEEP_WEEKLY` | How many backups to keep on the server: the last N, plus M older ones (about one per week). |
+| `BACKUP_KEEP_MONTHLY` | How many monthly backups to keep off-site, in addition. |
+| `BACKUP_REMOTE` | The `rclone` destination (e.g. `b2:famille-busson-backups/`). Empty = no off-site copy. |
+| `BACKUP_AGE_RECIPIENT` | The [age](https://github.com/FiloSottile/age) public key used to encrypt `.env`. Empty = `.env` is not backed up. Without `.env`, you lose `SECRET_KEY` and the database password if the server is lost. |
+| `BACKUP_PING_URL` | A monitoring URL (e.g. healthchecks.io), called at start, on success (`/0`) and on failure (`/fail`). Empty = no monitoring. |
+| `BACKUP_MIN_DB_BYTES` / `BACKUP_MIN_MEDIA_BYTES` / `BACKUP_MIN_DOCUMENTS_BYTES` | Minimum size for each file. A smaller file stops the backup with an error, because it is probably incomplete. `0` = no check. Only the database check is on by default. |
+| `BACKUP_MIN_DB_RATIO` / `BACKUP_MIN_MEDIA_RATIO` / `BACKUP_MIN_DOCUMENTS_RATIO` | Each file must be at least this fraction of the previous backup's file (default `0.5`). This catches a backup that gets slowly smaller. `0` = no check (default for documents). |
 
 ### Backup monitoring
 
-- **A run that fails, or produces an artifact under one of the floors above**: `scripts/backup.sh`'s `fail()` pings `$BACKUP_PING_URL/fail` and exits non-zero. Both absolute and relative floors route through the same `fail()` path.
-- **A run that doesn't happen at all**: this is what the dead-man's-switch itself is for, not something this script can detect from inside its own run — a healthchecks.io-style check has its own schedule and grace period configured on its dashboard, and it alerts on its own once a `/0` ping doesn't arrive in time. Set the check's schedule to match the cron frequency (daily) and its grace period to something comfortably longer than a normal run (an hour is generous). No Django/Python code is needed for this case; don't build one.
+- **A backup fails, or a file is too small:** the script calls `$BACKUP_PING_URL/fail`
+  and stops with an error.
+- **A backup does not run at all:** the script cannot detect this itself. The monitoring
+  service does it: it sends an alert when it gets no success call in time. Set its
+  schedule to daily, with a grace period of about one hour.
 
-**Manual VPS setup this needs, once**, none of it automated by CI/CD:
-- Install `age` and `rclone` on the VPS.
-- Generate an age keypair (`age-keygen`); put the public key in `BACKUP_AGE_RECIPIENT`,
-  keep the private key safe and *off* the VPS's own backup (a backup that can decrypt
-  itself defeats the point) — the operator uses this same private key by hand later, per
-  [`restore.md`](restore.md), to decrypt `env.age` if a restore ever needs it.
-- Configure an `rclone` remote matching `BACKUP_REMOTE` (`rclone config`).
-- If using a dead-man's-switch monitor: create the check, set its schedule and grace
-  period as above, and set `BACKUP_PING_URL`.
-- `mkdir -p /srv/bubu/logs` if it doesn't already exist, for the cron entry's log
-  redirect.
+**Set up once on the server** (by hand, not automated):
 
-Run `bash scripts/backup.sh --dry-run` after setup to verify configuration without
-writing anything.
+- Install `age` and `rclone`.
+- Create an age key pair with `age-keygen`. Put the public key in
+  `BACKUP_AGE_RECIPIENT`. Keep the private key somewhere safe, **not** on the server.
+  You will need it to restore `.env` (see [`restore.md`](restore.md)).
+- Configure the `rclone` destination with `rclone config`.
+- If you use monitoring, create the check and set `BACKUP_PING_URL`.
+- Create the log folder: `mkdir -p /srv/bubu/logs`.
+
+Then run `bash scripts/backup.sh --dry-run` to check the setup without writing
+anything.
 
 ## One-time setup
 
-**First-run only, on a fresh install with no accounts yet:**
-`bootstrap_site` (`annuaire/management/commands/bootstrap_site.py`) does the interactive
-first-run setup — the first superuser (with a linked `Person` profile), the default
-groups and starter document categories, and the `SiteConfig` row (site name, wordmark,
-sender address, feedback URL) — in one step, instead of several manual `manage.py shell`
-operations. Idempotent: safe to re-run, it never overwrites an already-configured site.
-Run it interactively, or non-interactively with `--noinput` plus every `--admin-*`/
-`--site-*` flag:
+**On a new installation only:** `bootstrap_site` creates the first administrator (with
+a profile), the default groups, the starter document categories and the site settings,
+in one step. You can run it again safely: it never overwrites a site that is already set
+up. Run it interactively, or with `--noinput` and all the `--admin-*` and `--site-*`
+options:
 
 ```
 cd /srv/bubu && docker compose exec -T web python manage.py bootstrap_site
 ```
 
-A blank `SiteConfig.site_name` outside `DEBUG` (i.e. `bootstrap_site` was never run) is
-flagged by a warning-level system check (`annuaire.checks`, id `annuaire.W005`), same
-rationale as `W001`-`W004`. See [`site_config.md`](site_config.md) for the full
-`SiteConfig` model.
+See [`site_config.md`](site_config.md) for the site settings.
 
-Some features ship with a manual backfill step that only needs to run once on the VPS,
-after the deploy that introduces them — unlike the recurring jobs above. Run it by hand,
-the same way as a scheduled command (`docker compose exec` from `/srv/bubu`), but just
-once:
+Two other commands add map coordinates to addresses entered before the map existed. Run
+them once. You can run them again safely: they skip addresses that already have
+coordinates.
 
 ```
 cd /srv/bubu && docker compose exec -T web python manage.py geocode_person_addresses
 ```
 
-Geocodes every existing `Person.postal_address` that doesn't yet have coordinates (via
-`annuaire/geocoding.py`'s `geocode()` — BAN first, falling back to Photon for addresses
-BAN can't resolve, e.g. outside France), so members who already had an address on file
-before the "Carte" view (`/annuaire/carte/`) shipped show up on it right away, instead of
-only after their next profile edit. Safe to re-run — skips anyone who already has
-coordinates.
+This one handles members' addresses.
 
 ```
 cd /srv/bubu && docker compose exec -T web python manage.py geocode_place_addresses
 ```
 
-Same idea, for `Place.address`/`Place.latitude`/`Place.longitude`: geocodes every
-existing place address that doesn't yet have coordinates (same BAN-then-Photon
-`geocode()` fallback as above), so places that already had
-an address on file before the coordinate fields shipped are backfilled immediately
-instead of only after their next edit. Safe to re-run — skips any place that already
-has coordinates.
+This one handles houses' addresses.
 
 ## Deploying
 
-Nothing manual: pushing to `main` triggers `build-and-deploy.yml`, which builds/pushes
-the image, copies `docker-compose.prod.yml` to the VPS, then over SSH runs
-`docker compose pull && docker compose up -d && docker image prune -f`. Required repo
-secrets: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`. The
-deploy directory (`/srv/bubu`) and image name (`ghcr.io/reboulip/famille-busson`) live
-in one workflow-level `env:` block (`DEPLOY_DIR`, `IMAGE_NAME`) instead of being
-repeated across each step — no behaviour change, just one place to look.
+Nothing to do by hand. A push to `main` starts `build-and-deploy.yml`. It builds the
+image, copies `docker-compose.prod.yml` to the server, and then runs
+`docker compose pull && docker compose up -d` over SSH.
+
+It needs these repository secrets: `SSH_HOST`, `SSH_PORT`, `SSH_USER`,
+`SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`. The server folder (`/srv/bubu`) and the image name
+are set once at the top of the workflow (`DEPLOY_DIR`, `IMAGE_NAME`).

@@ -3,6 +3,66 @@
 Roadmap items that have shipped to production. Moved here from `ROADMAP.md` at release
 time (see the `/release` skill), so `ROADMAP.md` only ever shows pending work.
 
+## v1.6.0 — Phases 18–19: corrections diverses, bulletins familiaux
+
+### Phase 18 — Corrections diverses et confort d'usage
+
+> A batch of field-reported fixes and small comfort improvements, triaged from GH issues.
+
+### Cluster: Authentification
+- [x] 18.1 · Self-service login link resend — a user with an expired login link lands on
+  a page to request a new one (valid 24h) instead of needing an admin reset. [#147]
+
+### Cluster: Annuaire
+- [x] 18.2 · Rename relation labels — "Mariage" becomes "Mariage ou Pacs" and "Conjoint"
+  becomes "En couple" everywhere the labels appear (forms, family tree, GEDCOM export,
+  audit log). [#148]
+
+### Cluster: Infrastructure et CI
+- [x] 18.3 · Fix weekly dependency-upgrade workflow — resolve the ruff check failure
+  blocking `dependency-upgrade.yml`, and make the check auto-format where possible. [#149]
+
+### Cluster: Carte
+- [x] 18.4 · Bring map tiles into OSM policy compliance — proper Referer/User-Agent
+  identification and HTTP caching so tile requests aren't blocked by OpenStreetMap's
+  usage policy. [#150]
+
+### Cluster: Interface et navigation
+- [x] 18.5 · Restore GitHub issue-reporting link in the menu — bring back the link to
+  file a bug or suggestion that used to be at the bottom of the menu. [#153]
+- [x] 18.6 · Reposition the site version number — move it from floating mid-page into
+  the fixed left sidebar, next to the logout button. [#155]
+
+### Cluster: Calendrier
+- [x] 18.7 · Add a real calendar grid to the Calendrier tab — a month view showing
+  events, presences and birthdays, not just navigation controls and personal-calendar
+  export links. [#154]
+
+### Phase 19 — Bulletins familiaux : import et rendu
+
+> Dozens of scanned family bulletins (*Busson's Connection*, 1990s) are to become web
+> pages that always render the same way. An AI agent turns each PDF into a validated
+> JSON + pictures package. That step is prototyped on BC n°17, and the spec, schema and
+> working prototype are in `design/bulletins/`. This phase brings those packages into
+> `publications`.
+
+### Cluster: Bulletins familiaux
+- [x] 19.1 · Bulletin import and rendering. Staff upload a bulletin package (a zip of
+  `bulletin.json` + `images/`). It is validated against
+  `design/bulletins/bulletin.schema.json` plus integrity checks and previewed, then
+  stored as a new `Bulletin` model: the JSON is the source of truth, the pictures are
+  files. It renders with fixed templates as list and detail pages that use the full
+  screen width: **pictures dock right with the text wrapping around them**, several
+  pictures with little or no text form a **carousel**, and **every picture has a
+  caption** (captions added during transcription are marked). Tables stack on phones,
+  and there is a dark mode and a self-hosted Caveat font. Spec: `design/bulletins/SPEC.md`:
+  §2 package (schema 0.2) and transcription conventions, §3 rendering (§3.1 docking,
+  carousels, captions), §4 import requirements. The prototype templates, CSS and JS in
+  `design/bulletins/prototype/` are meant to be lifted as-is, and
+  `prototype/fixtures/demo-001/` is a ready synthetic test fixture. Settle the open
+  questions in §6 first: model choice, storing the original PDF, visibility of
+  addresses and phone numbers.
+
 ## v1.5.0 — Phases 14–17: vie privée et traçabilité, site configurable et réutilisable, corrections diverses
 
 > Four phases: personal-data rights and an audit trail, then two phases making the site

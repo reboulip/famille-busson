@@ -1,0 +1,11 @@
+{% load bulletin %}{% with tag=1|heading_tag:base %}
+<div class="fb-bulletin-news">
+    <{{ tag }} class="fb-bulletin-news__subject fb-hand">{% inline block.subject %}</{{ tag }}>
+    <div class="fb-bulletin-news__body">
+        {% if block.headline %}<p class="fb-bulletin-news__headline">{% inline block.headline %}</p>{% endif %}
+        {% for child in block.blocks %}
+            {% include "publications/bulletin/_block.html" with block=child %}
+        {% endfor %}
+    </div>
+</div>
+{% endwith %}

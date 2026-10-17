@@ -27,6 +27,25 @@ def test_calendar_returns_200(auth_client):
 
 
 @pytest.mark.django_db
+def test_calendar_jsi18n_catalog_loads_before_unified_calendar_js(auth_client):
+    # unified_calendar.js calls gettext() at module load time -- if it loads
+    # before the catalog script, that throws and nothing on the page ever
+    # renders (#154's actual root cause).
+    response = auth_client.get(reverse("calendrier"))
+    content = response.content.decode()
+    catalog_pos = content.index(reverse("javascript-catalog"))
+    script_pos = content.index("js/unified_calendar.js")
+    assert catalog_pos < script_pos
+
+
+@pytest.mark.django_db
+def test_calendar_grid_always_renders_even_with_no_entries(auth_client):
+    response = auth_client.get(reverse("calendrier"))
+    content = response.content.decode()
+    assert 'class="unified-calendar"' in content
+
+
+@pytest.mark.django_db
 def test_calendar_shows_empty_state_with_no_entries(auth_client):
     response = auth_client.get(reverse("calendrier"))
     assert response.context["has_entries"] is False

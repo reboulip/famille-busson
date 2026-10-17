@@ -53,6 +53,15 @@ def test_spouse_types_collapse_to_rels_spouses(person, other_person, relationshi
 
 
 @pytest.mark.django_db
+def test_marriage_entry_carries_relationship_label(person, other_person):
+    Relation.objects.create(person1=person, person2=other_person, relationship_type=1)
+    data = build_family_chart_data()
+    by_id = {node["id"]: node for node in data}
+    marriage = by_id[str(person.pk)]["data"]["marriages"][str(other_person.pk)]
+    assert marriage["label"] == "en couple"
+
+
+@pytest.mark.django_db
 def test_self_relation_is_dropped(person):
     # bulk_create bypasses the post_save signal, which would otherwise recurse
     # forever trying to mirror a person1==person2 row -- a self-relation should

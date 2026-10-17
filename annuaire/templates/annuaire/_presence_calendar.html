@@ -1,4 +1,3 @@
-{% load static %}
 {% load i18n %}
 <div class="presence-calendar"
      data-presences='{{ presences_json|escape }}'
@@ -24,5 +23,3 @@
         <span class="presence-calendar-bar bar-future">{% translate 'à venir' %}</span>
     </div>
 </div>
-<script src="{% static 'js/calendar_core.js' %}"></script>
-<script src="{% static 'js/presence_calendar.js' %}"></script>

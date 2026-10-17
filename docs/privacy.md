@@ -1,210 +1,156 @@
 # Vie privée et traçabilité
 
-Phase 14 groups the site's privacy-facing features: personal data export (14.1),
-erasure/anonymisation (14.2), and a privacy notice/consent record (14.3), below.
-Two related features live on their own pages rather than here: the staff-only
-[audit log](audit.md) (14.4) and the [corbeille](corbeille.md) soft-delete/restore/
-purge trash (14.5) — both cross-reference this page where they touch it (audit
-logs an anonymisation event; erasure purges a person's trashed rows immediately,
-see "Retention and erasure policy" below).
+This page covers the privacy features:
+
+- personal data export;
+- erasure (anonymisation) of a person;
+- the privacy notice and its acceptance.
+
+Two related features have their own pages: the [audit log](audit.md) and the
+[trash (corbeille)](corbeille.md).
 
 ## Personal data export
 
-Any member who can already edit a profile can download a `.zip` archive of
-everything the site holds on that `Person`, via the "Télécharger mes données"
-button next to "Modifier le profil" on the profile page
-(`annuaire/templates/annuaire/personne_detail.html`), or directly at
-`personne/<int:pk>/donnees/` (route name `person-data-export`,
-`PersonalDataExportView` in `annuaire/views.py`). Access is gated by the same
-`can_edit_person()` helper as editing the profile itself — self, staff/superuser,
-or an owner of an accountless profile — see
-[`permissions.md`](permissions.md)'s "By view" table.
+Anyone who can edit a profile can download a `.zip` file with everything the site holds
+about that person. The button "Télécharger mes données" is on the profile page, next to
+"Modifier le profil". The URL is `personne/<id>/donnees/`.
 
-The archive is built synchronously by `annuaire/personal_data.py`'s
-`build_personal_data_archive()` and contains:
+"Anyone who can edit a profile" means: the person themself, staff, or an owner of a
+profile with no account (see [`permissions.md`](permissions.md)).
 
-- `donnees.json` — the structured payload, one key per category below.
-- `LISEZ-MOI.txt` — a French readme summarising each category and its item count.
-- the profile photo file, under `photo-profil.<ext>`, if the profile has one.
+The `.zip` file contains:
+
+- `donnees.json` — the data, grouped by category (see below);
+- `LISEZ-MOI.txt` — a short explanation in French, with the number of items in each
+  category;
+- the profile photo (`photo-profil.<ext>`), if there is one.
 
 ### Scope: metadata and links only, one exception
 
-The export lists **metadata and in-app links**, not the underlying files —
-a document row links to `document-detail` rather than embedding the PDF, a photo
-row links to `photo-detail` rather than embedding the image, and so on. **The
-profile photo is the one deliberate exception**: its bytes are embedded directly
-in the archive, since it's the subject's own small, low-risk image rather than a
-family document or another member's photo.
+The export lists information and links to pages in the site. It does not include the
+files themselves. For example, a document is a link to its page, not the PDF. **The
+profile photo is the only exception**: it is included in the `.zip`, because it is the
+person's own small image.
 
 ### Access model: scoped through the viewer, not the subject
 
-Every category is collected through the **requesting viewer's own access**, using
-the same helpers the rest of the app already uses for that content — never a
-raw `Model.objects.all()`. Concretely: `documents` via
-`documents.access.accessible_documents(viewer)`, `photos` via
-`photos.access.accessible_albums(viewer)`/`accessible_photos(viewer)`,
-`evenements` via `events.access.accessible_events(viewer)`. This means the
-export can never show the person requesting it more than they could already see
-elsewhere in the app — for example, staff exporting a member's data still won't
-see a document in a category staff can't open, and a profile owner exporting an
-accountless dependent's data still won't see a restricted album they're not in
-the group for.
+The export only contains what the **person who downloads it** is allowed to see. It
+never shows more than the rest of the site would. For example:
+
+- a staff member who exports a member's data still does not see documents in a
+  category that staff cannot open;
+- a parent who exports a child's data does not see albums restricted to a group the
+  parent is not in.
 
 ### Personal data categories
 
 | Key | Label | Covers |
 |---|---|---|
-| `profil` | Profil | Profile fields: name, contact details, address/coordinates, birth/death info, description, export-privacy choice, whether a profile photo is set, creation date, link to the profile. |
-| `relations_familiales` | Relations familiales | Every family `Relation` involving this person (parent/enfant, conjoint), with type, the other person, and marriage/end dates where set. |
-| `comptes_geres` | Comptes gérés | Profiles this person owns (`Person.owners`), and profiles that own this one, if it's accountless. |
-| `parametres` | Préférences de notification | The linked `Settings` row's notification toggles (anniversaires, publications, événements). |
-| `places` | Résidences | Places this person is listed as an owner of. |
-| `presences` | Présences | This person's `Stay` records (unrestricted data — no access helper needed, same posture as the présences calendar elsewhere in the app). |
-| `publications` | Publications | Blog posts this person is a listed author of. |
-| `commentaires` | Commentaires | Comments this person posted, with a short excerpt and a link to the parent post. |
-| `documents` | Documents | Documents this person uploaded or redacted, restricted to what the viewer can see via `accessible_documents(viewer)`. |
-| `photos` | Photos | Albums created, photos uploaded, photos this person is tagged in, and tags this person made on others, restricted to what the viewer can see via `accessible_albums(viewer)`/`accessible_photos(viewer)`. |
-| `evenements` | Événements | Events created or organised by this person, and this person's RSVPs, restricted to what the viewer can see via `accessible_events(viewer)`. |
-| `genealogie` | Généalogie | Life stories about or written by this person, citations against sources, sources added, and GEDCOM import records (uploads, staged-individual matches/creations) involving this person. |
-| `consentements` | Consentements | The acceptance of the privacy notice tied to this person's account: the accepted version string and the acceptance timestamp. Empty if the profile has no linked `Account`, or that account hasn't accepted yet. |
+| `profil` | Profil | Profile fields: name, contact details, address, birth and death details, description, export privacy choice, whether there is a photo, creation date, link to the profile. |
+| `relations_familiales` | Relations familiales | Family relations (parent, child, spouse), with dates. |
+| `comptes_geres` | Comptes gérés | Profiles this person owns, and the owners of this profile. |
+| `parametres` | Préférences de notification | Email notification settings. |
+| `places` | Résidences | Houses this person owns. |
+| `presences` | Présences | This person's stays in houses. |
+| `publications` | Publications | Blog posts this person wrote. |
+| `commentaires` | Commentaires | Comments this person wrote, with a short extract and a link to the post. |
+| `documents` | Documents | Documents this person uploaded or wrote. |
+| `photos` | Photos | Albums created, photos uploaded, photos where this person appears, and people this person identified in photos. |
+| `evenements` | Événements | Events this person created or organises, and their answers to events. |
+| `genealogie` | Généalogie | Life stories about or by this person, sources and citations, and GEDCOM imports involving this person. |
+| `consentements` | Consentements | When the account accepted the privacy notice, and which version. |
 
-Every relation onto `Person` is enumerated explicitly in
-`PERSONAL_DATA_RELATIONS`/`PERSONAL_DATA_HIDDEN_RELATIONS`
-(`annuaire/personal_data.py`) — a test walks `Person._meta.get_fields()` to make
-sure a newly added foreign key or many-to-many onto `Person` can't silently
-escape the export uncovered.
+A test checks that every link from another table to a person is covered by the export.
+If you add a new link to `Person`, you must add it to `annuaire/personal_data.py`.
 
 ## Retention and erasure policy
 
-A staff-only flow (`annuaire/anonymisation.py`'s `anonymise_person(person, actor=...)`,
-reachable via the "Anonymiser" button on the profile page — staff only, and hidden
-once a person is already anonymised — at `personne/<int:pk>/anonymiser/`, route
-name `person-anonymise`, `PersonAnonymiseView`) irreversibly blanks a `Person`'s
-identity while deliberately **preserving referential integrity**: unlike
-`person_merge.py`'s winner/loser model, nothing is repointed to a different
-`Person` row — every authorship/upload relation keeps pointing at the same,
-now-anonymised, row. The two modules (`anonymisation.py`/`person_merge.py`)
-never call into each other; they solve different problems. Anonymisation is
-one-way — `Person.anonymised_at` is set once and never cleared — and refuses to
-run twice, or to deactivate the last active staff `Account`.
+Staff can **anonymise** a person with the "Anonymiser" button on the profile page. This
+erases the person's identity for good. It cannot be undone, and it cannot be done twice.
+The site refuses to anonymise the last active staff account.
+
+The person's profile is not deleted: it stays, but empty. So everything the person
+wrote or uploaded keeps its link to the (now anonymous) profile. Nothing is given to
+another profile.
 
 ### What's blanked
 
-On `Person`: `first_name`/`last_name` (replaced with the fixed placeholder
-"Personne anonymisée" — deliberately not a real-sounding name), `email`,
-`phone_number`, `postal_address`, `latitude`/`longitude`, `birth_date`/`birth_place`,
-`death_date`/`death_place`, `description`, and `profile_photo`. `export_privacy`
-is set to `REDACT`, reusing `annuaire/privacy.py`'s existing redaction machinery
-so every export surface (GEDCOM, Excel, iCal) honours the erasure with zero new
-call sites. `person.owners` is cleared.
+On the profile: the name becomes "Personne anonymisée". The email, phone, address, map
+coordinates, birth and death details, description and photo are erased. The export
+privacy choice becomes "redact", so the person is hidden in all exports (GEDCOM, Excel,
+calendar). The list of owners is emptied.
 
-If the person has a linked `Account`, it's deactivated (`is_active = False`),
-its password invalidated (`set_unusable_password()`), its calendar token
-cleared (breaking any standing `.ics` feed URL), and its email rewritten to a
-unique, unreachable placeholder (`anonymise-<pk>@invalid`) — freeing the real
-address for reuse and guaranteeing the account can no longer log in or be
-mailed.
+If the person has an account, the account is disabled. Its password and calendar link
+stop working. Its email is replaced by a fake address (`anonymise-<id>@invalid`), so the
+real address can be used again, and the account can never log in or receive emails.
 
 ### What's deleted outright
 
-`photos.PersonTag` rows are deleted entirely, in **both** directions — where
-this person is tagged in a photo, and where this person tagged someone else —
-since a face-identification link is the single most identifying artifact left
-once the profile itself is blanked.
+All photo identifications are deleted: the photos where this person was identified,
+and the people this person identified in photos. A face linked to a name is very
+identifying.
 
 ### What's kept, but scrubbed
 
-`events.Rsvp` rows are kept, for event-history integrity (attendance counts
-stay correct), but each row's free-text `note` field is blanked.
+Answers to events are kept, so attendance numbers stay correct. But the free-text
+comment on each answer is erased.
 
 ### What's kept untouched
 
-Every authorship/upload relation — publications, documents, photos (uploads
-and album creation), comments, présences, events (creation/organisation), and
-genealogy records (stories, citations, sources, GEDCOM import references) —
-is left exactly as-is, still pointing at the same `Person` row. This is the
-"referential integrity preserved" guarantee: a blog post's author list, a
-document's uploader, a photo album's creator, etc. never silently lose their
-attribution or get reassigned to someone else.
+Everything the person created stays as it was: posts, documents, photos, albums,
+comments, stays, events, stories, sources. It still shows the same (now anonymous)
+author.
 
 ### Interaction with the corbeille (14.5)
 
-Any of the person's rows already sitting in the [corbeille](corbeille.md)
-(soft-deleted `BlogPost`/`Document`/`Album`/`Photo`) are **purged immediately**
-as part of the same anonymisation transaction, rather than being left
-recoverable for the rest of their normal `TRASH_RETENTION_DAYS` window — an
-"erased" person's data sitting restorable in the trash for up to 30 more days
-would contradict the erasure guarantee.
+Anything the person had put in the [trash](corbeille.md) is deleted for good at once,
+without waiting 30 days. Otherwise, the data of an "erased" person could still be
+restored.
 
 ### Audit trail
 
-The operation logs exactly one `AuditEvent`, with the `ANONYMISE` action,
-attributed to the staff member who triggered it — with no old-value payload,
-so the audit log itself never becomes a place where the erased identity
-survives. See [`audit.md`](audit.md#anonymisation-142) for how
-`suppress_generic_audit()` keeps `register_audit()`'s generic per-field
-logging from firing a second, PII-carrying event for the same save.
+Anonymisation writes one entry in the audit log, with the name of the staff member who
+did it. This entry does not contain the old values, so the erased identity is not kept
+in the log. See [`audit.md`](audit.md#anonymisation-142).
 
 ## Consent
 
-A public **privacy notice** page (`confidentialite/`, route name `privacy-notice`,
-`PrivacyNoticeView` in `annuaire/views.py`) lists every category from
-`PERSONAL_DATA_CATEGORIES` above — reusing the same registry the export builds
-from, so the two can't drift apart — alongside five real-world legal facts read
-from environment variables (see "Legal facts: environment variables, not
-hardcoded" below). The view is decorated `login_not_required`: it must be
-readable by a visitor who hasn't signed up yet, and is linked unconditionally
-from the sidebar's "Aide" section, visible whether or not the visitor is
-logged in.
+The **privacy notice** (`confidentialite/`) lists the same data categories as the
+export, and five legal facts set in environment variables (see below). Anyone can read
+it, even without an account. It is linked from the "Aide" section of the menu.
 
 ### What's recorded, and on which model
 
-Acceptance is tracked on `Account`, **not** `Person` — two fields,
-`privacy_notice_accepted_at` (nullable timestamp) and `privacy_notice_version`
-(the version string that was accepted). This is a deliberate placement:
-accepting a notice is an act of the logged-in human at a keyboard, and an
-accountless `Person` (a child profile, a deceased ancestor) has no one who
-could consent on its behalf. `annuaire/privacy_notice.py`'s `has_accepted(account)`
-checks both fields against the current `PRIVACY_NOTICE_VERSION`; `record_acceptance(account)`
-sets them and saves.
+Acceptance is saved on the **account**, not on the profile: the date of acceptance and
+the version accepted. Only a person who logs in can accept. A profile with no account
+(a child, an ancestor) has no one who can accept for it.
 
 ### Version-bump mechanic
 
-`PRIVACY_NOTICE_VERSION` (`annuaire/privacy_notice.py`) is a plain string, not
-semver — `has_accepted()` only ever does an equality check against it, never a
-version-ordering comparison. Bumping it whenever the notice's substance
-changes immediately makes every member's stored `privacy_notice_version` stop
-matching, which brings the acceptance banner back for everyone until they
-accept again.
+The current version of the notice is `PRIVACY_NOTICE_VERSION`, in
+`annuaire/privacy_notice.py`. It is a simple text value. When the content of the notice
+changes, change this value. Then every member must accept the notice again.
 
 ### Acceptance UX: checkbox at signup, banner afterwards — never a hard interstitial
 
-- **`SignupForm`** gains a required `accept_privacy_notice` checkbox; `SignupView.form_valid()`
-  calls `record_acceptance()` right after the account is created, so a new
-  member is already at the current version from their first login.
-- **Existing members** who predate the notice, or whose stored version has
-  fallen behind a bump, see a persistent banner (`annuaire/templates/annuaire/base.html`,
-  driven by the `show_privacy_notice_banner` context variable) linking to the
-  notice and offering a one-click "J'ai lu et j'accepte" button — a `POST` to
-  `confidentialite/accepter/` (route name `privacy-notice-accept`,
-  `login_required`, POST-only), which calls `record_acceptance(request.user)`
-  and redirects back to `home`. There is no hard interstitial that blocks the
-  rest of the app until accepted — the banner is dismissed by accepting, not
-  by simply navigating away.
-- `annuaire.context_processors.privacy_notice_banner` computes
-  `show_privacy_notice_banner`: true only for an authenticated user who hasn't
-  accepted the current version; always false for an anonymous visitor.
+- **At signup**, the form has a required checkbox to accept the notice.
+- **Existing members** who have not accepted the current version see a banner at the top
+  of every page. It has a link to the notice and a button "J'ai lu et j'accepte". The
+  banner goes away only when they accept. They can still use the site in the meantime.
 
 ### Legal facts: environment variables, not hardcoded
 
-The notice's real-world legal content — who the data controller is, the
-hosting provider and country, a contact address for exercising data-subject
-rights, and a plain-language retention summary — comes from five environment
-variables (`config/settings.py`, all default `""`): `PRIVACY_CONTROLLER_NAME`,
-`PRIVACY_CONTROLLER_CONTACT`, `PRIVACY_HOSTING_PROVIDER`,
-`PRIVACY_HOSTING_COUNTRY`, `PRIVACY_RETENTION_SUMMARY`. These are deliberately
-**not** hardcoded in a template and **not** an in-app editable field — they're
-operational/legal facts about how and where the site is actually hosted, set
-once per deployment. Development and tests are fine leaving them empty;
-**production must set all five** before launch (see `.env.example` and
+Five environment variables hold the legal facts shown on the notice:
+
+| Variable | Meaning |
+|---|---|
+| `PRIVACY_CONTROLLER_NAME` | Who is responsible for the data. |
+| `PRIVACY_CONTROLLER_CONTACT` | The contact address for data requests. |
+| `PRIVACY_HOSTING_PROVIDER` | The hosting company. |
+| `PRIVACY_HOSTING_COUNTRY` | The hosting country. |
+| `PRIVACY_RETENTION_SUMMARY` | A short, plain explanation of how long data is kept. |
+
+They are environment variables, not site settings, because they describe how the site
+is really hosted. They are set once per installation. They can stay empty in
+development and tests. **In production, all five must be set** (see
 [`deployment.md`](deployment.md#environment-variables)).

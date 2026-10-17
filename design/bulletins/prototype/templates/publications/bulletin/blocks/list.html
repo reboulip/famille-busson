@@ -1,0 +1,3 @@
+{% load bulletin %}{% if block.style == "numbered" %}<ol class="fb-bulletin-list">{% else %}<ul class="fb-bulletin-list">{% endif %}
+    {% for item in block.items %}<li>{% inline item %}</li>{% endfor %}
+{% if block.style == "numbered" %}</ol>{% else %}</ul>{% endif %}

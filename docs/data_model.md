@@ -27,6 +27,14 @@ erDiagram
     BlogPost ||--o{ Attachment : "post"
     BlogPost ||--o{ Comment : "post"
     Person ||--o{ Comment : "author"
+    Account ||--o{ Bulletin : "deleted_by"
+    Person ||--o{ Bulletin : "imported_by"
+    Bulletin }o--o{ Group : "groups"
+    Bulletin ||--o{ BulletinImage : "bulletin"
+    Bulletin ||--o{ BulletinGroupAccess : "bulletin"
+    Group ||--o{ BulletinGroupAccess : "group"
+    Person ||--o{ BulletinImport : "uploaded_by"
+    BulletinImport ||--o{ BulletinImportImage : "bulletin_import"
     Category ||--o{ Category : "parent"
     Category }o--o{ Group : "groups"
     Category ||--o{ CategoryGroupAccess : "category"
@@ -147,7 +155,7 @@ erDiagram
 | `id` | BigAutoField | ID | PK |
 | `person1` | ForeignKey | Personne | → Person (on_delete=CASCADE), related_name='ascending_relations', required |
 | `person2` | ForeignKey | En relation avec | → Person (on_delete=CASCADE), related_name='descending_relations', required |
-| `relationship_type` | IntegerField | Type de relation | choices: 0=mariage, 1=conjoint, 2=parent, 3=enfant, required |
+| `relationship_type` | IntegerField | Type de relation | choices: 0=mariage ou Pacs, 1=en couple, 2=parent, 3=enfant, required |
 | `start_date` | DateField | Date de début | optional |
 | `marriage_place` | CharField | Lieu du mariage | max_length=255, default='', optional |
 | `end_date` | DateField | Date de fin | optional |
@@ -275,6 +283,93 @@ erDiagram
 | `author` | ForeignKey | Auteur | → Person (on_delete=SET_NULL), related_name='comments', optional |
 | `body` | TextField | Commentaire | required |
 | `created_at` | DateTimeField | Date de création | auto_now_add, optional |
+
+### `Bulletin`
+
+*App:* `publications` · *verbose name:* Bulletin / Bulletins · *table:* `publications_bulletin`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `deleted_at` | DateTimeField | Supprimé le | optional |
+| `deleted_by` | ForeignKey | Supprimé par | → Account (on_delete=SET_NULL), related_name='+', optional |
+| `document_id` | CharField | Identifiant | max_length=50, unique, required |
+| `series_code` | CharField | Série | max_length=20, required |
+| `series_title` | CharField | Titre de la série | max_length=200, required |
+| `issue_number` | PositiveIntegerField | Numéro | optional |
+| `issue_label` | CharField | Numéro (libellé) | max_length=50, default='', optional |
+| `date_value` | CharField | Date (ISO partielle) | max_length=10, required |
+| `sort_date` | DateField | Date de tri | required |
+| `title` | CharField | Titre | max_length=255, required |
+| `summary` | TextField | Résumé | default='', optional |
+| `data` | JSONField | Contenu (JSON) | required |
+| `schema_version` | CharField | Version du schéma | max_length=10, required |
+| `source_sha256` | CharField | SHA-256 de la source | max_length=64, default='', optional |
+| `source_file_name` | CharField | Nom du fichier source | max_length=255, default='', optional |
+| `source_pdf` | FileField | PDF original | max_length=100, optional |
+| `status` | CharField | Statut | max_length=10, choices: draft=Brouillon, published=Publié, default='published', required |
+| `imported_by` | ForeignKey | Importé par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `imported_at` | DateTimeField | Date d'import | auto_now_add, optional |
+| `updated_at` | DateTimeField | Dernière modification | auto_now, optional |
+| `search_vector` | SearchVectorField | Vecteur de recherche | required |
+| `search_text` | TextField | Texte de recherche | default='', optional |
+| `groups` | ManyToManyField | Groupes autorisés | → Group (M2M), related_name='bulletins' |
+
+### `BulletinImage`
+
+*App:* `publications` · *verbose name:* Image de bulletin / Images de bulletin · *table:* `publications_bulletinimage`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `bulletin` | ForeignKey | Bulletin | → Bulletin (on_delete=CASCADE), related_name='images', required |
+| `image_id` | CharField | Identifiant | max_length=80, required |
+| `file` | FileField | Fichier | max_length=100, required |
+| `kind` | CharField | Type | max_length=20, required |
+| `width` | PositiveIntegerField | Largeur | required |
+| `height` | PositiveIntegerField | Hauteur | required |
+| `sha256` | CharField | SHA-256 | max_length=64, required |
+
+### `BulletinGroupAccess`
+
+*App:* `publications` · *verbose name:* Accès groupe à bulletin / Accès groupes à bulletins · *table:* `publications_bulletingroupaccess`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `bulletin` | ForeignKey | Bulletin | → Bulletin (on_delete=CASCADE), required |
+| `group` | ForeignKey | Groupe | → Group (on_delete=PROTECT), required |
+
+### `BulletinImport`
+
+*App:* `publications` · *verbose name:* Import de bulletin / Imports de bulletin · *table:* `publications_bulletinimport`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `uploaded_by` | ForeignKey | Déposé par | → Person (on_delete=SET_NULL), related_name='+', optional |
+| `uploaded_at` | DateTimeField | Date de dépôt | auto_now_add, optional |
+| `original_filename` | CharField | Nom du fichier | max_length=255, default='', optional |
+| `document_id` | CharField | Identifiant | max_length=50, default='', optional |
+| `status` | CharField | Statut | max_length=20, choices: pending_review=En attente de relecture, applied=Appliqué, discarded=Abandonné, default='pending_review', required |
+| `data` | JSONField | Contenu (JSON) | default=dict, required |
+| `validation_report` | JSONField | Rapport de validation | default=dict, required |
+| `source_pdf` | FileField | PDF original | max_length=100, optional |
+
+### `BulletinImportImage`
+
+*App:* `publications` · *verbose name:* Image d'import de bulletin / Images d'import de bulletin · *table:* `publications_bulletinimportimage`
+
+| Field | Type | Verbose name | Notes |
+|---|---|---|---|
+| `id` | BigAutoField | ID | PK |
+| `bulletin_import` | ForeignKey | Import | → BulletinImport (on_delete=CASCADE), related_name='images', required |
+| `image_id` | CharField | Identifiant | max_length=80, required |
+| `file` | FileField | Fichier | max_length=100, required |
+| `kind` | CharField | Type | max_length=20, required |
+| `width` | PositiveIntegerField | Largeur | required |
+| `height` | PositiveIntegerField | Hauteur | required |
+| `sha256` | CharField | SHA-256 | max_length=64, required |
 
 ## `documents`
 

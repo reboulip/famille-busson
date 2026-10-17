@@ -1,0 +1,24 @@
+{% load bulletin %}
+<article class="fb-bulletin-article fb-bulletin-article--{{ article.script }}" id="{{ article.id }}">
+    <header class="fb-bulletin-article__head">
+        {% if article.kicker %}<p class="fb-eyebrow fb-bulletin-article__kicker">{{ article.kicker|typo }}</p>{% endif %}
+        {% if article.title %}
+            <{{ article.htag }} class="fb-bulletin-article__title">{{ article.title|typo }}</{{ article.htag }}>
+        {% endif %}
+        {% if article.subtitle %}<p class="fb-bulletin-article__subtitle">{{ article.subtitle|typo }}</p>{% endif %}
+        <p class="fb-meta fb-bulletin-article__meta">
+            {% if article.byline %}<span class="fb-bulletin-article__byline">{% inline article.byline %}</span>{% endif %}
+            <a class="fb-bulletin-article__pages" href="#page-{{ article.pages.0 }}" title="Voir la page originale">{{ article.pages|pages_label }}</a>
+            {% if article.script == "handwritten" %}
+                <span class="fb-chip">{% bicon "pen" size=12 %} Manuscrit</span>
+            {% elif article.script == "mixed" %}
+                <span class="fb-chip">{% bicon "pen" size=12 %} En partie manuscrit</span>
+            {% endif %}
+        </p>
+    </header>
+    <div class="fb-bulletin-article__body">
+        {% for block in article.blocks %}
+            {% include "publications/bulletin/_block.html" with base=article.level %}
+        {% endfor %}
+    </div>
+</article>
