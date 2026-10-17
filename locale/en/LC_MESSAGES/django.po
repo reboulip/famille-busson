@@ -5160,7 +5160,3 @@ msgstr "This import cannot be published (already processed or in error)."
 #: publications/views.py:356
 msgid "Bulletin publié."
 msgstr "Bulletin published."
-
-#: site/i18n/index.html:1169 site/i18n/index.html:1170
-msgid "…"
-msgstr "…"
