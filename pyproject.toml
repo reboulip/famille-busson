@@ -1,6 +1,6 @@
 [project]
 name = "config"
-version = "1.6.0"
+version = "1.6.1"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -112,3 +112,9 @@ unsupported-operator = "warn"
 # runtime -- false positive on every `instance.some_json_field["key"]`.
 not-subscriptable = "warn"
 no-matching-overload = "warn"
+# Newer ty releases (surfaced by the weekly `uv lock --upgrade`) added these override
+# checks. Django's `class Meta` is redeclared on every model by design, and the
+# `location`/`base_location` properties on the FileSystemStorage subclasses deliberately
+# make Django's settable attributes read-only -- false positives, not bugs.
+invalid-attribute-override = "warn"
+invalid-property-type-override = "warn"
