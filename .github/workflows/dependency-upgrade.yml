@@ -122,14 +122,21 @@ jobs:
         # could introduce.
         run: DEBUG=False SECRET_KEY=x uv run python manage.py collectstatic --noinput
 
-      - name: Bump the project's minor version
+      - name: Bump the project's version
         id: version
+        # Patch by default (dependency/vendored-asset bumps only); minor when the run
+        # also moved the Python version pin, a larger change than a plain upgrade.
         run: |
           set -e
           CURRENT=$(grep -m1 '^version = ' pyproject.toml | sed -E 's/version = "(.*)"/\1/')
           MAJOR=$(echo "$CURRENT" | cut -d. -f1)
           MINOR=$(echo "$CURRENT" | cut -d. -f2)
-          NEW="${MAJOR}.$((MINOR + 1)).0"
+          PATCH=$(echo "$CURRENT" | cut -d. -f3)
+          if [ "${{ steps.python.outputs.current }}" != "${{ steps.python.outputs.latest }}" ]; then
+            NEW="${MAJOR}.$((MINOR + 1)).0"
+          else
+            NEW="${MAJOR}.${MINOR}.$((PATCH + 1))"
+          fi
           sed -i "s/^version = \"${CURRENT}\"/version = \"${NEW}\"/" pyproject.toml
           echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
 
