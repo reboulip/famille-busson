@@ -16,7 +16,7 @@
     ],
     "deny": [
       "Bash(git push * main)",
-      "Bash(git push * main:*)",
+      "Bash(git push * main*)",
       "Bash(git push *:main)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
@@ -25,7 +25,7 @@
       "Bash(git branch -D main)",
       "Bash(git branch -D develop)",
       "PowerShell(git push * main)",
-      "PowerShell(git push * main:*)",
+      "PowerShell(git push * main*)",
       "PowerShell(git push *:main)",
       "PowerShell(git push --force *)",
       "PowerShell(git push -f *)",
