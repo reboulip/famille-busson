@@ -55,3 +55,20 @@ def test_pre_commit_ruff_hooks_run_through_uv_not_a_pinned_external_rev():
     # extend-exclude -- a bare `uv run ruff ...` entry (no --force-exclude) would
     # silently start linting/formatting migration files pre-commit passes explicitly.
     assert "--force-exclude" in content
+
+
+def _python_resolution_step() -> str:
+    content = _workflow_content()
+    start = content.index("Determine the latest stable Python minor version")
+    return content[start : content.index("Bump the Python version pins")]
+
+
+def test_python_resolution_has_a_floor_and_never_downgrades():
+    step = _python_resolution_step()
+    assert 'MIN_PYTHON="3.14"' in step
+    assert "Never downgrade" in step
+
+
+def test_python_resolution_does_not_rely_on_sort_numeric_keys():
+    # The runner's `sort -k2 -n` picked 3.9 over 3.15 and the run tried to downgrade.
+    assert "-k2" not in _python_resolution_step()

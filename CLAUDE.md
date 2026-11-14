@@ -14,7 +14,7 @@
 
 ## 1. Tech Stack
 - **Framework:** Django 6.0
-- **Language:** Python 3.13
+- **Language:** Python (version pinned in `.python-version`)
 - **Database:** SQLite (Development) / PostgreSQL (Production)
 - **Frontend:** Bootstrap 5
 - **Environment:** uv
@@ -88,10 +88,6 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
 - **Be concise:** code snippets first, brief explanations after.
 - **New view → new tests:** every new view needs a test block (see `/test-select`).
 - **Tests gate commits:** a commit may only happen after a fully green test run, or when the user explicitly chose to commit without tests.
-- **End-of-task ritual:** at the end of a task with changes, offer the A/B/C choice
-  (run tests + commit / run tests + report / commit without tests), stating which test
-  files apply. Never commit or run tests without that explicit choice. Detailed test
-  scope rules live in `/test-select`.
 - **Migrations:** committed to git — run `makemigrations` after model changes and include
   the generated file(s) in your commit (details in `dev-commands`). Required for
   production: the Docker image is built from a fresh `git checkout`, so an uncommitted
@@ -120,8 +116,9 @@ Frontend is **Bootstrap 5**. Crispy Forms uses `crispy_bootstrap5` (`CRISPY_TEMP
   runs weekly (every Friday night), branches `deps/<date>` off `main`, upgrades the
   pinned Python minor version, every uv-managed package, and the vendored front-end
   assets under `annuaire/static/vendor/` (see §11's manifest note), and only opens the
-  PR if lint/ty/collectstatic-sanity/the full test suite all stay green. It always bumps
-  the **minor** version (another documented exception — see §10), regardless of the
+  PR if lint/ty/collectstatic-sanity/the full test suite all stay green. It bumps the
+  **patch** version by default, or the **minor** version when the run also moves the
+  pinned Python version (another documented exception — see §10), regardless of the
   general "chore-only commits: ask whether release-worthy" convention, since these
   commits are never reviewed for release-worthiness before the PR opens.
 - Never push directly to `main`.
@@ -216,9 +213,10 @@ gate a build/publish step.
   `main` still carries a version change for the workflow to tag (see `/release`'s
   Hotfix variant).
 - **Weekly dependency upgrades** (`dependency-upgrade.yml`, see §8's Branch Model)
-  always bump the **minor** version directly on the `deps/<date>` branch, regardless of
-  the general bump convention above — there's no human in the loop to ask whether a
-  dependency-only chore is release-worthy, so it's simply always treated as such.
+  bump the **patch** version directly on the `deps/<date>` branch (**minor** when the
+  run also moves the pinned Python version), regardless of the general bump convention
+  above — there's no human in the loop to ask whether a dependency-only chore is
+  release-worthy, so it's simply always treated as such.
 - No build/publish step, no changelog file — the GitHub Release's auto-generated notes
   (grouped by merged PRs since the last tag) are the changelog.
 
