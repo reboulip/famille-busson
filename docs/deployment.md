@@ -40,7 +40,7 @@ downloads new versions and updates that file.
 
 ## Docker image
 
-The image is built from `Dockerfile`: Python 3.13 slim, plus `uv`. It also installs:
+The image is built from `Dockerfile`: Python 3.15 slim, plus `uv`. It also installs:
 
 - `tesseract-ocr` and `tesseract-ocr-fra`, to read text from scanned documents (OCR);
 - `gettext`, to compile the translation files.

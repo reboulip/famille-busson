@@ -51,15 +51,27 @@ jobs:
           # `python:3.13-slim` tag, which Docker Hub itself keeps rolling to the latest
           # 3.13.x patch -- so there is nothing to track below minor granularity.
           # Same manifest actions/setup-python resolves against.
+          #
+          # The highest minor is computed numerically in jq, not with `sort`: on the
+          # runner, the previous `sort`-based pipeline resolved "3.9" as the latest and the run tried
+          # to downgrade the project to it. Versions below MIN_PYTHON are ignored
+          # outright: the project only supports recent Pythons.
+          MIN_PYTHON="3.14"
           LATEST=$(curl -sf https://raw.githubusercontent.com/actions/python-versions/main/versions-manifest.json \
-            | jq -r '.[] | select(.stable == true) | .version' \
-            | grep -E '^3\.' \
-            | cut -d. -f1,2 \
-            | sort -u -t. -k2 -n \
-            | tail -1)
+            | jq -r --arg min "$MIN_PYTHON" '
+                ($min | split(".") | map(tonumber)) as $floor
+                | [ .[] | select(.stable == true) | .version | split(".")
+                    | select(.[0] == "3") | [ (.[0] | tonumber), (.[1] | tonumber) ]
+                    | select(. >= $floor) ]
+                | max // empty
+                | map(tostring) | join(".")')
           if [ -z "$LATEST" ]; then
-            echo "Could not resolve a latest stable Python version from the manifest." >&2
+            echo "Could not resolve a stable Python >= ${MIN_PYTHON} from the manifest." >&2
             exit 1
+          fi
+          # Never downgrade: keep the current pin if it is already at or above LATEST.
+          if [ "$(printf '%s\n%s\n' "$CURRENT" "$LATEST" | sort -V | tail -1)" = "$CURRENT" ]; then
+            LATEST="$CURRENT"
           fi
           echo "current=$CURRENT" >> "$GITHUB_OUTPUT"
           echo "latest=$LATEST" >> "$GITHUB_OUTPUT"
