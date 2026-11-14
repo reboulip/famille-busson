@@ -89,3 +89,14 @@ jobs:
           ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \
             "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
             'cd ${{ env.DEPLOY_DIR }} && docker compose pull && docker compose up -d && docker image prune -f'
+
+      - name: Prune stale Docker build cache on the VPS
+        # The VPS filled up once (Postgres stopped starting with "No space left on
+        # device"), mostly from build cache. Only dangling images and week-old cache are
+        # removed -- never `image prune -a` or volumes: this host is shared with other
+        # projects, and a prune failure must never fail a deploy that already succeeded.
+        continue-on-error: true
+        run: |
+          ssh -i ~/.ssh/deploy_key -p "${{ secrets.SSH_PORT }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            'docker builder prune -f --filter until=168h'
